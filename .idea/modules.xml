@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Hollerback-Android/Hollerback-Android.iml" filepath="$PROJECT_DIR$/Hollerback-Android/Hollerback-Android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-PullToRefresh/library/PullToRefresh.iml" filepath="$PROJECT_DIR$/Android-PullToRefresh/library/PullToRefresh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/StickyListViewLibrary/StickyListViewLibrary.iml" filepath="$PROJECT_DIR$/StickyListViewLibrary/StickyListViewLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../calculator-lm/abslibrary/abslibrary.iml" filepath="$PROJECT_DIR$/../calculator-lm/abslibrary/abslibrary.iml" />
+    </modules>
+  </component>
+</project>
+

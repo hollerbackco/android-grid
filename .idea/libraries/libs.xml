@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="libs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/libs/libphonenumber-5.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/libs/android-support-v4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/libs/aws-android-sdk-1.5.0-debug.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/libs/android-async-http-1.4.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/libs/commons-io-2.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

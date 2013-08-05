@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="Android-PullToRefresh">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/extras/PullToRefreshViewPager/gen" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/extras/PullToRefreshViewPager/src" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/extras/PullToRefreshListFragment/gen" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/extras/PullToRefreshListFragment/src" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/sample/gen" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/sample/src" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/library/gen" />
+      <root url="file://$PROJECT_DIR$/Android-PullToRefresh/library/src" />
+    </SOURCES>
+  </library>
+</component>

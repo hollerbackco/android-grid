@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="dexedLibs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/android-support-v4-32365541a45b8e60e61a6b3ef7083676.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/stickylistheaders_lib-3d91421d00d9dd388d8052dfff320765.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/libphonenumber-5.4-3fcba6638fbd6f4c170e5dba03178744.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/aws-android-sdk-1.5.0-debug-39e556de88649437d4b879fecc1a79f7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/commons-io-2.4-e492ad813362dc91e7ac4b235e5b7252.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/abslibrary-95c38c816820fbe98cdbd6a3bf823c14.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Hollerback-Android/bin/dexedLibs/android-async-http-1.4.3-dcc7f82dc7e1accbd92c6c903162cd08.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

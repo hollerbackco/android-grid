@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <android.view.SurfaceView
+        android:id="@+id/surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+	/>
+
+    <RelativeLayout
+        android:id="@+id/rl_video_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone" >
+
+        <VideoView
+            android:id="@+id/vv_video_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+			android:layout_alignParentTop="true" />
+
+        <ImageView
+            android:id="@+id/iv_video_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+			android:layout_alignParentTop="true"
+            android:contentDescription="@string/app_name" />
+
+
+    </RelativeLayout>
+
+    <TextView 
+        android:id="@+id/txtPlaying"
+        android:gravity="center"
+		android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_medium"
+        android:text="@string/tap_start"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:background="@color/background_transparent"
+        android:layout_above="@+id/bottom_bar"
+        />
+    
+    <RelativeLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/camera_bottom_bar"
+        android:layout_alignParentBottom="true" 
+        android:padding="@dimen/activity_vertical_margin">
+
+		<ImageButton
+            android:id="@+id/ib_play_btn"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:background="@drawable/btn_dark"
+        	android:src="@drawable/icon_play"
+        	android:layout_centerVertical="true"
+        	android:scaleType="center"
+        	android:contentDescription="@string/action_play"
+        	android:visibility="gone"/>
+        
+        <ImageButton 
+            android:id="@+id/ib_filter_btn"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:background="@drawable/btn_dark"
+        	android:src="@drawable/icon_filter"
+        	android:layout_centerVertical="true"
+        	android:scaleType="center"
+        	android:contentDescription="@string/action_filter"
+        	/>        
+
+        <RelativeLayout 
+			android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+			android:layout_centerInParent="true"
+            >
+			<ImageButton
+	            android:id="@+id/record_button"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_centerInParent="true"
+	            android:background="@drawable/recording_spinner"
+	            android:contentDescription="@string/app_name" />
+            
+			<TextView
+	            android:id="@+id/timer"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_centerVertical="true"
+	            android:text="@string/timer_default"
+	            android:textColor="@color/timer_default"
+	            android:textSize="25sp"
+	            android:layout_centerInParent="true"
+	            android:textStyle="bold" />
+        </RelativeLayout>
+        
+        
+		<ImageButton 
+            android:id="@+id/btnSwitch"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:background="@drawable/btn_dark"
+        	android:src="@drawable/icon_switch_camera"
+        	android:layout_centerVertical="true"
+        	android:scaleType="center"
+        	android:contentDescription="@string/action_switch"
+        	android:layout_alignParentRight="true"
+        	/>        
+        	
+		
+		<Button
+            android:id="@+id/send_button"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:background="@drawable/btn_green"
+        	android:src="@drawable/icon_switch_camera"
+        	android:layout_centerVertical="true"
+        	android:scaleType="center"
+        	android:contentDescription="@string/action_switch"
+        	android:layout_alignParentRight="true"
+        	android:text="@string/action_send"
+        	android:textColor="@android:color/white"
+        	android:textStyle="bold"
+            android:visibility="gone" 
+            />
+    </RelativeLayout>
+
+</RelativeLayout>

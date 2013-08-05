@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<RelativeLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_marginTop="80dp"
+	    >
+	
+	    <com.moziy.hollerback.view.RecyclingImageView
+	        android:id="@+id/iv_video_thumbnail"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	         />
+	
+	    <ImageView
+	        android:id="@+id/iv_selected_video"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:background="@drawable/video_selected_border"
+	        android:visibility="gone" />
+	
+	    <ImageView
+	        android:id="@+id/iv_unread_circle"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentLeft="true"
+	        android:src="@drawable/unread_circle"
+	        android:visibility="gone" />
+	    
+	    <TextView 
+	        android:id="@+id/txtTime"
+			android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerInParent="true"
+	        android:textStyle="bold"
+	        android:textSize="14sp"
+	        android:textColor="@android:color/white"
+	        android:shadowColor="@android:color/black"
+	        android:shadowDx="2"
+	        android:shadowDy="2"
+	        android:shadowRadius="2"
+	        />
+	    
+	    <com.moziy.hollerback.view.CustomVideoView 
+	        android:id="@+id/videoPlayer"
+	        android:layout_width="match_parent"
+	        android:layout_height="200dip"
+	        android:visibility="gone"
+	        android:layout_centerInParent="true"
+	        />
+	</RelativeLayout>

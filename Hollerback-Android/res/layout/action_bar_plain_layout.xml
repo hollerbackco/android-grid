@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/action_bar_parent"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/action_bar_height"
+    android:background="#fff"
+    android:orientation="vertical" >
+
+    <ImageButton
+        android:id="@+id/ib_action_left"
+        android:layout_width="@dimen/action_bar_item_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:background="#00000000"
+        android:src="@drawable/settings_btn"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/iv_action_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:src="@drawable/hollerback_title"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_action_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:textColor="#000"
+        android:textSize="21sp" />
+
+    <ImageButton
+        android:id="@+id/ib_action_right"
+        android:layout_width="@dimen/action_bar_item_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="#00000000"
+        android:src="@drawable/add_convo_btn"
+        android:visibility="gone" />
+
+</RelativeLayout>
