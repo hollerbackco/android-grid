@@ -1,19 +1,14 @@
 package com.moziy.hollerback.activity;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.flurry.android.FlurryAgent;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.WelcomeFragment;
-import com.moziy.hollerback.helper.CustomActionBarHelper;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
 
@@ -30,9 +25,8 @@ public class WelcomeFragmentActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle bundle) {
-		// TODO Auto-generated method stub
+		setTheme(R.style.Theme_Example); 
 		super.onCreate(bundle);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.welcome_fragment_activity);
 

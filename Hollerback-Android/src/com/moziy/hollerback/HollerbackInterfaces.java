@@ -8,7 +8,7 @@ public class HollerbackInterfaces {
 		public void onItemClicked(int position, View convertView);
 	}
 
-	public interface OnTriggerNextVideo{
-		public void onPositionTriggered(int position);
+	public interface OnFilterVideoListener{
+		public void onFilterSelected(int position);
 	}
 }

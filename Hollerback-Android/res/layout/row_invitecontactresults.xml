@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:paddingLeft="20dip"	
+	android:paddingRight="20dip"
+>
+
+	<!-- image icon -->
+
+	<ImageView
+		android:id="@+id/lazyIcon"
+		android:layout_alignParentTop="true"
+		android:layout_height="48dip"
+		android:layout_marginRight="10dip"
+		android:layout_width="48dip"
+	/>
+	
+	<!-- profile name -->
+	
+	<TextView
+		android:id="@+id/lazyTitle"
+		android:layout_toRightOf="@+id/lazyIcon"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginRight="36dip"
+	/>
+	
+	<!-- profile location -->
+	
+	<TextView
+		android:id="@+id/lazySubTitle"
+		android:layout_toRightOf="@+id/lazyIcon"
+		android:layout_below="@+id/lazyTitle"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginRight="36dip"
+	/>
+	
+	<ImageView
+	    android:id="@+id/imgOn" 
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:src="@drawable/checkbox_on"
+		android:layout_alignParentRight="true"
+		android:visibility="gone"    
+	    />
+	
+	<ImageView
+	    android:id="@+id/imgOff" 
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+		android:src="@drawable/checkbox_off"
+		android:layout_alignParentRight="true"
+		android:visibility="gone"    
+	    />
+</RelativeLayout>

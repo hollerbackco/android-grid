@@ -50,7 +50,7 @@ public class HollerbackBaseActivity extends SherlockFragmentActivity {
 					AppEnvironment.getInstance().CRITTERCISM_ID);
 		}
 		
-		setTheme(R.style.HollerbackTheme_ActionBarStyle); 
+		setTheme(R.style.HollerbackTheme); 
 
 		setContentView(R.layout.hollerback_main);
 //        getSupportActionBar().show();

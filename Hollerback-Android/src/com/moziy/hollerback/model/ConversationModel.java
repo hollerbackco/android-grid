@@ -24,6 +24,13 @@ public class ConversationModel extends BaseModel {
 	@Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_VIDEO)
 	private String recentVideoUrl;
 
+	@Column(name = ActiveRecordFields.C_CONV_CREATE_TIME)
+	private String create_time;
+
+	@Column(name = ActiveRecordFields.C_CONV_URL)
+	private String url;
+
+	
 	private ArrayList<VideoModel> mVideos;
 
 	// public ArrayList<VideoModel> getVideos() {
@@ -56,6 +63,26 @@ public class ConversationModel extends BaseModel {
 
 	public void setConversation_unread_count(int conversation_unread_count) {
 		this.conversation_unread_count = conversation_unread_count;
+	}
+	
+	public void setCreateTime(String value)
+	{
+		create_time = value;
+	}
+	
+	public String getCreateTime()
+	{
+		return this.create_time;
+	}
+	
+	public void setUrl(String value)
+	{
+		this.url = value;
+	}
+	
+	public String getUrl()
+	{
+		return this.url;
 	}
 
 }

@@ -8,10 +8,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.actionbarsherlock.view.Menu;
@@ -23,6 +27,8 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.activity.SettingPreferenceActivity;
 import com.moziy.hollerback.adapter.ConversationListAdapter;
 import com.moziy.hollerback.background.ContactFetchAsyncTask;
 import com.moziy.hollerback.communication.IABIntent;
@@ -33,17 +39,23 @@ import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.QU;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
-public class ConversationListFragment extends BaseFragment {
+public class ConversationListFragment extends BaseFragment {	
+	private ViewGroup mHeader;
+	private EditText mTxtSearch;
+	private HollerbackMainActivity mActivity;
 
 	@Override
 	public void onDestroyView() {
 		// TODO Auto-generated method stub
 		super.onDestroyView();
+		mTxtSearch.removeTextChangedListener(filterTextWatcher);
 		IABroadcastManager.unregisterLocalReceiver(receiver);
 
 	}
 
 	PullToRefreshListView mConversationList;
+	ListView lsvBaseListView;
+
 	ConversationListAdapter mConversationListAdapter;
 
 	AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(
@@ -83,12 +95,16 @@ public class ConversationListFragment extends BaseFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		mActivity = (HollerbackMainActivity)this.getActivity();
 		// TODO Auto-generated method stub
 		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-		this.getSherlockActivity().getSupportActionBar().setTitle(this.getResources().getString(R.string.app_name));
-
+		this.getSherlockActivity().getSupportActionBar().setTitle(this.getResources().getString(R.string.app_name));		
+		
 		View fragmentView = inflater.inflate(R.layout.message_list_fragment,
 				null);
+		
+		mHeader = (ViewGroup)inflater.inflate(R.layout.message_list_item_header, null);
+		
 		initializeView(fragmentView);
 		// HBRequestManager.getConversations();
 
@@ -130,11 +146,15 @@ public class ConversationListFragment extends BaseFragment {
 	protected void initializeView(View view) {
 		mConversationList = (PullToRefreshListView) view
 				.findViewById(R.id.message_listview);
-
+	
+		mTxtSearch = (EditText)mHeader.findViewById(R.id.txtSearch);
+		mTxtSearch.addTextChangedListener(filterTextWatcher);
+		
+		lsvBaseListView = mConversationList.getRefreshableView();
+		lsvBaseListView.addHeaderView(mHeader);
+		
 		mConversationList.setEmptyView(view.findViewById(R.id.empty));
-
 		mConversationList.setShowIndicator(false);
-
 		mConversationList.setOnRefreshListener(new OnRefreshListener() {
 
 			@Override
@@ -144,13 +164,8 @@ public class ConversationListFragment extends BaseFragment {
 			}
 		});
 
-		mConversationListAdapter = new ConversationListAdapter(getActivity());
-		// mConversationListAdapter
-		// .setConversations((ArrayList<ConversationModel>) ActiveRecordHelper
-		// .getAllConversations());
-
+		mConversationListAdapter = new ConversationListAdapter(mActivity);
 		mConversationList.setAdapter(mConversationListAdapter);
-
 		mConversationList.setOnItemClickListener(mOnListItemClickListener);
 
 	}
@@ -170,16 +185,10 @@ public class ConversationListFragment extends BaseFragment {
 	}
 
 	private void startSettingsFragment() {
-		FragmentManager fragmentManager = getActivity()
-				.getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		SettingsFragment fragment = new SettingsFragment();
-		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-		fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		fragmentTransaction.addToBackStack(SettingsFragment.class
-				.getSimpleName());
-		fragmentTransaction.commit();
+		Intent intent = new Intent(mActivity, SettingPreferenceActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+		mActivity.startActivity(intent);
 	}
 
 	private void startAddConversationFragment() {
@@ -231,5 +240,21 @@ public class ConversationListFragment extends BaseFragment {
 			}
 
 		}
+	};
+
+	private TextWatcher filterTextWatcher = new TextWatcher() {
+
+	    public void afterTextChanged(Editable s) {
+	    }
+
+	    public void beforeTextChanged(CharSequence s, int start, int count,
+	            int after) {
+	    }
+
+	    public void onTextChanged(CharSequence s, int start, int before,
+	            int count) {
+	    	mConversationListAdapter.getFilter().filter(s);
+	    }
+
 	};
 }

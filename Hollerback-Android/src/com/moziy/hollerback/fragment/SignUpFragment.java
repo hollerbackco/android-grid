@@ -24,11 +24,9 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackBaseActivity;
-import com.moziy.hollerback.activity.SplashScreenActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.helper.CustomActionBarHelper;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.util.FontUtil;
 import com.moziy.hollerback.util.ISOUtil;
@@ -38,8 +36,7 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
 
-	private EditText mNameField, mEmailField, mPasswordField,
-			mPhoneNumberField;
+	private EditText mNameField, mPhoneNumberField;
 
 	private Button mSubmitButton;
 
@@ -78,8 +75,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 	@Override
 	protected void initializeView(View view) {
 		mNameField = (EditText) view.findViewById(R.id.textfield_name);
-		mEmailField = (EditText) view.findViewById(R.id.textfield_email);
-		mPasswordField = (EditText) view.findViewById(R.id.textfield_password);
 		mPhoneNumberField = (EditText) view
 				.findViewById(R.id.textfield_phonenumber);
 
@@ -94,9 +89,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 		mPhoneNumberCode = (TextView) view
 				.findViewById(R.id.tv_phone_number_code);
 
-		TextView title = (TextView) view.findViewById(R.id.tv_action_name);
-		title.setTypeface(FontUtil.MuseoSans_500);
-		title.setText("Sign Up");
 
 		TextView headerAccount = (TextView) view
 				.findViewById(R.id.tv_header_account);
@@ -106,8 +98,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 				.findViewById(R.id.tv_signup_agreement);
 
 		mNameField.setTypeface(FontUtil.MuseoSans_500);
-		mEmailField.setTypeface(FontUtil.MuseoSans_500);
-		mPasswordField.setTypeface(FontUtil.MuseoSans_500);
 		mPhoneNumberField.setTypeface(FontUtil.MuseoSans_500);
 		mCountryText.setTypeface(FontUtil.MuseoSans_500);
 		mPhoneNumberCode.setTypeface(FontUtil.MuseoSans_500);
@@ -121,6 +111,12 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		
+    	this.getSherlockActivity().getSupportActionBar().show();
+		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    	this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
+    	this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+    	
 		// TODO Auto-generated method stub
 		View fragmentView = inflater.inflate(R.layout.signup_fragment, null);
 		initializeView(fragmentView);
@@ -181,7 +177,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 			if (HollerbackApplication.getInstance().regId != null) {
 
 				HBRequestManager.postRegistration(mRegistrationName,
-						mRegistrationEmail, mRegistrationPassword,
 						mRegistrationPhone,
 						HollerbackApplication.getInstance().regId);
 			} else {
@@ -242,28 +237,20 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 	}
 
 	public boolean verifyFields() {
-		String validEmail = TextValidator.isValidEmailAddress(mEmailField
-				.getText().toString());
 		String validPhone = TextValidator.isValidPhone(getPhoneNumber());
-		String validPassword = TextValidator.isValidPassword(mPasswordField
-				.getText().toString());
+		
 		String validName = TextValidator.isValidName(mNameField.getText()
 				.toString());
 
-		boolean valid = (validEmail == null && validPhone == null
-				&& validPassword == null && validName == null);
+		boolean valid = (validPhone == null && validName == null);
 
 		if (!valid) {
 			String message = (validName != null ? validName + "\n" : "")
-					+ (validEmail != null ? validEmail + "\n" : "")
-					+ (validPassword != null ? validPassword : "")
 					+ (validPhone != null ? "\n" + validPhone : "");
 
 			Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 		} else {
 			mRegistrationName = mNameField.getText().toString();
-			mRegistrationEmail = mEmailField.getText().toString();
-			mRegistrationPassword = mPasswordField.getText().toString();
 			mRegistrationPhone = "+"
 					+ util.getCountryCodeForRegion(mSelectedCountry.code)
 					+ mPhoneNumberField.getText().toString();
@@ -276,6 +263,10 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
 	}
 
+	/**
+	 * Receiver architecture was in before I got in, change this structure
+	 * to callback structure when you get a chance.
+	 */
 	BroadcastReceiver receiver = new BroadcastReceiver() {
 
 		@Override
@@ -284,10 +275,14 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 				if (intent.hasExtra(IABIntent.PARAM_AUTHENTICATED)) {
 					// Toast.makeText(getActivity(), "Registration Successful",
 					// Toast.LENGTH_LONG).show();
+					/*
 					Intent i = new Intent(getActivity(),
 							HollerbackBaseActivity.class);
 					getActivity().startActivity(i);
 					getActivity().finish();
+					*/
+					
+					Toast.makeText(SignUpFragment.this.getActivity(), "success", Toast.LENGTH_LONG).show();
 				}
 			}
 		}

@@ -30,7 +30,7 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
-		setTheme(R.style.Sherlock___Theme_DarkActionBar); 
+		setTheme(R.style.Theme_Example); 
 
 		super.onCreate(savedInstanceState);
 	
@@ -86,7 +86,6 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 		// TODO Auto-generated method stub
 		FlurryAgent.onEndSession(this);
 		super.onStop();
-		finish();
 	}
 
 	@Override

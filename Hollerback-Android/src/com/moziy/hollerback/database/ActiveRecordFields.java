@@ -8,7 +8,9 @@ public class ActiveRecordFields {
 	public static final String C_CONV_UNREAD = "ConvUnread";
 	public static final String C_CONV_MOST_RECENT_VIDEO = "ConvRecentVideo";
 	public static final String C_CONV_MOST_RECENT_THUMB = "ConvRecentUrl";
-
+	public static final String C_CONV_CREATE_TIME = "ConvCreatTime";
+	public static final String C_CONV_URL = "ConvUrl";
+	
 	// Videos
 	public static final String C_VID_ID = "VidId";
 	public static final String C_VID_CONV_ID = "VidConvId";

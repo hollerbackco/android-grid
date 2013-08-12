@@ -4,22 +4,35 @@
     <string name="app_name">Hollerback</string>
     <string name="all">All</string>
     
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">My Account</string>
+	<string name="action_find_friends">Find Friends</string>
     <string name="action_add">Add</string>
     <string name="action_switch">Switch Camera</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_filter">Filter</string>
     <string name="action_play">Play</string>
     <string name="action_send">Send</string>
+    <string name="action_search">Search</string>
+	<string name="action_person">Person</string>
+	<string name="action_record">Record</string>
+	<string name="action_next">Next</string>	
     
     <!-- Button Strings -->
     <string name="signin">Log In</string>
     <string name="signup">Sign Up</string>
+    <string name="create_account">Create Account</string>
 	<string name="tap_start">Tap screen to start recording</string>
     <string name="tap_stop">Tap screen to stop</string>
     <string name="timer_default">20s</string>
+    
+	<!-- Recording stuff -->
+    <string name="record_filter">Pick a Filter</string>
+    <string name="record_message">Record a Message</string>
+    <string name="record_recording">Recording</string>
+    <string name="record_review">Review</string>
+    
     <!-- Sign In/Sign Up -->
-    <string name="name">Name</string>
+    <string name="name">UserName</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="number">555&#8211;555&#8211;5555</string>
@@ -34,4 +47,25 @@
     <string name="signup_agreement">By clicking Submit you are indicating that you have read and agree to the Privacy Policy and Terms of Service</string>
     <string name="empty_conversation_list">Start using Hollerback by sending a video message to your friends!</string>
 
+	<string name="preference_category_friends">Friends</string>
+	<string name="preference_category_account">Account</string>
+	<string name="preference_category_library">Save to Library</string>
+	<string name="preference_category_terms">Terms</string>
+	<string name="preference_category_team">Hollerback Team</string>	
+	<string name="preference_friends">Find Friends</string>
+	<string name="preference_logout">Log Out</string>
+	<string name="preference_username">Username</string>
+	<string name="preference_phone">Phone Number</string>
+	<string name="preference_save">Save to SD Card</string>
+	<string name="preference_terms">Terms of Services</string>
+	<string name="preference_privacy">Privacy Policy</string>
+	<string name="preference_feedback">Send us feedback</string>
+	<string name="preference_twitter">Hollerback on Twitter</string>
+	<string name="preference_facebook">Hollerback on Facebook</string>
+	
+    <string name="signup">Sign Up</string>
+	<string name="tap_start">Tap screen to start recording</string>
+    <string name="tap_stop">Tap screen to stop</string>
+    <string name="timer_default">20s</string>
+    
 </resources>

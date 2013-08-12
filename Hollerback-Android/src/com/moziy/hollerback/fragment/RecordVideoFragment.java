@@ -1,15 +1,18 @@
 package com.moziy.hollerback.fragment;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -20,6 +23,9 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerback.util.GPUImageFilterTools;
+import com.moziy.hollerback.util.GPUImageFilterTools.FilterAdjuster;
+import com.moziy.hollerback.util.GPUImageFilterTools.FilterList;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
@@ -37,15 +43,20 @@ import android.media.ThumbnailUtils;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.OutputFormat;
 import android.net.Uri;
+import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore.Video.Thumbnails;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -60,14 +71,18 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 public class RecordVideoFragment extends BaseFragment{
-	private ViewGroup mRootView;
-	private Activity mActivity;
+	protected ViewGroup mRootView;
+	protected static SherlockFragmentActivity mActivity;
 
-	private SurfaceView preview = null;
+    private static GPUImage mGPUImage;
+    private static GPUImageFilter mFilter;
+    private static FilterList mFilterList;
+    
+	private GLSurfaceView preview = null;
 	private static SurfaceHolder previewHolder = null;
 	private static Camera camera = null;
 	private boolean inPreview = false;
-
+	private boolean mToConversation = false;
 	TextView mTimer;
 	Handler handler;
 
@@ -97,11 +112,12 @@ public class RecordVideoFragment extends BaseFragment{
 	private View mPreviewParentView;
 	private VideoView mPreviewVideoView;
 	private ImageButton mRecordButton, mPreviewPlayBtn, mSwitchButton, mFilterButton;
-	private Button mSendButton;
+	protected Button mSendButton;
 	private ImageView mImagePreview;
 	private String mConversationId;
 	private TextView mTxtPlaying;
 
+	ViewPager mFilterPagers;
 	
 	int mBestCameraWidth, mBestCameraHeight;
 	
@@ -139,14 +155,24 @@ public class RecordVideoFragment extends BaseFragment{
 		return fragment;
 	}
 	
+	public static RecordVideoFragment newInstance(String conversationId, boolean toConversation){
+		RecordVideoFragment fragment = new RecordVideoFragment();
+		Bundle bundle = new Bundle();
+		bundle.putString(IABIntent.PARAM_ID, conversationId);
+		bundle.putBoolean("mToConversation", toConversation);
+		fragment.setArguments(bundle);
+		return fragment;
+	}
+	
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mRootView = (ViewGroup) inflater.inflate(R.layout.custom_camera, null);
-        mActivity = this.getActivity();
+        mActivity = (SherlockFragmentActivity)this.getActivity();
         
         mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+        mToConversation = this.getArguments().getBoolean("mToConversation", false);
+        
 		handler = new Handler();
 
 		mTopView = mRootView.findViewById(R.id.top_bar);
@@ -161,7 +187,7 @@ public class RecordVideoFragment extends BaseFragment{
 		
 		mTxtPlaying = (TextView)mRootView.findViewById(R.id.txtPlaying);
 		
-		preview = (SurfaceView) mRootView.findViewById(R.id.surface);
+		preview = (GLSurfaceView) mRootView.findViewById(R.id.surface);
 		preview.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -202,6 +228,12 @@ public class RecordVideoFragment extends BaseFragment{
 			LogUtil.i("HollerbackCamera CONVO: " + mConversationId);
 		}
 
+        mGPUImage = new GPUImage(mActivity);
+		mGPUImage.setGLSurfaceView(preview);
+		mFilterList = GPUImageFilterTools.getFilters();
+		mFilterPagers = (ViewPager)mRootView.findViewById(R.id.filters);
+		mFilterPagers.setAdapter(new FilterAdapter(mActivity.getSupportFragmentManager()));
+		
 		mRecordButton = (ImageButton) mRootView.findViewById(R.id.record_button);
 		mRecordButton.setOnClickListener(new OnClickListener() {
 
@@ -260,8 +292,20 @@ public class RecordVideoFragment extends BaseFragment{
 					
 					
 					mActivity.startService(serviceIntent);
+					mActivity.getSupportFragmentManager().popBackStack();
 					
-					RecordVideoFragment.this.getFragmentManager().popBackStack();
+					if(mToConversation)
+					{
+
+						ConversationFragment fragment = ConversationFragment.newInstance(mConversationId);
+						mActivity.getSupportFragmentManager()
+						.beginTransaction()
+						.replace(R.id.fragment_holder, fragment)
+						.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				        .addToBackStack(null)
+				        .remove(RecordVideoFragment.this)
+				        .commitAllowingStateLoss();
+					}
 				}
 			}
 		});
@@ -330,9 +374,12 @@ public class RecordVideoFragment extends BaseFragment{
 		//IABroadcastManager.unregisterLocalReceiver(receiver);
 	}
 
-	private void startRecording() {
+	protected void startRecording() {
 		mSwitchButton.setEnabled(false);
 		mSendButton.setVisibility(View.GONE);
+		
+		mSwitchButton.setVisibility(View.GONE);
+		mFilterButton.setVisibility(View.GONE);
 		mTimer.setTextColor(mActivity.getResources().getColor(R.color.timer_green));
 		mRecordButton.setBackgroundResource(R.drawable.green_recording_spinner);
 		Animation rotation = AnimationUtils.loadAnimation(mActivity, R.anim.rotation_reverse_clockwise);
@@ -359,7 +406,7 @@ public class RecordVideoFragment extends BaseFragment{
 		}
 	}
 
-	private void stopRecording() {
+	protected void stopRecording() {
 		// stop recording and release camera
 		try
 		{
@@ -515,6 +562,14 @@ public class RecordVideoFragment extends BaseFragment{
 		}
 		return true;
 	}
+	
+    private static void switchFilterTo(final GPUImageFilter filter) {
+        if (mFilter == null
+                || (filter != null && !mFilter.getClass().equals(filter.getClass()))) {
+            mFilter = filter;
+            mGPUImage.setFilter(mFilter);
+        }
+    }
 
 	@Override
 	public void onDestroy() {
@@ -633,5 +688,62 @@ public class RecordVideoFragment extends BaseFragment{
 		}
 	};
 
+    public class FilterAdapter extends FragmentPagerAdapter {
+        public FilterAdapter(FragmentManager fm) {
+            super(fm);
+        }
 
+        @Override
+        public int getCount() {
+            return mFilterList.names.size();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return FilterFragment.newInstance(position);
+        }
+    }
+    
+
+    public static class FilterFragment extends Fragment {
+        int mNum;
+
+        /**
+         * Create a new instance of CountingFragment, providing "num"
+         * as an argument.
+         */
+        static FilterFragment newInstance(int num) {
+        	FilterFragment f = new FilterFragment();
+
+            // Supply num input as an argument.
+            Bundle args = new Bundle();
+            args.putInt("num", num);
+            f.setArguments(args);
+
+            return f;
+        }
+
+        /**
+         * When creating, retrieve this instance's number from its arguments.
+         */
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            mNum = getArguments() != null ? getArguments().getInt("num") : 1;
+        }
+
+        /**
+         * The Fragment's UI is just a simple text view showing its
+         * instance number.
+         */
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            View v = inflater.inflate(R.layout.text_filter, container, false);
+            View tv = v.findViewById(R.id.txtFilter);
+            ((TextView)tv).setText(mFilterList.names.get(mNum));
+            switchFilterTo(GPUImageFilterTools.createFilterForType(mActivity, mFilterList.filters.get(mNum)));
+            return v;
+        }
+    }
 }

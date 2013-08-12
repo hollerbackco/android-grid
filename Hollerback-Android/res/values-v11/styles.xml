@@ -7,13 +7,5 @@
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!-- API 11 theme customizations can go here. -->
     </style>
-    
-	<style name="HollerbackTheme" parent="Theme.Sherlock.Light">
-		<item name="android:actionBarStyle">@style/HollerbackTheme.ActionBarStyle</item>
-	</style>
-	
-	<style name="HollerbackTheme.ActionBarStyle" parent="Widget.Sherlock.Light.ActionBar">
-        <item name="android:titleTextStyle">@style/HollerbackTheme.ActionBar.TitleTextStyle</item>
-    </style>
 
 </resources>

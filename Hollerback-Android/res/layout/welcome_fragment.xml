@@ -2,45 +2,44 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_welcome"
     android:orientation="vertical" >
 
-    <RelativeLayout
-        android:id="@+id/welcome_buttons_parent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/welcome_bar_bg" >
-
-        <Button
-            android:id="@+id/btn_signup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="20dp"
-            android:background="@drawable/signup_btn" />
-
-        <Button
-            android:id="@+id/btn_signin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp"
-            android:background="@drawable/signin_btn" />
-    </RelativeLayout>
-
     <ImageView
+        android:id="@+id/imgWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
-        android:src="@drawable/hollerback_welcome_logo" />
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/slide_pager"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_above="@+id/welcome_buttons_parent" />
-
+        android:src="@drawable/hollerback_welcome_logo"
+        android:contentDescription="@string/app_name" />
+    
+    <ImageButton
+        android:id="@+id/btnRecord"
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+		android:layout_centerHorizontal="true"
+        android:src="@drawable/icon_video_row"
+        android:background="@android:drawable/list_selector_background"
+        android:layout_below="@+id/imgWelcome"
+        android:contentDescription="@string/action_record"
+        />
+	<TextView
+		android:id="@+id/btn_signin"
+		android:background="@android:drawable/list_selector_background"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_marginLeft="@dimen/activity_horizontal_margin"
+		android:layout_marginTop="@dimen/activity_vertical_margin"
+		android:text="@string/signin"
+		android:textColor="@android:color/white"
+		android:textSize="@dimen/normal_size"
+		android:shadowColor="@android:color/black"
+		android:shadowDx="2"
+		android:shadowDy="2"
+		android:shadowRadius="2"
+		android:textStyle="bold"
+	 />
 </RelativeLayout>

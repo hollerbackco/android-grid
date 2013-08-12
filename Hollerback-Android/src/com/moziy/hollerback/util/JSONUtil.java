@@ -160,6 +160,8 @@ public class JSONUtil {
 					model.setConversation_name(conversation.getString("name"));
 					model.setConversation_unread_count(conversation
 							.getInt("unread_count"));
+					model.setUrl(conversation.getString("most_recent_thumb_url"));
+					model.setCreateTime(conversation.getString("updated_at"));
 					model.save();
 					conversations.add(model);
 

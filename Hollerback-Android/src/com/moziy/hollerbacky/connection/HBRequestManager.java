@@ -103,13 +103,10 @@ public class HBRequestManager {
 
 	}
 
-	public static void postRegistration(String name, String email,
-			String password, String phone, String token) {
+	public static void postRegistration(String name, String phone, String token) {
 		RequestParams params = new RequestParams();
 
 		params.put(HollerbackAPI.PARAM_NAME, name);
-		params.put(HollerbackAPI.PARAM_EMAIL, email);
-		params.put(HollerbackAPI.PARAM_PASSWORD, password);
 		params.put(HollerbackAPI.PARAM_PHONE, phone);
 
 		params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);

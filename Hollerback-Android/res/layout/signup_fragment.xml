@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <include layout="@layout/action_bar_plain_layout" />
+	android:background="@color/background_welcome"
+    >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:orientation="vertical" 
+    >
 
     <TextView
         android:id="@+id/tv_header_account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/action_bar_parent"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
@@ -37,31 +41,9 @@
             android:hint="@string/name"
             android:inputType="textPersonName"
             android:padding="10dp"
-            android:textSize="17sp" />
+            android:textSize="17sp" 
+            />
 
-        <EditText
-            android:id="@+id/textfield_email"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/tv_phone_number_code_height"
-            android:layout_below="@+id/textfield_name"
-            android:layout_marginTop="1dp"
-            android:background="#fff"
-            android:hint="@string/email"
-            android:inputType="textEmailAddress"
-            android:padding="10dp"
-            android:textSize="17sp" />
-
-        <EditText
-            android:id="@+id/textfield_password"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/tv_phone_number_code_height"
-            android:layout_below="@+id/textfield_email"
-            android:layout_marginTop="1dp"
-            android:background="#fff"
-            android:hint="@string/password"
-            android:inputType="textPassword"
-            android:padding="10dp"
-            android:textSize="17sp" />
     </RelativeLayout>
 
     <TextView
@@ -144,12 +126,6 @@
         android:layout_margin="10dp"
         android:text="Submit" />
 
-    <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="3dp"
-        android:layout_below="@+id/action_bar_parent"
-        android:background="@drawable/shadow" />
-
     <TextView
         android:id="@+id/tv_signup_agreement"
         android:layout_width="match_parent"
@@ -158,6 +134,8 @@
         android:layout_margin="20dp"
         android:gravity="center"
         android:text="@string/signup_agreement"
+        android:layout_below="@+id/register_submit"
         android:textColor="#fff" />
 
 </RelativeLayout>
+</ScrollView>

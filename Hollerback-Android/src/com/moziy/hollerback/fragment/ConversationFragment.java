@@ -56,7 +56,6 @@ public class ConversationFragment extends BaseFragment {
 	// Image Loading
 	private ImageFetcher mImageFetcher;
 	private int mImageThumbSize;
-	private int mImageThumbSpacing;
 
 	private static final String IMAGE_CACHE_DIR = "thumbs";
 

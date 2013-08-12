@@ -1,17 +1,33 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="always"
-        android:icon="@drawable/settings_btn"
-        android:title="@string/action_settings"/>
-
 	<item
         android:id="@+id/action_add"
         android:orderInCategory="100"
         android:showAsAction="always"
         android:icon="@drawable/add_convo_btn"
         android:title="@string/action_add"/>
+	
+    <item 
+        android:id="@+id/action_person"
+        android:icon="@drawable/icon_person"
+        android:title="@string/action_person"
+		android:orderInCategory="100"
+        android:showAsAction="always"
+        >
+		<menu>
+			<item
+		        android:id="@+id/action_settings"
+		        android:orderInCategory="100"
+		        android:showAsAction="always"
+		        android:icon="@drawable/icon_settings"
+		        android:title="@string/action_settings"/>
+			<item
+		        android:id="@+id/action_find_friends"
+		        android:orderInCategory="100"
+		        android:showAsAction="always"
+		        android:icon="@drawable/icon_group"
+		        android:title="@string/action_find_friends"/> 
+            
+        </menu>
+	</item>
     
 </menu>

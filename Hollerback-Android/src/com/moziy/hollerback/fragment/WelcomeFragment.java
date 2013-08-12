@@ -1,26 +1,31 @@
 package com.moziy.hollerback.fragment;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.helper.CustomActionBarHelper;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-public class WelcomeFragment extends BaseFragment implements OnClickListener {
+public class WelcomeFragment extends BaseFragment {
+	private SherlockFragmentActivity mActivity;
 
-	private Button mSignInBtn, mRegisterBtn;
-
+	private TextView mSignInBtn;
+	private ImageButton mBtnRecord;
+	
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		mActivity = (SherlockFragmentActivity)this.getActivity();
+		mActivity.getSupportActionBar().hide();
 		View fragmentView = inflater.inflate(R.layout.welcome_fragment, null);
-
+		
 		initializeView(fragmentView);
 		return fragmentView;
 	}
@@ -28,26 +33,31 @@ public class WelcomeFragment extends BaseFragment implements OnClickListener {
 	@Override
 	protected void initializeView(View view) {
 		// TODO Auto-generated method stub
-		mSignInBtn = (Button) view.findViewById(R.id.btn_signin);
-		mRegisterBtn = (Button) view.findViewById(R.id.btn_signup);
-
-		mSignInBtn.setOnClickListener(this);
-		mRegisterBtn.setOnClickListener(this);
-
+		mSignInBtn = (TextView) view.findViewById(R.id.btn_signin);
+		mSignInBtn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startSignInFragment();
+			}
+		});
+		
+		mBtnRecord = (ImageButton) view.findViewById(R.id.btnRecord);
+		mBtnRecord.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//WelcomeRecordVideoFragment fragment = WelcomeRecordVideoFragment.newInstance();
+				GPURecordVideoFragment fragment = GPURecordVideoFragment.newInstance();
+				mActivity.getSupportFragmentManager()
+				.beginTransaction().replace(R.id.fragment_holder, fragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+		        .addToBackStack(null)
+		        .commitAllowingStateLoss();
+			}
+		});
 	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-	}
-
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-	}
-
+	
 	public static WelcomeFragment newInstance(int num) {
 
 		WelcomeFragment f = new WelcomeFragment();
@@ -59,19 +69,6 @@ public class WelcomeFragment extends BaseFragment implements OnClickListener {
 		return f;
 	}
 
-	@Override
-	public void onClick(View view) {
-		switch (view.getId()) {
-		case R.id.btn_signin:
-			startSignInFragment();
-			break;
-		case R.id.btn_signup:
-			startSignUpFragment();
-			break;
-		}
-
-	}
-
 	public void startSignInFragment() {
 		FragmentManager fragmentManager = getActivity()
 				.getSupportFragmentManager();
@@ -79,28 +76,9 @@ public class WelcomeFragment extends BaseFragment implements OnClickListener {
 				.beginTransaction();
 		SignInFragment fragment = new SignInFragment();
 		fragmentTransaction.replace(R.id.fragment_holder, fragment);
+		fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		fragmentTransaction
 				.addToBackStack(SignInFragment.class.getSimpleName());
 		fragmentTransaction.commit();
 	}
-
-	public void startSignUpFragment() {
-		FragmentManager fragmentManager = getActivity()
-				.getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		SignUpFragment fragment = new SignUpFragment();
-		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-		fragmentTransaction
-				.addToBackStack(SignUpFragment.class.getSimpleName());
-		fragmentTransaction.commit();
-	}
-
-	/*
-	@Override
-	protected void onActionBarIntialized(CustomActionBarHelper viewHelper) {
-		// TODO Auto-generated method stub
-
-	}
-	*/
 }

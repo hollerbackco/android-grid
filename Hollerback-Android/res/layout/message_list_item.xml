@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="100dp"
     android:orientation="vertical"
-    android:padding="10dp" >
+    >	
+	<ImageView 
+	    android:id="@+id/imgBackground"
+		android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@android:color/black"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+	    />
+    
 
     <ImageView
         android:id="@+id/iv_green_dot"
@@ -11,16 +20,53 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:paddingRight="2dp"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
         android:src="@drawable/green_dot"
         android:visibility="invisible" />
 
-    <TextView
-        android:id="@+id/tv_convoname"
-        android:layout_width="wrap_content"
+    <LinearLayout 
+		android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/iv_green_dot"
-        android:textSize="18sp" />
+		android:layout_centerVertical="true"
+        android:orientation="vertical"
+		android:layout_toRightOf="@+id/iv_green_dot"
+        >
+	    <TextView
+	        android:id="@+id/tv_convoname"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="18sp" 
+	        android:textStyle="bold"
+	        android:textColor="@android:color/white"
+	        android:shadowColor="@android:color/black"
+	        android:shadowDx="2"
+	        android:shadowDy="2"
+	        android:shadowRadius="2"
+	        />   
+	         
+		<TextView
+	        android:id="@+id/tv_time"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textColor="@android:color/white"
+	        android:textSize="18sp" 
+			android:shadowColor="@android:color/black"
+	        android:shadowDx="1"
+	        android:shadowDy="1"
+	        android:shadowRadius="1"/>
+	</LinearLayout>
+	<ImageView 
+	    android:id="@+id/btnRecord"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/icon_video_row"
+	    android:clickable="true"
+	    android:background="@android:drawable/list_selector_background"
+	    android:layout_alignParentRight="true"
+	    android:layout_centerVertical="true"
+		android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
 
+	    />
 </RelativeLayout>
