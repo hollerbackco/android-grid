@@ -4,7 +4,7 @@
         android:id="@+id/action_cancel"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:icon="@drawable/add_convo_btn"
+        android:icon="@drawable/icon_cross"
         android:title="@string/action_cancel"/>
     
 </menu>

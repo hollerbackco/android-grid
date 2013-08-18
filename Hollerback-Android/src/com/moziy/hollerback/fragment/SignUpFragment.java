@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,23 +20,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.activity.HollerbackBaseActivity;
-import com.moziy.hollerback.communication.IABIntent;
-import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.util.FontUtil;
 import com.moziy.hollerback.util.ISOUtil;
+import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
-
+	private SherlockFragmentActivity mActivity;
 	private EditText mNameField, mPhoneNumberField;
 
 	private Button mSubmitButton;
@@ -51,23 +52,22 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 	private CharSequence[] mCharCountries;
 
 	private String mRegistrationName;
-	private String mRegistrationEmail;
-	private String mRegistrationPassword;
 	private String mRegistrationPhone;
 
-	@Override
-	public void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		IABroadcastManager.unregisterLocalReceiver(receiver);
-	}
+	//passing on
+	private String mFileDataName;
 
-	@Override
-	public void onDestroyView() {
-		// TODO Auto-generated method stub
-		super.onDestroyView();
-	}
+	public static SignUpFragment newInstance(String fileDataName) {
 
+		SignUpFragment f = new SignUpFragment();
+
+		// Supply num input as an argument.
+		Bundle args = new Bundle();
+		args.putString("fileDataName", fileDataName);
+		f.setArguments(args);
+		return f;
+	}
+	
 	private Country mSelectedCountry;
 
 	private PhoneNumberUtil util;
@@ -88,7 +88,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 		mRLCountrySelector.setOnClickListener(this);
 		mPhoneNumberCode = (TextView) view
 				.findViewById(R.id.tv_phone_number_code);
-
 
 		TextView headerAccount = (TextView) view
 				.findViewById(R.id.tv_header_account);
@@ -111,9 +110,8 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		
+		mActivity = this.getSherlockActivity(); 
     	this.getSherlockActivity().getSupportActionBar().show();
-		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     	this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
     	this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
     	
@@ -143,32 +141,10 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 			mCharCountries[i] = mCountries.get(i).name;
 		}
 
+		//if it doesn't have this it will crash
+		mFileDataName = this.getArguments().getString("fileDataName");
+		
 		return fragmentView;
-	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-	}
-
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		IABroadcastManager.registerForLocalBroadcast(receiver,
-				IABIntent.INTENT_REGISTER_REQUEST);
-	}
-
-	public static SignUpFragment newInstance(int num) {
-
-		SignUpFragment f = new SignUpFragment();
-
-		// Supply num input as an argument.
-		Bundle args = new Bundle();
-		args.putInt("num", num);
-		f.setArguments(args);
-		return f;
 	}
 
 	public void processSubmit() {
@@ -178,7 +154,61 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
 				HBRequestManager.postRegistration(mRegistrationName,
 						mRegistrationPhone,
-						HollerbackApplication.getInstance().regId);
+						HollerbackApplication.getInstance().regId,
+						new JsonHttpResponseHandler() {
+							@Override
+							protected Object parseResponse(String arg0)
+									throws JSONException {
+								LogUtil.i(arg0);
+								return super.parseResponse(arg0);
+
+							}
+
+							@Override
+							public void onFailure(Throwable arg0, JSONObject response) {
+								// TODO Auto-generated method stub
+								super.onFailure(arg0, response);
+								LogUtil.i("LOGIN FAILURE");
+								if(response.has("meta"))
+								{
+									//doesnt have user
+									try {
+										JSONObject metadata = response.getJSONObject("meta");
+										if(metadata.has("code") && metadata.getInt("code") == 400)
+										{
+											processLogin();
+										}
+										else
+										{
+											Toast.makeText(mActivity, metadata.getString("msg"), Toast.LENGTH_LONG).show();	
+										}
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									
+								}
+							}
+
+							@Override
+							public void onSuccess(int statusId, JSONObject response) {
+								// TODO Auto-generated method stub
+								super.onSuccess(statusId, response);
+								JSONUtil.processSignUp(response);
+								//has user
+								if(response.has("user"))
+								{
+									SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
+									mActivity.getSupportFragmentManager()
+									.beginTransaction()
+									.replace(R.id.fragment_holder, fragment)
+									.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+							        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
+							        .commitAllowingStateLoss();		
+								}
+							}
+						}
+						);
 			} else {
 				Toast.makeText(getActivity(), "Try again in a few seconds",
 						Toast.LENGTH_LONG).show();
@@ -196,15 +226,55 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 			showDialog();
 			break;
 		}
+	}
+	
+
+	private void processLogin() {
+		if (HollerbackApplication.getInstance().regId == null) {
+			Toast.makeText(getActivity(), "Try again in a few seconds",
+					Toast.LENGTH_LONG).show();
+			return;
+		}
+
+		HBRequestManager.postLogin(mRegistrationPhone,
+				 new JsonHttpResponseHandler() {
+
+					@Override
+					protected Object parseResponse(String arg0)
+							throws JSONException {
+						LogUtil.i(arg0);
+						return super.parseResponse(arg0);
+
+					}
+
+					@Override
+					public void onFailure(Throwable arg0, JSONObject arg1) {
+						// TODO Auto-generated method stub
+						super.onFailure(arg0, arg1);
+						LogUtil.i("LOGIN FAILURE");
+					}
+
+					@Override
+					public void onSuccess(int statusId, JSONObject response) {
+						// TODO Auto-generated method stub
+						super.onSuccess(statusId, response);
+						JSONUtil.processSignIn(response);
+						LogUtil.i("HB", response.toString());
+
+						SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
+						mActivity.getSupportFragmentManager()
+						.beginTransaction()
+						.replace(R.id.fragment_holder, fragment)
+						.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
+				        .commitAllowingStateLoss();		
+					}
+
+				});
 
 	}
-/*
-	@Override
-	protected void onActionBarIntialized(CustomActionBarHelper viewHelper) {
-		// TODO Auto-generated method stub
-
-	}
-*/
+	
+	
 	public void showDialog() {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -254,37 +324,10 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 			mRegistrationPhone = "+"
 					+ util.getCountryCodeForRegion(mSelectedCountry.code)
 					+ mPhoneNumberField.getText().toString();
-			LogUtil.i("Signing up with: " + mRegistrationName + " "
-					+ mRegistrationEmail + " " + mRegistrationPassword + " "
-					+ mRegistrationPhone);
+			LogUtil.i("Signing up with: " + mRegistrationName + " " + mRegistrationPhone);
 		}
 
 		return valid;
 
 	}
-
-	/**
-	 * Receiver architecture was in before I got in, change this structure
-	 * to callback structure when you get a chance.
-	 */
-	BroadcastReceiver receiver = new BroadcastReceiver() {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (IABIntent.isIntent(intent, IABIntent.INTENT_REGISTER_REQUEST)) {
-				if (intent.hasExtra(IABIntent.PARAM_AUTHENTICATED)) {
-					// Toast.makeText(getActivity(), "Registration Successful",
-					// Toast.LENGTH_LONG).show();
-					/*
-					Intent i = new Intent(getActivity(),
-							HollerbackBaseActivity.class);
-					getActivity().startActivity(i);
-					getActivity().finish();
-					*/
-					
-					Toast.makeText(SignUpFragment.this.getActivity(), "success", Toast.LENGTH_LONG).show();
-				}
-			}
-		}
-	};
 }

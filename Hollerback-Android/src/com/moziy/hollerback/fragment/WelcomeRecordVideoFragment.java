@@ -4,6 +4,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.HollerbackAppState;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -54,27 +55,9 @@ public class WelcomeRecordVideoFragment extends RecordVideoFragment{
     	}
     }
     
-	
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-    	super.onOptionsItemSelected(item);
-
-    	switch(item.getItemId())
-    	{
-	    	case android.R.id.home:
-	    		this.getFragmentManager().popBackStack();
-	    		break;	
-	    }
-    	
-    	return super.onOptionsItemSelected(item);
-    }
-	
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-    	this.getSherlockActivity().getSupportActionBar().show();
-		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		this.getSherlockActivity().getSupportActionBar().setTitle(R.string.record_message);
-		this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
     	return super.onCreateView(inflater, container, savedInstanceState);
     }
     
@@ -96,14 +79,29 @@ public class WelcomeRecordVideoFragment extends RecordVideoFragment{
 
 	public void startSignUpFragment() {
 		this.getFragmentManager().popBackStack();
-		FragmentManager fragmentManager = getActivity()
-				.getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		SignUpFragment fragment = new SignUpFragment();
-		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-		fragmentTransaction
-				.addToBackStack(SignUpFragment.class.getSimpleName());
-		fragmentTransaction.commit();
+		if(!HollerbackAppState.isValidSession())
+		{
+			//this part is that when it's not signed in through;
+			FragmentManager fragmentManager = getActivity()
+					.getSupportFragmentManager();
+			FragmentTransaction fragmentTransaction = fragmentManager
+					.beginTransaction();
+			SignUpFragment fragment = SignUpFragment.newInstance(mFileDataName);
+			fragmentTransaction.replace(R.id.fragment_holder, fragment);
+			fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+			fragmentTransaction
+					.addToBackStack(SignUpFragment.class.getSimpleName());
+			fragmentTransaction.commit();
+		}
+		else
+		{
+			ContactsFragment fragment = ContactsFragment.newInstance(true, mFileDataName);
+			mActivity.getSupportFragmentManager()
+			.beginTransaction()
+			.replace(R.id.fragment_holder, fragment)
+			.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+	        .addToBackStack(ContactsFragment.class.getSimpleName())
+	        .commitAllowingStateLoss();
+		}
 	}
 }

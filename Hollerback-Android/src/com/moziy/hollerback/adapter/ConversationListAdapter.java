@@ -9,7 +9,6 @@ import java.util.Locale;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.ConversionUtil;
@@ -17,7 +16,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -127,7 +125,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable{
 				.getConversationName());
 
 		
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+hh:mm", Locale.US);
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
 		try {
 			Date date = df.parse(mFilteredConversations.get(position).getCreateTime());
 			viewHolder.conversationTime.setText(ConversionUtil.timeAgo(date));
@@ -146,9 +144,10 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable{
 				//Peter: no idea why it's int here and string everywhere else, this was written prior
 				RecordVideoFragment fragment = RecordVideoFragment.newInstance(String.valueOf(mFilteredConversations.get(position).getConversation_Id()), true);
 				mActivity.getSupportFragmentManager()
-				.beginTransaction().replace(R.id.fragment_holder, fragment)
+				.beginTransaction()
+				.replace(R.id.fragment_holder, fragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-		        .addToBackStack(null)
+		        .addToBackStack(RecordVideoFragment.class.getSimpleName())
 		        .commitAllowingStateLoss();
 			}
 		});

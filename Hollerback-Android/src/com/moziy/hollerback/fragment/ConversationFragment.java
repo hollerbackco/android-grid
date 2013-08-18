@@ -9,7 +9,6 @@ import java.util.Locale;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +22,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.krish.horizontalscrollview.CustomListBaseAdapter;
 import com.moziy.hollerback.HollerbackInterfaces.OnCustomItemClickListener;
@@ -51,7 +53,7 @@ public class ConversationFragment extends BaseFragment {
 	private CustomListBaseAdapter mVideoGalleryAdapter;
 	private ViewGroup mRootView;
 	private TextView mTxtVideoInfo;
-	private Activity mActivity;
+	private SherlockFragmentActivity mActivity;
 	private LinearLayout mWrapperInformation;
 	// Image Loading
 	private ImageFetcher mImageFetcher;
@@ -80,23 +82,32 @@ public class ConversationFragment extends BaseFragment {
 	
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	super.onOptionsItemSelected(item);
     	switch(item.getItemId())
     	{
-	    	case android.R.id.home:
-	    		this.getFragmentManager().popBackStack();
+	    	case R.id.action_info:
+	    		ConversationMembersFragment fragment = ConversationMembersFragment.newInstance(mConversationId);
+				mActivity.getSupportFragmentManager()
+				.beginTransaction().replace(R.id.fragment_holder, fragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+		        .addToBackStack(null)
+		        .commitAllowingStateLoss();
 	    		break;
 	    }
     	
     	return super.onOptionsItemSelected(item);
     }
     
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+    	menu.clear();
+        inflater.inflate(R.menu.conversation, menu);
+    }
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		this.getSherlockActivity().getSupportActionBar().setHomeButtonEnabled(true);
-		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		mActivity = this.getActivity();
+		mActivity = this.getSherlockActivity();
 		mRootView = (ViewGroup)inflater.inflate(R.layout.conversation_fragment,
 				null);
 		
@@ -181,6 +192,7 @@ public class ConversationFragment extends BaseFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+		this.startLoading();
 
 		// TODO: Do this less often
 		mImageFetcher.setExitTasksEarly(false);
@@ -199,11 +211,19 @@ public class ConversationFragment extends BaseFragment {
 		Bundle bundle = getArguments();
 		mConversationId = bundle.getString("conv_id");
 //		UploadCacheUtil.clearCache(this.getActivity(), mConversationId);
-
+				
+		//this is object oriented programming, retain Application from Activity.
+		//Please change the caching system in the future
 		conversation = QU.getConv(mConversationId);
-		LogUtil.i("Conversation Fragment: ID: " + mConversationId);
-		this.getSherlockActivity().getSupportActionBar().setTitle(conversation.getConversationName());
-
+		if(conversation != null)
+		{
+			LogUtil.i("Conversation Fragment: ID: " + mConversationId);
+			mActivity.getSupportActionBar().setTitle(conversation.getConversationName());
+		}
+		else
+		{
+			mActivity.getSupportFragmentManager().popBackStack();
+		}
 	}
 
 	@Override
@@ -225,7 +245,7 @@ public class ConversationFragment extends BaseFragment {
 			@Override
 			public void onClick(View v) {
 				RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId);
-				ConversationFragment.this.getFragmentManager()
+				mActivity.getSupportFragmentManager()
 				.beginTransaction().replace(R.id.fragment_holder, fragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 		        .addToBackStack(null)
@@ -284,7 +304,7 @@ public class ConversationFragment extends BaseFragment {
 			VideoModel model = mVideoGalleryAdapter.getItem(position);
 			
 			try {
-				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+hh:mm", Locale.US);
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
 				Date date = df.parse(model.getCreateDate());
 				mTxtVideoInfo.setText(model.getUserName() + " " + ConversionUtil.timeAgo(date));
 
@@ -310,6 +330,22 @@ public class ConversationFragment extends BaseFragment {
 		// Supply num input as an argument.
 		Bundle args = new Bundle();
 		args.putString("conv_id", conversation_id);
+		f.setArguments(args);
+		return f;
+	}
+	
+	/**
+	 * Create a new instance of CountingFragment, providing "num" as an
+	 * argument.
+	 */
+	public static ConversationFragment newInstance(String conversation_id, boolean startRecording) {
+
+		ConversationFragment f = new ConversationFragment();
+
+		// Supply num input as an argument.
+		Bundle args = new Bundle();
+		args.putString("conv_id", conversation_id);
+		args.putBoolean("startRecording", startRecording);
 		f.setArguments(args);
 		return f;
 	}
@@ -388,7 +424,7 @@ public class ConversationFragment extends BaseFragment {
 						setGalleryToEnd();
 					}
 				}
-
+				ConversationFragment.this.stopLoading();
 			}
 		}
 	};

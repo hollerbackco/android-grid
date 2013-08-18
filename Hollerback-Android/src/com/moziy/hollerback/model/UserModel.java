@@ -16,6 +16,9 @@ public class UserModel extends BaseModel {
 	@Column(name = ActiveRecordFields.C_USER_NAME)
 	public String name;
 	
+	@Column(name = ActiveRecordFields.C_USER_PHOTO)
+	public String photourl;
+	
 	@Column(name = ActiveRecordFields.C_USER_USERNAME)
 	public String userName;
 	

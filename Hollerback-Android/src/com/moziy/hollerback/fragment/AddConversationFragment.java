@@ -22,10 +22,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.emilsjolander.components.stickylistheaders.StickyListHeadersListView;
-import com.kpbird.chipsedittextlibrary.ChipsAdapter;
 import com.kpbird.chipsedittextlibrary.ChipsItem;
-import com.kpbird.chipsedittextlibrary.ChipsMultiAutoCompleteTextview;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackCameraActivity;
 import com.moziy.hollerback.adapter.ContactsListAdapter;
@@ -34,7 +31,6 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.ContactSpannableHelper;
-import com.moziy.hollerback.helper.CustomActionBarHelper;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.util.CollectionOpUtils;
@@ -98,7 +94,7 @@ public class AddConversationFragment extends BaseFragment {
 		// null));
 		stickyList.addFooterView(inflater.inflate(R.layout.list_footer, null));
 		initializeView(fragmentView);
-		mAdapter.setContacts(TempMemoryStore.users.sortedKeys, null);
+		//mAdapter.setContacts(TempMemoryStore.users.sortedKeys, null);
 		HBRequestManager.getContacts(TempMemoryStore.users.array);
 		stickyList.setOnItemClickListener(mContactClickListener);
 
@@ -165,7 +161,7 @@ public class AddConversationFragment extends BaseFragment {
 	@Override
 	protected void initializeView(View view) {
 		mAdapter = new ContactsListAdapter(getActivity());
-		stickyList.setAdapter(mAdapter);
+		//stickyList.setAdapter(mAdapter);
 		mEditText = (EditText) view.findViewById(R.id.et_add_contacts);
 
 		mEditText.addTextChangedListener(new TextWatcher() {
@@ -232,10 +228,9 @@ public class AddConversationFragment extends BaseFragment {
 
 			SortedArray tempSort = CollectionOpUtils.sortContacts(searchItems);
 
-			mAdapter.setContacts(tempSort.sortedKeys, tempSort.indexes);
+			//mAdapter.setContacts(tempSort.sortedKeys, tempSort.indexes);
 		} else {
-			mAdapter.setContacts(TempMemoryStore.users.sortedKeys,
-					TempMemoryStore.users.indexes);
+			//mAdapter.setContacts(TempMemoryStore.users.sortedKeys,TempMemoryStore.users.indexes);
 		}
 	}
 
@@ -260,8 +255,7 @@ public class AddConversationFragment extends BaseFragment {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (IABIntent.isIntent(intent, IABIntent.INTENT_GET_CONTACTS)) {
-				mAdapter.setContacts(TempMemoryStore.users.sortedKeys,
-						TempMemoryStore.users.indexes);
+				//mAdapter.setContacts(TempMemoryStore.users.sortedKeys, TempMemoryStore.users.indexes);
 				mAdapter.notifyDataSetChanged();
 			}
 
@@ -298,6 +292,5 @@ public class AddConversationFragment extends BaseFragment {
 
 		TempMemoryStore.invitedUsers = mPhoneNumbers;
 		return mPhoneNumbers;
-
 	}
 }

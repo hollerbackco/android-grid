@@ -9,21 +9,19 @@ import android.support.v4.app.FragmentTransaction;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
 import com.flurry.android.FlurryAgent;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.cache.memory.TempMemoryStore;
-import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.fragment.AddConversationFragment;
-import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.fragment.ConversationListFragment;
-import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.FlurryC;
 import com.moziy.hollerback.util.HollerbackAppState;
 
 public class HollerbackMainActivity extends SherlockFragmentActivity {
-
+	//this way the state is always available
+	public HollerbackApplication application;
+	
 	boolean initFrag = false;
 	String convId = null;
 	
@@ -33,15 +31,14 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 		setTheme(R.style.Theme_Example); 
 
 		super.onCreate(savedInstanceState);
-	
-		this.getSupportActionBar().show();
-		
+
+		application = HollerbackApplication.getInstance();
+				
 		if (AppEnvironment.getInstance().LOG_CRASHES) {
 			Crittercism.init(getApplicationContext(),
 					AppEnvironment.getInstance().CRITTERCISM_ID);
 		}
 		
-		setContentView(R.layout.hollerback_main);
 		
 		LogUtil.i("Starting MainActivity");
 
@@ -51,7 +48,10 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 			startActivity(i);
 			this.finish();
 		}
-		
+		this.getSupportActionBar().show();
+
+		setContentView(R.layout.hollerback_main);
+
 		initFragment();
 		LogUtil.i("Completed BaseActivity");
 
@@ -68,16 +68,11 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		if (initFrag) {
-			startConversationFragment(convId);
-			initFrag = false;
-		} else if (getIntent().getStringExtra(IABIntent.PARAM_CONVERSATION_ID) != null) {
-
-			// TODO: to get this correctly implemented, you need to make sure
-			// that the converastion model already exists, if not fetch it
-			startConversationFragment(getIntent().getStringExtra(
-					IABIntent.PARAM_CONVERSATION_ID));
-			getIntent().removeExtra(IABIntent.PARAM_CONVERSATION_ID);
+		if (!HollerbackAppState.isValidSession()) {
+			Intent i = new Intent(this,
+					WelcomeFragmentActivity.class);
+			startActivity(i);
+			this.finish();
 		}
 	}
 	
@@ -87,23 +82,6 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 		FlurryAgent.onEndSession(this);
 		super.onStop();
 	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		LogUtil.i("Receiving onActivityResult: " + requestCode);
-		if (requestCode == IABIntent.REQUEST_NEW_CONVERSATION) {
-			// Make sure the request was successful
-			if (resultCode == RESULT_OK) {
-				// The user picked a contact.
-				// The Intent's data Uri identifies which contact was selected.
-				// initFragment();
-				initFrag = true;
-				convId = data.getStringExtra(IABIntent.PARAM_INTENT_MSG);
-				// Do something with the contact here (bigger example below)
-			}
-		}
-	}
-	
 
 	public void initFragment() {
 		FragmentManager fragmentManager = getSupportFragmentManager();
@@ -116,40 +94,6 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 		}
 		ConversationListFragment fragment = new ConversationListFragment();
 		fragmentTransaction.add(R.id.fragment_holder, fragment);
-		fragmentTransaction.commit();
-	}
-
-	public void startConversationFragment(String conversationId) {
-		FragmentManager fragmentManager = getSupportFragmentManager();
-
-		int count = fragmentManager.getBackStackEntryCount();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		for (int i = 0; i < count; i++) {
-			fragmentManager.popBackStackImmediate();
-		}
-		ConversationListFragment fragment = new ConversationListFragment();
-		fragmentTransaction.add(R.id.fragment_holder, fragment);
-
-		ConversationFragment convfragment = ConversationFragment
-				.newInstance(conversationId);
-		fragmentTransaction.replace(R.id.fragment_holder, convfragment);
-		fragmentTransaction.addToBackStack(AddConversationFragment.class
-				.getSimpleName());
-
-		fragmentTransaction.commit();
-	}
-
-	public void addContactListFragment(android.app.FragmentTransaction ft,
-			SortedArray result) {
-		TempMemoryStore.users = result;
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		AddConversationFragment fragment = new AddConversationFragment();
-		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-		fragmentTransaction.addToBackStack(AddConversationFragment.class
-				.getSimpleName());
 		fragmentTransaction.commit();
 	}
 }

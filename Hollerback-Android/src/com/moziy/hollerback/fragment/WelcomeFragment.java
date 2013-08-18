@@ -47,12 +47,11 @@ public class WelcomeFragment extends BaseFragment {
 			
 			@Override
 			public void onClick(View v) {
-				//WelcomeRecordVideoFragment fragment = WelcomeRecordVideoFragment.newInstance();
-				GPURecordVideoFragment fragment = GPURecordVideoFragment.newInstance();
+				WelcomeRecordVideoFragment fragment = WelcomeRecordVideoFragment.newInstance();
 				mActivity.getSupportFragmentManager()
 				.beginTransaction().replace(R.id.fragment_holder, fragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-		        .addToBackStack(null)
+		        .addToBackStack(WelcomeRecordVideoFragment.class.getSimpleName())
 		        .commitAllowingStateLoss();
 			}
 		});
@@ -74,7 +73,7 @@ public class WelcomeFragment extends BaseFragment {
 				.getSupportFragmentManager();
 		FragmentTransaction fragmentTransaction = fragmentManager
 				.beginTransaction();
-		SignInFragment fragment = new SignInFragment();
+		SignInFragment fragment = SignInFragment.newInstance();
 		fragmentTransaction.replace(R.id.fragment_holder, fragment);
 		fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		fragmentTransaction

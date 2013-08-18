@@ -2,57 +2,85 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+	android:background="@color/background_welcome"
     android:orientation="vertical" >
-
-    <include layout="@layout/action_bar_plain_layout" />
-
-    <RelativeLayout
-        android:id="@+id/rl_bx_1"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tv_header_counter_phone"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/action_bar_parent"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="15dp"
+        android:text="@string/header_country_code_phone"
+        android:textColor="#fff"
+        android:textSize="15sp" />
+    
+    <RelativeLayout
+        android:id="@+id/rl_bx_2"
+		android:layout_below="@+id/tv_header_counter_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:background="#adadad"
         android:padding="1dp" >
 
-        <EditText
-            android:id="@+id/textfield_email"
+        <RelativeLayout
+            android:id="@+id/rl_country_selector"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tv_phone_number_code_height"
             android:background="#fff"
-            android:hint="@string/email"
-            android:inputType="textEmailAddress"
-            android:padding="10dp"
-            android:textSize="17sp" />
+            android:clickable="true" >
 
-        <EditText
-            android:id="@+id/textfield_password"
+            <TextView
+                android:id="@+id/tv_country_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:textSize="17sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_phone_number_container"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tv_phone_number_code_height"
-            android:layout_below="@+id/textfield_email"
-            android:layout_marginTop="1dp"
-            android:background="#fff"
-            android:hint="@string/password"
-            android:inputType="textPassword"
-            android:padding="10dp"
-            android:textSize="17sp" />
+            android:layout_below="@+id/rl_country_selector"
+            android:layout_marginTop="1dp" >
+
+            <TextView
+                android:id="@+id/tv_phone_number_code"
+                android:layout_width="@dimen/tv_phone_number_code_width"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:background="#fff"
+                android:gravity="center"
+                android:textColor="#000"
+                android:textSize="17sp" />
+
+            <EditText
+                android:id="@+id/textfield_phonenumber"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="1dp"
+                android:layout_toRightOf="@+id/tv_phone_number_code"
+                android:background="#fff"
+                android:hint="@string/number"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textSize="17sp" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <Button
         android:id="@+id/submit_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/rl_bx_1"
+        android:layout_below="@+id/rl_bx_2"
         android:layout_centerHorizontal="true"
         android:layout_margin="10dp"
         android:text="@string/signin" />
-
-    <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="3dp"
-        android:layout_below="@+id/action_bar_parent"
-        android:background="@drawable/shadow" />
 
 </RelativeLayout>

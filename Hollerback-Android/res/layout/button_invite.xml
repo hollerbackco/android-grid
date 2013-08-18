@@ -1,0 +1,21 @@
+<LinearLayout
+    android:id="@+id/btnSignUp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" 
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"	    
+    android:orientation="horizontal"
+    android:clickable="true"
+    style="@style/Widget.Sherlock.ActionButton"
+    android:background="@drawable/background_welcome_green"
+>
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/action_invite"
+        android:padding="@dimen/padding_medium"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        />
+</LinearLayout>

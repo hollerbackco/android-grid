@@ -29,13 +29,13 @@
         />
     </PreferenceCategory>
     
-	<PreferenceCategory
-		android:title="@string/preference_category_library">
-		<SwitchPreference
-			android:key="preference_save"
-			android:title="@string/preference_save"
-        />
-    </PreferenceCategory>
+<!-- 	<PreferenceCategory -->
+<!-- 		android:title="@string/preference_category_library"> -->
+<!-- 		<SwitchPreference -->
+<!-- 			android:key="preference_save" -->
+<!-- 			android:title="@string/preference_save" -->
+<!--         /> -->
+<!--     </PreferenceCategory> -->
     
 	<PreferenceCategory
 		android:title="@string/preference_category_terms">

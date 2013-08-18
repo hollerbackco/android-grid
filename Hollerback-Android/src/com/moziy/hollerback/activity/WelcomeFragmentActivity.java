@@ -59,6 +59,7 @@ public class WelcomeFragmentActivity extends SherlockFragmentActivity {
 				.beginTransaction();
 		WelcomeFragment fragment = new WelcomeFragment();
 		fragmentTransaction.add(R.id.fragment_holder, fragment);
+		fragmentTransaction.addToBackStack(WelcomeFragment.class.getSimpleName());
 		fragmentTransaction.commit();
 	}
 

@@ -116,7 +116,7 @@ public class PreferenceManagerUtil {
 
 	public static void clearPreferences() {
 		initPreferences();
-		mPreferences.edit().clear();
+		mPreferences.edit().clear().commit();
 	}
 
 	public static void removeSelectedPreference(String strValue) {

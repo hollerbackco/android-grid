@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <android.opengl.GLSurfaceView
+    <SurfaceView
         android:id="@+id/surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -49,7 +49,7 @@
     <RelativeLayout
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/camera_bottom_bar"
         android:layout_alignParentBottom="true" 
         android:padding="@dimen/activity_vertical_margin">
@@ -131,12 +131,4 @@
             android:visibility="gone" 
             />
     </RelativeLayout>
-	<android.support.v4.view.ViewPager
-		android:id="@+id/filters"
-		android:layout_width="match_parent"
-		android:layout_height="100dp"
-		android:background="@drawable/camera_bottom_bar"
-		android:padding="@dimen/activity_vertical_margin"
-		android:layout_alignParentBottom="true" 
-	/>
 </RelativeLayout>

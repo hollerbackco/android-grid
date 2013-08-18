@@ -3,6 +3,8 @@ package com.moziy.hollerback.activity;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.HollerbackPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -32,7 +34,6 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 	Preference preference_logout;
 	Preference preference_username;
 	Preference preference_phone;
-	SwitchPreference preference_save;
 	Preference preference_terms;
 	Preference preference_privacy;
 	Preference preference_feedback;
@@ -43,6 +44,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
     public void onCreate(Bundle savedInstanceState) {
 		setTheme(R.style.Theme_Example); 
     	super.onCreate(savedInstanceState);
+    	this.setTitle(R.string.action_settings);
+    	this.setResult(RESULT_CANCELED);
     	this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     	
     	addPreferencesFromResource(R.xml.app_preferences);
@@ -52,8 +55,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 			
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				Intent intent = new Intent(SettingPreferenceActivity.this, ContactsActivity.class);
-				SettingPreferenceActivity.this.startActivity(intent);
+				SettingPreferenceActivity.this.setResult(RESULT_OK);
+				SettingPreferenceActivity.this.finish();
 				return false;
 			}
 		});
@@ -63,12 +66,15 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 			
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				
+				PreferenceManagerUtil.clearPreferences();
+				SettingPreferenceActivity.this.finish();
 				return false;
 			}
 		});
 		
+		
 		preference_username = (Preference)getPreferenceScreen().findPreference("preference_username");
+		preference_username.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.USERNAME, ""));
 		preference_username.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			
 			@Override
@@ -79,17 +85,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 		});
 		
 		preference_phone = (Preference)getPreferenceScreen().findPreference("preference_phone");
+		preference_username.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""));
 		preference_phone.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				
-				return false;
-			}
-		});
-		
-		preference_save = (SwitchPreference)getPreferenceScreen().findPreference("preference_save");
-		preference_save.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			
 			@Override
 			public boolean onPreferenceClick(Preference preference) {

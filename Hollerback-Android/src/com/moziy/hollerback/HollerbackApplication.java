@@ -1,7 +1,6 @@
 package com.moziy.hollerback;
 
 import android.content.Context;
-import android.graphics.Bitmap.CompressFormat;
 import android.os.Handler;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -9,19 +8,10 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.DataModelManager;
 import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
-import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
-import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
-import com.nostra13.universalimageloader.core.decode.BaseImageDecoder;
-import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
-import com.novoda.imageloader.core.ImageManager;
-import com.novoda.imageloader.core.LoaderSettings;
-import com.novoda.imageloader.core.LoaderSettings.SettingsBuilder;
-import com.novoda.imageloader.core.cache.LruBitmapCache;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
 	private static HollerbackApplication sInstance = null;

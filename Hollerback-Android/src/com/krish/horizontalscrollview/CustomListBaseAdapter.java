@@ -194,8 +194,9 @@ public class CustomListBaseAdapter extends BaseAdapter {
 		}
 		
 		try {
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+hh:mm", Locale.US);
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
 			Date date = df.parse(model.getCreateDate());
+			LogUtil.e(model.getCreateDate() + " realtime" + date.toGMTString());
 			viewHolder.txtTime.setText(ConversionUtil.timeAgo(date));
 
 		} catch (ParseException e) {

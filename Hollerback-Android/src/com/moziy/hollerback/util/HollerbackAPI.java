@@ -15,6 +15,21 @@ public class HollerbackAPI {
 	/**
 	 * GET video details: /me/conversations/:id
 	 */
+	public static final String API_CONVERSATION_DETAILS = "/me/conversations/%1$s";
+	
+	/**
+	 * POST video details: /me/conversations/:id/leave
+	 */
+	public static final String API_CONVERSATION_LEAVE= "/me/conversations/%1$s/leave";
+
+	/**
+	 * POST clear conversation watched: /me/conversations/:id/watch_all
+	 */
+	public static final String API_CONVERSATION_WATCHALL= "/me/conversations/%1$s/watch_all";
+
+	/**
+	 * GET video details: /me/conversations/:id/videos
+	 */
 	public static final String API_CONVERSATION_DETAILS_VIDEOS_FORMAT = "/me/conversations/%1$s/videos";
 
 	/**
@@ -27,10 +42,18 @@ public class HollerbackAPI {
 	 */
 	public static final String API_VIDEO_POST_FORMAT = "/me/conversations/%1$s/videos";
 
+	
+	/**
+	 * POST "/me/videos/:id/read"
+	 */
+	public static final String API_INVITE = "/me/invites";
+	
 	/**
 	 * POST
 	 */
 	public static final String API_REGISTER = "/register";
+	
+	public static final String API_VERIFY = "/verify";
 
 	public static final String API_CONTACTS = "/contacts/check";
 
@@ -56,5 +79,7 @@ public class HollerbackAPI {
 	
 	public static final String PARAM_DEVICE_TOKEN = "device_token";
 			
-
+	public static final String PARAM_USERNAME = "username";
+	
+	public static final String PARAM_CODE = "code";
 }

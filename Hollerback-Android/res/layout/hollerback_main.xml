@@ -7,15 +7,14 @@
 
     <FrameLayout
         android:id="@+id/fragment_holder"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
 	>
     </FrameLayout>
-
-<!--     <ImageView -->
-<!--         android:layout_width="fill_parent" -->
-<!--         android:layout_height="3dp" -->
-<!--         android:layout_below="@+id/action_bar_parent" -->
-<!--         android:background="@drawable/shadow" /> -->
-
+	<LinearLayout 
+	    android:id="@+id/llWaitView"
+		android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+	/>
 </RelativeLayout>

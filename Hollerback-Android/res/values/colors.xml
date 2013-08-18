@@ -10,4 +10,6 @@
 	<color name="camera_color">#323f4A</color>
 	
 	<color name="background_welcome">#29B9EB</color>
+	<color name="background_header">#DFE2DF</color>
+	<color name="gray_font">#626262</color>
 </resources>

@@ -25,6 +25,7 @@ public class IABIntent {
 	public static final String PARAM_SUCCESS = "200";
 	public static final String PARAM_FAILURE = "500";
 	public static final String PARAM_AUTHENTICATED = "AUTH";
+	public static final String PARAM_AUTHENTICATE_REQUIRED = "REQUIRED";
 	public static final String PARAM_URI = "URI";
 	public static final String PARAM_ID = "ID";
 	public static final String PARAM_DATA_TYPE = "DT";

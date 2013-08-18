@@ -27,10 +27,8 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.activity.SettingPreferenceActivity;
 import com.moziy.hollerback.adapter.ConversationListAdapter;
-import com.moziy.hollerback.background.ContactFetchAsyncTask;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
@@ -40,9 +38,9 @@ import com.moziy.hollerback.util.QU;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class ConversationListFragment extends BaseFragment {	
+	private int PREFERENCE_PAGE;
 	private ViewGroup mHeader;
 	private EditText mTxtSearch;
-	private HollerbackMainActivity mActivity;
 
 	@Override
 	public void onDestroyView() {
@@ -64,30 +62,36 @@ public class ConversationListFragment extends BaseFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-       super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
+        super.onCreateOptionsMenu(menu, inflater);
+    	menu.clear();
         inflater.inflate(R.menu.main, menu);
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	super.onOptionsItemSelected(item);
-
     	switch(item.getItemId())
     	{
 	    	case R.id.action_settings:
 	    		this.startSettingsFragment();
 	    		break;
-	    	case R.id.action_add:
-				ContactFetchAsyncTask mTask = new ContactFetchAsyncTask(
-						getActivity(), null);
-				mTask.execute();
+	    	case R.id.action_find_friends:
+	    		ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
+				mActivity.getSupportFragmentManager()
+				.beginTransaction().replace(R.id.fragment_holder, contactfragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				.addToBackStack(ContactsInviteFragment.class.getSimpleName())
+		        .commitAllowingStateLoss();
 	    		break;
-	    	case android.R.id.home:
-	    		this.getFragmentManager().popBackStack();
+	    	case R.id.action_add:
+				ContactsFragment fragment = ContactsFragment.newInstance();
+				mActivity.getSupportFragmentManager()
+				.beginTransaction().replace(R.id.fragment_holder, fragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				.addToBackStack(ContactsFragment.class.getSimpleName())
+		        .commitAllowingStateLoss();
 	    		break;
 	    }
-    	
+
     	return super.onOptionsItemSelected(item);
     }
 	
@@ -95,16 +99,16 @@ public class ConversationListFragment extends BaseFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		mActivity = (HollerbackMainActivity)this.getActivity();
-		// TODO Auto-generated method stub
-		this.getSherlockActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-		this.getSherlockActivity().getSupportActionBar().setTitle(this.getResources().getString(R.string.app_name));		
-		
+		mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+		mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
+		mActivity.getSupportActionBar().setHomeButtonEnabled(false);
+		mActivity.getSupportActionBar().setIcon(R.drawable.logo);
+		mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);	
 		View fragmentView = inflater.inflate(R.layout.message_list_fragment,
 				null);
 		
 		mHeader = (ViewGroup)inflater.inflate(R.layout.message_list_item_header, null);
-		
+		this.startLoading();
 		initializeView(fragmentView);
 		// HBRequestManager.getConversations();
 
@@ -179,6 +183,7 @@ public class ConversationListFragment extends BaseFragment {
 		// TODO: Fetch data from API call
 		ConversationFragment fragment = ConversationFragment.newInstance(conversationId);
 		fragmentTransaction.replace(R.id.fragment_holder, fragment);
+		fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
 		fragmentTransaction.addToBackStack(ConversationFragment.class
 				.getSimpleName());
 		fragmentTransaction.commit();
@@ -188,22 +193,9 @@ public class ConversationListFragment extends BaseFragment {
 		Intent intent = new Intent(mActivity, SettingPreferenceActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-		mActivity.startActivity(intent);
+		startActivityForResult(intent, PREFERENCE_PAGE);
 	}
-
-	private void startAddConversationFragment() {
-		FragmentManager fragmentManager = getActivity()
-				.getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		AddConversationFragment fragment = new AddConversationFragment();
-		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-		fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-		fragmentTransaction.addToBackStack(AddConversationFragment.class
-				.getSimpleName());
-		fragmentTransaction.commit();
-	}
-
+	
 	/**
 	 * Create a new instance of CountingFragment, providing "num" as an
 	 * argument.
@@ -226,7 +218,6 @@ public class ConversationListFragment extends BaseFragment {
 			if (IABIntent.isIntent(intent, IABIntent.INTENT_GET_CONVERSATIONS)) {
 				// mConversationListAdapter
 				// .setConversations(TempMemoryStore.conversations);
-
 				String hash = intent
 						.getStringExtra(IABIntent.PARAM_INTENT_DATA);
 
@@ -237,6 +228,7 @@ public class ConversationListFragment extends BaseFragment {
 				mConversationListAdapter.notifyDataSetChanged();
 
 				mConversationList.onRefreshComplete();
+				ConversationListFragment.this.stopLoading();
 			}
 
 		}
@@ -257,4 +249,18 @@ public class ConversationListFragment extends BaseFragment {
 	    }
 
 	};
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		LogUtil.i("Receiving onActivityResult: " + requestCode);
+		if (requestCode == PREFERENCE_PAGE && resultCode == mActivity.RESULT_OK) {
+			//It wants contact list
+			ContactsInviteFragment fragment = ContactsInviteFragment.newInstance();
+			getActivity().getSupportFragmentManager()
+			.beginTransaction().replace(R.id.fragment_holder, fragment)
+			.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+			.addToBackStack(ContactsFragment.class.getSimpleName())
+	        .commitAllowingStateLoss();	
+		}
+	}
 }

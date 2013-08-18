@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/wrapperContact"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:paddingLeft="20dip"	
-	android:paddingRight="20dip"
+	android:paddingLeft="@dimen/activity_horizontal_margin"	
+	android:paddingRight="@dimen/activity_horizontal_margin"
+	android:clickable="true"
+	android:background="@android:drawable/list_selector_background"
 >
 
 	<!-- image icon -->
@@ -15,44 +18,52 @@
 		android:layout_height="48dip"
 		android:layout_marginRight="10dip"
 		android:layout_width="48dip"
+		android:contentDescription="@string/app_name"
 	/>
 	
 	<!-- profile name -->
-	
-	<TextView
-		android:id="@+id/lazyTitle"
-		android:layout_toRightOf="@+id/lazyIcon"
+	<LinearLayout 
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginRight="36dip"
-	/>
-	
-	<!-- profile location -->
-	
-	<TextView
-		android:id="@+id/lazySubTitle"
+		android:layout_centerVertical="true"
 		android:layout_toRightOf="@+id/lazyIcon"
-		android:layout_below="@+id/lazyTitle"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginRight="36dip"
+		android:orientation="vertical"
+		android:layout_marginRight="@dimen/image_thumbnail_size"
+	    >
+		<TextView
+			android:id="@+id/lazyTitle"
+			android:textColor="@android:color/black"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+		/>
+		
+		<!-- profile location -->
+		
+		<TextView
+			android:id="@+id/lazySubTitle"
+			android:textColor="@android:color/black"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+		/>
+	</LinearLayout>
+	<ImageView
+        android:id="@+id/lazyContactType"
+        android:layout_toLeftOf="@+id/chkSelected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/action_bar_height" 
+        android:contentDescription="@string/app_name"
+        />
+	    
+	<CheckBox
+		android:id="@+id/chkSelected"
+		style="@style/BlueCheckBox"
+		android:layout_alignParentRight="true"
+		android:layout_centerVertical="true"
+		android:checked="false"
+		android:focusable="false"
+		android:clickable="false"
 	/>
-	
-	<ImageView
-	    android:id="@+id/imgOn" 
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:src="@drawable/checkbox_on"
-		android:layout_alignParentRight="true"
-		android:visibility="gone"    
-	    />
-	
-	<ImageView
-	    android:id="@+id/imgOff" 
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-		android:src="@drawable/checkbox_off"
-		android:layout_alignParentRight="true"
-		android:visibility="gone"    
-	    />
 </RelativeLayout>

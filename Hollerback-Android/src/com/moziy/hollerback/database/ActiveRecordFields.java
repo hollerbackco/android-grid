@@ -24,6 +24,7 @@ public class ActiveRecordFields {
 	// Users
 	public static final String C_USER_ID = "UserId";
 	public static final String C_USER_NAME = "UserName";
+	public static final String C_USER_PHOTO = "UserPhoto";
 	public static final String C_USER_USERNAME = "UserUserName";
 	public static final String C_USER_EMAIL = "UserEmail";
 	public static final String C_USER_PHONE = "UserPhone";

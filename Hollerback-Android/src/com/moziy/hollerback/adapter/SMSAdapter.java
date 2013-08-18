@@ -1,8 +1,9 @@
 package com.moziy.hollerback.adapter;
 
 import java.io.InputStream;
-import java.util.List;
+import java.util.HashMap;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.model.SMSContact;
 
@@ -15,9 +16,11 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
@@ -26,10 +29,10 @@ import android.widget.TextView;
 public class SMSAdapter extends SimpleCursorAdapter implements Filterable{
     private int mResId;
     LayoutInflater mInflater;
-    private List<SMSContact> mSelected;
+    private HashMap<String, String> mSelected;
     
-	public SMSAdapter(Context context, int layout, Cursor c, String[] from, int[] to, List<SMSContact> selected)  {
-		super(context, layout, c, from, to);
+	public SMSAdapter(Context context, int layout, Cursor c, String[] from, int[] to, HashMap<String, String> selected)  {
+		super(context, layout, c, from, to, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 		mInflater = LayoutInflater.from(context); 
 		this.mResId = layout;
 		mSelected = selected;
@@ -44,10 +47,12 @@ public class SMSAdapter extends SimpleCursorAdapter implements Filterable{
 
 	@Override 
 	public void bindView(View view, Context context, Cursor cursor) { 
-		String title = cursor.getString( cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-		String subtitle = "";
-	       
-		subtitle = cursor.getString( cursor.getColumnIndex(Phone.NUMBER));
+		String title = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+		PhoneNumberUtil phoneutil = PhoneNumberUtil.getInstance(); 
+		//String phone = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
+		//PhoneNumber number = phoneutil.parse(cursor.getString(cursor.getColumnIndex(Phone.NUMBER)), phoneutil.getRegionCodeForNumber(cursor.getString(cursor.getColumnIndex(Phone.NUMBER)));
+		
+		String subtitle = cursor.getString(cursor.getColumnIndex(Phone.NUMBER));
  	   	
 		ImageView iv = (ImageView)view.findViewById(R.id.lazyIcon);
 
@@ -68,21 +73,15 @@ public class SMSAdapter extends SimpleCursorAdapter implements Filterable{
         TextView bSubTitle = (TextView) view.findViewById(R.id.lazySubTitle);
         bSubTitle.setText(subtitle);
         
-        ImageView imgOn = (ImageView) view.findViewById(R.id.imgOn);
-        ImageView imgOff = (ImageView) view.findViewById(R.id.imgOff);
+        CheckBox chkSelected = (CheckBox) view.findViewById(R.id.chkSelected);
+        chkSelected.setChecked(false);
         
-    	imgOn.setVisibility(View.GONE);
-    	imgOff.setVisibility(View.VISIBLE);
-    	
-        for(int i = 0; i < mSelected.size(); i++)
-        {
-        	if(mSelected.get(i).getSMS().equalsIgnoreCase(subtitle))
+        	
+        	if(mSelected.containsKey(title))
         	{
-            	imgOn.setVisibility(View.VISIBLE);
-            	imgOff.setVisibility(View.GONE);
-            	break;
+        		chkSelected.setChecked(true);
         	}
-        }
+        
 	} 
 	
 	public static Bitmap loadContactPhoto(ContentResolver cr, long  id) {
@@ -92,5 +91,17 @@ public class SMSAdapter extends SimpleCursorAdapter implements Filterable{
 	        return null;
 	    }
 	    return BitmapFactory.decodeStream(input);
+	}
+	
+	@Override
+	public SMSContact getItem(int position)
+	{
+		Cursor cursor = this.getCursor();
+		cursor.moveToPosition(position);
+		SMSContact ret = 
+				new SMSContact(
+						cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)), 
+						cursor.getString( cursor.getColumnIndex(Phone.NUMBER)));
+		return ret;
 	}
 }

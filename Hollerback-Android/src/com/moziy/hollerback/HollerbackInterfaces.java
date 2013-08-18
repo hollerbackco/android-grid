@@ -7,8 +7,8 @@ public class HollerbackInterfaces {
 	public interface OnCustomItemClickListener{
 		public void onItemClicked(int position, View convertView);
 	}
-
-	public interface OnFilterVideoListener{
-		public void onFilterSelected(int position);
+	
+	public interface OnContactSelectedListener{
+		public void onItemClicked(int position);
 	}
 }

@@ -32,12 +32,37 @@ public class JSONUtil {
 		try {
 			LogUtil.i("HB", object.toString());
 
-			PreferenceManagerUtil.setPreferenceValue(
-					HollerbackPreferences.ACCESS_TOKEN,
-					object.getString("access_token"));
-
 			JSONObject user = object.getJSONObject("user");
-
+			String userName = "";
+			if (object.has("username")) {
+				userName = user.getString("username");
+			} 
+			
+			String phone = "";
+			if (user.has("phone")) {
+				phone = user.getString("phone");
+			}
+			
+			int id = 0;
+			if (user.has("id")) {
+				id = user.getInt("id");
+			}
+			
+			/**
+			 * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
+			 */
+			PreferenceManagerUtil.setPreferenceValue(
+					HollerbackPreferences.USERNAME,
+					userName);
+			
+			PreferenceManagerUtil.setPreferenceValue(
+					HollerbackPreferences.PHONE,
+					phone);
+			
+			PreferenceManagerUtil.setPreferenceValue(
+					HollerbackPreferences.ID,
+					id);
+			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,30 +77,80 @@ public class JSONUtil {
 	public static void processSignUp(JSONObject object) {
 		try {
 			LogUtil.i(object.toString());
-/*
+
 			JSONObject user = object.getJSONObject("user");
 
-			String accessToken = user.getString("access_token");
-			if (object.has("access_token")) {
-				accessToken = user.getString("access_token");
-			} else if (user.has("access_token")) {
-				accessToken = user.getString("access_token");
+			String userName = "";
+			if (object.has("username")) {
+				userName = user.getString("username");
+			} 
+			
+			String phone = "";
+			if (user.has("phone")) {
+				phone = user.getString("phone");
+			}
+			
+			int id = 0;
+			if (user.has("id")) {
+				id = user.getInt("id");
 			}
 
+			/**
+			 * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
+			 */
 			PreferenceManagerUtil.setPreferenceValue(
-					HollerbackPreferences.ACCESS_TOKEN,
-					user.getString("access_token"));
-					*/
-			Intent intent = new Intent(IABIntent.INTENT_REGISTER_REQUEST);
-			//if (user != null) {
-				intent.putExtra(IABIntent.PARAM_AUTHENTICATED,
-						IABIntent.VALUE_TRUE);
-			//}
-			IABroadcastManager.sendLocalBroadcast(intent);
+					HollerbackPreferences.USERNAME,
+					userName);
+			
+			PreferenceManagerUtil.setPreferenceValue(
+					HollerbackPreferences.PHONE,
+					phone);
+			
+			PreferenceManagerUtil.setPreferenceValue(
+					HollerbackPreferences.ID,
+					id);
+					
+//			Intent intent = new Intent(IABIntent.INTENT_REGISTER_REQUEST);
+//			//if (user != null) {
+//				intent.putExtra(IABIntent.PARAM_AUTHENTICATE_REQUIRED,
+//						IABIntent.VALUE_TRUE);
+//			//}
+//			IABroadcastManager.sendLocalBroadcast(intent);
 
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
+	}
+	
+	/**
+	 * From this point, we changed architecture from broastcast based to loader based,
+	 * loader comes with fragment and lifecycle follows the fragment rather than being affected 
+	 * by anything else.  In the future change everything into loader or executerservice based
+	 * @param object
+	 * @return
+	 */
+	public static void processVerify(JSONObject object)
+	{
+		
+			LogUtil.i(object.toString());
+			
+			try {
+
+				JSONObject user = object.getJSONObject("user");
+
+				String access_token = "";
+				if (object.has("access_token")) {
+					access_token = user.getString("access_token");
+				} 		
+				
+				PreferenceManagerUtil.setPreferenceValue(
+						HollerbackPreferences.ACCESS_TOKEN,
+						access_token);
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	public static void processVideoPost(JSONObject object, String customMessage) {
@@ -242,6 +317,63 @@ public class JSONUtil {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Remove the last one when you clean this up, I am working fast to get the other guy's parsing logic working
+	 * @param json
+	 * @param v2
+	 * @return
+	 */
+	public static SortedArray processGetContacts(JSONObject json, boolean v2) {
+		try {
+			ArrayList<UserModel> users = new ArrayList<UserModel>();
+			JSONArray dataObject = json.getJSONArray("data");
+
+			ActiveAndroid.beginTransaction();
+
+			for (int i = 0; i < dataObject.length(); i++) {
+				JSONObject userObject = dataObject.getJSONObject(i);
+				UserModel user = new UserModel();
+				user.name = userObject.getString("name");
+				user.phone = userObject.getString("phone_normalized");
+				user.isHollerbackUser = true;
+
+				List<Model> userLocal = (List<Model>) new Select()
+						.from(UserModel.class)
+						.where(ActiveRecordFields.C_USER_PHONE + " = ?",
+								user.phone).execute();
+
+				if (userLocal == null || userLocal.size() < 1) {
+					user.save();
+				} else {
+					((UserModel) userLocal.get(0)).isHollerbackUser = true;
+					((UserModel) userLocal.get(0)).save();
+				}
+
+				users.add(user);
+				if (TempMemoryStore.users.mUserModelHash
+						.containsKey(user.phone)) {
+					TempMemoryStore.users.mUserModelHash.get(user.phone).isHollerbackUser = true;
+				}
+			}
+
+			ActiveAndroid.setTransactionSuccessful();
+			ActiveAndroid.endTransaction();
+
+			ArrayList<UserModel> valuesList = new ArrayList<UserModel>(
+					TempMemoryStore.users.mUserModelHash.values());
+
+			SortedArray array = CollectionOpUtils.sortContacts(valuesList);
+
+			TempMemoryStore.users = array;
+			
+			return array;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return new SortedArray();
+	}
 
 	public static void processPostConversations(JSONObject json) {
 
@@ -284,7 +416,7 @@ public class JSONUtil {
 			}
 
 			QU.getDM().putIntoHash(HashUtil.getConvHash(), conversations);
-
+			
 			Intent intent = new Intent(IABIntent.INTENT_POST_CONVERSATIONS);
 			intent.putExtra(IABIntent.PARAM_ID,
 					Integer.toString(model.getConversation_Id()));

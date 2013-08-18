@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.widget.VideoView;
-
-import com.activeandroid.util.Log;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.moziy.hollerback.debug.LogUtil;
@@ -106,7 +103,7 @@ public class HBRequestManager {
 	public static void postRegistration(String name, String phone, String token) {
 		RequestParams params = new RequestParams();
 
-		params.put(HollerbackAPI.PARAM_NAME, name);
+		params.put(HollerbackAPI.PARAM_USERNAME, name);
 		params.put(HollerbackAPI.PARAM_PHONE, phone);
 
 		params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
@@ -136,6 +133,32 @@ public class HBRequestManager {
 						JSONUtil.processSignUp(arg1);
 					}
 				});
+
+	}
+	
+	public static void postRegistration(String name, String phone, String token, JsonHttpResponseHandler handler) {
+		RequestParams params = new RequestParams();
+
+		params.put(HollerbackAPI.PARAM_USERNAME, name);
+		params.put(HollerbackAPI.PARAM_PHONE, phone);
+
+		params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
+
+		params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_REGISTER,
+				params, handler);
+
+	}
+	
+	public static void postVerification(String veroficationCode, String phone, JsonHttpResponseHandler handler) {
+		RequestParams params = new RequestParams();
+
+		params.put(HollerbackAPI.PARAM_CODE, veroficationCode);
+		params.put(HollerbackAPI.PARAM_PHONE, phone);
+		params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
+		
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_VERIFY,
+				params, handler);
 
 	}
 
@@ -181,6 +204,17 @@ public class HBRequestManager {
 				});
 
 	}
+	
+	public static void postLogin(String phone, JsonHttpResponseHandler handler) {
+		RequestParams params = null;
+
+		if (!phone.isEmpty()) {
+			params = new RequestParams();
+			params.put(HollerbackAPI.PARAM_PHONE, phone);
+		}
+
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params,handler);
+	}
 
 	public static void getConversations() {
 		if (HollerbackAppState.isValidSession()) {
@@ -223,7 +257,7 @@ public class HBRequestManager {
 		}
 
 	}
-
+	
 	public static void postConversations(ArrayList<String> contacts) {
 		if (HollerbackAppState.isValidSession()) {
 			RequestParams params = new RequestParams();
@@ -261,6 +295,37 @@ public class HBRequestManager {
 						}
 
 					});
+
+		}
+	}
+	
+	public static void postConversations(ArrayList<String> contacts, JsonHttpResponseHandler handler) {
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			params.put(HollerbackAPI.PARAM_INVITES, contacts);
+
+			HollerbackAsyncClient.getInstance().post(
+					HollerbackAPI.API_CONVERSATION, params,
+					handler);
+
+		}
+	}
+	
+	
+	public static void conversationInvite(ArrayList<String> contacts, JsonHttpResponseHandler handler) {
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			params.put(HollerbackAPI.PARAM_INVITES, contacts);
+
+			HollerbackAsyncClient.getInstance().post(
+					HollerbackAPI.API_INVITE, params,
+					handler);
 
 		}
 	}
@@ -308,6 +373,24 @@ public class HBRequestManager {
 
 		}
 	}
+	
+	public static void getContacts(ArrayList<UserModel> contacts, JsonHttpResponseHandler handler) {
+
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+
+			LogUtil.i("Token: " + HollerbackAppState.getValidToken());
+
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			params.put(HollerbackAPI.PARAM_NUMBERS,
+					HBRequestUtil.generateStringArray(contacts));
+
+			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_CONTACTS,
+					params, handler);
+		}
+	}
 
 	public static void getConversationVideos(final String conversationId) {
 		if (HollerbackAppState.isValidSession()) {
@@ -350,6 +433,53 @@ public class HBRequestManager {
 								}
 
 							});
+		}
+	}
+	
+
+	public static void getConversation(final String conversationId, JsonHttpResponseHandler handler) {
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			HollerbackAsyncClient
+					.getInstance()
+					.get(String.format(
+							HollerbackAPI.API_CONVERSATION_DETAILS,
+							conversationId), params, handler);
+		}
+	}
+	
+	public static void leaveConversation(final String conversationId, JsonHttpResponseHandler handler){
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			HollerbackAsyncClient
+					.getInstance()
+					.post(String.format(
+							HollerbackAPI.API_CONVERSATION_LEAVE,
+							conversationId), params, handler);
+		}
+	}
+	
+	public static void clearNewConversationWatchedStatus(final String conversationId, JsonHttpResponseHandler handler)
+	{
+		if (HollerbackAppState.isValidSession()) {
+			RequestParams params = new RequestParams();
+
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					HollerbackAppState.getValidToken());
+
+			HollerbackAsyncClient
+					.getInstance()
+					.post(String.format(
+							HollerbackAPI.API_CONVERSATION_WATCHALL,
+							conversationId), params, handler);
 		}
 	}
 }

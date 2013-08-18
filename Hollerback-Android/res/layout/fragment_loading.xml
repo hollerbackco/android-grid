@@ -1,0 +1,28 @@
+ <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llWaitView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+>
+    <ProgressBar android:id="@+android:id/progress_large"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center"
+        android:gravity="center"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"            
+        android:text="@string/loading_message"
+        android:textSize="@dimen/large_size"
+        android:textStyle="bold"
+        android:textColor="@color/gray_font"
+    />
+</LinearLayout>

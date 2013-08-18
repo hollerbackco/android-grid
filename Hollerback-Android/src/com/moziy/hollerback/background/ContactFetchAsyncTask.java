@@ -86,6 +86,6 @@ public class ContactFetchAsyncTask extends AsyncTask<Void, Void, SortedArray> {
 	}
 
 	protected void onPostExecute(SortedArray result) {
-		((HollerbackMainActivity) activity).addContactListFragment(ft, result);
+		//((HollerbackMainActivity) activity).addContactListFragment(ft, result);
 	}
 }

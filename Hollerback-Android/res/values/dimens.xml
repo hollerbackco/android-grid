@@ -11,6 +11,10 @@
     <dimen name="tv_phone_number_code_width">60dp</dimen>
     <dimen name="tv_phone_number_code_height">48dp</dimen>
     <dimen name="action_bar_item_width">56dp</dimen>
-
+	<dimen name="button_width">200dp</dimen>
+	<dimen name="convo_right_margin">64dp</dimen>
+	
     <dimen name="normal_size">16sp</dimen>
+	<dimen name="large_size">20sp</dimen>
+    
 </resources>
