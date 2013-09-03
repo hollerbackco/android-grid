@@ -48,24 +48,30 @@
     <application
         android:name=".HollerbackApplication"
         android:allowBackup="true"
+        android:largeHeap="true"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Example" >
+        android:theme="@style/Hollerback"
+         >
         <activity
             android:name="com.moziy.hollerback.activity.SplashScreenActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait" 
+            android:theme="@style/Theme.Example">
         </activity>
         <activity
             android:name="com.moziy.hollerback.activity.HollerbackCameraActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Example" >
         </activity>
         
 		<activity
             android:name="com.moziy.hollerback.activity.HollerbackMainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -76,19 +82,15 @@
         <activity
             android:name="com.moziy.hollerback.activity.WelcomeFragmentActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait" 
+            android:theme="@style/Theme.Example">
         </activity>
         
 		<activity
             android:name="com.moziy.hollerback.activity.SettingPreferenceActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
-        </activity>
-        
-		<activity
-            android:name="com.moziy.hollerback.activity.ContactsActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Example" >
         </activity>
 
         <receiver

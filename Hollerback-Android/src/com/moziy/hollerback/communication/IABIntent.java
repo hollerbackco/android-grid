@@ -10,6 +10,7 @@ public class IABIntent {
 	public static final String INTENT_REQUEST_VIDEO = "VideoRequest";
 	public static final String INTENT_UPLOAD_VIDEO = "UploadVideo";
 	public static final String INTENT_UPLOAD_VIDEO_UPDATE = "UploadVideoUpdate";
+	public static final String INTENT_UPLOAD_VIDEO_UPLOADING = "UploadVideoUploading";
 	public static final String INTENT_GET_CONTACTS = "GetContacts";
 	public static final String INTENT_POST_CONVERSATIONS = "PostConversation";
 	public static final String INTENT_GET_URLS = "GetUrls";

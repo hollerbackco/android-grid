@@ -122,7 +122,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable{
 		}
 
 		viewHolder.conversationName.setText(mFilteredConversations.get(position)
-				.getConversationName());
+				.getConversationName().toUpperCase());
 
 		
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
@@ -142,7 +142,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable{
 			@Override
 			public void onClick(View v) {
 				//Peter: no idea why it's int here and string everywhere else, this was written prior
-				RecordVideoFragment fragment = RecordVideoFragment.newInstance(String.valueOf(mFilteredConversations.get(position).getConversation_Id()), true);
+				RecordVideoFragment fragment = RecordVideoFragment.newInstance(String.valueOf(mFilteredConversations.get(position).getConversation_Id()), true, mFilteredConversations.get(position).getConversationName());
 				mActivity.getSupportFragmentManager()
 				.beginTransaction()
 				.replace(R.id.fragment_holder, fragment)
@@ -180,7 +180,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable{
 	        	ArrayList<ConversationModel> nConversations = new ArrayList<ConversationModel>();
 	             
 	            for (ConversationModel c : mConversations) {
-	            	if(c.getConversationName().contains(constraint))
+	            	if(c.getConversationName().toLowerCase().contains(constraint.toString().toLowerCase()))
 	            	{
 	            		nConversations.add(c);
 	            	}

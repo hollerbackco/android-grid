@@ -128,22 +128,20 @@ public class ContactsInviteFragment extends ContactsFragment {
 				super.onSuccess(statusId, response);
 				LogUtil.i("ON SUCCESS API CONTACTS");
 				SortedArray data  = JSONUtil.processGetContacts(response, true);
+				TempMemoryStore.invitedUsers = new ArrayList<String>();
 				if(data != null)
-				{
-					int phone = 0;
-					
+				{					
 					//brute force, do a better logic than me next time
 					for(int i = 0; i < TempMemoryStore.users.sortedKeys.size(); i++)
 					{
 						UserModel user = TempMemoryStore.users.mUserModelHash.get(TempMemoryStore.users.sortedKeys.get(i));
-						if(user.isHollerbackUser)
+						if(!user.isHollerbackUser)
 						{
-							TempMemoryStore.users.mUserModelHash.remove(TempMemoryStore.users.sortedKeys.get(i));
-						}
-						else phone++;
+							TempMemoryStore.invitedUsers.add(TempMemoryStore.users.sortedKeys.get(i));
+						}						
 					}
 					
-					mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, 0, phone);
+					mAdapter.setContacts(TempMemoryStore.invitedUsers, mSelectedSMSContactsAdapterData, mListener, 0, TempMemoryStore.invitedUsers.size());
 					mAdapter.notifyDataSetChanged();
 					
 			        for(int i = 0; i < mAdapter.getGroupCount(); i++)

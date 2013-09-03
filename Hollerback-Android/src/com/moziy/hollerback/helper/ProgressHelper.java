@@ -31,6 +31,16 @@ public class ProgressHelper {
 		}
 
 	}
+	
+	public void startIndeterminateSpinner(boolean textready) {
+		mParent.setVisibility(View.VISIBLE);
+		mProgressSpinner.setVisibility(View.VISIBLE);
+		if(mSiblingTextView != null)
+		{
+			mSiblingTextView.setVisibility(View.GONE);
+		}
+
+	}
 
 	public void startUpdateProgress(String text) {
 		mParent.setVisibility(View.VISIBLE);

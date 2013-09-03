@@ -131,14 +131,7 @@ public class SignInFragment extends BaseFragment{
 				showDialog();				
 			}
 		});
-		TextView headerCPhone = (TextView) view
-				.findViewById(R.id.tv_header_counter_phone);
 
-		mPhoneNumberField.setTypeface(FontUtil.MuseoSans_500);
-		mCountryText.setTypeface(FontUtil.MuseoSans_500);
-		mPhoneNumberCode.setTypeface(FontUtil.MuseoSans_500);
-		headerCPhone.setTypeface(FontUtil.MuseoSans_500);
-		
 		mLoginBtn = (Button) view.findViewById(R.id.submit_login);
 
 		mLoginBtn.setOnClickListener(new View.OnClickListener() {

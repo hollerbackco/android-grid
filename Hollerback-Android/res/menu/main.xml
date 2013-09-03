@@ -1,11 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-	<item
-        android:id="@+id/action_add"
-        android:orderInCategory="100"
-        android:showAsAction="always"
-        android:icon="@drawable/add_convo_btn"
-        android:title="@string/action_add"/>
-	
     <item 
         android:id="@+id/action_person"
         android:icon="@drawable/icon_person"
@@ -30,4 +23,11 @@
         </menu>
 	</item>
     
+    <item
+        android:id="@+id/action_add"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:icon="@drawable/add_convo_btn"
+        android:title="@string/action_add"/>
+	
 </menu>

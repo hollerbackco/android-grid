@@ -96,15 +96,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 		TextView signupAgreement = (TextView) view
 				.findViewById(R.id.tv_signup_agreement);
 
-		mNameField.setTypeface(FontUtil.MuseoSans_500);
-		mPhoneNumberField.setTypeface(FontUtil.MuseoSans_500);
-		mCountryText.setTypeface(FontUtil.MuseoSans_500);
-		mPhoneNumberCode.setTypeface(FontUtil.MuseoSans_500);
-
-		headerAccount.setTypeface(FontUtil.MuseoSans_500);
-		headerCPhone.setTypeface(FontUtil.MuseoSans_500);
-		signupAgreement.setTypeface(FontUtil.MuseoSans_500);
-
 	}
 
 	@Override

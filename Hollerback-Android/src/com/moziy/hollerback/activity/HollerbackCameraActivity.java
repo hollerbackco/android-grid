@@ -105,7 +105,7 @@ public class HollerbackCameraActivity extends Activity {
 		getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-		setContentView(R.layout.custom_camera);
+		setContentView(R.layout.custom_camera_square);
 
 		sInstance = this;
 

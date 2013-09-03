@@ -84,7 +84,6 @@ public class DataModelManager {
 			Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATIONS);
 			intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
 			IABroadcastManager.sendLocalBroadcast(intent);
-
 		}
 
 	}

@@ -22,7 +22,7 @@ public class CustomActionBarHelper {
 				.findViewById(R.id.ib_action_right);
 		mHeaderLogo = (ImageView) actionbar.findViewById(R.id.iv_action_logo);
 		mHeaderText = (TextView) actionbar.findViewById(R.id.tv_action_name);
-		mHeaderText.setTypeface(FontUtil.MuseoSans_500);
+		//mHeaderText.setTypeface(FontUtil.MuseoSans_500);
 		mActionBar = actionbar;
 	}
 

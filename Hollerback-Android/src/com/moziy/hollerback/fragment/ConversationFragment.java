@@ -9,6 +9,8 @@ import java.util.Locale;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,6 +39,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.JsonModelUtil;
 import com.moziy.hollerback.util.QU;
@@ -67,7 +70,7 @@ public class ConversationFragment extends BaseFragment {
 	private S3RequestHelper mS3RequestHelper;
 
 	// Reply stuff
-	private Button mReplyBtn;
+	private ImageButton mReplyBtn;
 
 	public int TAKE_VIDEO = 0x683;
 
@@ -89,7 +92,7 @@ public class ConversationFragment extends BaseFragment {
 				mActivity.getSupportFragmentManager()
 				.beginTransaction().replace(R.id.fragment_holder, fragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-		        .addToBackStack(null)
+		        .addToBackStack(ConversationMembersFragment.class.getSimpleName())
 		        .commitAllowingStateLoss();
 	    		break;
 	    }
@@ -228,48 +231,22 @@ public class ConversationFragment extends BaseFragment {
 
 	@Override
 	protected void initializeView(View view) {
-		mVideoGallery = (StaggeredGridView) view
-				.findViewById(R.id.hlz_video_gallery);
-		mVideoGallery.setColumnCount(2);
-		
-		mVideoGalleryAdapter = new CustomListBaseAdapter(mActivity,
-				mImageFetcher, mS3RequestHelper);
-		
-		mVideoGallery.setAdapter(mVideoGalleryAdapter);
-		
-		mVideoGalleryAdapter.setOnCustomItemClickListener(mListener);
-		mReplyBtn = (Button) view.findViewById(R.id.btn_video_reply);
-
-		mReplyBtn.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId);
-				mActivity.getSupportFragmentManager()
-				.beginTransaction().replace(R.id.fragment_holder, fragment)
-				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-		        .addToBackStack(null)
-		        .commitAllowingStateLoss();
-
-			}
-		});
-		
-		mTxtVideoInfo = (TextView)mRootView.findViewById(R.id.txtVideoInfo);
 		mWrapperInformation = (LinearLayout)mRootView.findViewById(R.id.wrapperInformation);
 		mWrapperInformation.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				final ViewGroup convertView = (ViewGroup)mWrapperInformation.getTag();
-				if(convertView!= null)
+				ViewGroup convertView = (ViewGroup)mWrapperInformation.getTag();
+				final ViewGroup gridWrapper = (ViewGroup)convertView.findViewById(R.id.gridWrapper);
+				if(gridWrapper!= null)
 				{
-			        final CustomVideoView videoView = (CustomVideoView)convertView.findViewById(R.id.videoPlayer);
-			        videoView.changeVideoSize(convertView.getWidth()*2, convertView.getHeight()*2);
+			        final CustomVideoView videoView = (CustomVideoView)gridWrapper.findViewById(R.id.videoPlayer);
+			        videoView.changeVideoSize(gridWrapper.getWidth()*2, gridWrapper.getHeight()*2);
 			        int length=videoView.getCurrentPosition();
 	
 			        videoView.pause();
-			        convertView.removeView(videoView);
+			        gridWrapper.removeView(videoView);
 	
 			        final LinearLayout blowupView = (LinearLayout)mRootView.findViewById(R.id.blowupView);			        
 					blowupView.addView(videoView);
@@ -284,13 +261,41 @@ public class ConversationFragment extends BaseFragment {
 							videoView.setBlowupParentView(null);
 							videoView.setVisibility(View.GONE);
 							blowupView.removeView(videoView);
-							convertView.addView(videoView);
+							gridWrapper.addView(videoView);
 							blowupView.setVisibility(View.GONE);
 						}
 					});
 				}
 			}
 		});
+		
+		mVideoGallery = (StaggeredGridView) view
+				.findViewById(R.id.hlz_video_gallery);
+		mVideoGallery.setColumnCount(2);
+		
+		mVideoGalleryAdapter = new CustomListBaseAdapter(mActivity,
+				mImageFetcher, mS3RequestHelper, mWrapperInformation);
+		
+		mVideoGallery.setAdapter(mVideoGalleryAdapter);
+		
+		mVideoGalleryAdapter.setOnCustomItemClickListener(mListener);
+		mReplyBtn = (ImageButton) view.findViewById(R.id.btn_video_reply);
+
+		mReplyBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, conversation.getConversationName());
+				mActivity.getSupportFragmentManager()
+				.beginTransaction().replace(R.id.fragment_holder, fragment)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+		        .addToBackStack(null)
+		        .commitAllowingStateLoss();
+
+			}
+		});
+		
+		mTxtVideoInfo = (TextView)mRootView.findViewById(R.id.txtVideoInfo);
 	}
 
 	int currentPlayingPosition;
@@ -367,7 +372,31 @@ public class ConversationFragment extends BaseFragment {
 				mVideos.remove(mVideos.size() - 1);
 				mVideos.add(tempVideos.get(0));
 				mVideoGalleryAdapter.notifyDataSetChanged();
-*/
+				if (mVideoGalleryAdapter.getCount() > 0) {
+					setGalleryToEnd();
+				}
+				*/
+				
+				//stops the progress
+				for(int i=0; i < mVideoGalleryAdapter.mUploadingHelper.size(); i++)
+				{
+					mVideoGalleryAdapter.mUploadingHelper.get(i).getProgressHelper().hideLoader();
+					mVideoGalleryAdapter.mUploadingHelper.get(i).getTxtSent().setVisibility(View.VISIBLE);
+				}
+				
+				if(mVideos != null)
+				{
+					for(int i = 0; i < mVideos.size(); i++)
+					{
+						if(mVideos.get(i).isUploading())
+						{
+							mVideos.get(i).setUploading(false);
+							mVideos.get(i).setSent(true);
+						}
+					}
+				}
+				
+				mVideoGalleryAdapter.mUploadingHelper.clear();
 			}
 			else if (IABIntent.isIntent(intent,
 					IABIntent.INTENT_GET_CONVERSATION_VIDEOS)) {
@@ -389,19 +418,27 @@ public class ConversationFragment extends BaseFragment {
 
 				if(UploadCacheUtil.hasVideoCache(mActivity, mConversationId))
 				{
-					JSONArray caches = UploadCacheUtil.getCacheFlags(mActivity, mConversationId);
-					for(int i = 0; i < caches.length(); i++)
+					//upload service running
+					if(isUploadRunning())
 					{
-						try {
-							VideoModel tmpmodel = JsonModelUtil
-									.createVideo(caches.getJSONObject(i));
-							mVideos.add(tmpmodel);
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						JSONArray caches = UploadCacheUtil.getCacheFlags(mActivity, mConversationId);
+						for(int i = 0; i < caches.length(); i++)
+						{
+							try {
+								VideoModel tmpmodel = JsonModelUtil
+										.createVideo(caches.getJSONObject(i));							
+								mVideos.add(tmpmodel);
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
-					
+					else
+					{
+						//if service is no longer running, clean the cache.
+						UploadCacheUtil.clearCache(mActivity, mConversationId);
+					}
 				}
 				
 				if (mVideos != null) {
@@ -428,6 +465,22 @@ public class ConversationFragment extends BaseFragment {
 			}
 		}
 	};
+	
+	/**
+	 * check if service is running
+	 * @param tmp
+	 * @return
+	 */
+	public boolean isUploadRunning()
+	{
+	    ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
 
 	private void setGalleryToEnd() {
 		mVideoGallery.post(new Runnable() {

@@ -14,7 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMBaseIntentService;
-import com.moziy.hollerback.activity.HollerbackBaseActivity;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.debug.LogUtil;
 
@@ -95,7 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Notification notification = new Notification(R.drawable.icon, msg, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
-		Intent intent = new Intent(context, HollerbackBaseActivity.class);
+		Intent intent = new Intent(context, HollerbackMainActivity.class);
 		// Set a unique data uri for each notification to make sure the activity
 		// gets updated
 		intent.setData(Uri.parse(msg));
@@ -141,7 +141,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			title = context.getString(R.string.app_name);
 		}
 		Intent notificationIntent = new Intent(context,
-				HollerbackBaseActivity.class);
+				HollerbackMainActivity.class);
 
 		// set intent so it does not start a new activity
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -178,7 +178,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if ((url == null) || (url.equals(""))) {
 			// just bring up the app
 			notificationIntent = new Intent(context,
-					HollerbackBaseActivity.class);
+					HollerbackMainActivity.class);
 		} else {
 			// Launch the URL
 			notificationIntent = new Intent(Intent.ACTION_VIEW);

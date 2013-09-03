@@ -17,6 +17,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CameraUtil;
@@ -28,6 +29,9 @@ import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -44,7 +48,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore.Video.Thumbnails;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -63,6 +66,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 public class RecordVideoFragment extends BaseFragment{
@@ -137,27 +141,30 @@ public class RecordVideoFragment extends BaseFragment{
     	return super.onOptionsItemSelected(item);
     }
 	
-	public static RecordVideoFragment newInstance(String conversationId){
+	public static RecordVideoFragment newInstance(String conversationId, String title){
 		RecordVideoFragment fragment = new RecordVideoFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString(IABIntent.PARAM_ID, conversationId);
+		bundle.putString("title", title);
 		fragment.setArguments(bundle);
 		return fragment;
 	}
 	
-	public static RecordVideoFragment newInstance(String conversationId, boolean toConversation){
+	public static RecordVideoFragment newInstance(String conversationId, boolean toConversation, String title){
 		RecordVideoFragment fragment = new RecordVideoFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString(IABIntent.PARAM_ID, conversationId);
+		bundle.putString("title", title);
 		bundle.putBoolean("mToConversation", toConversation);
 		fragment.setArguments(bundle);
 		return fragment;
 	}
 	
-	public static RecordVideoFragment newInstance(String[] phones){
+	public static RecordVideoFragment newInstance(String[] phones, String title){
 		RecordVideoFragment fragment = new RecordVideoFragment();
 		Bundle bundle = new Bundle();
 		bundle.putStringArray("phones", phones);
+		bundle.putString("title", title);
 		fragment.setArguments(bundle);
 		return fragment;
 	}
@@ -165,7 +172,34 @@ public class RecordVideoFragment extends BaseFragment{
 	
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        mRootView = (ViewGroup) inflater.inflate(R.layout.custom_camera, null);
+    	//this is to make sure the camera runs square when allowed, otherwise we are using
+    	//the mask version
+    	try
+    	{
+	    	camera = Camera.open(currentCameraId);
+	    	if(CameraUtil.HasSquareCamera(camera.getParameters()))
+	    	{
+	    		mRootView = (ViewGroup) inflater.inflate(R.layout.custom_camera_square, null);
+	    	}
+	    	else
+	    	{
+	    		mRootView = (ViewGroup) inflater.inflate(R.layout.custom_camera, null);
+	    	}
+	    	camera.release();
+	    	camera = null;
+    	
+    	} catch (RuntimeException e) {
+    		Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
+    		Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
+    		mActivity.getSupportFragmentManager().popBackStack();
+    	}	
+        mActivity.getSupportActionBar().setTitle(R.string.action_record);
+        
+        if(this.getArguments() != null && this.getArguments().containsKey("title"))
+        {
+        	//setting title
+        	mActivity.getSupportActionBar().setTitle(this.getArguments().getString("title"));	
+        }
         
         mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         mToConversation = this.getArguments().getBoolean("mToConversation", false);
@@ -201,7 +235,7 @@ public class RecordVideoFragment extends BaseFragment{
 		previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
 		targetPreviewWidth = 480;
-		targetPreviewHeight = 320;
+		targetPreviewHeight = 480;
 		
 		// this 1.5 i guess assumes 640 x 480
 		previewHolder
@@ -252,6 +286,7 @@ public class RecordVideoFragment extends BaseFragment{
 //					HBRequestManager
 //							.postConversations(TempMemoryStore.invitedUsers);
 					LogUtil.e("Conversation ID NULL");
+					mSendButton.setEnabled(false);
 					inviteAndRecordVideo();
 				} else {
 					uploadAndSend();
@@ -290,29 +325,27 @@ public class RecordVideoFragment extends BaseFragment{
 			cacheData.put("id", 0);
 			cacheData.put("conversation_id", mConversationId);
 			cacheData.put("isRead", true);
+			cacheData.put("isUploading", true);
 			cacheData.put("url", fileurl);
 			cacheData.put("thumb_url", fileurl);
 			cacheData.put("created_at", df.format(new Date()));
-			cacheData.put("username", "me");
+			cacheData.put("sender_name", "me");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
-		serviceIntent.putExtra("ConversationId", mConversationId);
-		serviceIntent.putExtra("FileDataName", mFileDataName);
-		serviceIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
-		
+		Intent sendIntent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
+		sendIntent.putExtra("ConversationId", mConversationId);
+		sendIntent.putExtra("FileDataName", mFileDataName);
+		sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
 		if(cacheData != new JSONObject())
 		{
-			serviceIntent.putExtra("JSONCache", cacheData.toString());
+			sendIntent.putExtra("JSONCache", cacheData.toString());
 			UploadCacheUtil.setUploadCacheFlag(mActivity, mConversationId, cacheData);
 		}
+		IABroadcastManager.sendLocalBroadcast(sendIntent);
 		
-		
-		
-		mActivity.startService(serviceIntent);
 		mActivity.getSupportFragmentManager().popBackStack();
 
 		if(mToConversation)
@@ -323,7 +356,7 @@ public class RecordVideoFragment extends BaseFragment{
 			.beginTransaction()
 			.replace(R.id.fragment_holder, fragment)
 			.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-	        .addToBackStack(ConversationFragment.class.getName())
+	        .addToBackStack(ConversationFragment.class.getSimpleName())
 	        .remove(RecordVideoFragment.this)
 	        .commitAllowingStateLoss();
 		}
@@ -419,17 +452,22 @@ public class RecordVideoFragment extends BaseFragment{
 		}
 		try {
 			camera = Camera.open(currentCameraId);
-
+			
 			Log.e("Hollerback", "Camera successfully opened");
 		} catch (RuntimeException e) {
-			Log.e("Hollerback",
-					"Camera failed to open: " + e.getLocalizedMessage());
+			Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
+			Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
+			mActivity.getSupportFragmentManager().popBackStack();
 		}
-
-		if (camera == null) {
-			camera = Camera.open();
-		}
+		
 		previewHolder.addCallback(surfaceCallback);
+		
+		
+		if(!isUploadRunning())
+		{
+			Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
+			mActivity.startService(serviceIntent);			
+		}
 	}
 
 	@Override
@@ -447,6 +485,7 @@ public class RecordVideoFragment extends BaseFragment{
 			if (inPreview) {
 				camera.stopPreview();
 			}
+			camera.lock();
 			camera.release();
 			camera = null;
 		}
@@ -469,22 +508,30 @@ public class RecordVideoFragment extends BaseFragment{
 		mRecordButton.startAnimation(rotation);
 		mTxtPlaying.setText(R.string.tap_stop);
 		
-		if (prepareVideoRecorder()) {
-			mTimer.setText("20s");
-			// Camera is available and unlocked, MediaRecorder is
-			// prepared,
-			// now you can start recording
-
-			recorder.start();
-
-			// inform the user that recording has started
-			//mRecordButton.setImageResource(R.drawable.stop_button);
-			isRecording = true;
-			handler.postDelayed(timeTask, 1000);
-		} else {
-			// prepare didn't work, release the camera
-			releaseMediaRecorder();
-			// inform user
+		try
+		{
+			if (prepareVideoRecorder()) {
+				mTimer.setText("20s");
+				// Camera is available and unlocked, MediaRecorder is
+				// prepared,
+				// now you can start recording
+	
+				recorder.start();
+	
+				// inform the user that recording has started
+				//mRecordButton.setImageResource(R.drawable.stop_button);
+				isRecording = true;
+				handler.postDelayed(timeTask, 1000);
+			} else {
+				// prepare didn't work, release the camera
+				releaseMediaRecorder();
+				// inform user
+			}
+		}
+		catch(java.lang.RuntimeException e)
+		{
+			Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
+			mActivity.getSupportFragmentManager().popBackStack();
 		}
 	}
 
@@ -746,12 +793,12 @@ public class RecordVideoFragment extends BaseFragment{
 			}
 			Camera.Parameters parameters = camera.getParameters();
 			Camera.Size size = CameraUtil.getBestPreviewSize(
-					(int) targetPreviewWidth, (int) targetPreviewHeight,
+					(int) targetPreviewWidth, (int) targetPreviewWidth,
 					parameters);
-			LogUtil.i("Best size: " + size.width + " " + size.width);
+			LogUtil.i("Best size: " + size.width + " " + size.height);
 
 			mBestCameraWidth = size.width;
-			mBestCameraHeight = size.width;
+			mBestCameraHeight = size.height;
 
 			if (size != null) {
 				parameters.setPreviewSize(size.width, size.height);
@@ -766,4 +813,20 @@ public class RecordVideoFragment extends BaseFragment{
 
 		}
 	};
+	
+	/**
+	 * check if service is running
+	 * @param tmp
+	 * @return
+	 */
+	public boolean isUploadRunning()
+	{
+	    ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
 }

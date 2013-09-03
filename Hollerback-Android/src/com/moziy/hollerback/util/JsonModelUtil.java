@@ -18,7 +18,14 @@ public class JsonModelUtil {
 			video.setFileUrl(videoItem.getString("url"));
 			video.setThumbUrl(videoItem.getString("thumb_url"));
 			video.setCreateDate(videoItem.getString("created_at"));
-			video.setUserName(videoItem.getString("username"));
+			
+			//changed to sender_name since username was somehow deprecated: 9/1/2013 - PM
+			video.setUserName(videoItem.getString("sender_name"));
+			
+			if(videoItem.has("isUploading"))
+			{
+				video.setUploading(true);
+			}
 			return video;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

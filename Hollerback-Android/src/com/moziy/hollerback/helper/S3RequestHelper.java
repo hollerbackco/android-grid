@@ -315,6 +315,7 @@ public class S3RequestHelper {
 			String pictureId, 
 			ProgressHelper progresshelper,
 			CustomVideoView targetVideoPlayer,
+			View wrapperInformation,
 			ArrayList<CustomVideoView> videos) {
 
 		if (downloadWithVideoTask != null) {
@@ -323,7 +324,7 @@ public class S3RequestHelper {
 			downloadWithVideoTask = null;
 		}
 
-		downloadWithVideoTask = new S3DownloadTaskWithVideo(targetVideoPlayer, videos);
+		downloadWithVideoTask = new S3DownloadTaskWithVideo(targetVideoPlayer, videos, wrapperInformation);
 		downloadWithVideoTask.execute(new GetObjectRequest(bucketName, pictureId));
 
 	}
@@ -335,9 +336,12 @@ public class S3RequestHelper {
 			AsyncTask<GetObjectRequest, Long, String> {
 		CustomVideoView mTargetVideoPlayer = null;
 		ArrayList<CustomVideoView> mVideos;
+		View mWrapperInformation;
+		
 		ProgressHelper mProgresshelper;
-		public S3DownloadTaskWithVideo(CustomVideoView videoplayer, ArrayList<CustomVideoView> videos)
+		public S3DownloadTaskWithVideo(CustomVideoView videoplayer, ArrayList<CustomVideoView> videos, View wrapperInformation)
 		{ 
+			mWrapperInformation = wrapperInformation; 
 			mVideos = videos;
 			mTargetVideoPlayer = videoplayer;
 			mProgresshelper = mTargetVideoPlayer.getProgressHelper();
@@ -468,6 +472,7 @@ public class S3RequestHelper {
 					
 					@Override
 					public void onCompletion(MediaPlayer mp) {
+						mWrapperInformation.setVisibility(View.GONE);
 						mTargetVideoPlayer.setVisibility(View.GONE);
 						mVideos.remove(mTargetVideoPlayer);
 						

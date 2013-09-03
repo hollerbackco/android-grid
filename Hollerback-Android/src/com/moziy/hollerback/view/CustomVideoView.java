@@ -4,7 +4,6 @@ import com.moziy.hollerback.helper.ProgressHelper;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.VideoView;
 
@@ -30,8 +29,6 @@ public class CustomVideoView extends VideoView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Log.i("@@@@", "onMeasure");
-
         setMeasuredDimension(mForceWidth, mForceHeight);
     }
     

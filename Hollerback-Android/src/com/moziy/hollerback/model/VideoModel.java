@@ -15,6 +15,12 @@ public class VideoModel extends BaseModel implements Serializable {
 
 	@Column(name = ActiveRecordFields.C_VID_ISREAD)
 	private boolean isRead;
+	
+	@Column(name = ActiveRecordFields.C_VID_ISUPLOADING)
+	private boolean isUploading;
+	
+	@Column(name = ActiveRecordFields.C_VID_ISSENT)
+	private boolean isSent;
 
 	@Column(name = ActiveRecordFields.C_VID_ID)
 	private int videoId;
@@ -27,8 +33,6 @@ public class VideoModel extends BaseModel implements Serializable {
 
 	@Column(name = ActiveRecordFields.C_VID_THUMBURL)
 	private String thumbUrl;
-
-	private boolean uploaded;
 
 	@Column(name = ActiveRecordFields.C_VID_CREATEDATE)
 	private String formated_created_at;
@@ -84,6 +88,22 @@ public class VideoModel extends BaseModel implements Serializable {
 
 	public void setRead(boolean isRead) {
 		this.isRead = isRead;
+	}
+	
+	public boolean isSent() {
+		return isSent;
+	}
+
+	public void setSent(boolean issent) {
+		this.isSent = issent;
+	}
+	
+	public boolean isUploading() {
+		return isUploading;
+	}
+
+	public void setUploading(boolean isuploading) {
+		this.isUploading = isuploading;
 	}
 
 	public int getVideoId() {

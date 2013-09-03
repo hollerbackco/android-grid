@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_view"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    >
 
     <SurfaceView
         android:id="@+id/surface"
@@ -34,8 +35,17 @@
 
     </RelativeLayout>
 
+    <com.moziy.hollerback.view.SquareRelativeLayout 
+        android:id="@+id/wrapperMask"
+		android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        
+        
+    </com.moziy.hollerback.view.SquareRelativeLayout>
     <TextView 
         android:id="@+id/txtPlaying"
+		android:layout_below="@+id/wrapperMask"
         android:gravity="center"
 		android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,15 +53,15 @@
         android:text="@string/tap_start"
         android:textColor="@android:color/white"
         android:textStyle="bold"
-        android:background="@color/background_transparent"
-        android:layout_above="@+id/bottom_bar"
+        android:background="@color/camera_color"
         />
     <RelativeLayout
         android:id="@+id/bottom_bar"
+        android:layout_below="@+id/txtPlaying"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/camera_bottom_bar"
+        android:layout_height="match_parent"
         android:layout_alignParentBottom="true" 
+        android:background="@color/camera_color"
         android:padding="@dimen/activity_vertical_margin">
 
 		<ImageButton
@@ -114,7 +124,7 @@
         	android:layout_alignParentRight="true"
         	/>        
         	
-		
+
 		<Button
             android:id="@+id/send_button"
         	android:layout_width="wrap_content"

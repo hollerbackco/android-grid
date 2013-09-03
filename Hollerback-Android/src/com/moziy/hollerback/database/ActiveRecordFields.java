@@ -15,7 +15,9 @@ public class ActiveRecordFields {
 	public static final String C_VID_ID = "VidId";
 	public static final String C_VID_CONV_ID = "VidConvId";
 	public static final String C_VID_FILENAME = "VidFilename";
+	public static final String C_VID_ISUPLOADING = "VidIsUploading";
 	public static final String C_VID_ISREAD = "VidIsRead";
+	public static final String C_VID_ISSENT = "VidIsSent";
 	public static final String C_VID_FILEURL = "VidFileUrl";
 	public static final String C_VID_THUMBURL = "VidThumbUrl";
 	public static final String C_VID_USERNAME = "VidUserName";

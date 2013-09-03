@@ -100,7 +100,6 @@ public class ConversationListFragment extends BaseFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-		mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
 		mActivity.getSupportActionBar().setHomeButtonEnabled(false);
 		mActivity.getSupportActionBar().setIcon(R.drawable.logo);
 		mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);	
@@ -128,6 +127,7 @@ public class ConversationListFragment extends BaseFragment {
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
 		IABroadcastManager.registerForLocalBroadcast(receiver,
 				IABIntent.INTENT_GET_CONVERSATIONS);
 	}
@@ -156,8 +156,6 @@ public class ConversationListFragment extends BaseFragment {
 		
 		lsvBaseListView = mConversationList.getRefreshableView();
 		lsvBaseListView.addHeaderView(mHeader);
-		
-		mConversationList.setEmptyView(view.findViewById(R.id.empty));
 		mConversationList.setShowIndicator(false);
 		mConversationList.setOnRefreshListener(new OnRefreshListener() {
 

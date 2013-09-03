@@ -17,22 +17,58 @@ public class CameraUtil {
 	public static Camera.Size getBestPreviewSize(int width, int height,
 			Camera.Parameters parameters) {
 		Camera.Size result = null;
+		
+		boolean isSquare = false;
+		
 		for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
 			LogUtil.i("Preview: w:" + size.width + " h:" + size.height);
+
 			if (size.width <= width && size.height <= height) {
+				if(!isSquare)
+				{
+					if (result == null) {
+						result = size;
+					} else {
+						int resultArea = result.width * result.height;
+						int newArea = size.width * size.height;
+						if (newArea > resultArea) {
+							result = size;
+						}
+					}
+				}
+			}
+			
+			if(size.width == size.height)
+			{
+				isSquare = true;
 				if (result == null) {
 					result = size;
-				} else {
-					int resultArea = result.width * result.height;
-					int newArea = size.width * size.height;
-					if (newArea > resultArea) {
+				}
+				//if the current size is already square
+				if(isSquare)
+				{
+					//we only take smaller, otherwise ignore
+					if(size.width <= result.width)
+					{
 						result = size;
 					}
 				}
+				else result = size;
 			}
 
 		}
 		return (result);
+	}
+	
+	public static boolean HasSquareCamera(Camera.Parameters parameters)
+	{
+		for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
+			if(size.width == size.height)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static void setFrontFacingParams(MediaRecorder recorder, int width,

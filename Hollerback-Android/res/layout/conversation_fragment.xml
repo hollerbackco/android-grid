@@ -15,14 +15,16 @@
 		android:layout_above="@+id/btn_video_reply">
 	</com.origamilabs.library.views.StaggeredGridView>
 	
-    <Button
+    <ImageButton
         android:id="@+id/btn_video_reply"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="5dp"
-        android:background="@drawable/conv_hollerback_replay"
+        android:padding="@dimen/activity_vertical_margin"
+        android:src="@drawable/icon_camera"
+        android:background="@drawable/btn_blue"
         android:gravity="center"
+        android:contentDescription="@string/app_name"
 	/>
 	
     <LinearLayout 
@@ -85,13 +87,5 @@
         android:background="#fff" 
         android:visibility="gone">
 
-        <ImageButton
-            android:id="@+id/ib_play_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:background="@null"
-            android:src="@drawable/play_circle"
-            android:visibility="gone" />
     </RelativeLayout>
 </RelativeLayout>

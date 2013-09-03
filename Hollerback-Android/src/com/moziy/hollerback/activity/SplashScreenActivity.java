@@ -48,7 +48,7 @@ public class SplashScreenActivity extends Activity {
 		Intent i = null;
 		if (HollerbackAppState.isValidSession()) {
 			i = new Intent(SplashScreenActivity.this,
-					HollerbackBaseActivity.class);
+					HollerbackMainActivity.class);
 		} else {
 			i = new Intent(SplashScreenActivity.this,
 					WelcomeFragmentActivity.class);

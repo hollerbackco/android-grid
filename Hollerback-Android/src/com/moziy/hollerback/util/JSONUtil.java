@@ -9,13 +9,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Intent;
-import android.widget.Toast;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Model;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -166,12 +164,12 @@ public class JSONUtil {
 			video.setThumbUrl(videoObject.getString("thumb_url"));
 			video.setVideoId(videoObject.getInt("id"));
 			video.setRead(true);
-			video.setUserName(videoObject.getString("username"));
+			video.setUserName(videoObject.getString("sender_name"));
 			video.setCreateDate(videoObject.getString("created_at"));
 			video.setConversationId(videoObject.getString("conversation_id"));
 			
 			conversationId = videoObject.getString("conversation_id");
-
+			
 			String hash = HashUtil.generateHashFor(IABIntent.ASYNC_REQ_VIDEOS,
 					videoObject.getString("conversation_id"));
 

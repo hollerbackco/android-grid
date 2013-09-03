@@ -25,7 +25,7 @@ public class ContactSpannableHelper {
 		View parent = LayoutInflater.from(context).inflate(
 				R.layout.contact_item_chip, null);
 		TextView textView = (TextView) parent.findViewById(R.id.tv_chips_name);
-		textView.setTypeface(FontUtil.MuseoSans_500);
+		//textView.setTypeface(FontUtil.MuseoSans_500);
 		textView.setText(name);
 		textView.setBackgroundResource(R.drawable.chips_edittext_gb);
 		// textView.setCompoundDrawablesWithIntrinsicBounds(0, 0,

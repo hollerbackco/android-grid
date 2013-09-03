@@ -199,7 +199,7 @@ public class ConversationMembersFragment extends BaseFragment {
 							JSONArray members = data.getJSONArray("members");
 							for(int i = 0; i < members.length(); i++)
 							{
-								mMembers.add(members.getJSONObject(i).getString("username"));
+								mMembers.add(members.getJSONObject(i).getString("name"));
 							}
 							
 							mMembersAdapter.notifyDataSetChanged();

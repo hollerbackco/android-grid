@@ -21,6 +21,8 @@
 	<string name="action_verify">Verify</string>	
 	<string name="action_clear">Clear</string>
 	<string name="action_invite">Invite</string>
+	<string name="action_uploading">Uploading</string>
+	
 	<!-- Button Strings -->
     <string name="signin">Log In</string>
     <string name="signup">Sign Up</string>
@@ -52,6 +54,7 @@
 	<string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
 	<string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>
 	<string name="message_sent">Nice! Message Sent!</string>
+	<string name="message_sent_simple">Message Sent!</string>
 	<string name="send_another">Send Another</string>
 	<string name="conversation_list">Your Conversations</string>
 	
@@ -74,6 +77,7 @@
 	<string name="preference_feedback">Send us feedback</string>
 	<string name="preference_twitter">Hollerback on Twitter</string>
 	<string name="preference_facebook">Hollerback on Facebook</string>
+	<string name="preference_new_group">New Group</string>
 	
     <string name="signup">Sign Up</string>
 	<string name="tap_start">Tap screen to start recording</string>
@@ -90,4 +94,6 @@
 	<string name="conversation_unwatched_videos">Unwatched Videos</string>
 	
 	<string name="invite_successful">Your friends has successfully been invited.</string>
+	<string name="record_error">There was an error recording, please restart your phone.</string>
+	
 </resources>

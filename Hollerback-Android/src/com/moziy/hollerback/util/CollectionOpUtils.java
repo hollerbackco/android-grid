@@ -1,6 +1,8 @@
 package com.moziy.hollerback.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import com.kpbird.chipsedittextlibrary.ChipsItem;
 import com.moziy.hollerback.model.SortedArray;
@@ -12,21 +14,32 @@ public class CollectionOpUtils {
 
 		SortedArray sortedArray = new SortedArray();
 
-		ArrayList<UserModel> recentUsers = new ArrayList<UserModel>();
+		
 		ArrayList<UserModel> hollerbackUsers = new ArrayList<UserModel>();
 		ArrayList<UserModel> phoneBookUsers = new ArrayList<UserModel>();
 
 		for (UserModel user : users) {
-			if (user.isRecentUser && user.isHollerbackUser) {
-				recentUsers.add(user);
-			} else if (user.isHollerbackUser) {
+			if (user.isHollerbackUser) {
 				hollerbackUsers.add(user);
 			} else {
 				phoneBookUsers.add(user);
 			}
 		}
 
-		sortedArray.array.addAll(recentUsers);
+		Collections.sort(hollerbackUsers,new Comparator<UserModel>() {
+			@Override
+			public int compare(UserModel lhs, UserModel rhs) {
+				return lhs.name.compareTo(rhs.name);
+			}
+		});
+		
+		Collections.sort(phoneBookUsers,new Comparator<UserModel>() {
+			@Override
+			public int compare(UserModel lhs, UserModel rhs) {
+				return lhs.name.compareTo(rhs.name);
+			}
+		});
+		
 		sortedArray.array.addAll(hollerbackUsers);
 		sortedArray.array.addAll(phoneBookUsers);
 
@@ -37,7 +50,6 @@ public class CollectionOpUtils {
 		}
 
 		sortedArray.indexes.add(0);
-		sortedArray.indexes.add(recentUsers.size());
 		sortedArray.indexes.add(hollerbackUsers.size());
 
 		return sortedArray;

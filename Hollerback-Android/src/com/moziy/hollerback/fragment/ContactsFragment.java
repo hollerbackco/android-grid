@@ -121,7 +121,7 @@ public class ContactsFragment extends BaseFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		mActivity.getSupportActionBar().setTitle(this.getResources().getString(R.string.preference_friends));
+		mActivity.getSupportActionBar().setTitle(this.getResources().getString(R.string.preference_new_group));
 		mRootView = (ViewGroup)inflater.inflate(R.layout.contact_fragment, null);
 
 		if(this.getArguments() != null && this.getArguments().getBoolean("isWelcomeScreen"))
@@ -322,80 +322,13 @@ public class ContactsFragment extends BaseFragment {
 		
 		mActivity.getSupportFragmentManager().popBackStack();
 		
-		RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones);
+		RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
 
 		mActivity.getSupportFragmentManager()
 		.beginTransaction().replace(R.id.fragment_holder, recordfragment)
 		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
         .addToBackStack(RecordVideoFragment.class.getSimpleName())
         .commitAllowingStateLoss();
-
-		
-		/*
-		ArrayList<String> contacts = new ArrayList<String>();
-		contacts.addAll(Arrays.asList(phones));
-		
-		HBRequestManager.postConversations(contacts, 
-				new JsonHttpResponseHandler() {
-		
-					@Override
-					protected Object parseResponse(String arg0)
-							throws JSONException {
-						LogUtil.i(arg0);
-						return super.parseResponse(arg0);
-		
-					}
-		
-					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onFailure(arg0, arg1);
-						LogUtil.e(HollerbackAPI.API_CONVERSATION
-								+ "FAILURE");
-					}
-		
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						LogUtil.i("ON SUCCESS API CONVO");
-						JSONUtil.processPostConversations(response);
-						
-						//this part is really bad implmentation, but his JSONUtil.processPostConversation
-						//does not retain the DataManager, so I had to write quick one just to do the trick
-						HollerbackMainActivity activity = (HollerbackMainActivity)mActivity;
-
-						
-						
-						//successful, now we upload video
-						try {
-
-							JSONObject conversation = response.getJSONObject("data");
-							
-							if(!conversation.has("id"))
-							{
-								return;
-							}
-							
-							String conversationId = String.valueOf(conversation.getInt("id"));
-							RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(conversationId, true);
-							
-							mActivity.getSupportFragmentManager().popBackStack();
-							
-							mActivity.getSupportFragmentManager()
-							.beginTransaction().replace(R.id.fragment_holder, recordfragment)
-							.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-					        .addToBackStack(RecordVideoFragment.class.getSimpleName())
-					        .commitAllowingStateLoss();
-
-							
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						//just posted, now upload the video
-					}
-			});
-			*/
 	}
 	
 	/**

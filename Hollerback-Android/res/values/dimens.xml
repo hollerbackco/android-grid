@@ -5,6 +5,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="image_thumbnail_size">100dp</dimen>
     <dimen name="image_thumbnail_spacing">2dp</dimen>
+    <dimen name="padding_small">4dp</dimen>
 	<dimen name="padding_medium">8dp</dimen>
     <dimen name="action_bar_height">48dp</dimen>
     <dimen name="et_add_contacts_height">100dp</dimen>
@@ -15,6 +16,7 @@
 	<dimen name="convo_right_margin">64dp</dimen>
 	
     <dimen name="normal_size">16sp</dimen>
+    <dimen name="normal_large_size">18sp</dimen>
 	<dimen name="large_size">20sp</dimen>
     
 </resources>

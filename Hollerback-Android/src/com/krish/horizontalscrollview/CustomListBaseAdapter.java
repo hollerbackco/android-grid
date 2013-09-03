@@ -15,8 +15,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.moziy.hollerback.HollerbackInterfaces.OnCustomItemClickListener;
@@ -25,6 +28,7 @@ import com.moziy.hollerback.bitmap.ImageFetcher;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.ProgressHelper;
 import com.moziy.hollerback.helper.S3RequestHelper;
+import com.moziy.hollerback.model.UploadingModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.ConversionUtil;
@@ -35,6 +39,7 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
 public class CustomListBaseAdapter extends BaseAdapter {
 	Context context;
 	public View view;
+	public ArrayList<UploadingModel> mUploadingHelper = new ArrayList<UploadingModel>();
 	public int currPosition = 0;
     LayoutInflater mInflater;
 
@@ -45,11 +50,13 @@ public class CustomListBaseAdapter extends BaseAdapter {
 
 	ImageFetcher mImageFetcher;
 	S3RequestHelper mS3RequestHelper;
+	private View mWrapperInformation;
 
 	private OnCustomItemClickListener mCustomClickListener;
 	int mVideoWidth;
 
-	public CustomListBaseAdapter(Activity activity, ImageFetcher imageFetcher, S3RequestHelper helper) {
+	public CustomListBaseAdapter(Activity activity, ImageFetcher imageFetcher, S3RequestHelper helper, View wrapperInformation) {
+		mWrapperInformation = wrapperInformation;
 		mImageFetcher = imageFetcher;
 		this.context = activity.getApplicationContext();		
         mInflater = LayoutInflater.from(activity);
@@ -93,8 +100,15 @@ public class CustomListBaseAdapter extends BaseAdapter {
 			
 			viewHolder.videoPlayer = (CustomVideoView)convertView.findViewById(R.id.videoPlayer);
 			viewHolder.txtTime = (TextView)convertView.findViewById(R.id.txtTime);
+			viewHolder.txtSent = (TextView)convertView.findViewById(R.id.txtSent);
+			
 			viewHolder.progresshelper = new ProgressHelper(convertView.findViewById(R.id.rl_progress));
 			viewHolder.progresshelper.setSiblingTextView(viewHolder.txtTime);
+			
+			viewHolder.progressupload = new ProgressHelper(convertView.findViewById(R.id.rl_upload));
+			viewHolder.progressupload.setSiblingTextView(viewHolder.txtTime);
+			
+			viewHolder.gridWrapper = (RelativeLayout)convertView.findViewById(R.id.gridWrapper);
 			convertView.setTag(viewHolder);
 		} else {
 			convertView.setPadding(0, 0, 0, 0);
@@ -143,7 +157,7 @@ public class CustomListBaseAdapter extends BaseAdapter {
 					}
 					
 					viewHolder.progresshelper.startIndeterminateSpinner();
-					viewHolder.videoPlayer.changeVideoSize(v.getWidth(), v.getHeight());
+					viewHolder.videoPlayer.changeVideoSize(viewHolder.gridWrapper.getWidth(), viewHolder.gridWrapper.getHeight());
 					
 					if(position < CustomListBaseAdapter.this.getCount() - 1)
 					{
@@ -157,61 +171,99 @@ public class CustomListBaseAdapter extends BaseAdapter {
 							model.getFileName(),
 							viewHolder.progresshelper,
 							viewHolder.videoPlayer,
+							mWrapperInformation,
 							mVideoViews);
 					
 					if (!model.isRead()) {
 						model.setRead(true);
 					}
+					if(model.isSent()){
+						model.setSent(true);
+					}
+					viewHolder.txtSent.setVisibility(View.GONE);
+					
 					HBRequestManager.postVideoRead(Integer.toString(model.getVideoId()));
 				}
+				viewHolder.unreadCircle.setVisibility(View.GONE);
 			}
 		});
 		
-		LogUtil.i("Loading Thumb: " + getItem(position).getThumbUrl());
-		VideoModel model = mVideoModels.get(position);
-
-		if (getItem(position).getThumbUrl() != null && mImageFetcher != null) {
-			Uri uri = Uri.parse(getItem(position).getThumbUrl());
-			if(uri.getScheme() != null && uri.getScheme().equalsIgnoreCase("file"))
-			{
-				viewHolder.videoThumbnail.setImageURI(uri);
-			}
-			else
-			{
-				mImageFetcher.loadImage(getItem(position).getThumbUrl(),viewHolder.videoThumbnail);
-			}
-			//This is the part parsing out local files
-		}
-
 		if (mVideoWidth == 0) {
 			mVideoWidth = viewHolder.videoThumbnail.getWidth();
 		}
-
-		if (getItem(position).isRead()) {
-			viewHolder.unreadCircle.setVisibility(View.GONE);
-		} else {
-			viewHolder.unreadCircle.setVisibility(View.VISIBLE);
-		}
 		
-		try {
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-			Date date = df.parse(model.getCreateDate());
-			LogUtil.e(model.getCreateDate() + " realtime" + date.toGMTString());
-			viewHolder.txtTime.setText(ConversionUtil.timeAgo(date));
-
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		VideoModel model = mVideoModels.get(position);
+		
+		
+		viewHolder.progressupload.hideLoader();
+		viewHolder.txtSent.setVisibility(View.GONE);
+		if(model != null)
+		{
+			if(model.isUploading())
+			{
+				UploadingModel tmp = new UploadingModel();
+				tmp.setProgressHelper(viewHolder.progressupload);
+				tmp.setVideoModel(model);
+				tmp.setTxtSent(viewHolder.txtSent);
+				mUploadingHelper.add(tmp);
+				viewHolder.progressupload.startIndeterminateSpinner(true);
+			}
+			
+			if(model.isSent())
+			{
+				viewHolder.txtSent.setVisibility(View.VISIBLE);
+			}
+			
+			try {
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
+				Date date = df.parse(model.getCreateDate());
+				LogUtil.e(model.getCreateDate() + " realtime" + date.toGMTString());
+				viewHolder.txtTime.setText(ConversionUtil.timeAgo(date));
+	
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 
 		//only on first one, to offset the it
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		viewHolder.gridWrapper.setLayoutParams(params);
 		if(position == 1)
 		{
-			convertView.setPadding(0, (int)DipUtil.dipToPixels(context, 80), 0, 0);
+			params.topMargin = (int)DipUtil.dipToPixels(context, 80);
+			viewHolder.gridWrapper.setLayoutParams(params);
+		}
+		
+		if(getItem(position) != null)
+		{
+			LogUtil.i("Loading Thumb: " + getItem(position).getThumbUrl());
+			
+			if (getItem(position).isRead()) {
+				viewHolder.unreadCircle.setVisibility(View.GONE);
+			} else {
+				viewHolder.unreadCircle.setVisibility(View.VISIBLE);
+			}
+			
+			if (getItem(position).getThumbUrl() != null && mImageFetcher != null) {
+				Uri uri = Uri.parse(getItem(position).getThumbUrl());
+				if(uri.getScheme() != null && uri.getScheme().equalsIgnoreCase("file"))
+				{
+					viewHolder.videoThumbnail.setImageURI(uri);
+				}
+				else
+				{
+					mImageFetcher.loadImage(getItem(position).getThumbUrl(),viewHolder.videoThumbnail);
+				}
+				//This is the part parsing out local files
+			}
 		}
 		
 		mViews.put(position, convertView);
+		
+		
+		
 		return convertView;
 	}
 	
@@ -220,7 +272,10 @@ public class CustomListBaseAdapter extends BaseAdapter {
 		ImageView unreadCircle;
 		CustomVideoView videoPlayer;
 		TextView txtTime;
+		TextView txtSent;
 		ProgressHelper progresshelper;
+		ProgressHelper progressupload;
+		RelativeLayout gridWrapper;
 	}
 
 	@Override

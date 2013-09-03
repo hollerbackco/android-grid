@@ -2,7 +2,10 @@ package com.moziy.hollerback.activity;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Delete;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.HollerbackPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
@@ -11,6 +14,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 	private final String TWITTERURL = "https://twitter.com/hollerback";
@@ -47,7 +53,17 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
     	this.setTitle(R.string.action_settings);
     	this.setResult(RESULT_CANCELED);
     	this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    	
+    	this.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        
+        View customView = inflater.inflate(R.layout.header_title, null);
+	    TextView txtTitle = (TextView)customView.findViewById(R.id.title);
+	    txtTitle.setText(this.getString(R.string.action_settings));
+	    
+	    this.getSupportActionBar().setDisplayShowCustomEnabled(true);
+	    this.getSupportActionBar().setCustomView(customView);
+	    this.getSupportActionBar().setIcon(R.drawable.icon_banana);
+	    
     	addPreferencesFromResource(R.xml.app_preferences);
     	
     	preference_friends = (Preference)getPreferenceScreen().findPreference("preference_friends");
@@ -67,7 +83,11 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				PreferenceManagerUtil.clearPreferences();
+				ActiveAndroid.beginTransaction();
+				new Delete().from(ConversationModel.class).execute();
+				ActiveAndroid.setTransactionSuccessful();
 				SettingPreferenceActivity.this.finish();
+
 				return false;
 			}
 		});
@@ -85,7 +105,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 		});
 		
 		preference_phone = (Preference)getPreferenceScreen().findPreference("preference_phone");
-		preference_username.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""));
+		preference_phone.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""));
 		preference_phone.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			
 			@Override

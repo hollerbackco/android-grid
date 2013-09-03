@@ -12,4 +12,5 @@
 	<color name="background_welcome">#29B9EB</color>
 	<color name="background_header">#DFE2DF</color>
 	<color name="gray_font">#626262</color>
+	<color name="flat">#07A7F7</color>
 </resources>

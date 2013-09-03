@@ -1,7 +1,9 @@
 package com.moziy.hollerback.fragment;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -36,10 +38,11 @@ public abstract class BaseFragment extends SherlockFragment {
         mLoading = new LoadingFragmentUtil(mActivity);
         
         mActivity.getSupportActionBar().show();
-        mActivity.getSupportActionBar().setIcon(R.drawable.icon);
+        mActivity.getSupportActionBar().setIcon(R.drawable.icon_banana);
         mActivity.getSupportActionBar().setHomeButtonEnabled(true);
         mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        mActivity.getSupportActionBar().setDisplayShowTitleEnabled(true);
+        mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);	   
     }
     
     @Override
@@ -57,7 +60,13 @@ public abstract class BaseFragment extends SherlockFragment {
 	
 	@Override
 	public void onResume() {
-		//onActionBarIntialized(HollerbackBaseActivity.getCustomActionBar());
+        LayoutInflater inflater = LayoutInflater.from(mActivity);
+        View customView = inflater.inflate(R.layout.header_title, null);
+	    TextView txtTitle = (TextView)customView.findViewById(R.id.title);
+	    txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString().toUpperCase());
+	    
+	    mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
+        mActivity.getSupportActionBar().setCustomView(customView);
 		super.onResume();
 	}
 
