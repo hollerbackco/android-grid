@@ -20,7 +20,7 @@
 		<item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Hollerback">
+    <style name="Hollerback" parent="Theme.Sherlock.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:background">#ffffffff</item>
 		<item name="windowNoTitle">true</item>

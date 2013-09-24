@@ -20,7 +20,7 @@ public class NumberUtil {
 			}
 		}
 
-		return null;
+		return "+15555555555";
 	}
 
 	public static PhoneNumber getPhoneNumber(String number) {

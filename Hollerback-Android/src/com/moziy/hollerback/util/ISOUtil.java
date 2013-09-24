@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Set;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -25,10 +26,36 @@ public class ISOUtil {
 
 		Locale[] locales = Locale.getAvailableLocales();
 		for (Locale locale : locales) {
-			String iso = locale.getISO3Country();
-			String code = locale.getCountry();
-			String name = locale.getDisplayCountry();
-
+			String iso = "";
+			try
+			{
+				iso = locale.getISO3Country();
+			}
+			catch(MissingResourceException e)
+			{
+				e.printStackTrace();
+			}
+			
+			String code = ""; 
+			try
+			{
+				code = locale.getCountry();
+			}
+			catch(MissingResourceException e)
+			{
+				e.printStackTrace();
+			}
+					
+			String name = ""; 
+			try
+			{
+				name = locale.getDisplayCountry();
+			}
+			catch(MissingResourceException e)
+			{
+				e.printStackTrace();
+			}
+			
 			if (!"".equals(iso) && !"".equals(code) && !"".equals(name)
 					&& set.contains(code)) {
 				Country country = new Country(iso, code, name);

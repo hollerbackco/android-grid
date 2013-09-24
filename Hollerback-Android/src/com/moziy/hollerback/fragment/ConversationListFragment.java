@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -105,9 +106,10 @@ public class ConversationListFragment extends BaseFragment {
 		mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);	
 		View fragmentView = inflater.inflate(R.layout.message_list_fragment,
 				null);
+
+		this.startLoading();
 		
 		mHeader = (ViewGroup)inflater.inflate(R.layout.message_list_item_header, null);
-		this.startLoading();
 		initializeView(fragmentView);
 		// HBRequestManager.getConversations();
 
@@ -121,6 +123,11 @@ public class ConversationListFragment extends BaseFragment {
 		// TODO Auto-generated method stub
 		super.onPause();
 		IABroadcastManager.unregisterLocalReceiver(receiver);
+		if(mTxtSearch != null)
+    	{
+    		InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+    		imm.hideSoftInputFromWindow(mTxtSearch.getWindowToken(), 0);
+    	}
 	}
 
 	@Override

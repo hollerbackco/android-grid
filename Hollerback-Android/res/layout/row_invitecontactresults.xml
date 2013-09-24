@@ -6,7 +6,7 @@
 	android:layout_height="wrap_content"
 	android:paddingLeft="@dimen/activity_horizontal_margin"	
 	android:clickable="true"
-	android:background="@android:drawable/list_selector_background"
+	android:background="@drawable/bg_row_selector"
 >
 
 	<!-- image icon -->

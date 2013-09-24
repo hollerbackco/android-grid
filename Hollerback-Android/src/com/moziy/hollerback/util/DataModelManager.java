@@ -57,7 +57,9 @@ public class DataModelManager {
 			GetConversationsAsyncTask task = new GetConversationsAsyncTask();
 			task.execute();
 		}
+		
 		HBRequestManager.getConversations();
+		
 	}
 
 	private class GetConversationsAsyncTask extends
@@ -80,10 +82,11 @@ public class DataModelManager {
 			String hash = HashUtil.getConvHash();
 
 			mObjectHash.put(hash, result);
-
+/*
 			Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATIONS);
 			intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
 			IABroadcastManager.sendLocalBroadcast(intent);
+			*/
 		}
 
 	}

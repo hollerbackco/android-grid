@@ -29,7 +29,7 @@ public class HollerbackAsyncClient {
 			setHeaders();
 
 			// set timeout at 60 seconds
-			client.setTimeout(60000);
+			client.setTimeout(120000);
 		}
 		return sInstance;
 	}

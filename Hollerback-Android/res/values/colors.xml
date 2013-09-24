@@ -13,4 +13,8 @@
 	<color name="background_header">#DFE2DF</color>
 	<color name="gray_font">#626262</color>
 	<color name="flat">#07A7F7</color>
+	
+	<color name="bg_click">#52c1ff</color>
+	<color name="bg_row_click">#f0f0f0</color>
+	
 </resources>

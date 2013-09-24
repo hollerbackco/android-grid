@@ -20,9 +20,9 @@ public class AppEnvironment {
 
 	// public static final String PICTURE_NAME = null;
 
-	public String UPLOAD_BUCKET = "hollerback-app-dev";
+	public String UPLOAD_BUCKET = "hb-media";
 
-	public String PICTURE_BUCKET = "hollerback-app-dev";
+	public String PICTURE_BUCKET = "hb-media";
 
 	public static final int ENV_PRODUCTION = 0x9999;
 	public static final int ENV_DEVELOPMENT = 0x1234;

@@ -86,6 +86,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity{
 				ActiveAndroid.beginTransaction();
 				new Delete().from(ConversationModel.class).execute();
 				ActiveAndroid.setTransactionSuccessful();
+				ActiveAndroid.endTransaction();
 				SettingPreferenceActivity.this.finish();
 
 				return false;

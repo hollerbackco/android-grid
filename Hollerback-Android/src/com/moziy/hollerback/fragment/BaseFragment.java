@@ -48,8 +48,8 @@ public abstract class BaseFragment extends SherlockFragment {
     @Override
     public void onPause()
     {
-    	super.onPause();
 		mLoading.stopLoading();
+    	super.onPause();
     }
     
     @Override

@@ -90,7 +90,8 @@ public class ConversationMembersFragment extends BaseFragment {
 		mLsvMembers.addHeaderView(mHeaderView);
 		mLsvMembers.addFooterView(mFooterView);
 		
-		mMembersAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, mMembers);
+		//mMembersAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, mMembers);
+		mMembersAdapter = new ArrayAdapter<String>(mActivity, R.layout.custom_simple_list_item, mMembers);
 		mLsvMembers.setAdapter(mMembersAdapter);
 		
 		mBtnLeaveGroup = (Button)mFooterView.findViewById(R.id.btnLeaveGroup);

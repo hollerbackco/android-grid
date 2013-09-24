@@ -387,7 +387,7 @@ public class HBRequestManager {
 			params.put(HollerbackAPI.PARAM_NUMBERS,
 					HBRequestUtil.generateStringArray(contacts));
 
-			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_CONTACTS,
+			HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONTACTS,
 					params, handler);
 		}
 	}

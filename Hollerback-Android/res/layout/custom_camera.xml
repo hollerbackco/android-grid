@@ -84,6 +84,7 @@
         	android:layout_centerVertical="true"
         	android:scaleType="center"
         	android:contentDescription="@string/action_filter"
+        	android:visibility="gone"
         	/>        
 
         <RelativeLayout 
@@ -122,6 +123,7 @@
         	android:scaleType="center"
         	android:contentDescription="@string/action_switch"
         	android:layout_alignParentRight="true"
+        	android:visibility="gone"
         	/>        
         	
 
