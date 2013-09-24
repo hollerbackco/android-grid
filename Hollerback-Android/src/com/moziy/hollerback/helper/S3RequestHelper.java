@@ -127,7 +127,8 @@ public class S3RequestHelper {
 						AppEnvironment.getInstance().UPLOAD_BUCKET,
 						thumbRequestParam.getFileName(), new java.io.File(
 								thumbRequestParam.getFilePath()));
-
+				
+				
 				videoUploadRequest.setProgressListener(new ProgressListener() {
 
 					@Override
