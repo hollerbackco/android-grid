@@ -204,6 +204,7 @@ public class S3RequestHelper {
 		new S3RequestHelper.S3GenerateUrlTask().execute(videosArray);
 	}
 
+	//TODO - Sajjad: What was the original intention of this AsyncTask?
 	public class S3GenerateUrlTask extends
 			AsyncTask<S3UploadParams, Void, S3TaskResult> {
 

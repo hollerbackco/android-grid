@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -388,7 +389,8 @@ public class ConversationFragment extends BaseFragment {
 				{
 					for(int i = 0; i < mVideos.size(); i++)
 					{
-						if(mVideos.get(i).isUploading())
+					    //XXX: Why are we checking for is uploading and then setting the setUploading to false?
+						if(mVideos.get(i).isUploading()) 
 						{
 							mVideos.get(i).setUploading(false);
 							mVideos.get(i).setSent(true);
@@ -409,6 +411,7 @@ public class ConversationFragment extends BaseFragment {
 				// helper.getS3URLParams(generateUploadParams(hash,
 				// intent.getStringExtra(IABIntent.PARAM_ID)));
 
+				//TODO - Sajjad : Review this!
 				if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
 					LogUtil.i("Setting: same data set");
 					return;
@@ -416,6 +419,7 @@ public class ConversationFragment extends BaseFragment {
 
 				mVideos = (ArrayList<VideoModel>) tempVideos.clone();
 
+				//TODO: Come back here for review, what is being cached here, and how is it related to Upload.
 				if(UploadCacheUtil.hasVideoCache(mActivity, mConversationId))
 				{
 					//upload service running
@@ -486,7 +490,8 @@ public class ConversationFragment extends BaseFragment {
 		mVideoGallery.post(new Runnable() {
 			@Override
 			public void run() {
-				mVideoGallery.scrollToBottom();
+			    Log.d("sajjad", "scroll to bottom" );
+//				mVideoGallery.scrollToBottom();
 			}
 		});
 	}
