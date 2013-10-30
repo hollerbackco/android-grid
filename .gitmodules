@@ -4,3 +4,6 @@
 [submodule "StaggeredGridView"]
 	path = StaggeredGridView
 	url = git://github.com/hollerbackco/StaggeredGridView.git
+[submodule "Android-PullToRefresh"]
+	path = Android-PullToRefresh
+	url = git://github.com/hollerbackco/Android-PullToRefresh.git
