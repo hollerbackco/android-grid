@@ -389,7 +389,7 @@ public class ConversationFragment extends BaseFragment {
 				{
 					for(int i = 0; i < mVideos.size(); i++)
 					{
-					    //XXX: Why are we checking for is uploading and then setting the setUploading to false?
+					    //XXX: This code for updating the model should be set elsewhere probably after we posted successfully
 						if(mVideos.get(i).isUploading()) 
 						{
 							mVideos.get(i).setUploading(false);

@@ -34,7 +34,8 @@ public class HBRequestManager {
 		params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
 				HollerbackAppState.getValidToken());
 		params.put(HollerbackAPI.PARAM_FILENAME, filename);
-
+		//TODO - Sajjad: Insert Video model into db, and mark it as pending
+		
 		HollerbackAsyncClient.getInstance().post(
 				String.format(HollerbackAPI.API_VIDEO_POST_FORMAT,
 						conversation_id), params,
@@ -42,7 +43,7 @@ public class HBRequestManager {
 
 					@Override
 					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
+						// TODO - Sajjad : Mark video in db as pending_upload and set uploading to false or retry
 						super.onFailure(arg0, arg1);
 					}
 
@@ -257,7 +258,7 @@ public class HBRequestManager {
 		}
 
 	}
-	
+	//TODO - Sajjad : Remove as it's not used
 	public static void postConversations(ArrayList<String> contacts) {
 		if (HollerbackAppState.isValidSession()) {
 			RequestParams params = new RequestParams();
