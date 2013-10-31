@@ -339,7 +339,7 @@ public class RecordVideoFragment extends BaseFragment{
 		sendIntent.putExtra("ConversationId", mConversationId);
 		sendIntent.putExtra("FileDataName", mFileDataName);
 		sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
-		if(cacheData != new JSONObject())
+		if(cacheData != new JSONObject()) //XXX: BAD, this will never be false
 		{
 			sendIntent.putExtra("JSONCache", cacheData.toString());
 			UploadCacheUtil.setUploadCacheFlag(mActivity, mConversationId, cacheData);

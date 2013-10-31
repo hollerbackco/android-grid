@@ -2,8 +2,6 @@ package com.kpbird.chipsedittextlibrary;
 
 import java.util.ArrayList;
 
-import com.moziy.hollerback.R;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +12,8 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.moziy.hollerback.R;
 
 public class ChipsAdapter extends BaseAdapter implements Filterable {
 

@@ -128,6 +128,7 @@ public class VideoModel extends BaseModel implements Serializable {
 		return username;
 	}
 
+	//XXX: BROKEN EQUALS, MUST FIX
 	@Override
 	public boolean equals(Object obj) {
 		VideoModel video = (VideoModel) obj;

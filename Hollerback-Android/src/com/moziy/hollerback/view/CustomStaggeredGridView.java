@@ -41,14 +41,6 @@ public class CustomStaggeredGridView extends StaggeredGridView{
     }
     
     
-    @Override 
-    protected boolean trackMotionScroll(int deltaY, boolean allowOverScroll) {
-    	
-		Log.e("Scroll here", "Scrolling");
-
-    	return super.trackMotionScroll(deltaY, allowOverScroll);
-    }
-    
 	
 	public void addScrollingSibling(int position, int viewId)
 	{
@@ -91,8 +83,8 @@ public class CustomStaggeredGridView extends StaggeredGridView{
 	private void updateSiblingPositions()
 	{
 		ViewGroup parent = (ViewGroup)getParent();
-		final int firstPos = getFirstVisiblePosition();
-		final int lastPos = getLastVisiblePosition();
+		final int firstPos = getFirstPosition();
+		final int lastPos = firstPos + getChildCount();
 		final int size = mScrollingSiblings.size();
 		for(int i = 0; i < size; i++){
 			View view = parent.findViewById(mScrollingSiblings.valueAt(i));
