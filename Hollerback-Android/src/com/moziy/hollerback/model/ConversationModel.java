@@ -10,69 +10,84 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 public class ConversationModel extends BaseModel {
 
 	@Column(name = ActiveRecordFields.C_CONV_ID)
-	private int conversation_id;
+	private int id;
 
 	@Column(name = ActiveRecordFields.C_CONV_NAME)
-	private String conversation_name;
+	private String name;
 
 	@Column(name = ActiveRecordFields.C_CONV_UNREAD)
-	private int conversation_unread_count;
+	private int unread_count;
 
+	@Column(name = ActiveRecordFields.C_CONV_CREATED_AT)
+	private String created_at;
+	
+	@Column(name = ActiveRecordFields.C_CONV_DELETED_AT)
+	private String deleted_at;
+	
+	@Column(name = ActiveRecordFields.C_CONV_LAST_MESSAGE_AT)
+	private String last_message_at;
+	
+	@Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_SUBTITLE)
+	private String most_recent_subtitle;
+	
+	@Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB_URL)
+	private String most_recent_thumb_url;
+	
+	@Column(name = ActiveRecordFields.C_CONV_UNSEEN_COUNT)
+	private String unseen_count;
+	
+	@Column(name = ActiveRecordFields.C_CONV_USER_ID)
+	private long user_id;
+	
+	@Column(name = ActiveRecordFields.C_CONV_IS_DELETED)
+	private boolean is_deleted;
+	
+	
 	@Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB)
 	private String recentThumbUrl;
 
 	@Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_VIDEO)
 	private String recentVideoUrl;
 
-	@Column(name = ActiveRecordFields.C_CONV_CREATE_TIME)
-	private String create_time;
+	
 
 	@Column(name = ActiveRecordFields.C_CONV_URL)
 	private String url;
 
 	
-	private ArrayList<VideoModel> mVideos;
-
-	// public ArrayList<VideoModel> getVideos() {
-	// return mVideos;
-	// }
-
-	// public void setVideos(ArrayList<VideoModel> mVideos) {
-	// this.mVideos = mVideos;
-	// }
 
 	public int getConversation_Id() {
-		return conversation_id;
+		return id;
 	}
 
 	public void setConversation_id(int conversation_id) {
-		this.conversation_id = conversation_id;
+		this.id = conversation_id;
 	}
 
 	public String getConversationName() {
-		return conversation_name;
+		return name;
 	}
 
 	public void setConversation_name(String conversation_name) {
-		this.conversation_name = conversation_name;
+		this.name = conversation_name;
 	}
 
 	public int getConversationUnreadCount() {
-		return conversation_unread_count;
+		return unread_count;
 	}
 
 	public void setConversation_unread_count(int conversation_unread_count) {
-		this.conversation_unread_count = conversation_unread_count;
+		this.unread_count = conversation_unread_count;
 	}
 	
 	public void setCreateTime(String value)
 	{
-		create_time = value;
+		created_at = value;
 	}
 	
 	public String getCreateTime()
 	{
-		return this.create_time;
+		return this.created_at;
 	}
 	
 	public void setUrl(String value)

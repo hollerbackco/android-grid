@@ -3,12 +3,19 @@ package com.moziy.hollerback.database;
 public class ActiveRecordFields {
 
 	// Conversation
-	public static final String C_CONV_ID = "ConvId";
-	public static final String C_CONV_NAME = "ConvName";
-	public static final String C_CONV_UNREAD = "ConvUnread";
+	public static final String C_CONV_ID = "id";
+	public static final String C_CONV_NAME = "name";
+	public static final String C_CONV_UNREAD = "unread_count";
 	public static final String C_CONV_MOST_RECENT_VIDEO = "ConvRecentVideo";
 	public static final String C_CONV_MOST_RECENT_THUMB = "ConvRecentUrl";
-	public static final String C_CONV_CREATE_TIME = "ConvCreatTime";
+	public static final String C_CONV_CREATED_AT = "created_at";
+	public static final String C_CONV_DELETED_AT = "deleted_at";
+	public static final String C_CONV_LAST_MESSAGE_AT = "last_message_at";
+	public static final String C_CONV_MOST_RECENT_SUBTITLE = "most_recent_subtitle";
+	public static final String C_CONV_MOST_RECENT_THUMB_URL = "most_recent_thumb_url";
+	public static final String C_CONV_UNSEEN_COUNT = "unseen_count";
+	public static final String C_CONV_USER_ID = "user_id";
+	public static final String C_CONV_IS_DELETED = "is_deleted";
 	public static final String C_CONV_URL = "ConvUrl";
 	
 	// Videos

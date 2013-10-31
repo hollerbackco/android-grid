@@ -1,11 +1,14 @@
-package com.moziy.hollerback.model;
+package com.moziy.hollerback.model.web.request;
+
+import com.moziy.hollerback.model.web.RequestParams;
+
 
 /**
  * This class is used to authenticate over the registration endpoint 
  * @author sajjad
  *
  */
-public class UserRegInfo implements Model {
+public class UserRegParams implements RequestParams {
 
 	public String email;
 	
