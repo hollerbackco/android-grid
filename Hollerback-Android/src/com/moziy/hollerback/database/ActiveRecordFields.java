@@ -24,12 +24,17 @@ public class ActiveRecordFields {
 	public static final String C_VID_CREATEDATE = "VidCreateDate";
 
 	// Users
-	public static final String C_USER_ID = "UserId";
-	public static final String C_USER_NAME = "UserName";
-	public static final String C_USER_PHOTO = "UserPhoto";
-	public static final String C_USER_USERNAME = "UserUserName";
-	public static final String C_USER_EMAIL = "UserEmail";
-	public static final String C_USER_PHONE = "UserPhone";
+	public static final String C_USER_ID = "id";
+	public static final String C_USER_USERNAME = "username";
+	public static final String C_USER_PHONE = "phone";
+	public static final String C_USER_NAME = "name";
+	public static final String C_USER_EMAIL = "email";
+	public static final String C_USER_PHONE_HASHED = "phone_hashed";
+	public static final String C_USER_CREATED_AT = "created_at";
+	public static final String C_USER_ISNEW = "is_new";
+	
+	public static final String C_USER_PHOTO = "UserPhoto"; //TODO: still needed?
+	
 	public static final String C_USER_PHONE_NORMALIZED = "UserPhoneNormalized";
 	public static final String C_USER_IS_VERIFIED = "UserIsVerified";
 	public static final String C_USER_HOLLERBACK_USER = "UserHollerbackUser";
