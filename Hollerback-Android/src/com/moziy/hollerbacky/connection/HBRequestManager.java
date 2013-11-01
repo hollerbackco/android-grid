@@ -5,10 +5,15 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.model.web.response.VerifyResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.HollerbackAppState;
@@ -22,6 +27,8 @@ import com.moziy.hollerback.util.JSONUtil;
  * 
  */
 public class HBRequestManager {
+	
+	private static final String TAG = HBRequestManager.class.getSimpleName();
 
 	static boolean isS3Upload;
 
@@ -151,7 +158,7 @@ public class HBRequestManager {
 
 	}
 	
-	public static void postVerification(String veroficationCode, String phone, JsonHttpResponseHandler handler) {
+	public static void postVerification(String veroficationCode, String phone, AsyncHttpResponseHandler handler) {
 		RequestParams params = new RequestParams();
 
 		params.put(HollerbackAPI.PARAM_CODE, veroficationCode);
@@ -176,33 +183,53 @@ public class HBRequestManager {
 
 			params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
 		}
+		
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new JacksonHttpResponseHandler<VerifyResponse>(VerifyResponse.class) {
 
-		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION,
-				params, new JsonHttpResponseHandler() {
+			@Override
+			public void onResponseSuccess(int statusCode,
+					VerifyResponse response) {
+				
+				Log.d("sajjad", "access token: " + response.access_token);
+				JSONUtil.processLogin(response);
+				
+			}
+			
+			@Override
+			public void onApiFailure(Metadata metaData) {
+				Log.d(TAG, "error code: " + metaData.code);
+				
+			}
+		
+		});
+//				
 
-					@Override
-					protected Object parseResponse(String arg0)
-							throws JSONException {
-						LogUtil.i(arg0);
-						return super.parseResponse(arg0);
-
-					}
-
-					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onFailure(arg0, arg1);
-						LogUtil.i("LOGIN FAILURE");
-					}
-
-					@Override
-					public void onSuccess(int arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onSuccess(arg0, arg1);
-						JSONUtil.processSignIn(arg1);
-					}
-
-				});
+//		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION,
+//				params, new JsonHttpResponseHandler() {
+//
+//					@Override
+//					protected Object parseResponse(String arg0)
+//							throws JSONException {
+//						LogUtil.i(arg0);
+//						return super.parseResponse(arg0);
+//
+//					}
+//
+//					@Override
+//					public void onFailure(Throwable arg0, JSONObject arg1) {
+//						// TODO Auto-generated method stub
+//						super.onFailure(arg0, arg1);
+//						LogUtil.i("LOGIN FAILURE");
+//					}
+//
+//					@Override
+//					public void onSuccess(int arg0, JSONObject arg1) {
+//						// TODO Auto-generated method stub
+//						super.onSuccess(arg0, arg1);
+//						JSONUtil.processSignIn(arg1);
+//					}
+//
+//				});
 
 	}
 	

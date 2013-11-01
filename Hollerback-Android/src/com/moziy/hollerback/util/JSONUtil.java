@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Intent;
+import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Model;
@@ -23,6 +24,7 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.web.response.VerifyResponse;
 
 public class JSONUtil {
 
@@ -71,6 +73,32 @@ public class JSONUtil {
 		IABroadcastManager.sendLocalBroadcast(intent);
 
 	}
+	
+	public static void processLogin(VerifyResponse response){
+
+		String userName = response.user.username;
+		String phone = response.user.phone;
+		long id = response.user.id;
+		
+		/**
+		 * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
+		 */
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.USERNAME,
+				userName);
+		
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.PHONE,
+				phone);
+		
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.ID,
+				id);
+
+		Intent intent = new Intent(IABIntent.INTENT_SESSION_REQUEST);
+		intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
+		IABroadcastManager.sendLocalBroadcast(intent);
+	}
 
 	public static void processSignUp(JSONObject object) {
 		try {
@@ -118,6 +146,21 @@ public class JSONUtil {
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
+	}
+	
+	public static void processVerify(VerifyResponse response)
+	{
+		
+		Log.d("sajjad", response.user.username);
+		
+		String access_token = "";
+		if (response.access_token != null) {
+			access_token = response.access_token;
+		} 		
+		
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.ACCESS_TOKEN,
+				access_token);
 	}
 	
 	/**

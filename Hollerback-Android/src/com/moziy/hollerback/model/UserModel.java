@@ -26,7 +26,6 @@ public class UserModel extends BaseModel {
 	@Column(name = ActiveRecordFields.C_USER_ISNEW)
 	public boolean is_new;
 	
-	@Deprecated
 	@Column(name = ActiveRecordFields.C_USER_PHONE)
 	public String phone;
 	

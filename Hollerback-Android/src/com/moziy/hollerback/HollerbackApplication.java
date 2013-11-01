@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.fasterxml.jackson.core.JsonFactory.Feature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gcm.GCMRegistrar;
@@ -91,6 +92,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 	
 	private void initObjectMapper(){
 		//perform any sort of configuration here
+		mObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
 	public ObjectMapper getObjectMapper(){
