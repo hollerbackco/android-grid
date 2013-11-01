@@ -5,81 +5,118 @@ import java.io.Serializable;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.model.web.response.SyncPayload;
 
 @Table(name = ActiveRecordFields.T_VIDEOS)
-public class VideoModel extends BaseModel implements Serializable {
+public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 	private static final long serialVersionUID = -674572541294872489L;
 
-	@Column(name = ActiveRecordFields.C_VID_FILENAME)
-	private String filename;
+	public interface ResourceState{
+		public static final String PENDING_UPLOAD = "pending_upload";
+		public static final String UPLOADED_PENDING_POST = "uploaded_pending_post";
+		public static final String UPLOADED = "uploaded";
+		public static final String PENDING_DOWNLOAD = "pending_download";
+		public static final String DOWNLOADING = "downloading";
+		public static final String ON_DISK = "on_disk";
+	}
+	
+	@Column(name = ActiveRecordFields.C_VID_CREATED_AT)
+	private String created_at;
+	
+	@Column(name = ActiveRecordFields.C_VID_NEEDS_REPLY)
+	private boolean needs_reply;
+	
+	@Column(name = ActiveRecordFields.C_VID_SENDER_NAME)
+	private String sender_name;
+	
+	@Column(name = ActiveRecordFields.C_VID_SENT_AT)
+	private String sent_at;
+	
+	@Column(name = ActiveRecordFields.C_VID_GUID)
+	private String guid;
+	
+	@Column(name = ActiveRecordFields.C_VID_URL)
+	private String url;
 
+	@Column(name = ActiveRecordFields.C_VID_THUMBURL)
+	private String thumb_url;
+	
+	@Column(name = ActiveRecordFields.C_VID_CONV_ID)
+	private String conversation_id;
+
+	@Column(name = ActiveRecordFields.C_VID_IS_DELETED)
+	private boolean is_deleted;
+	
+	@Column(name = ActiveRecordFields.C_VID_SUBTITLE)
+	private String subtitle;
+	
 	@Column(name = ActiveRecordFields.C_VID_ISREAD)
 	private boolean isRead;
 	
+	@Column(name = ActiveRecordFields.C_VID_FILENAME)
+	private String local_filename;	//TODO - Sajjad: double check that this is in fact the local file name
+
+	@Column(name = ActiveRecordFields.C_VID_ID)
+	private int id;
+	
+	@Column(name = ActiveRecordFields.C_VID_STATE)
+	private String state; //REST state of this resource
+	
+	@Column(name = ActiveRecordFields.C_VID_TRANSACTING)
+	private boolean transacting; //Whether this resource is being actively transitioned from one state to the next
+	
+	
+	
+
+	@Deprecated
 	@Column(name = ActiveRecordFields.C_VID_ISUPLOADING)
 	private boolean isUploading;
 	
+	@Deprecated
 	@Column(name = ActiveRecordFields.C_VID_ISSENT)
 	private boolean isSent;
 
-	@Column(name = ActiveRecordFields.C_VID_ID)
-	private int videoId;
-
-	@Column(name = ActiveRecordFields.C_VID_CONV_ID)
-	private String convId;
-
-	@Column(name = ActiveRecordFields.C_VID_FILEURL)
-	private String fileUrl;
-
-	@Column(name = ActiveRecordFields.C_VID_THUMBURL)
-	private String thumbUrl;
-
-	@Column(name = ActiveRecordFields.C_VID_CREATEDATE)
-	private String formated_created_at;
-	
-	@Column(name = ActiveRecordFields.C_VID_USERNAME)
-	private String username;
 	
 	public String getConversationId() {
-		return convId;
+		return conversation_id;
 	}
 
 	public void setConversationId(String mConvId) {
-		this.convId = mConvId;
+		this.conversation_id = mConvId;
 	}
 	
 	public String getCreateDate()
 	{
-		return formated_created_at;
+		return created_at;
 	}
 	
 	public void setCreateDate(String value)
 	{
-		formated_created_at = value;
+		created_at = value;
 	}
 
 	public String getThumbUrl() {
-		return thumbUrl;
+		return thumb_url;
 	}
 
 	public void setThumbUrl(String thumbUrl) {
-		this.thumbUrl = thumbUrl;
+		this.thumb_url = thumbUrl;
 	}
 
 	public String getFileUrl() {
-		return fileUrl;
+		return url;
 	}
 
 	public void setFileUrl(String fileUrl) {
-		this.fileUrl = fileUrl;
+		this.url = fileUrl;
 	}
 
 	public String getFileName() {
-		return filename;
+		return local_filename;
 	}
 
 	public void setFileName(String fileName) {
-		this.filename = fileName;
+		this.local_filename = fileName;
 	}
 
 	public boolean isRead() {
@@ -107,11 +144,11 @@ public class VideoModel extends BaseModel implements Serializable {
 	}
 
 	public int getVideoId() {
-		return videoId;
+		return id;
 	}
 
 	public void setVideoId(int id) {
-		videoId = id;
+		this.id = id;
 	}
 
 	public static String getURLPath() {
@@ -120,19 +157,19 @@ public class VideoModel extends BaseModel implements Serializable {
 	
 	public void setUserName(String value)
 	{
-		username = value;
+		sender_name = value;
 	}
 	
 	public String getUserName()
 	{
-		return username;
+		return sender_name;
 	}
 
 	//XXX: BROKEN EQUALS, MUST FIX
 	@Override
 	public boolean equals(Object obj) {
 		VideoModel video = (VideoModel) obj;
-		if (videoId == video.videoId) {
+		if (id == video.id) {
 			return true;
 		}
 		return false;

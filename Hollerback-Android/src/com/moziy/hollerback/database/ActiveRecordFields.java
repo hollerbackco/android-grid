@@ -3,7 +3,7 @@ package com.moziy.hollerback.database;
 public class ActiveRecordFields {
 
 	// Conversation
-	public static final String C_CONV_ID = "id";
+	public static final String C_CONV_ID = "conversation_id";
 	public static final String C_CONV_NAME = "name";
 	public static final String C_CONV_UNREAD = "unread_count";
 	public static final String C_CONV_MOST_RECENT_VIDEO = "ConvRecentVideo";
@@ -19,19 +19,28 @@ public class ActiveRecordFields {
 	public static final String C_CONV_URL = "ConvUrl";
 	
 	// Videos
-	public static final String C_VID_ID = "VidId";
-	public static final String C_VID_CONV_ID = "VidConvId";
-	public static final String C_VID_FILENAME = "VidFilename";
-	public static final String C_VID_ISUPLOADING = "VidIsUploading";
-	public static final String C_VID_ISREAD = "VidIsRead";
-	public static final String C_VID_ISSENT = "VidIsSent";
-	public static final String C_VID_FILEURL = "VidFileUrl";
-	public static final String C_VID_THUMBURL = "VidThumbUrl";
-	public static final String C_VID_USERNAME = "VidUserName";
-	public static final String C_VID_CREATEDATE = "VidCreateDate";
+	public static final String C_VID_CREATED_AT = "created_at";
+	public static final String C_VID_NEEDS_REPLY = "needs_reply";
+	public static final String C_VID_SENDER_NAME = "sender_name";
+	public static final String C_VID_SENT_AT = "sent_at";
+	public static final String C_VID_GUID = "guid";
+	public static final String C_VID_ID = "video_id";
+	public static final String C_VID_URL = "url";
+	public static final String C_VID_THUMBURL = "thumb_url";
+	public static final String C_VID_CONV_ID = "conversation_id";
+	public static final String C_VID_IS_DELETED = "is_deleted";
+	public static final String C_VID_SUBTITLE = "subtitle";
+	public static final String C_VID_STATE = "state";
+	public static final String C_VID_TRANSACTING = "transacting";
+	public static final String C_VID_FILENAME = "local_filename";
+	public static final String C_VID_ISREAD = "isRead";
 
+	public static final String C_VID_ISUPLOADING = "VidIsUploading";
+	public static final String C_VID_ISSENT = "VidIsSent";
+	
+	
 	// Users
-	public static final String C_USER_ID = "id";
+	public static final String C_USER_ID = "user_id";
 	public static final String C_USER_USERNAME = "username";
 	public static final String C_USER_PHONE = "phone";
 	public static final String C_USER_NAME = "name";
