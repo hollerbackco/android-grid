@@ -296,7 +296,7 @@ public class HBRequestManager {
 		if(HollerbackAppState.isValidSession()){
 			RequestParams params = new RequestParams();
 			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
-					/*HollerbackAppState.getValidToken()*/ "123");
+					HollerbackAppState.getValidToken());
 			
 			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params, new JacksonHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {}) {
 
