@@ -313,9 +313,14 @@ public class RecordVideoFragment extends BaseFragment{
 		//TODO: write up this portion in cleanup
 	}
 	
-	private void upload(){
+	/**
+	 * 
+	 * @param fileName
+	 * @param contacts
+	 */
+	private void sendVideo(String fileName, ArrayList<String> contacts, String conversationId){
 		
-		//putting the cache stuff
+		//Prepare the model for sending the video
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
 		VideoModel model = new VideoModel();
 		model.setLocalFileName(mFileDataName);
@@ -323,6 +328,9 @@ public class RecordVideoFragment extends BaseFragment{
 		model.setCreateDate(df.format(new Date()));
 		model.setSenderName("me");
 		//TODO: if there's a conversation id then put it here
+		if(conversationId != null){
+			model.setConversationId(conversationId);
+		}
 		
 		model.save();
 		//TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
@@ -411,6 +419,8 @@ public class RecordVideoFragment extends BaseFragment{
 		}
 	}
 	
+	
+	
 	private void inviteAndRecordVideo()
 	{
 		if(mPhones == null || mPhones.length == 0)
@@ -423,54 +433,58 @@ public class RecordVideoFragment extends BaseFragment{
 		ArrayList<String> contacts = new ArrayList<String>();
 		contacts.addAll(Arrays.asList(phones));
 		
-		HBRequestManager.postConversations(contacts, 
-				new JsonHttpResponseHandler() {
+		//TODO - Sajjad: get the file info passed in to "inviteAndRecord"
+		sendVideo(mFileDataName, contacts, null);
 		
-					@Override
-					protected Object parseResponse(String arg0)
-							throws JSONException {
-						LogUtil.i(arg0);
-						return super.parseResponse(arg0);
 		
-					}
-		
-					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onFailure(arg0, arg1);
-						LogUtil.e(HollerbackAPI.API_CONVERSATION
-								+ "FAILURE");
-					}
-		
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						LogUtil.i("ON SUCCESS API CONVO");
-						JSONUtil.processPostConversations(response);
-						
-						//this part is really bad implmentation, but his JSONUtil.processPostConversation
-						//does not retain the DataManager, so I had to write quick one just to do the trick
-						
-						//successful, now we upload video
-						try {
-
-							JSONObject conversation = response.getJSONObject("data");
-							
-							if(!conversation.has("id"))
-							{
-								return;
-							}
-							
-							mConversationId = String.valueOf(conversation.getInt("id"));
-							mToConversation = true;
-							uploadAndSend();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						//just posted, now upload the video
-					}
-			});
+//		HBRequestManager.postConversations(contacts, 
+//				new JsonHttpResponseHandler() {
+//		
+//					@Override
+//					protected Object parseResponse(String arg0)
+//							throws JSONException {
+//						LogUtil.i(arg0);
+//						return super.parseResponse(arg0);
+//		
+//					}
+//		
+//					@Override
+//					public void onFailure(Throwable arg0, JSONObject arg1) {
+//						// TODO Auto-generated method stub
+//						super.onFailure(arg0, arg1);
+//						LogUtil.e(HollerbackAPI.API_CONVERSATION
+//								+ "FAILURE");
+//					}
+//		
+//					@Override
+//					public void onSuccess(int statusId, JSONObject response) {
+//						// TODO Auto-generated method stub
+//						super.onSuccess(statusId, response);
+//						LogUtil.i("ON SUCCESS API CONVO");
+//						JSONUtil.processPostConversations(response);
+//						
+//						//this part is really bad implmentation, but his JSONUtil.processPostConversation
+//						//does not retain the DataManager, so I had to write quick one just to do the trick
+//						
+//						//successful, now we upload video
+//						try {
+//
+//							JSONObject conversation = response.getJSONObject("data");
+//							
+//							if(!conversation.has("id"))
+//							{
+//								return;
+//							}
+//							
+//							mConversationId = String.valueOf(conversation.getInt("id"));
+//							mToConversation = true;
+//							uploadAndSend();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//						//just posted, now upload the video
+//					}
+//			});
 	}
 	
 	

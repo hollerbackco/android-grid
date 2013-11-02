@@ -382,6 +382,9 @@ public class HBRequestManager {
 					HollerbackAPI.API_CONVERSATION, params,
 					handler);
 
+		}else{
+			//TODO - Sajjad: Remove for prod
+			throw new IllegalStateException("Invalid Session");
 		}
 	}
 	

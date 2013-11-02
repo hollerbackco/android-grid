@@ -19,6 +19,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ProgressEvent;
 import com.amazonaws.services.s3.model.ProgressListener;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.krish.horizontalscrollview.CustomListBaseAdapter;
@@ -82,6 +83,40 @@ public class S3RequestHelper {
 		S3PutObjectTask s3task = new S3PutObjectTask();
 		s3task.execute(new S3UploadParams[] { video, thumb });
 
+	}
+	
+	/**
+	 * 
+	 * @param fileName the local file name to upload
+	 * @param filePath the full path of the file to upload
+	 * @return the result
+	 */
+	public static synchronized PutObjectResult uploadFileToS3(String fileName, String filePath){
+
+		S3TaskResult result = new S3TaskResult();
+
+		PutObjectResult putObjectResult = null;
+		// Put the image data into S3.
+		try {
+			// s3Client.createBucket(AppEnvironment.getPictureBucket());
+
+			// Content type is determined by file extension.
+			PutObjectRequest fileUploadRequest = new PutObjectRequest(
+								AppEnvironment.getInstance().UPLOAD_BUCKET,
+								fileName, new java.io.File(filePath));
+
+			
+			//TODO - Sajjad: If necessary, then provide progress with fileUploadRequest.setProgre..
+			
+			putObjectResult = s3Client.putObject(fileUploadRequest);
+
+		} catch (Exception exception) {
+
+			result.setErrorMessage(exception.getMessage());
+			exception.printStackTrace();
+		}
+
+		return putObjectResult;
 	}
 
 	private class S3PutObjectTask extends
@@ -610,7 +645,7 @@ public class S3RequestHelper {
 		}
 	}
 
-	private class S3TaskResult {
+	private static class S3TaskResult {
 		String errorMessage = null;
 		Uri uri = null;
 		S3UploadParams uploadParams;
