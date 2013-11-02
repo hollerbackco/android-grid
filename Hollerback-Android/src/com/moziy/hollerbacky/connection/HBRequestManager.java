@@ -370,7 +370,7 @@ public class HBRequestManager {
 		}
 	}
 	
-	public static void postConversations(ArrayList<String> contacts, JsonHttpResponseHandler handler) {
+	public static void postConversations(ArrayList<String> contacts, AsyncHttpResponseHandler handler) {
 		if (HollerbackAppState.isValidSession()) {
 			RequestParams params = new RequestParams();
 			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,

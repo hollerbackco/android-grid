@@ -1,19 +1,18 @@
 package com.moziy.hollerback.service;
 
 import java.io.File;
-
-import com.activeandroid.query.Select;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.moziy.hollerback.helper.S3RequestHelper;
-import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.util.FileUtil;
-import com.moziy.hollerback.video.S3UploadParams;
-import com.moziy.hollerbacky.connection.HBRequestManager;
+import java.util.ArrayList;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.net.Uri;
+
+import com.activeandroid.query.Select;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.moziy.hollerback.helper.S3RequestHelper;
+import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerbacky.connection.HBRequestManager;
 /**
  * This class is responsible for uploading a video resource to S3, and then issuing a post to the appropriate api 
  * @author sajjad
@@ -21,7 +20,11 @@ import android.net.Uri;
  */
 public class VideoUploadIntentService extends IntentService{
 	
+	//type: Long
 	public static final String INTENT_ARG_RESOURCE_ID = "resource_id";
+	
+	//type: ArrayList<String>
+	public static final String INTENT_ARG_CONTACTS = "contacts";	 
 	
 	public interface Type{
 		public static final String NEW_CONVERSATION = "new_conversation";
@@ -36,6 +39,7 @@ public class VideoUploadIntentService extends IntentService{
 	protected void onHandleIntent(Intent intent) {
 		
 		int resourceId = intent.getIntExtra(INTENT_ARG_RESOURCE_ID, -1);
+		ArrayList<String> contacts = (ArrayList<String>)intent.getSerializableExtra(INTENT_ARG_CONTACTS); 
 
 		//lets lookup the id passed in from our intent arguments
 		VideoModel model = new Select().from(VideoModel.class).where("id = ?", resourceId).executeSingle();
@@ -44,11 +48,7 @@ public class VideoUploadIntentService extends IntentService{
 			throw new IllegalStateException("Attempting to upload video that does not exist!");
 		}
 
-		//the resource shouldn't be transacting
-//		if(model.isTransacting()){	//TODO - Sajjad: Remove from prod version
-//			throw new IllegalStateException("This resource shouldn't be transacting!");
-//		}
-		
+
 		//if it's pending upload and not transacting 
 		if(VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()){
 			
@@ -85,15 +85,13 @@ public class VideoUploadIntentService extends IntentService{
 				
 				postToNewConversation(model);
 			}
-			
-			
 		}
-		
 	}
 	
 	private boolean postToNewConversation(final VideoModel model){
 		//TODO - Fill In
 		//HBRequestManager.post
+		HBRequestManager.postConversations(contacts, handler)
 		
 		return true;
 	}

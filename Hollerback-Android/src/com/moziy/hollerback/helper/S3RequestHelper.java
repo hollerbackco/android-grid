@@ -86,10 +86,11 @@ public class S3RequestHelper {
 	}
 	
 	/**
-	 * 
+	 * This method will upload a file to s3 and return the result object
+	 * Note that this method will not run on a background thread
 	 * @param fileName the local file name to upload
 	 * @param filePath the full path of the file to upload
-	 * @return the result
+	 * @return the result or null if the upload failed
 	 */
 	public static synchronized PutObjectResult uploadFileToS3(String fileName, String filePath){
 
