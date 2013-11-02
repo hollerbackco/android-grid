@@ -10,16 +10,17 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.moziy.hollerback.model.web.Envelope;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.ResponseObject;
 import com.moziy.hollerback.util.QU;
 
 public abstract class JacksonHttpResponseHandler<T extends ResponseObject> extends AsyncHttpResponseHandler {
 	private static final String TAG = JacksonHttpResponseHandler.class.getSimpleName();
 	
-	private Class<T> mResponseClass;
+	private TypeReference<T> mTypeReference;
 	
-	public JacksonHttpResponseHandler(Class<T> clazz){
-		mResponseClass = clazz;
+	public JacksonHttpResponseHandler(TypeReference<T> typeReference){
+		mTypeReference = typeReference;
 	}
 	
 	public abstract void onResponseSuccess(int statusCode, T response);
@@ -31,10 +32,11 @@ public abstract class JacksonHttpResponseHandler<T extends ResponseObject> exten
 		super.onSuccess(statusCode, content);
 		
 		ObjectMapper mapper = QU.getObjectMapper();
+		Throwable exception;
 		try {
 			
 			//deserialize the response to the appropriate class
-			T response = mapper.readValue(content, mResponseClass);
+			T response = mapper.readValue(content, mTypeReference);
 			
 			//make sure that an envelope's status is ok before proceeding
 			if(response instanceof Envelope<?>){ 
@@ -50,40 +52,56 @@ public abstract class JacksonHttpResponseHandler<T extends ResponseObject> exten
 			return;
 			
 		} catch (JsonParseException e) {
+			exception = e;
 			e.printStackTrace();
 		} catch (JsonMappingException e) {
+			exception = e;
 			e.printStackTrace();
 		} catch (IOException e) {
+			exception = e;
 			e.printStackTrace();
 		}
 		
 		//ok there was some sort of issue, lets dig in
 		
-		try {
-			//1. attempt to deserialize the content to an envelope, if it succeeds, then pass the meta to api failure
-			Envelope<?> envelope = mapper.readValue(content, new TypeReference<Envelope<ResponseObject>>() {
-			});
-			
-			onApiFailure(envelope.meta);
-			
-		} catch (JsonParseException e) {
-			onFailure(e, content);
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			onFailure(e, content);
-			e.printStackTrace();
-		} catch (IOException e) {
-			onFailure(e, content);
-			e.printStackTrace();
+		onFailure(exception, content);
+	}
+	
+	@Override
+	public void onFailure(Throwable e, String content) {
+		
+		//attempt to deserialize the content and pass int to onApiFailure
+		Metadata meta = extractMetaData(content);
+		if(meta != null){
+			onApiFailure(meta);	//only if there's an api failure notify?
 		}
 		
 		
 	}
 	
-	@Override
-	public void onFailure(Throwable e, String content) {
-		super.onFailure(e, content);
-		Log.w(TAG, e);
+	private Metadata extractMetaData(String content){
+		
+		ObjectMapper mapper = QU.getObjectMapper();
+		
+		Envelope<?> envelope = null;
+		try {
+			
+			envelope = mapper.readValue(content, new TypeReference<Envelope<ResponseObject>>() {});
+			
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if(envelope != null && envelope.meta != null){
+			return envelope.meta;
+			
+		}
+		
+		return null;
 		
 	}
 	

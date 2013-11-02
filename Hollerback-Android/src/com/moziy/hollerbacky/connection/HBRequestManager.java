@@ -7,12 +7,18 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.model.web.response.SyncPayload;
+import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
@@ -184,7 +190,7 @@ public class HBRequestManager {
 			params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
 		}
 		
-		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new JacksonHttpResponseHandler<VerifyResponse>(VerifyResponse.class) {
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new JacksonHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>(){}) {
 
 			@Override
 			public void onResponseSuccess(int statusCode,
@@ -233,7 +239,7 @@ public class HBRequestManager {
 
 	}
 	
-	public static void postLogin(String phone, JsonHttpResponseHandler handler) {
+	public static void postLogin(String phone, AsyncHttpResponseHandler handler) {
 		RequestParams params = null;
 
 		if (!phone.isEmpty()) {
@@ -285,6 +291,43 @@ public class HBRequestManager {
 		}
 
 	}
+	
+	public static void sync(){
+		if(HollerbackAppState.isValidSession()){
+			RequestParams params = new RequestParams();
+			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
+					/*HollerbackAppState.getValidToken()*/ "123");
+			
+			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params, new JacksonHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {}) {
+
+				@Override
+				public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
+					
+					
+					
+					//TEST CODE: - Verified that data is deserialized properly
+//					SyncPayload sync = response.data.get(0).mSync;
+//					
+//					if(sync instanceof VideoModel){
+//						Log.d(TAG, "id:" + ((VideoModel) sync).getId());
+//					}else if(sync instanceof ConversationModel){
+//						Log.d(TAG, "id:" + ((ConversationModel) sync).getConversation_Id());
+//					}
+					
+				}
+
+				@Override
+				public void onApiFailure(Metadata metaData) {
+					Log.d(TAG, "metaData code: " + metaData.code);
+					
+				}
+
+				
+			});
+		}
+	}
+	
+	
 	//TODO - Sajjad : Remove as it's not used
 	public static void postConversations(ArrayList<String> contacts) {
 		if (HollerbackAppState.isValidSession()) {
