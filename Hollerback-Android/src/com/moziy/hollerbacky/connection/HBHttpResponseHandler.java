@@ -14,12 +14,12 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.ResponseObject;
 import com.moziy.hollerback.util.QU;
 
-public abstract class JacksonHttpResponseHandler<T extends ResponseObject> extends AsyncHttpResponseHandler {
-	private static final String TAG = JacksonHttpResponseHandler.class.getSimpleName();
+public abstract class HBHttpResponseHandler<T extends ResponseObject> extends AsyncHttpResponseHandler {
+	private static final String TAG = HBHttpResponseHandler.class.getSimpleName();
 	
 	private TypeReference<T> mTypeReference;
 	
-	public JacksonHttpResponseHandler(TypeReference<T> typeReference){
+	public HBHttpResponseHandler(TypeReference<T> typeReference){
 		mTypeReference = typeReference;
 	}
 	
@@ -68,13 +68,11 @@ public abstract class JacksonHttpResponseHandler<T extends ResponseObject> exten
 	}
 	
 	@Override
-	public void onFailure(Throwable e, String content) {
+	public final void onFailure(Throwable e, String content) {
 		
 		//attempt to deserialize the content and pass int to onApiFailure
 		Metadata meta = extractMetaData(content);
-		if(meta != null){
-			onApiFailure(meta);	//only if there's an api failure notify?
-		}
+		onApiFailure(meta);	//only if there's an api failure notify?
 		
 		
 	}

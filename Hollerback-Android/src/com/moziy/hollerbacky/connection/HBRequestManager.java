@@ -190,7 +190,7 @@ public class HBRequestManager {
 			params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
 		}
 		
-		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new JacksonHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>(){}) {
+		HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new HBHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>(){}) {
 
 			@Override
 			public void onResponseSuccess(int statusCode,
@@ -298,7 +298,7 @@ public class HBRequestManager {
 			params.put(HollerbackAPI.PARAM_ACCESS_TOKEN,
 					HollerbackAppState.getValidToken());
 			
-			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params, new JacksonHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {}) {
+			HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params, new HBHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {}) {
 
 				@Override
 				public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
