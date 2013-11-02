@@ -18,6 +18,11 @@ public class HollerbackAPI {
 	public static final String API_CONVERSATION_DETAILS = "/me/conversations/%1$s";
 	
 	/**
+	 * GET sync details: /me/sync
+	 */
+	public static final String API_SYNC = "/me/sync";
+	
+	/**
 	 * POST video details: /me/conversations/:id/leave
 	 */
 	public static final String API_CONVERSATION_LEAVE= "/me/conversations/%1$s/leave";

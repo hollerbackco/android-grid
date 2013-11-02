@@ -8,22 +8,32 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.activeandroid.util.Log;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.util.FontUtil;
+import com.moziy.hollerback.util.HollerbackPreferences;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.NumberUtil;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
+import com.moziy.hollerbacky.connection.JacksonHttpResponseHandler;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -35,6 +45,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SignInFragment extends BaseFragment{
+	
+	private static final String TAG = SignInFragment.class.getSimpleName();
+	
 	private SherlockFragmentActivity mActivity;
 
 	private Button mLoginBtn;
@@ -179,41 +192,58 @@ public class SignInFragment extends BaseFragment{
 		LogUtil.i("Logging in with: " + mPhoneNumberField.getText().toString());
 		this.startLoading();
 		HBRequestManager.postLogin(mRegistrationPhone,
-				 new JsonHttpResponseHandler() {
+				new JacksonHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>(){}) {
 
 					@Override
-					protected Object parseResponse(String arg0)
-							throws JSONException {
-						LogUtil.i(arg0);
-						return super.parseResponse(arg0);
-
+					public void onResponseSuccess(int statusCode,
+							LoginResponse response) {
+						onSignInSucceeded(response);
+						
 					}
 
 					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onFailure(arg0, arg1);
-						LogUtil.i("LOGIN FAILURE");
+					public void onApiFailure(Metadata metaData) {
+						LogUtil.w(TAG, "error code: " + metaData.code);
+						
+						
 					}
+				}
+				);
 
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						JSONUtil.processSignIn(response);
-						LogUtil.i("HB", response.toString());
-						SignInFragment.this.startLoading();
-						SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
-						mActivity.getSupportFragmentManager()
-						.beginTransaction()
-						.replace(R.id.fragment_holder, fragment)
-						.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-				        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
-				        .commitAllowingStateLoss();		
-					}
+	}
+	
+	private void onSignInSucceeded(LoginResponse response){
+		//process the sign in here!
+		
+		String userName = response.user.username;
+		String phone = response.user.phone;
+		long id = response.user.id;
+		
+		/**
+		 * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
+		 */
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.USERNAME,
+				userName);
+		
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.PHONE,
+				phone);
+		
+		PreferenceManagerUtil.setPreferenceValue(
+				HollerbackPreferences.ID,
+				id);
+	
 
-				});
-
+		LogUtil.i("HB", response.toString()); //TODO - Sajjad determine whether to use LogUtil or replace it.
+		SignInFragment.this.startLoading(); //TODO - Sajjad, what's going on here with startLoading?
+		SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
+		mActivity.getSupportFragmentManager()
+		.beginTransaction()
+		.replace(R.id.fragment_holder, fragment)
+		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
+        .commitAllowingStateLoss();
 	}
 
 	private PhoneNumber getPhoneNumber() {

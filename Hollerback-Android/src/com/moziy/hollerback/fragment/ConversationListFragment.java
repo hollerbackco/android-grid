@@ -114,6 +114,9 @@ public class ConversationListFragment extends BaseFragment {
 		// HBRequestManager.getConversations();
 
 		QU.getDM().getConversations(false); //TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
+		
+
+		HBRequestManager.sync();
 
 		return fragmentView;
 	}

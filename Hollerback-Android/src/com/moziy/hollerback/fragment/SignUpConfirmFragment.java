@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.debug.LogUtil;
@@ -87,7 +88,8 @@ public class SignUpConfirmFragment extends BaseFragment{
 				SignUpConfirmFragment.this.startLoading();
 				HBRequestManager.postVerification(mTxtVerify.getText().toString(), 
 						PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""), 
-						new JacksonHttpResponseHandler<VerifyResponse>(VerifyResponse.class) {
+						new JacksonHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
+						}) {
 
 							@Override
 							public void onResponseSuccess(int statusCode,
