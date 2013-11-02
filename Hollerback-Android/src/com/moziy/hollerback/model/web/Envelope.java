@@ -2,7 +2,7 @@ package com.moziy.hollerback.model.web;
 
 import java.util.ArrayList;
 
-public class Envelope<T extends ResponseObject> implements ResponseObject{
+public class Envelope<T> implements ResponseObject{
 
 	public Metadata meta;
 	

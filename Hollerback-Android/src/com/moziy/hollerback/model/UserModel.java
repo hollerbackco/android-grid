@@ -9,13 +9,13 @@ public class UserModel extends BaseModel {
 	
 	// Server Fields
 	@Column(name = ActiveRecordFields.C_USER_ID)
-	public long id;
+	public long id = 0;
 	
 	@Column(name = ActiveRecordFields.C_USER_NAME)
 	public String name;
 	
 	@Column(name = ActiveRecordFields.C_USER_USERNAME)
-	public String username;
+	public String username = "";
 	
 	@Column(name = ActiveRecordFields.C_USER_CREATED_AT)
 	public String created_at; //TODO: Figure out the format
@@ -27,7 +27,7 @@ public class UserModel extends BaseModel {
 	public boolean is_new;
 	
 	@Column(name = ActiveRecordFields.C_USER_PHONE)
-	public String phone;
+	public String phone = "";
 	
 	@Deprecated
 	public long contactId;
