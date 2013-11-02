@@ -19,6 +19,8 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.FileUtil;
@@ -311,6 +313,53 @@ public class RecordVideoFragment extends BaseFragment{
 		//TODO: write up this portion in cleanup
 	}
 	
+	private void upload(){
+		
+		//putting the cache stuff
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
+		VideoModel model = new VideoModel();
+		model.setLocalFileName(mFileDataName);
+		model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
+		model.setCreateDate(df.format(new Date()));
+		model.setSenderName("me");
+		//TODO: if there's a conversation id then put it here
+		
+		model.save();
+		//TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
+		long resourceRowId = model.getId();
+		
+		Intent intent = new Intent();
+		intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
+		intent.setClass(getActivity(), VideoUploadIntentService.class);
+		getActivity().startService(intent);
+		
+			
+		//TODO - Sajjad: Verify that this code is still needed	
+		Intent sendIntent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
+		sendIntent.putExtra("ConversationId", mConversationId);
+		sendIntent.putExtra("FileDataName", mFileDataName);
+		sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
+		IABroadcastManager.sendLocalBroadcast(sendIntent);
+			
+			//TODO - Sajjad: Figure out what we're popping
+		mActivity.getSupportFragmentManager().popBackStack();
+
+		if(mToConversation)
+		{
+
+			ConversationFragment fragment = ConversationFragment.newInstance(mConversationId);
+			mActivity.getSupportFragmentManager()
+			.beginTransaction()
+			.replace(R.id.fragment_holder, fragment)
+			.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+	        .addToBackStack(ConversationFragment.class.getSimpleName())
+	        .remove(RecordVideoFragment.this)
+	        .commitAllowingStateLoss();
+		}
+		
+	}
+	
+	@Deprecated
 	private void uploadAndSend()
 	{
 		//putting the cache stuff
@@ -570,6 +619,10 @@ public class RecordVideoFragment extends BaseFragment{
 
 		displayPreview();
 		ImageUtil.generateThumbnail(mFileDataName);
+		
+		//TODO: Review code segment above
+		
+		//Precondition: User decides to send video (no ttyl without video, etc)
 	}
 
 	public void displayPreview() {
@@ -620,6 +673,8 @@ public class RecordVideoFragment extends BaseFragment{
 		mFileDataName = FileUtil.generateRandomFileName() + "."
 				+ targetExtension;
 		mFileDataPath = FileUtil.getOutputVideoFile(mFileDataName).toString();
+		
+		Log.d(TAG, "mFileDataName: " + mFileDataName + " path: " + mFileDataPath);
 
 		return mFileDataPath;
 	}

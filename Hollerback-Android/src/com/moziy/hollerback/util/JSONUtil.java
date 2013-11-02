@@ -203,11 +203,11 @@ public class JSONUtil {
 			JSONObject videoObject = object.getJSONObject("data");
 
 			VideoModel video = new VideoModel();
-			video.setFileName(videoObject.getString("filename"));
+			video.setLocalFileName(videoObject.getString("filename"));
 			video.setThumbUrl(videoObject.getString("thumb_url"));
 			video.setVideoId(videoObject.getInt("id"));
 			video.setRead(true);
-			video.setUserName(videoObject.getString("sender_name"));
+			video.setSenderName(videoObject.getString("sender_name"));
 			video.setCreateDate(videoObject.getString("created_at"));
 			video.setConversationId(videoObject.getString("conversation_id"));
 			

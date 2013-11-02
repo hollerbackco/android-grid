@@ -37,6 +37,9 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 	
 	@Column(name = ActiveRecordFields.C_VID_URL)
 	private String url;
+	
+	
+	private String local_url;
 
 	@Column(name = ActiveRecordFields.C_VID_THUMBURL)
 	private String thumb_url;
@@ -111,11 +114,11 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 		this.url = fileUrl;
 	}
 
-	public String getFileName() {
+	public String getLocalFileName() {
 		return local_filename;
 	}
 
-	public void setFileName(String fileName) {
+	public void setLocalFileName(String fileName) {
 		this.local_filename = fileName;
 	}
 
@@ -125,6 +128,26 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
 	public void setRead(boolean isRead) {
 		this.isRead = isRead;
+	}
+	
+	public void setState(String state){
+		this.state = state;
+	}
+	
+	public String getState(){
+		return this.state;
+	}
+	
+	public void setTransacting(){
+		transacting = true;
+	}
+	
+	public void clearTransacting(){
+		transacting = false;
+	}
+	
+	public boolean isTransacting(){
+		return transacting;
 	}
 	
 	public boolean isSent() {
@@ -158,23 +181,49 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 		return null;
 	}
 	
-	public void setUserName(String value)
+	public void setSenderName(String value)
 	{
 		sender_name = value;
 	}
 	
-	public String getUserName()
+	public String getSenderName()
 	{
 		return sender_name;
 	}
 
-	//XXX: BROKEN EQUALS, MUST FIX
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
-		VideoModel video = (VideoModel) obj;
-		if (id == video.id) {
+		if (this == obj)
 			return true;
-		}
-		return false;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VideoModel other = (VideoModel) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
+	
+
+	//XXX: BROKEN EQUALS, MUST FIX
+//	@Override
+//	public boolean equals(Object obj) {
+//		VideoModel video = (VideoModel) obj;
+//		if (id == video.id) {
+//			return true;
+//		}
+//		return false;
+//	}
 }

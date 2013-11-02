@@ -168,7 +168,7 @@ public class CustomListBaseAdapter extends BaseAdapter {
 					VideoModel model = mVideoModels.get(position);
 					mS3RequestHelper.downloadS3(
 							AppEnvironment.getInstance().PICTURE_BUCKET,
-							model.getFileName(),
+							model.getLocalFileName(),
 							viewHolder.progresshelper,
 							viewHolder.videoPlayer,
 							mWrapperInformation,

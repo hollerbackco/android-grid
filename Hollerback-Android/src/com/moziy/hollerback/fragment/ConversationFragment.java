@@ -312,7 +312,7 @@ public class ConversationFragment extends BaseFragment {
 			try {
 				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
 				Date date = df.parse(model.getCreateDate());
-				mTxtVideoInfo.setText(model.getUserName() + " " + ConversionUtil.timeAgo(date));
+				mTxtVideoInfo.setText(model.getSenderName() + " " + ConversionUtil.timeAgo(date));
 
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block

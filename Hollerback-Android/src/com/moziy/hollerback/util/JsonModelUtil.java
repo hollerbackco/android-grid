@@ -11,7 +11,7 @@ public class JsonModelUtil {
 	public static VideoModel createVideo(JSONObject videoItem) {
 		try {
 			VideoModel video = new VideoModel();
-			video.setFileName(videoItem.getString("filename"));
+			video.setLocalFileName(videoItem.getString("filename"));
 			video.setVideoId(videoItem.getInt("id"));
 			video.setConversationId(videoItem.getString("conversation_id"));
 			video.setRead(videoItem.getBoolean("isRead"));
@@ -20,7 +20,7 @@ public class JsonModelUtil {
 			video.setCreateDate(videoItem.getString("created_at"));
 			
 			//changed to sender_name since username was somehow deprecated: 9/1/2013 - PM
-			video.setUserName(videoItem.getString("sender_name"));
+			video.setSenderName(videoItem.getString("sender_name"));
 			
 			if(videoItem.has("isUploading"))
 			{
