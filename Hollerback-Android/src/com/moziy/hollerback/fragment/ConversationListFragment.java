@@ -147,7 +147,7 @@ public class ConversationListFragment extends BaseFragment {
 				long id) {
 			LogUtil.i("Starting Conversation: " + position + " id: " + id);
 
-			startConversationFragment(Integer.toString(mConversationListAdapter
+			startConversationFragment(Long.toString(mConversationListAdapter
 					.getItem((int) id).getConversation_Id()));
 
 		}

@@ -13,7 +13,7 @@ public class JsonModelUtil {
 			VideoModel video = new VideoModel();
 			video.setLocalFileName(videoItem.getString("filename"));
 			video.setVideoId(videoItem.getInt("id"));
-			video.setConversationId(videoItem.getString("conversation_id"));
+			video.setConversationId(videoItem.getLong("conversation_id"));
 			video.setRead(videoItem.getBoolean("isRead"));
 			video.setFileUrl(videoItem.getString("url"));
 			video.setThumbUrl(videoItem.getString("thumb_url"));

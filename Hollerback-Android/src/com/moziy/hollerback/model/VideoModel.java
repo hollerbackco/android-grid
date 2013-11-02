@@ -45,7 +45,7 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 	private String thumb_url;
 	
 	@Column(name = ActiveRecordFields.C_VID_CONV_ID)
-	private String conversation_id;
+	private long conversation_id;
 
 	@Column(name = ActiveRecordFields.C_VID_IS_DELETED)
 	private boolean is_deleted;
@@ -80,11 +80,11 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 	private boolean isSent;
 
 	
-	public String getConversationId() {
+	public long getConversationId() {
 		return conversation_id;
 	}
 
-	public void setConversationId(String mConvId) {
+	public void setConversationId(long mConvId) {
 		this.conversation_id = mConvId;
 	}
 	

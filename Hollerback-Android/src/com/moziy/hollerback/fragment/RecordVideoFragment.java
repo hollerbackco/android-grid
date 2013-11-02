@@ -318,7 +318,7 @@ public class RecordVideoFragment extends BaseFragment{
 	 * @param fileName
 	 * @param contacts
 	 */
-	private void sendVideo(String fileName, ArrayList<String> contacts, String conversationId){
+	private void sendVideo(String fileName, ArrayList<String> contacts, long conversationId){
 		
 		//Prepare the model for sending the video
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
@@ -328,7 +328,7 @@ public class RecordVideoFragment extends BaseFragment{
 		model.setCreateDate(df.format(new Date()));
 		model.setSenderName("me");
 		//TODO: if there's a conversation id then put it here
-		if(conversationId != null){
+		if(conversationId > 0){
 			model.setConversationId(conversationId);
 		}
 		
@@ -338,6 +338,7 @@ public class RecordVideoFragment extends BaseFragment{
 		
 		Intent intent = new Intent();
 		intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
+		intent.putExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
 		intent.setClass(getActivity(), VideoUploadIntentService.class);
 		getActivity().startService(intent);
 		
@@ -423,6 +424,7 @@ public class RecordVideoFragment extends BaseFragment{
 	
 	private void inviteAndRecordVideo()
 	{
+		Log.d(TAG, "invite and record video");
 		if(mPhones == null || mPhones.length == 0)
 		{
 			mActivity.getSupportFragmentManager().popBackStack();
@@ -434,7 +436,7 @@ public class RecordVideoFragment extends BaseFragment{
 		contacts.addAll(Arrays.asList(phones));
 		
 		//TODO - Sajjad: get the file info passed in to "inviteAndRecord"
-		sendVideo(mFileDataName, contacts, null);
+		sendVideo(mFileDataName, contacts, -1);
 		
 		
 //		HBRequestManager.postConversations(contacts, 

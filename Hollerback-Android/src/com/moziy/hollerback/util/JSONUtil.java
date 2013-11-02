@@ -209,7 +209,7 @@ public class JSONUtil {
 			video.setRead(true);
 			video.setSenderName(videoObject.getString("sender_name"));
 			video.setCreateDate(videoObject.getString("created_at"));
-			video.setConversationId(videoObject.getString("conversation_id"));
+			video.setConversationId(videoObject.getLong("conversation_id"));
 			
 			conversationId = videoObject.getString("conversation_id");
 			
@@ -460,7 +460,7 @@ public class JSONUtil {
 			
 			Intent intent = new Intent(IABIntent.INTENT_POST_CONVERSATIONS);
 			intent.putExtra(IABIntent.PARAM_ID,
-					Integer.toString(model.getConversation_Id()));
+					Long.toString(model.getConversation_Id()));
 			LogUtil.i("Sending Broadcast: " + model.getConversation_Id());
 			IABroadcastManager.sendLocalBroadcast(intent);
 		} catch (Exception e) {
@@ -473,7 +473,7 @@ public class JSONUtil {
 
 			ActiveAndroid.beginTransaction();
 
-			String conversationId = "";
+			long conversationId = -1;
 			JSONArray videosArray = json.getJSONArray("data");
 			ArrayList<VideoModel> videos = new ArrayList<VideoModel>();
 
@@ -501,7 +501,7 @@ public class JSONUtil {
 				Collections.reverse(videos);
 
 				String hash = HashUtil.generateHashFor(
-						IABIntent.ASYNC_REQ_VIDEOS, conversationId);
+						IABIntent.ASYNC_REQ_VIDEOS, String.valueOf(conversationId));
 
 				QU.getDM().putIntoHash(hash, videos);
 

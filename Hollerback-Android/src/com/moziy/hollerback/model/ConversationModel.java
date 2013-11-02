@@ -11,7 +11,7 @@ import com.moziy.hollerback.model.web.response.SyncPayload;
 public class ConversationModel extends BaseModel implements SyncPayload {
 
 	@Column(name = ActiveRecordFields.C_CONV_ID)
-	private int id;
+	private long id;
 
 	@Column(name = ActiveRecordFields.C_CONV_NAME)
 	private String name;
@@ -57,11 +57,11 @@ public class ConversationModel extends BaseModel implements SyncPayload {
 
 	
 
-	public int getConversation_Id() {
+	public long getConversation_Id() {
 		return id;
 	}
 
-	public void setConversation_id(int conversation_id) {
+	public void setConversation_id(long conversation_id) {
 		this.id = conversation_id;
 	}
 

@@ -6,12 +6,18 @@ import java.util.ArrayList;
 import android.app.IntentService;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.web.Envelope;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.model.web.response.NewConvoResponse;
 import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerbacky.connection.HBHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 /**
  * This class is responsible for uploading a video resource to S3, and then issuing a post to the appropriate api 
@@ -19,6 +25,8 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
  *
  */
 public class VideoUploadIntentService extends IntentService{
+	
+	private static final String TAG = VideoUploadIntentService.class.getSimpleName();
 	
 	//type: Long
 	public static final String INTENT_ARG_RESOURCE_ID = "resource_id";
@@ -77,21 +85,51 @@ public class VideoUploadIntentService extends IntentService{
 			//broadcast that we're posting?
 			
 			//lets figure out what type of posting we've got to do, new convo or existing
-			if(model.getConversationId() != null && "".equals(model.getConversationId())){
+			if(model.getConversationId() > 0){
 				
 				postToExistingConversation(model);
 				
 			}else{
 				
-				postToNewConversation(model);
+				postToNewConversation(model, contacts);
 			}
 		}
 	}
 	
-	private boolean postToNewConversation(final VideoModel model){
-		//TODO - Fill In
-		//HBRequestManager.post
-		HBRequestManager.postConversations(contacts, handler)
+	private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts){
+
+		HBRequestManager.postConversations(contacts, new HBHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
+		}) {
+
+			@Override
+			public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
+				
+				//nice it succeeded, lets update the model
+				model.setState(VideoModel.ResourceState.UPLOADED);
+				model.clearTransacting();
+				
+				NewConvoResponse conversationResp = response.getData();
+				
+				//lets bind the video to the conversation
+				model.setConversationId(conversationResp.id);
+				model.save();
+				
+				//lets create a new conversation from the response
+				Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);
+			}
+
+			@Override
+			public void onApiFailure(Metadata metaData) {
+				
+				//ok we're no longer transacting so let's clear it, but lets not update the state
+				model.clearTransacting();
+				model.save();
+				
+				Log.d(TAG, "creating new conversation failed: " + ((metaData != null ) ? ("status code: " + metaData.code) : ""));
+				
+			}
+			
+		});
 		
 		return true;
 	}
