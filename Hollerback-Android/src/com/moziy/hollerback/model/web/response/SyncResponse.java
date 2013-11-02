@@ -1,5 +1,11 @@
 package com.moziy.hollerback.model.web.response;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.ResponseObject;
 
 public class SyncResponse implements ResponseObject{
@@ -11,7 +17,14 @@ public class SyncResponse implements ResponseObject{
 	
 	public String type;
 	
-	//TODO - Sajjad: Resolve object based on the type to the correct item
-	public SyncPayload sync;
+	public SyncPayload mSync;	//based on type deserialize to correct object
 	
+	@JsonSetter("sync")
+	public void setSync(Object obj){
+		if(Type.CONVERSATION.equals(type)){
+			mSync = HollerbackApplication.getInstance().getObjectMapper().convertValue(obj, ConversationModel.class);
+		}else{
+			mSync = HollerbackApplication.getInstance().getObjectMapper().convertValue(obj, VideoModel.class);
+		}
+	}
 }

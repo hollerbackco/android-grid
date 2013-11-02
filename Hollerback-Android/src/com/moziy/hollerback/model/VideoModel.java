@@ -57,7 +57,7 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 	private String local_filename;	//TODO - Sajjad: double check that this is in fact the local file name
 
 	@Column(name = ActiveRecordFields.C_VID_ID)
-	private int id;
+	private String id;
 	
 	@Column(name = ActiveRecordFields.C_VID_STATE)
 	private String state; //REST state of this resource
@@ -143,12 +143,15 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 		this.isUploading = isuploading;
 	}
 
+	//The video id is no longer an integer
+	@Deprecated
 	public int getVideoId() {
-		return id;
+		return 0;
 	}
 
+	//the video id is no longer an integer
+	@Deprecated
 	public void setVideoId(int id) {
-		this.id = id;
 	}
 
 	public static String getURLPath() {

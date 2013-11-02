@@ -2,6 +2,7 @@ package com.moziy.hollerback.util;
 
 import java.util.ArrayList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -19,6 +20,10 @@ public class QU {
 	 */
 	public static DataModelManager getDM() {
 		return HollerbackApplication.getInstance().getDM();
+	}
+	
+	public static ObjectMapper getObjectMapper(){
+		return HollerbackApplication.getInstance().getObjectMapper();
 	}
 
 	public static ConversationModel getConv(String id) {

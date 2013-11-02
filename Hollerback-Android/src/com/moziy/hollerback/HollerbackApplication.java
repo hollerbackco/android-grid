@@ -3,6 +3,10 @@ package com.moziy.hollerback;
 import android.content.Context;
 import android.os.Handler;
 
+import com.fasterxml.jackson.core.JsonFactory.Feature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gcm.GCMRegistrar;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
@@ -17,6 +21,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 	private static HollerbackApplication sInstance = null;
 
 	private static DataModelManager sDataModelManager = null;
+	private final ObjectMapper mObjectMapper = new ObjectMapper(); 
 
 	public String regId;
 
@@ -28,6 +33,8 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 		// TODO Auto-generated method stub
 		super.onCreate();
 
+		initObjectMapper();
+		
 		sDataModelManager = new DataModelManager();
 		mGCMHandler = new Handler();
 		initImageLoader(getApplicationContext());
@@ -82,7 +89,16 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 			LogUtil.i("GCM Already registered: " + regId);
 		}
 	}
+	
+	private void initObjectMapper(){
+		//perform any sort of configuration here
+		mObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	}
 
+	public ObjectMapper getObjectMapper(){
+		return mObjectMapper;
+	}
+	
 	public DataModelManager getDM() {
 		return sDataModelManager;
 	}

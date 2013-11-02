@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.model.web.response.SyncPayload;
 
 @Table(name = ActiveRecordFields.T_CONVERSATION)
-public class ConversationModel extends BaseModel {
+public class ConversationModel extends BaseModel implements SyncPayload {
 
 	@Column(name = ActiveRecordFields.C_CONV_ID)
 	private int id;
