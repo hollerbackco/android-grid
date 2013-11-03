@@ -101,22 +101,16 @@ public class VideoUploadIntentService extends IntentService{
 	}
 	
 	private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts){
-
-		new HBHttpResponseHandler<ResponseObject>(null) {
-			
-		}
 		
-		//SUPER HACKY
-		mHandler.post(new Runnable() {
-
-			
-			@Override
-			public void run() {
+	
 				HBRequestManager.postConversations(contacts, new HBHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
-				}) {
+				}, true) {
 
 					@Override
 					public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
+						
+						//let's check the thread it
+						Log.d(TAG, "thread id: " + Thread.currentThread().getId());
 						
 						//nice it succeeded, lets update the model
 						model.setState(VideoModel.ResourceState.UPLOADED);
@@ -145,8 +139,6 @@ public class VideoUploadIntentService extends IntentService{
 					
 				});
 				
-			}
-		});
 		
 		
 		return true;

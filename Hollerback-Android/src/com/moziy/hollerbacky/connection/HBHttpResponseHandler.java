@@ -14,6 +14,13 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.ResponseObject;
 import com.moziy.hollerback.util.QU;
 
+/**
+ * 
+ * @author sajjad
+ * @param <T> The response object type
+ * 
+ * TODO - Sajjad: Ensure that json deserialization is happening on the background thread!
+ */
 public abstract class HBHttpResponseHandler<T extends ResponseObject> extends AsyncHttpResponseHandler {
 	private static final String TAG = HBHttpResponseHandler.class.getSimpleName();
 	
@@ -21,6 +28,11 @@ public abstract class HBHttpResponseHandler<T extends ResponseObject> extends As
 	
 	public HBHttpResponseHandler(TypeReference<T> typeReference){
 		mTypeReference = typeReference;
+	}
+	
+	public HBHttpResponseHandler(TypeReference<T> typeReference, boolean useSynchronous){
+		mTypeReference = typeReference;
+		setUseSynchronousMode(useSynchronous);
 	}
 	
 	public abstract void onResponseSuccess(int statusCode, T response);
