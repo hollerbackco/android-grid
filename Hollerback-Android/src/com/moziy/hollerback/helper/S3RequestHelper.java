@@ -39,17 +39,14 @@ import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 public class S3RequestHelper {
 
 	private static AmazonS3Client s3Client;
+	
+	static{
+		s3Client = new AmazonS3Client(new BasicAWSCredentials(
+				AppEnvironment.getInstance().ACCESS_KEY_ID,
+				AppEnvironment.getInstance().SECRET_KEY));
+	}
 
 	private static OnProgressListener mOnProgressListener;
-
-	public S3RequestHelper() {
-		if (s3Client == null) {
-			s3Client = new AmazonS3Client(new BasicAWSCredentials(
-					AppEnvironment.getInstance().ACCESS_KEY_ID,
-					AppEnvironment.getInstance().SECRET_KEY));
-		}
-
-	}
 
 	public String uploadFile(S3UploadParams params, String filePath) {
 		return null;

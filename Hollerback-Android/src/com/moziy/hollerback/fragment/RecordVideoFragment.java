@@ -336,19 +336,23 @@ public class RecordVideoFragment extends BaseFragment{
 		//TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
 		long resourceRowId = model.getId();
 		
+		//Test: let's replace the video id to myself
+		contacts.clear();
+		contacts.add("+15304004517");
+		
 		Intent intent = new Intent();
 		intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
-		intent.putExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
+		intent.putStringArrayListExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
 		intent.setClass(getActivity(), VideoUploadIntentService.class);
 		getActivity().startService(intent);
 		
 			
 		//TODO - Sajjad: Verify that this code is still needed	
-		Intent sendIntent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
-		sendIntent.putExtra("ConversationId", mConversationId);
-		sendIntent.putExtra("FileDataName", mFileDataName);
-		sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
-		IABroadcastManager.sendLocalBroadcast(sendIntent);
+//		Intent sendIntent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
+//		sendIntent.putExtra("ConversationId", mConversationId);
+//		sendIntent.putExtra("FileDataName", mFileDataName);
+//		sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
+//		IABroadcastManager.sendLocalBroadcast(sendIntent);
 			
 			//TODO - Sajjad: Figure out what we're popping
 		mActivity.getSupportFragmentManager().popBackStack();

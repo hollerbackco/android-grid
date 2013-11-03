@@ -65,6 +65,7 @@ public class FileUtil {
 
 		return mediaFile;
 	}
+	
 
 	/** Create a File for saving an image or video */
 	public static File getOutputVideoFile(String filename) {
