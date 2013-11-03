@@ -39,14 +39,15 @@ public class VideoUploadIntentService extends IntentService{
 		public static final String EXISTING_CONVERSATION = "existing_conversation";
 	}
 
-	public VideoUploadIntentService(String name) {
-		super(name);
+	public VideoUploadIntentService(){
+		super(TAG);
 	}
+	
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		
-		int resourceId = intent.getIntExtra(INTENT_ARG_RESOURCE_ID, -1);
+		long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
 		ArrayList<String> contacts = (ArrayList<String>)intent.getSerializableExtra(INTENT_ARG_CONTACTS); 
 
 		//lets lookup the id passed in from our intent arguments
