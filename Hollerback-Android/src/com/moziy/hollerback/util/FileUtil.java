@@ -8,12 +8,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
-import com.moziy.hollerback.debug.LogUtil;
-
 import android.media.MediaRecorder.OutputFormat;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+
+import com.moziy.hollerback.debug.LogUtil;
 
 public class FileUtil {
 
@@ -34,10 +34,7 @@ public class FileUtil {
 		// To be safe, you should check that the SDCard is mounted
 		// using Environment.getExternalStorageState() before doing this.
 
-		File mediaStorageDir = new File(
-				Environment
-						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
-				DIRECTORY_NAME);
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), DIRECTORY_NAME);
 		// This location works best if you want the created images to be shared
 		// between applications and persist after your app has been uninstalled.
 
@@ -50,22 +47,18 @@ public class FileUtil {
 		}
 
 		// Create a media file name
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-				.format(new Date());
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		File mediaFile;
 		if (type == MEDIA_TYPE_IMAGE) {
-			mediaFile = new File(mediaStorageDir.getPath() + File.separator
-					+ "IMG_" + timeStamp + ".jpg");
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
 		} else if (type == MEDIA_TYPE_VIDEO) {
-			mediaFile = new File(mediaStorageDir.getPath() + File.separator
-					+ "VID_" + timeStamp + ".mp4");
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
 		} else {
 			return null;
 		}
 
 		return mediaFile;
 	}
-	
 
 	/** Create a File for saving an image or video */
 	public static File getOutputVideoFile(String filename) {
@@ -90,15 +83,11 @@ public class FileUtil {
 		// }
 		// }
 
-		String[] fileParts = filename.split(Matcher.quoteReplacement(System
-				.getProperty("file.separator")));
+		String[] fileParts = filename.split(Matcher.quoteReplacement(System.getProperty("file.separator")));
 		LogUtil.i("File: " + fileParts[0]);
 		LogUtil.i("File: " + fileParts[1]);
 
-		File mediaStorageDir = new File(Environment
-				.getExternalStorageDirectory().getAbsolutePath()
-				+ "/"
-				+ DIRECTORY_NAME + "/" + fileParts[0]);
+		File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0]);
 		// Create the storage directory if it does not exist
 		if (!mediaStorageDir.exists()) {
 			if (!mediaStorageDir.mkdirs()) {
@@ -117,8 +106,7 @@ public class FileUtil {
 
 	public static String getFilePath() {
 
-		String filePath = Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + "/" + DIRECTORY_NAME;
+		String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME;
 
 		// LogUtil.i("DIR: " + filePath);
 
@@ -138,10 +126,8 @@ public class FileUtil {
 
 	public static String generateRandomHexName() {
 		Random m = new Random();
-		String hexString = Integer.toHexString(m.nextInt(256)).toUpperCase(
-				Locale.US);
-		hexString = hexString.trim().length() == 2 ? hexString : "0"
-				+ hexString.trim();
+		String hexString = Integer.toHexString(m.nextInt(256)).toUpperCase(Locale.US);
+		hexString = hexString.trim().length() == 2 ? hexString : "0" + hexString.trim();
 		return hexString;
 
 	}
@@ -157,16 +143,16 @@ public class FileUtil {
 
 	public static String getFileFormat(int fileFormat) {
 		switch (fileFormat) {
-		case OutputFormat.MPEG_4:
-			return "mp4";
-		case OutputFormat.RAW_AMR:
-			return "RAW_AMR";
-		case OutputFormat.THREE_GPP:
-			return "3gp";
-		case OutputFormat.DEFAULT:
-			return "DEFAULT";
-		default:
-			return "unknown";
+			case OutputFormat.MPEG_4:
+				return "mp4";
+			case OutputFormat.RAW_AMR:
+				return "RAW_AMR";
+			case OutputFormat.THREE_GPP:
+				return "3gp";
+			case OutputFormat.DEFAULT:
+				return "DEFAULT";
+			default:
+				return "unknown";
 		}
 	}
 
