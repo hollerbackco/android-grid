@@ -26,126 +26,126 @@ import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
  */
 public class VideoUploadIntentService extends IntentService {
 
-	private static final String TAG = VideoUploadIntentService.class.getSimpleName();
-	private final Handler mHandler = new Handler();
+    private static final String TAG = VideoUploadIntentService.class.getSimpleName();
+    private final Handler mHandler = new Handler();
 
-	// type: Long
-	public static final String INTENT_ARG_RESOURCE_ID = "resource_id";
+    // type: Long
+    public static final String INTENT_ARG_RESOURCE_ID = "resource_id";
 
-	// type: ArrayList<String>
-	public static final String INTENT_ARG_CONTACTS = "contacts";
+    // type: ArrayList<String>
+    public static final String INTENT_ARG_CONTACTS = "contacts";
 
-	public interface Type {
-		public static final String NEW_CONVERSATION = "new_conversation";
-		public static final String EXISTING_CONVERSATION = "existing_conversation";
-	}
+    public interface Type {
+        public static final String NEW_CONVERSATION = "new_conversation";
+        public static final String EXISTING_CONVERSATION = "existing_conversation";
+    }
 
-	public VideoUploadIntentService() {
-		super(TAG);
-	}
+    public VideoUploadIntentService() {
+        super(TAG);
+    }
 
-	@Override
-	protected void onHandleIntent(Intent intent) {
-		long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
-		ArrayList<String> contacts = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_CONTACTS);
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
+        ArrayList<String> contacts = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_CONTACTS);
 
-		Log.d(TAG, "resource id: " + resourceId + " contact(s): " + contacts.get(0).toString());
+        Log.d(TAG, "resource id: " + resourceId + " contact(s): " + contacts.get(0).toString());
 
-		// lets lookup the id passed in from our intent arguments
-		VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
+        // lets lookup the id passed in from our intent arguments
+        VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
 
-		if (model == null) { // TODO - Sajjad: Remove from prod version
-			throw new IllegalStateException("Attempting to upload video that does not exist!");
-		}
+        if (model == null) { // TODO - Sajjad: Remove from prod version
+            throw new IllegalStateException("Attempting to upload video that does not exist!");
+        }
 
-		// if it's pending upload and not transacting
-		if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
+        // if it's pending upload and not transacting
+        if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
 
-			// awesome, let's try to upload this resource to s3
-			model.setTransacting();
-			model.save();
+            // awesome, let's try to upload this resource to s3
+            model.setTransacting();
+            model.save();
 
-			// should we broadcast that we're uploading?
-			// String fileurl = Uri.fromFile(FileUtil.getOutputVideoFile(model.getLocalFileName())).toString();
+            // should we broadcast that we're uploading?
+            // String fileurl = Uri.fromFile(FileUtil.getOutputVideoFile(model.getLocalFileName())).toString();
 
-			PutObjectResult result = S3RequestHelper.uploadFileToS3(model.getLocalFileName(), FileUtil.getLocalFile(model.getLocalFileName()));
+            PutObjectResult result = S3RequestHelper.uploadFileToS3(model.getLocalFileName(), FileUtil.getLocalFile(model.getLocalFileName()));
 
-			if (result != null) { // => Yay, we uploaded the file to s3, lets mark it as uploaded pending post!
-				model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
-			}
+            if (result != null) { // => Yay, we uploaded the file to s3, lets mark it as uploaded pending post!
+                model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
+            }
 
-			model.clearTransacting(); // ok, we're no longer transacting
-			model.save(); // ok, let's save the state :-)
+            model.clearTransacting(); // ok, we're no longer transacting
+            model.save(); // ok, let's save the state :-)
 
-		}
+        }
 
-		// now if the model state is pending post and it's not transacting, then let's go ahead and post
-		if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
-			// broadcast that we're posting?
+        // now if the model state is pending post and it's not transacting, then let's go ahead and post
+        if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
+            // broadcast that we're posting?
 
-			// lets figure out what type of posting we've got to do, new convo or existing
-			if (model.getConversationId() > 0) {
+            // lets figure out what type of posting we've got to do, new convo or existing
+            if (model.getConversationId() > 0) {
 
-				postToExistingConversation(model);
+                postToExistingConversation(model);
 
-			} else {
+            } else {
 
-				postToNewConversation(model, contacts);
-			}
-		}
-	}
+                postToNewConversation(model, contacts);
+            }
+        }
+    }
 
-	private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts) {
+    private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts) {
 
-		// mark the model as transacting
-		model.setTransacting();
-		model.save();
+        // mark the model as transacting
+        model.setTransacting();
+        model.save();
 
-		ArrayList<String> parts = new ArrayList<String>();
-		parts.add(model.getLocalFileName());
-		HBRequestManager.postConversations(contacts, parts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
-		}) {
+        ArrayList<String> parts = new ArrayList<String>();
+        parts.add(model.getLocalFileName());
+        HBRequestManager.postConversations(contacts, parts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
+        }) {
 
-			@Override
-			public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
+            @Override
+            public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
 
-				// let's check the thread it
-				Log.d(TAG, "thread id: " + Thread.currentThread().getId());
+                // let's check the thread it
+                Log.d(TAG, "thread id: " + Thread.currentThread().getId());
 
-				// nice it succeeded, lets update the model
-				model.setState(VideoModel.ResourceState.UPLOADED);
-				model.clearTransacting();
+                // nice it succeeded, lets update the model
+                model.setState(VideoModel.ResourceState.UPLOADED);
+                model.clearTransacting();
 
-				NewConvoResponse conversationResp = response.getData();
+                NewConvoResponse conversationResp = response.getData();
 
-				// lets bind the video to the conversation
-				model.setConversationId(conversationResp.id);
-				model.save();
+                // lets bind the video to the conversation
+                model.setConversationId(conversationResp.id);
+                model.save();
 
-				// lets create a new conversation from the response
-				Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);
-			}
+                // lets create a new conversation from the response
+                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);
+            }
 
-			@Override
-			public void onApiFailure(Metadata metaData) {
+            @Override
+            public void onApiFailure(Metadata metaData) {
 
-				// ok we're no longer transacting so let's clear it, but lets not update the state
-				model.clearTransacting();
-				model.save();
+                // ok we're no longer transacting so let's clear it, but lets not update the state
+                model.clearTransacting();
+                model.save();
 
-				Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
+                Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
 
-			}
+            }
 
-		});
+        });
 
-		return true;
-	}
+        return true;
+    }
 
-	private boolean postToExistingConversation(final VideoModel model) {
-		// TODO - Fill In
+    private boolean postToExistingConversation(final VideoModel model) {
+        // TODO - Fill In
 
-		return true;
-	}
+        return true;
+    }
 
 }

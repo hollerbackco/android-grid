@@ -15,39 +15,37 @@ import com.moziy.hollerback.model.VideoModel;
  */
 public class QU {
 
-	/**
-	 * Get DataModelManager
-	 */
-	public static DataModelManager getDM() {
-		return HollerbackApplication.getInstance().getDM();
-	}
-	
-	public static ObjectMapper getObjectMapper(){
-		return HollerbackApplication.getInstance().getObjectMapper();
-	}
+    /**
+     * Get DataModelManager
+     */
+    public static DataModelManager getDM() {
+        return HollerbackApplication.getInstance().getDM();
+    }
 
-	public static ConversationModel getConv(String id) {
-		ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM()
-				.getObjectForToken(HashUtil.getConvHash()));
-		for (ConversationModel model : models) {
-			if (model.getConversation_Id() == Integer.parseInt(id)) {
-				return model;
-			}
+    public static ObjectMapper getObjectMapper() {
+        return HollerbackApplication.getInstance().getObjectMapper();
+    }
 
-		}
-		return null;
-	}
+    public static ConversationModel getConv(String id) {
+        ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
+        for (ConversationModel model : models) {
+            if (model.getConversation_Id() == Integer.parseInt(id)) {
+                return model;
+            }
 
-	public static void updateConversationVideo(VideoModel video) {
-		ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM()
-				.getObjectForToken(HashUtil.getConvHash()));
-	}
+        }
+        return null;
+    }
 
-	/**
-	 * Get String from strings file
-	 */
-	public static String s(int id) {
-		return HollerbackApplication.getInstance().getString(id);
-	}
+    public static void updateConversationVideo(VideoModel video) {
+        ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
+    }
+
+    /**
+     * Get String from strings file
+     */
+    public static String s(int id) {
+        return HollerbackApplication.getInstance().getString(id);
+    }
 
 }

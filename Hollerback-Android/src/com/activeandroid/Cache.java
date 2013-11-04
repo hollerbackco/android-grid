@@ -2,18 +2,13 @@ package com.activeandroid;
 
 /*
  * Copyright (C) 2010 Michael Pardo
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 import java.util.Collection;
@@ -28,120 +23,119 @@ import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
 
 public final class Cache {
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE MEMBERS
-	//////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE MEMBERS
+    // ////////////////////////////////////////////////////////////////////////////////////
 
-	private static Context sContext;
+    private static Context sContext;
 
-	private static ModelInfo sModelInfo;
-	private static DatabaseHelper sDatabaseHelper;
+    private static ModelInfo sModelInfo;
+    private static DatabaseHelper sDatabaseHelper;
 
-	private static Set<Model> sEntities;
+    private static Set<Model> sEntities;
 
-	private static boolean sIsInitialized = false;
+    private static boolean sIsInitialized = false;
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    // ////////////////////////////////////////////////////////////////////////////////////
 
-	private Cache() {
-	}
+    private Cache() {
+    }
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC METHODS
+    // ////////////////////////////////////////////////////////////////////////////////////
 
-	public static synchronized void initialize(Application application) {
-		if (sIsInitialized) {
-			Log.v("ActiveAndroid already initialized.");
-			return;
-		}
+    public static synchronized void initialize(Application application) {
+        if (sIsInitialized) {
+            Log.v("ActiveAndroid already initialized.");
+            return;
+        }
 
-		sContext = application;
+        sContext = application;
 
-		sModelInfo = new ModelInfo(application);
-		sDatabaseHelper = new DatabaseHelper(sContext);
+        sModelInfo = new ModelInfo(application);
+        sDatabaseHelper = new DatabaseHelper(sContext);
 
-		sEntities = new HashSet<Model>();
+        sEntities = new HashSet<Model>();
 
-		openDatabase();
+        openDatabase();
 
-		sIsInitialized = true;
+        sIsInitialized = true;
 
-		Log.v("ActiveAndroid initialized succesfully.");
-	}
+        Log.v("ActiveAndroid initialized succesfully.");
+    }
 
-	public static synchronized void clear() {
-		sEntities = new HashSet<Model>();
-		Log.v("Cache cleared.");
-	}
+    public static synchronized void clear() {
+        sEntities = new HashSet<Model>();
+        Log.v("Cache cleared.");
+    }
 
-	public static synchronized void dispose() {
-		closeDatabase();
-		
-		sEntities = null;
-		sModelInfo = null;
-		sDatabaseHelper = null;
+    public static synchronized void dispose() {
+        closeDatabase();
 
-		sIsInitialized = false;
+        sEntities = null;
+        sModelInfo = null;
+        sDatabaseHelper = null;
 
-		Log.v("ActiveAndroid disposed. Call initialize to use library.");
-	}
+        sIsInitialized = false;
 
-	// Database access
+        Log.v("ActiveAndroid disposed. Call initialize to use library.");
+    }
 
-	public static synchronized SQLiteDatabase openDatabase() {
-		return sDatabaseHelper.getWritableDatabase();
-	}
+    // Database access
 
-	public static synchronized void closeDatabase() {
-		sDatabaseHelper.close();
-	}
+    public static synchronized SQLiteDatabase openDatabase() {
+        return sDatabaseHelper.getWritableDatabase();
+    }
 
-	// Context access
+    public static synchronized void closeDatabase() {
+        sDatabaseHelper.close();
+    }
 
-	public static Context getContext() {
-		return sContext;
-	}
+    // Context access
 
-	// Entity cache
+    public static Context getContext() {
+        return sContext;
+    }
 
-	public static synchronized void addEntity(Model entity) {
-		sEntities.add(entity);
-	}
+    // Entity cache
 
-	public static synchronized Model getEntity(Class<? extends Model> type, long id) {
-		for (Model entity : sEntities) {
-			if (entity != null && entity.getClass() != null && entity.getClass() == type && entity.getId() != null
-					&& entity.getId() == id) {
+    public static synchronized void addEntity(Model entity) {
+        sEntities.add(entity);
+    }
 
-				return entity;
-			}
-		}
+    public static synchronized Model getEntity(Class<? extends Model> type, long id) {
+        for (Model entity : sEntities) {
+            if (entity != null && entity.getClass() != null && entity.getClass() == type && entity.getId() != null && entity.getId() == id) {
 
-		return null;
-	}
+                return entity;
+            }
+        }
 
-	public static synchronized void removeEntity(Model entity) {
-		sEntities.remove(entity);
-	}
+        return null;
+    }
 
-	// Model cache
+    public static synchronized void removeEntity(Model entity) {
+        sEntities.remove(entity);
+    }
 
-	public static synchronized Collection<TableInfo> getTableInfos() {
-		return sModelInfo.getTableInfos();
-	}
+    // Model cache
 
-	public static synchronized TableInfo getTableInfo(Class<? extends Model> type) {
-		return sModelInfo.getTableInfo(type);
-	}
+    public static synchronized Collection<TableInfo> getTableInfos() {
+        return sModelInfo.getTableInfos();
+    }
 
-	public static synchronized TypeSerializer getParserForType(Class<?> type) {
-		return sModelInfo.getTypeSerializer(type);
-	}
+    public static synchronized TableInfo getTableInfo(Class<? extends Model> type) {
+        return sModelInfo.getTableInfo(type);
+    }
 
-	public static synchronized String getTableName(Class<? extends Model> type) {
-		return sModelInfo.getTableInfo(type).getTableName();
-	}
+    public static synchronized TypeSerializer getParserForType(Class<?> type) {
+        return sModelInfo.getTypeSerializer(type);
+    }
+
+    public static synchronized String getTableName(Class<? extends Model> type) {
+        return sModelInfo.getTableInfo(type).getTableName();
+    }
 }

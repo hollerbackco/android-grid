@@ -11,23 +11,23 @@ import org.apache.commons.io.IOUtils;
 
 public class FileCompressionUtil {
 
-	public static void compress(File input, File output) throws IOException {
-		FileInputStream fis = new FileInputStream(input);
-		FileOutputStream fos = new FileOutputStream(output);
-		GZIPOutputStream gzipStream = new GZIPOutputStream(fos);
-		IOUtils.copy(fis, gzipStream);
-		gzipStream.close();
-		fis.close();
-		fos.close();
-	}
+    public static void compress(File input, File output) throws IOException {
+        FileInputStream fis = new FileInputStream(input);
+        FileOutputStream fos = new FileOutputStream(output);
+        GZIPOutputStream gzipStream = new GZIPOutputStream(fos);
+        IOUtils.copy(fis, gzipStream);
+        gzipStream.close();
+        fis.close();
+        fos.close();
+    }
 
-	public static void decompress(File input, File output) throws IOException {
-		FileInputStream fis = new FileInputStream(input);
-		FileOutputStream fos = new FileOutputStream(output);
-		GZIPInputStream gzipStream = new GZIPInputStream(fis);
-		IOUtils.copy(gzipStream, fos);
-		gzipStream.close();
-		fis.close();
-		fos.close();
-	}
+    public static void decompress(File input, File output) throws IOException {
+        FileInputStream fis = new FileInputStream(input);
+        FileOutputStream fos = new FileOutputStream(output);
+        GZIPInputStream gzipStream = new GZIPInputStream(fis);
+        IOUtils.copy(gzipStream, fos);
+        gzipStream.close();
+        fis.close();
+        fos.close();
+    }
 }

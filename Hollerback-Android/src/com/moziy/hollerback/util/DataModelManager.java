@@ -25,143 +25,133 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
  */
 public class DataModelManager {
 
-	private static HashMap<String, Object> mObjectHash;
-	private static TempMemoryStore mTempMemoryStore;
+    private static HashMap<String, Object> mObjectHash;
+    private static TempMemoryStore mTempMemoryStore;
 
-	public DataModelManager() {
-		mObjectHash = new HashMap<String, Object>();
-	}
+    public DataModelManager() {
+        mObjectHash = new HashMap<String, Object>();
+    }
 
-	/**
-	 * Assumes that receiver is attached to fragment/activity with correct
-	 * intentfilter
-	 * 
-	 * @param populated
-	 * @param conversationId
-	 */
-	public void getVideos(boolean populated, String conversationId) {
-		if (!populated) {
+    /**
+     * Assumes that receiver is attached to fragment/activity with correct
+     * intentfilter
+     * 
+     * @param populated
+     * @param conversationId
+     */
+    public void getVideos(boolean populated, String conversationId) {
+        if (!populated) {
 
-			// return in memory or database store solution
-			GetVideoAsyncTask task = new GetVideoAsyncTask();
-			task.execute(conversationId);
-		}	
-		HBRequestManager.getConversationVideos(conversationId);
-		
-	}
+            // return in memory or database store solution
+            GetVideoAsyncTask task = new GetVideoAsyncTask();
+            task.execute(conversationId);
+        }
+        HBRequestManager.getConversationVideos(conversationId);
 
-	public void getConversations(boolean populated) {
-		if (!populated) {
+    }
 
-			// return in memory or database store solution
-			GetConversationsAsyncTask task = new GetConversationsAsyncTask();
-			task.execute();
-		}
-		
-		HBRequestManager.getConversations();
-		
-	}
+    public void getConversations(boolean populated) {
+        if (!populated) {
 
-	private class GetConversationsAsyncTask extends
-			AsyncTask<Void, Void, ArrayList<ConversationModel>> {
+            // return in memory or database store solution
+            GetConversationsAsyncTask task = new GetConversationsAsyncTask();
+            task.execute();
+        }
 
-		@Override
-		protected ArrayList<ConversationModel> doInBackground(Void... params) {
+        HBRequestManager.getConversations();
 
-			ArrayList<ConversationModel> conversationModel = (ArrayList<ConversationModel>) ActiveRecordHelper
-					.getAllConversations();
+    }
 
-			return conversationModel;
-		}
+    private class GetConversationsAsyncTask extends AsyncTask<Void, Void, ArrayList<ConversationModel>> {
 
-		@Override
-		protected void onPostExecute(ArrayList<ConversationModel> result) {
-			// TODO Auto-generated method stub
-			super.onPostExecute(result);
+        @Override
+        protected ArrayList<ConversationModel> doInBackground(Void... params) {
 
-			String hash = HashUtil.getConvHash();
+            ArrayList<ConversationModel> conversationModel = (ArrayList<ConversationModel>) ActiveRecordHelper.getAllConversations();
 
-			mObjectHash.put(hash, result);
-/*
-			Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATIONS);
-			intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
-			IABroadcastManager.sendLocalBroadcast(intent);
-			*/
-		}
+            return conversationModel;
+        }
 
-	}
+        @Override
+        protected void onPostExecute(ArrayList<ConversationModel> result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
 
-	private class GetVideoAsyncTask extends
-			AsyncTask<String, Void, HashMap<String, ArrayList<VideoModel>>> {
+            String hash = HashUtil.getConvHash();
 
-		@Override
-		protected void onPreExecute() {
-			// TODO Auto-generated method stub
-			super.onPreExecute();
-		}
+            mObjectHash.put(hash, result);
+            /*
+             * Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATIONS); intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash); IABroadcastManager.sendLocalBroadcast(intent);
+             */
+        }
 
-		@Override
-		protected void onPostExecute(
-				HashMap<String, ArrayList<VideoModel>> result) {
-			// TODO Auto-generated method stub
-			super.onPostExecute(result);
-			Iterator it = result.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pairs = (Map.Entry) it.next();
-				System.out.println(pairs.getKey() + " = " + pairs.getValue());
-				Intent intent = new Intent(
-						IABIntent.INTENT_GET_CONVERSATION_VIDEOS);
+    }
 
-				String hash = HashUtil.generateHashFor(
-						IABIntent.ASYNC_REQ_VIDEOS, (String) pairs.getKey());
+    private class GetVideoAsyncTask extends AsyncTask<String, Void, HashMap<String, ArrayList<VideoModel>>> {
 
-				mObjectHash.put(hash, pairs.getValue());
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+        }
 
-				intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
-				//IABroadcastManager.sendLocalBroadcast(intent);
-				it.remove(); // avoids a ConcurrentModificationException
-			}
+        @Override
+        protected void onPostExecute(HashMap<String, ArrayList<VideoModel>> result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+            Iterator it = result.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pairs = (Map.Entry) it.next();
+                System.out.println(pairs.getKey() + " = " + pairs.getValue());
+                Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATION_VIDEOS);
 
-		}
+                String hash = HashUtil.generateHashFor(IABIntent.ASYNC_REQ_VIDEOS, (String) pairs.getKey());
 
-		@Override
-		protected void onCancelled() {
-			// TODO Auto-generated method stub
-			super.onCancelled();
-		}
+                mObjectHash.put(hash, pairs.getValue());
 
-		@Override
-		protected HashMap<String, ArrayList<VideoModel>> doInBackground(
-				String... params) {
+                intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
+                // IABroadcastManager.sendLocalBroadcast(intent);
+                it.remove(); // avoids a ConcurrentModificationException
+            }
 
-			if (params.length != 1) {
-				return null;
-			}
+        }
 
-			HashMap<String, ArrayList<VideoModel>> h = new HashMap<String, ArrayList<VideoModel>>();
+        @Override
+        protected void onCancelled() {
+            // TODO Auto-generated method stub
+            super.onCancelled();
+        }
 
-			ArrayList<VideoModel> videos = (ArrayList<VideoModel>) ActiveRecordHelper
-					.getVideosForConversation(params[0]);
+        @Override
+        protected HashMap<String, ArrayList<VideoModel>> doInBackground(String... params) {
 
-			if (videos != null) {
-				Collections.reverse(videos);
-				h.put(params[0], videos);
-			}
+            if (params.length != 1) {
+                return null;
+            }
 
-			return h;
+            HashMap<String, ArrayList<VideoModel>> h = new HashMap<String, ArrayList<VideoModel>>();
 
-		}
-	}
+            ArrayList<VideoModel> videos = (ArrayList<VideoModel>) ActiveRecordHelper.getVideosForConversation(params[0]);
 
-	public Object getObjectForToken(String token) {
-		if (mObjectHash.containsKey(token)) {
-			return mObjectHash.get(token);
-		}
-		return null;
-	}
+            if (videos != null) {
+                Collections.reverse(videos);
+                h.put(params[0], videos);
+            }
 
-	public void putIntoHash(String key, Object value) {
-		mObjectHash.put(key, value);
-	}
+            return h;
+
+        }
+    }
+
+    public Object getObjectForToken(String token) {
+        if (mObjectHash.containsKey(token)) {
+            return mObjectHash.get(token);
+        }
+        return null;
+    }
+
+    public void putIntoHash(String key, Object value) {
+        mObjectHash.put(key, value);
+    }
 
 }
