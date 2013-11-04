@@ -57,34 +57,6 @@ public class ConversationListFragment extends BaseFragment {
 	AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(AppEnvironment.getInstance().ACCESS_KEY_ID, AppEnvironment.getInstance().SECRET_KEY));
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
-		menu.clear();
-		inflater.inflate(R.menu.main, menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.action_settings:
-				this.startSettingsFragment();
-				break;
-			case R.id.action_find_friends:
-				ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
-				mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-						.addToBackStack(ContactsInviteFragment.class.getSimpleName()).commitAllowingStateLoss();
-				break;
-			case R.id.action_add:
-				ContactsFragment fragment = ContactsFragment.newInstance();
-				mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-						.addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
-				break;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		mActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -101,17 +73,6 @@ public class ConversationListFragment extends BaseFragment {
 		QU.getDM().getConversations(false); // TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
 
 		return fragmentView;
-	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		IABroadcastManager.unregisterLocalReceiver(receiver);
-		if (mTxtSearch != null) {
-			InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.hideSoftInputFromWindow(mTxtSearch.getWindowToken(), 0);
-		}
 	}
 
 	@Override
@@ -133,6 +94,17 @@ public class ConversationListFragment extends BaseFragment {
 		}
 
 	};
+
+	@Override
+	public void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		IABroadcastManager.unregisterLocalReceiver(receiver);
+		if (mTxtSearch != null) {
+			InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.hideSoftInputFromWindow(mTxtSearch.getWindowToken(), 0);
+		}
+	}
 
 	@Override
 	protected void initializeView(View view) {
@@ -158,6 +130,34 @@ public class ConversationListFragment extends BaseFragment {
 		mConversationList.setAdapter(mConversationListAdapter);
 		mConversationList.setOnItemClickListener(mOnListItemClickListener);
 
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		menu.clear();
+		inflater.inflate(R.menu.main, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_settings:
+				this.startSettingsFragment();
+				break;
+			case R.id.action_find_friends:
+				ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
+				mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+						.addToBackStack(ContactsInviteFragment.class.getSimpleName()).commitAllowingStateLoss();
+				break;
+			case R.id.action_add:
+				ContactsFragment fragment = ContactsFragment.newInstance();
+				mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+						.addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+				break;
+		}
+
+		return super.onOptionsItemSelected(item);
 	}
 
 	public void startConversationFragment(String conversationId) {
