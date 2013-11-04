@@ -343,8 +343,8 @@ public class HBRequestManager {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
-
             params.put(HollerbackAPI.PARAM_INVITES, contacts);
+            params.put(HollerbackAPI.PARAM_PART_URL, part_urls);
 
             HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONVERSATION, params, handler);
 

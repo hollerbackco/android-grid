@@ -86,4 +86,6 @@ public class HollerbackAPI {
     public static final String PARAM_USERNAME = "username";
 
     public static final String PARAM_CODE = "code";
+
+    public static final String PARAM_PART_URL = "part_url";
 }

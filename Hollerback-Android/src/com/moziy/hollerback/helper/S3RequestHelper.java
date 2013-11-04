@@ -22,7 +22,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.krish.horizontalscrollview.CustomListBaseAdapter;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
@@ -221,6 +220,8 @@ public class S3RequestHelper {
     }
 
     // TODO - Sajjad: What was the original intention of this AsyncTask?
+    // Answer: presigned urls would allow individuals who have the url to access
+    // the resource, but people who don't, won't be able to.
     public class S3GenerateUrlTask extends AsyncTask<S3UploadParams, Void, S3TaskResult> {
 
         protected S3TaskResult doInBackground(S3UploadParams... videos) {
