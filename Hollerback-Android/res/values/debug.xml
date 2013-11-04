@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="PROXY_URL">http://10.0.1.64:8888/</string>
+
+    <bool name="ENABLE_PROXY">true</bool>
+
+</resources>
