@@ -22,7 +22,7 @@ import com.moziy.hollerback.util.HollerbackPreferences;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBHttpResponseHandler;
+import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 
 /**
  * This is a fragment that's going to use the new architecture, loader based rather than braodcast based
@@ -88,7 +88,7 @@ public class SignUpConfirmFragment extends BaseFragment{
 				SignUpConfirmFragment.this.startLoading();
 				HBRequestManager.postVerification(mTxtVerify.getText().toString(), 
 						PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""), 
-						new HBHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
+						new HBAsyncHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
 						}) {
 
 							@Override

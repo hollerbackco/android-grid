@@ -29,7 +29,7 @@ import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBHttpResponseHandler;
+import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -192,7 +192,7 @@ public class SignInFragment extends BaseFragment{
 		LogUtil.i("Logging in with: " + mPhoneNumberField.getText().toString());
 		this.startLoading();
 		HBRequestManager.postLogin(mRegistrationPhone,
-				new HBHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>(){}) {
+				new HBAsyncHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>(){}) {
 
 					@Override
 					public void onResponseSuccess(int statusCode,

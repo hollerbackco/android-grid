@@ -19,8 +19,9 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.ResponseObject;
 import com.moziy.hollerback.model.web.response.NewConvoResponse;
 import com.moziy.hollerback.util.FileUtil;
-import com.moziy.hollerbacky.connection.HBHttpResponseHandler;
+import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
+import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 /**
  * This class is responsible for uploading a video resource to S3, and then issuing a post to the appropriate api 
  * @author sajjad
@@ -103,8 +104,8 @@ public class VideoUploadIntentService extends IntentService{
 	private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts){
 		
 	
-				HBRequestManager.postConversations(contacts, new HBHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
-				}, true) {
+				HBRequestManager.postConversations(contacts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
+				}) {
 
 					@Override
 					public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
