@@ -27,7 +27,7 @@ public class AppEnvironment {
 	public static final int ENV_PRODUCTION = 0x9999;
 	public static final int ENV_DEVELOPMENT = 0x1234;
 
-	private int ENV = ENV_PRODUCTION;
+	private int ENV = ENV_DEVELOPMENT;
 
 	public final String IMAGE_THUMB_SUFFIX = "-thumb.png";
 
@@ -55,22 +55,22 @@ public class AppEnvironment {
 	// TODO: Setup Environments
 	public void setEnvironment() {
 		switch (ENV) {
-		case ENV_DEVELOPMENT:
-			LogUtil.d("Setting Development Environment");
-			BASE_URL = "http://lit-sea-1934.herokuapp.com";
-			FORCE_PHONE_NUMBER_CHECK = false;
-			GOOGLE_PROJECT_NUMBER = "69406303235";
-			LOG_CRASHES = false;
-			FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
-			break;
-		case ENV_PRODUCTION:
-			LogUtil.d("Setting Production Environment");
-			BASE_URL = "https://calm-peak-4397.herokuapp.com";
-			FORCE_PHONE_NUMBER_CHECK = true;
-			GOOGLE_PROJECT_NUMBER = "69406303235";
-			LOG_CRASHES = true;
-			FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
-			break;
+			case ENV_DEVELOPMENT:
+				LogUtil.d("Setting Development Environment");
+				BASE_URL = "http://lit-sea-1934.herokuapp.com";
+				FORCE_PHONE_NUMBER_CHECK = false;
+				GOOGLE_PROJECT_NUMBER = "69406303235";
+				LOG_CRASHES = false;
+				FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+				break;
+			case ENV_PRODUCTION:
+				LogUtil.d("Setting Production Environment");
+				BASE_URL = "https://calm-peak-4397.herokuapp.com";
+				FORCE_PHONE_NUMBER_CHECK = true;
+				GOOGLE_PROJECT_NUMBER = "69406303235";
+				LOG_CRASHES = true;
+				FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+				break;
 		}
 	}
 
