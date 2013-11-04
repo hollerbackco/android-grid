@@ -1,0 +1,16 @@
+AWS SDK for Android
+Copyright 2011-2012 Amazon Technologies, Inc.
+
+This product includes software developed by:
+
+The Apache Software Foundation (http://www.apache.org/)
+    - Apache Commons Logging
+    - Apache Commons Codec
+
+The Codehaus (http://www.codehaus.org/)
+    - Jackson JSON Parser
+    - Jackson Mapper
+
+Additional Parties
+    - Java API for XML Processing (JAXP)
+    - The Sun Java Streaming XML Parser (SJSXP)   
