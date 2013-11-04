@@ -20,14 +20,15 @@ public class AppEnvironment {
 
     // public static final String PICTURE_NAME = null;
 
-    public String UPLOAD_BUCKET = "hb-media";
-
-    public String PICTURE_BUCKET = "hb-media";
+    public String UPLOAD_BUCKET;
+    public String UPLOAD_BUCKET_DEV = "hb-tmp-dev";
+    public String UPLOAD_BUCKET_PROD = "hb-tmp";
+    public String PICTURE_BUCKET;
 
     public static final int ENV_PRODUCTION = 0x9999;
     public static final int ENV_DEVELOPMENT = 0x1234;
 
-    private int ENV = ENV_DEVELOPMENT;
+    public final int ENV = ENV_DEVELOPMENT;
 
     public final String IMAGE_THUMB_SUFFIX = "-thumb.png";
 
@@ -62,6 +63,7 @@ public class AppEnvironment {
                 GOOGLE_PROJECT_NUMBER = "69406303235";
                 LOG_CRASHES = false;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+                UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
                 break;
             case ENV_PRODUCTION:
                 LogUtil.d("Setting Production Environment");
@@ -70,6 +72,7 @@ public class AppEnvironment {
                 GOOGLE_PROJECT_NUMBER = "69406303235";
                 LOG_CRASHES = true;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+                UPLOAD_BUCKET = UPLOAD_BUCKET_PROD;
                 break;
         }
     }

@@ -7,9 +7,13 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONObject;
 
+import android.app.Application;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HollerbackAPI;
@@ -30,6 +34,12 @@ public class HollerbackAsyncClient {
 
             // set timeout at 60 seconds
             client.setTimeout(120000);
+            if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_DEVELOPMENT && HollerbackApplication.getInstance().getResources().getBoolean(R.bool.ENABLE_PROXY)) {
+                Application app = HollerbackApplication.getInstance();
+                String url = app.getResources().getString(R.string.PROXY_URL);
+                int port = app.getResources().getInteger(R.integer.PROXY_PORT);
+                client.setProxy(url, port);
+            }
         }
         return sInstance;
     }
