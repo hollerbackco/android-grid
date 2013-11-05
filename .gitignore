@@ -43,4 +43,7 @@ local.properties
 # PDT-specific
 .buildpath
 
+#Jar source/docs properties files
+libs/*.properties
+
 .DS_Store
