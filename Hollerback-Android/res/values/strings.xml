@@ -4,9 +4,8 @@
     <string name="app_name">Hollerback</string>
     <string name="all">All</string>
     <string name="loading_message">Hollerback is loading, please wait.</string>
-        
     <string name="action_settings">My Account</string>
-	<string name="action_find_friends">Find Friends</string>
+    <string name="action_find_friends">Find Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>
     <string name="action_switch">Switch Camera</string>
@@ -15,28 +14,28 @@
     <string name="action_play">Play</string>
     <string name="action_send">Send</string>
     <string name="action_search">Search</string>
-	<string name="action_person">Person</string>
-	<string name="action_record">Record</string>
-	<string name="action_next">Next</string>	
-	<string name="action_verify">Verify</string>	
-	<string name="action_clear">Clear</string>
-	<string name="action_invite">Invite</string>
-	<string name="action_uploading">Uploading</string>
-	
-	<!-- Button Strings -->
+    <string name="action_person">Person</string>
+    <string name="action_record">Record</string>
+    <string name="action_next">Next</string>
+    <string name="action_verify">Verify</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_invite">Invite</string>
+    <string name="action_uploading">Uploading</string>
+
+    <!-- Button Strings -->
     <string name="signin">Log In</string>
     <string name="signup">Sign Up</string>
     <string name="create_account">Create Account</string>
-	<string name="tap_start">Tap screen to start recording</string>
+    <string name="tap_start">Tap screen to start recording</string>
     <string name="tap_stop">Tap screen to stop</string>
     <string name="timer_default">20s</string>
-    
-	<!-- Recording stuff -->
+
+    <!-- Recording stuff -->
     <string name="record_filter">Pick a Filter</string>
     <string name="record_message">Record a Message</string>
     <string name="record_recording">Recording</string>
     <string name="record_review">Review</string>
-    
+
     <!-- Sign In/Sign Up -->
     <string name="name">UserName</string>
     <string name="email">Email</string>
@@ -50,50 +49,48 @@
     <string name="error_email">Email not valid</string>
     <string name="error_phone">Phone number is not valid</string>
     <string name="error_password">Password not valid</string>
-	<string name="error_verification">There was a problem verifying your phone number, please enter the correct code</string>
-	<string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
-	<string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>
-	<string name="message_sent">Nice! Message Sent!</string>
-	<string name="message_sent_simple">Message Sent!</string>
-	<string name="send_another">Send Another</string>
-	<string name="conversation_list">Your Conversations</string>
-	
+    <string name="error_verification">There was a problem verifying your phone number, please enter the correct code</string>
+    <string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
+    <string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>
+    <string name="message_sent">Nice! Message Sent!</string>
+    <string name="message_sent_simple">Message Sent!</string>
+    <string name="send_another">Send Another</string>
+    <string name="conversation_list">Your Conversations</string>
     <string name="signup_agreement">By clicking Submit you are indicating that you have read and agree to the Privacy Policy and Terms of Service</string>
     <string name="empty_conversation_list">Start using Hollerback by sending a video message to your friends!</string>
     <string name="verify_text">We\'ll send you an SMS with a PIN code.  Enter it in the field above and click "Done"</string>
-    
-	<string name="preference_category_friends">Friends</string>
-	<string name="preference_category_account">Account</string>
-	<string name="preference_category_library">Save to Library</string>
-	<string name="preference_category_terms">Terms</string>
-	<string name="preference_category_team">Hollerback Team</string>	
-	<string name="preference_friends">Find Friends</string>
-	<string name="preference_logout">Log Out</string>
-	<string name="preference_username">Username</string>
-	<string name="preference_phone">Phone Number</string>
-	<string name="preference_save">Save to SD Card</string>
-	<string name="preference_terms">Terms of Services</string>
-	<string name="preference_privacy">Privacy Policy</string>
-	<string name="preference_feedback">Send us feedback</string>
-	<string name="preference_twitter">Hollerback on Twitter</string>
-	<string name="preference_facebook">Hollerback on Facebook</string>
-	<string name="preference_new_group">New Group</string>
-	
+    <string name="preference_category_friends">Friends</string>
+    <string name="preference_category_account">Account</string>
+    <string name="preference_category_library">Save to Library</string>
+    <string name="preference_category_terms">Terms</string>
+    <string name="preference_category_team">Hollerback Team</string>
+    <string name="preference_friends">Find Friends</string>
+    <string name="preference_logout">Log Out</string>
+    <string name="preference_username">Username</string>
+    <string name="preference_phone">Phone Number</string>
+    <string name="preference_save">Save to SD Card</string>
+    <string name="preference_terms">Terms of Services</string>
+    <string name="preference_privacy">Privacy Policy</string>
+    <string name="preference_feedback">Send us feedback</string>
+    <string name="preference_twitter">Hollerback on Twitter</string>
+    <string name="preference_facebook">Hollerback on Facebook</string>
+    <string name="preference_new_group">New Group</string>
     <string name="signup">Sign Up</string>
-	<string name="tap_start">Tap screen to start recording</string>
+    <string name="tap_start">Tap screen to start recording</string>
     <string name="tap_stop">Tap screen to stop</string>
     <string name="timer_default">20s</string>
     <string name="verify_pin">Pin #</string>
     <string name="verify_phone_display">Your Phone Number</string>
-    
     <string name="contact_hollerback">Hollerback Friends</string>
-    <string name="contact_phone">Phone Contact</string>    
-	<string name="contact_members_leave">Leave Group</string>     
+    <string name="contact_phone">Phone Contact</string>
+    <string name="contact_members_leave">Leave Group</string>
     <string name="conversation_members">Members</string>
-	<string name="conversation_leave_success">Successfully left the conversation.</string>
-	<string name="conversation_unwatched_videos">Unwatched Videos</string>
-	
-	<string name="invite_successful">Your friends has successfully been invited.</string>
-	<string name="record_error">There was an error recording, please restart your phone.</string>
-	
+    <string name="conversation_leave_success">Successfully left the conversation.</string>
+    <string name="conversation_unwatched_videos">Unwatched Videos</string>
+    <string name="invite_successful">Your friends has successfully been invited.</string>
+    <string name="record_error">There was an error recording, please restart your phone.</string>
+
+    <!-- Start Conversation -->
+    <string name="tap_to_start">Tap banana to start video</string>
+
 </resources>

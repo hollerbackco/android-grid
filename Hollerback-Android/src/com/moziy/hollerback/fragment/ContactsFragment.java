@@ -291,10 +291,11 @@ public class ContactsFragment extends BaseFragment {
 
         mActivity.getSupportFragmentManager().popBackStack();
 
-        RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
+        StartConversationFragment startConvoFragment = StartConversationFragment.newInstance(phones, mConversationTitle);
+        // RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
 
-        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, recordfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .addToBackStack(RecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
+        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .addToBackStack(StartConversationFragment.FRAGMENT_TAG).commitAllowingStateLoss();
     }
 
     /**

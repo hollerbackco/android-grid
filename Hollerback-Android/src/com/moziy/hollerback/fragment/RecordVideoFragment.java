@@ -402,54 +402,6 @@ public class RecordVideoFragment extends BaseFragment {
         // TODO - Sajjad: get the file info passed in to "inviteAndRecord"
         sendVideo(mFileDataName, contacts, -1);
 
-        // HBRequestManager.postConversations(contacts,
-        // new JsonHttpResponseHandler() {
-        //
-        // @Override
-        // protected Object parseResponse(String arg0)
-        // throws JSONException {
-        // LogUtil.i(arg0);
-        // return super.parseResponse(arg0);
-        //
-        // }
-        //
-        // @Override
-        // public void onFailure(Throwable arg0, JSONObject arg1) {
-        // // TODO Auto-generated method stub
-        // super.onFailure(arg0, arg1);
-        // LogUtil.e(HollerbackAPI.API_CONVERSATION
-        // + "FAILURE");
-        // }
-        //
-        // @Override
-        // public void onSuccess(int statusId, JSONObject response) {
-        // // TODO Auto-generated method stub
-        // super.onSuccess(statusId, response);
-        // LogUtil.i("ON SUCCESS API CONVO");
-        // JSONUtil.processPostConversations(response);
-        //
-        // //this part is really bad implmentation, but his JSONUtil.processPostConversation
-        // //does not retain the DataManager, so I had to write quick one just to do the trick
-        //
-        // //successful, now we upload video
-        // try {
-        //
-        // JSONObject conversation = response.getJSONObject("data");
-        //
-        // if(!conversation.has("id"))
-        // {
-        // return;
-        // }
-        //
-        // mConversationId = String.valueOf(conversation.getInt("id"));
-        // mToConversation = true;
-        // uploadAndSend();
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
-        // //just posted, now upload the video
-        // }
-        // });
     }
 
     Runnable timeTask = new Runnable() {
@@ -679,7 +631,7 @@ public class RecordVideoFragment extends BaseFragment {
         LogUtil.i("Record size: " + prof.videoFrameWidth + " " + prof.videoFrameHeight);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            recorder.setOrientationHint(270);
+            recorder.setOrientationHint(90);
         }
 
         // Step 4: Set output file
