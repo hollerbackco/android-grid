@@ -139,13 +139,13 @@ public class VideoUploadIntentService extends IntentService {
 
             @Override
             public void onApiFailure(Metadata metaData) {
-
+                Log.d(TAG, "onApiFailure");
                 // ok we're no longer transacting so let's clear it, but lets not update the state
                 model.clearTransacting();
                 model.save();
 
-                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
                 Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
 
             }
 

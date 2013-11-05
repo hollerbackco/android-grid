@@ -321,7 +321,6 @@ public class HBRequestManager {
 
                 @Override
                 public void onFailure(Throwable arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
                     super.onFailure(arg0, arg1);
                     LogUtil.e(HollerbackAPI.API_CONVERSATION + "FAILURE");
                 }

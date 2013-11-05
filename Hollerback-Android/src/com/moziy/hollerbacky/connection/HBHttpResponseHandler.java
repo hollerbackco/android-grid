@@ -14,6 +14,8 @@ import com.moziy.hollerback.util.QU;
 
 public abstract class HBHttpResponseHandler<T extends ResponseObject> extends AsyncHttpResponseHandler {
 
+    private static final String TAG = HBHttpResponseHandler.class.getSimpleName();
+
     protected TypeReference<T> mTypeReference;
 
     public abstract void onResponseSuccess(int statusCode, T response);
@@ -49,11 +51,15 @@ public abstract class HBHttpResponseHandler<T extends ResponseObject> extends As
 
     protected Metadata extractMetaData(String content) {
 
+        // don't even bother trying to deserialize, besides..it seems this version of jackson borks on null
+        if (content == null) {
+            return null;
+        }
+
         ObjectMapper mapper = QU.getObjectMapper();
 
         Envelope<?> envelope = null;
         try {
-
             envelope = mapper.readValue(content, new TypeReference<Envelope<ResponseObject>>() {
             });
 
