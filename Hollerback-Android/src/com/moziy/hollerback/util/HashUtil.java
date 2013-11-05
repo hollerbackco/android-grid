@@ -52,6 +52,6 @@ public class HashUtil {
     }
 
     public static String getConvHash() {
-        return HashUtil.generateHashFor(IABIntent.INTENT_GET_CONVERSATIONS, IABIntent.VALUE_CONV_HASH);
+        return HashUtil.generateHashFor(IABIntent.GET_CONVERSATIONS, IABIntent.VALUE_CONV_HASH);
     }
 }

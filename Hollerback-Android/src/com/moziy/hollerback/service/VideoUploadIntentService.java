@@ -10,6 +10,8 @@ import android.util.Log;
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
@@ -73,6 +75,12 @@ public class VideoUploadIntentService extends IntentService {
 
             if (result != null) { // => Yay, we uploaded the file to s3, lets mark it as uploaded pending post!
                 model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
+            } else {
+                // broadcast failure
+                if (model.getConversationId() < 0) {
+                    // broadcast conversation create failure
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
+                }
             }
 
             model.clearTransacting(); // ok, we're no longer transacting
@@ -123,6 +131,8 @@ public class VideoUploadIntentService extends IntentService {
                 model.setConversationId(conversationResp.id);
                 model.save();
 
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+
                 // lets create a new conversation from the response
                 Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);
             }
@@ -134,6 +144,7 @@ public class VideoUploadIntentService extends IntentService {
                 model.clearTransacting();
                 model.save();
 
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
                 Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
 
             }

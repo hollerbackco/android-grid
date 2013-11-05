@@ -293,7 +293,7 @@ public class S3RequestHelper {
                 // task.execute(new String[] { result.getUri().toString() });
             }
             LogUtil.i("Video params stuff like yo");
-            Intent intent = new Intent(IABIntent.INTENT_GET_URLS);
+            Intent intent = new Intent(IABIntent.GET_URLS);
             IABroadcastManager.sendLocalBroadcast(intent);
         }
     }
@@ -544,7 +544,7 @@ public class S3RequestHelper {
 
                 if (!this.isCancelled()) {
 
-                    Intent intent = new Intent(IABIntent.INTENT_REQUEST_VIDEO);
+                    Intent intent = new Intent(IABIntent.REQUEST_VIDEO);
                     intent.putExtra(IABIntent.PARAM_ID, request);
                     IABroadcastManager.sendLocalBroadcast(intent);
                     LogUtil.i("broadcast Sent");

@@ -85,7 +85,7 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
             fragmentManager.popBackStackImmediate();
         }
         ConversationListFragment fragment = new ConversationListFragment();
-        fragmentTransaction.add(R.id.fragment_holder, fragment);
+        fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 }

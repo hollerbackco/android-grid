@@ -114,7 +114,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     @Override
     protected void onRegistered(Context context, String regId) {
-        Intent intent = new Intent(IABIntent.INTENT_GCM_REGISTERED);
+        Intent intent = new Intent(IABIntent.GCM_REGISTERED);
         intent.putExtra(IABIntent.PARAM_GCM_REGISTRATION_ID, regId);
         context.sendBroadcast(intent);
     }

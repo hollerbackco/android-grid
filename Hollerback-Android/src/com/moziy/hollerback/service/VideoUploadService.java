@@ -29,7 +29,7 @@ public class VideoUploadService extends Service {
 
     @Override
     public void onCreate() {
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
+        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.UPLOAD_VIDEO_UPLOADING);
         mPool = Executors.newFixedThreadPool(2);
     }
 
@@ -50,7 +50,7 @@ public class VideoUploadService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (IABIntent.isIntent(intent, IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING)) {
+            if (IABIntent.isIntent(intent, IABIntent.UPLOAD_VIDEO_UPLOADING)) {
                 if (intent != null) {
                     Log.e("uploading", "got it");
                     JSONObject tmp = new JSONObject();

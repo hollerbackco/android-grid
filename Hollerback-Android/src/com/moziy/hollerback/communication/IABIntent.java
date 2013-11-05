@@ -4,24 +4,31 @@ import android.content.Intent;
 
 public class IABIntent {
 
-    public static final String INTENT_SESSION_REQUEST = "SessionRequest";
-    public static final String INTENT_REGISTER_REQUEST = "RegisterRequest";
-    public static final String INTENT_GET_CONVERSATIONS = "GetConvo";
-    public static final String INTENT_REQUEST_VIDEO = "VideoRequest";
-    public static final String INTENT_UPLOAD_VIDEO = "UploadVideo";
-    public static final String INTENT_UPLOAD_VIDEO_UPDATE = "UploadVideoUpdate";
-    public static final String INTENT_UPLOAD_VIDEO_UPLOADING = "UploadVideoUploading";
-    public static final String INTENT_GET_CONTACTS = "GetContacts";
-    public static final String INTENT_POST_CONVERSATIONS = "PostConversation";
-    public static final String INTENT_GET_URLS = "GetUrls";
-    public static final String INTENT_GET_CONVERSATION_VIDEOS = "GetConvVideos";
-    public static final String INTENT_POST_READ_VIDEO = "PostReadVideo";
+    public static final String SESSION_REQUEST = "SessionRequest";
+    public static final String REGISTER_REQUEST = "RegisterRequest";
+    public static final String GET_CONVERSATIONS = "GetConvo";
+    public static final String REQUEST_VIDEO = "VideoRequest";
+    public static final String UPLOAD_VIDEO = "UploadVideo";
+    public static final String UPLOAD_VIDEO_UPDATE = "UploadVideoUpdate";
+    public static final String UPLOAD_VIDEO_UPLOADING = "UploadVideoUploading";
+    public static final String GET_CONTACTS = "GetContacts";
+    public static final String POST_CONVERSATIONS = "PostConversation";
+    public static final String GET_URLS = "GetUrls";
+    public static final String GET_CONVERSATION_VIDEOS = "GetConvVideos";
+    public static final String POST_READ_VIDEO = "PostReadVideo";
 
-    public static final String INTENT_GCM_REGISTERED = "gcmregistered";
-
-    public static final String INTENT_SERVICE_UPLOADVIDEO = "uploadvideo";
+    public static final String GCM_REGISTERED = "gcmregistered";
+    public static final String SERVICE_UPLOADVIDEO = "uploadvideo";
 
     public static final String GCM_MESSAGE = "gcmmsg";
+
+    // Recording Intent
+    public static final String RECORDING_FAILED = "RecordingFailed";
+    public static final String RECORDING_CANCELLED = "RecordingCancelled";
+
+    // Conversation Intents
+    public static final String CONVERSATION_CREATED = "ConvoCreated";
+    public static final String CONVERSATION_CREATE_FAILURE = "ConvoCreateFailure";
 
     public static final String PARAM_SUCCESS = "200";
     public static final String PARAM_FAILURE = "500";

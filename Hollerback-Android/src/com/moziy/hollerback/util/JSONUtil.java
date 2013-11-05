@@ -62,7 +62,7 @@ public class JSONUtil {
             e.printStackTrace();
         }
 
-        Intent intent = new Intent(IABIntent.INTENT_SESSION_REQUEST);
+        Intent intent = new Intent(IABIntent.SESSION_REQUEST);
         intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
         IABroadcastManager.sendLocalBroadcast(intent);
 
@@ -83,7 +83,7 @@ public class JSONUtil {
 
         PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
 
-        Intent intent = new Intent(IABIntent.INTENT_SESSION_REQUEST);
+        Intent intent = new Intent(IABIntent.SESSION_REQUEST);
         intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
         IABroadcastManager.sendLocalBroadcast(intent);
     }
@@ -201,7 +201,7 @@ public class JSONUtil {
 
             QU.getDM().putIntoHash(hash, videos);
 
-            Intent intent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPDATE);
+            Intent intent = new Intent(IABIntent.UPLOAD_VIDEO_UPDATE);
             intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
             intent.putExtra(IABIntent.PARAM_ID, conversationId);
 
@@ -213,7 +213,7 @@ public class JSONUtil {
             e.printStackTrace();
         }
 
-        Intent intent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO);
+        Intent intent = new Intent(IABIntent.UPLOAD_VIDEO);
         intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
         if (customMessage != null && !customMessage.isEmpty()) {
             if (customMessage.equals(IABIntent.MSG_CONVERSATION_ID)) {
@@ -261,7 +261,7 @@ public class JSONUtil {
 
             LogUtil.i("Model Size " + conversations.size());
 
-            Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATIONS);
+            Intent intent = new Intent(IABIntent.GET_CONVERSATIONS);
             intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
             IABroadcastManager.sendLocalBroadcast(intent);
 
@@ -316,7 +316,7 @@ public class JSONUtil {
             // }
 
             // TempMemoryStore.users = users;
-            Intent intent = new Intent(IABIntent.INTENT_GET_CONTACTS);
+            Intent intent = new Intent(IABIntent.GET_CONTACTS);
             IABroadcastManager.sendLocalBroadcast(intent);
         } catch (Exception e) {
             e.printStackTrace();
@@ -414,7 +414,7 @@ public class JSONUtil {
 
             QU.getDM().putIntoHash(HashUtil.getConvHash(), conversations);
 
-            Intent intent = new Intent(IABIntent.INTENT_POST_CONVERSATIONS);
+            Intent intent = new Intent(IABIntent.POST_CONVERSATIONS);
             intent.putExtra(IABIntent.PARAM_ID, Long.toString(model.getConversation_Id()));
             LogUtil.i("Sending Broadcast: " + model.getConversation_Id());
             IABroadcastManager.sendLocalBroadcast(intent);
@@ -455,7 +455,7 @@ public class JSONUtil {
 
                 QU.getDM().putIntoHash(hash, videos);
 
-                Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATION_VIDEOS);
+                Intent intent = new Intent(IABIntent.GET_CONVERSATION_VIDEOS);
                 intent.putExtra(IABIntent.PARAM_INTENT_DATA, hash);
                 intent.putExtra(IABIntent.PARAM_ID, conversationId);
 
@@ -476,7 +476,7 @@ public class JSONUtil {
             VideoModel video = JsonModelUtil.createVideo(videoJSONObject);
             QU.updateConversationVideo(video);
 
-            Intent intent = new Intent(IABIntent.INTENT_POST_READ_VIDEO);
+            Intent intent = new Intent(IABIntent.POST_READ_VIDEO);
             IABroadcastManager.sendLocalBroadcast(intent);
 
         } catch (Exception e) {

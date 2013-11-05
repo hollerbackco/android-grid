@@ -36,6 +36,9 @@ import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.QU;
 
 public class ConversationListFragment extends BaseFragment {
+
+    public static final String FRAGMENT_TAG = ConversationListFragment.class.getSimpleName();
+
     private int PREFERENCE_PAGE;
     private ViewGroup mHeader;
     private EditText mTxtSearch;
@@ -80,7 +83,7 @@ public class ConversationListFragment extends BaseFragment {
         // TODO Auto-generated method stub
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.INTENT_GET_CONVERSATIONS);
+        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
     }
 
     OnItemClickListener mOnListItemClickListener = new OnItemClickListener() {
@@ -198,7 +201,7 @@ public class ConversationListFragment extends BaseFragment {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (IABIntent.isIntent(intent, IABIntent.INTENT_GET_CONVERSATIONS)) {
+            if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATIONS)) {
                 // mConversationListAdapter
                 // .setConversations(TempMemoryStore.conversations);
                 String hash = intent.getStringExtra(IABIntent.PARAM_INTENT_DATA);

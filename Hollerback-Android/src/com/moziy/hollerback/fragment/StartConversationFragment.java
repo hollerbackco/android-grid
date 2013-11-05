@@ -4,15 +4,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 
 public class StartConversationFragment extends BaseFragment {
+
     public static final String FRAGMENT_TAG = StartConversationFragment.class.getSimpleName();
+    private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
     private static final String TITLE_BUNDLE_ARG_KEY = "title";
 
@@ -25,8 +32,13 @@ public class StartConversationFragment extends BaseFragment {
         return f;
     }
 
+    private ProgressBar mProgressSpinner;
     private String[] mPhones;
     private String mTitle;
+
+    private boolean mIsWaiting = false; // whether we're waiting on an event
+
+    private InternalReceiver mReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +46,9 @@ public class StartConversationFragment extends BaseFragment {
         Bundle args = getArguments();
         mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
         mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
+
+        // New Conversation Created Intent
+        mReceiver = new InternalReceiver();
 
     }
 
@@ -44,13 +59,23 @@ public class StartConversationFragment extends BaseFragment {
 
         ((TextView) v.findViewById(R.id.tv_title)).setText(mTitle);
 
+        mProgressSpinner = (ProgressBar) v.findViewById(R.id.pb_spinner);
+
         v.findViewById(R.id.ib_start_video).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+
+                mIsWaiting = true; // mark this fragment as waiting for broadcasts
+                // register for inapp events
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATE_FAILURE);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_FAILED);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
+
                 RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
                 // go to the video fragment
-                getFragmentManager().beginTransaction().addToBackStack(FRAGMENT_TAG).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+                getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
         });
 
@@ -60,6 +85,11 @@ public class StartConversationFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (mIsWaiting) {
+            mProgressSpinner.setVisibility(View.VISIBLE);
+        } else {
+            mProgressSpinner.setVisibility(View.INVISIBLE);
+        }
 
     }
 
@@ -70,14 +100,41 @@ public class StartConversationFragment extends BaseFragment {
 
     private class InternalReceiver extends BroadcastReceiver {
 
+        private final String TAG = InternalReceiver.class.getSimpleName();
+
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive()");
             if (isAdded()) { // only do work if the fragment is added
 
+                if (intent.filterEquals(new Intent(IABIntent.CONVERSATION_CREATED))) {
+                    mIsWaiting = false;
+                    Log.d(TAG, "conversation created!");
+                    mProgressSpinner.setVisibility(View.INVISIBLE); // TODO: add transition animation
+
+                    // TODO - Sajjad: Delay the popping until after we've shown the sent icon
+                    getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // go back to the conversation fragment, popping everything
+
+                } else {
+                    // TODO: if it's a conversation creation failure, display a dialog
+                    mIsWaiting = false;
+                    mProgressSpinner.setVisibility(View.INVISIBLE);
+                    // go back to contacts or back to the conversation list?
+                    Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "conversation failed");
+                }
+            } else {
+                Log.w(TAG, "received broadcast when not added");
             }
 
         }
+    }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        Log.d(TAG, "onDestroy()");
     }
 
 }

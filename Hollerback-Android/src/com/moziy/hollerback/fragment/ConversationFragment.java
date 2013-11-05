@@ -192,9 +192,9 @@ public class ConversationFragment extends BaseFragment {
         // TODO: Do this less often
         mImageFetcher.setExitTasksEarly(false);
 
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.INTENT_GET_URLS);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.INTENT_GET_CONVERSATION_VIDEOS);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.INTENT_UPLOAD_VIDEO_UPDATE);
+        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_URLS);
+        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATION_VIDEOS);
+        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.UPLOAD_VIDEO_UPDATE);
         QU.getDM().getVideos(false, mConversationId);
 
     }
@@ -338,7 +338,7 @@ public class ConversationFragment extends BaseFragment {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (IABIntent.isIntent(intent, IABIntent.INTENT_UPLOAD_VIDEO_UPDATE)) {
+            if (IABIntent.isIntent(intent, IABIntent.UPLOAD_VIDEO_UPDATE)) {
                 /*
                  * ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU .getDM() .getObjectForToken( intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
                  * 
@@ -363,7 +363,7 @@ public class ConversationFragment extends BaseFragment {
                 }
 
                 mVideoGalleryAdapter.mUploadingHelper.clear();
-            } else if (IABIntent.isIntent(intent, IABIntent.INTENT_GET_CONVERSATION_VIDEOS)) {
+            } else if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATION_VIDEOS)) {
 
                 ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
 

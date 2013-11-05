@@ -31,6 +31,19 @@
         android:scaleType="fitCenter"
         android:src="@drawable/big_banana" />
 
+    <!-- TODO: just a place holder, replace later -->
+
+    <ProgressBar
+        android:id="@+id/pb_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ib_start_video"
+        android:layout_alignLeft="@+id/ib_start_video"
+        android:layout_alignRight="@+id/ib_start_video"
+        android:layout_alignTop="@+id/ib_start_video"
+        android:indeterminate="true"
+        android:padding="40dp" />
+
     <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/tv_tap_to_start"
         android:layout_width="wrap_content"

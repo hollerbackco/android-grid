@@ -103,7 +103,7 @@ public class DataModelManager {
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry) it.next();
                 System.out.println(pairs.getKey() + " = " + pairs.getValue());
-                Intent intent = new Intent(IABIntent.INTENT_GET_CONVERSATION_VIDEOS);
+                Intent intent = new Intent(IABIntent.GET_CONVERSATION_VIDEOS);
 
                 String hash = HashUtil.generateHashFor(IABIntent.ASYNC_REQ_VIDEOS, (String) pairs.getKey());
 

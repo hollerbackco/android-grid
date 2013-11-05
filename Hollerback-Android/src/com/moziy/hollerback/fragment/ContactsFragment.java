@@ -294,8 +294,9 @@ public class ContactsFragment extends BaseFragment {
         StartConversationFragment startConvoFragment = StartConversationFragment.newInstance(phones, mConversationTitle);
         // RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
 
-        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .addToBackStack(StartConversationFragment.FRAGMENT_TAG).commitAllowingStateLoss();
+        // add to backstack?
+        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).addToBackStack(null).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commitAllowingStateLoss();
     }
 
     /**

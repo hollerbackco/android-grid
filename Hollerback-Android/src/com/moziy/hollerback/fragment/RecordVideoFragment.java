@@ -329,7 +329,7 @@ public class RecordVideoFragment extends BaseFragment {
         // sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
         // IABroadcastManager.sendLocalBroadcast(sendIntent);
 
-        // TODO - Sajjad: Figure out what we're popping
+        // we're going back to the start conversation fragment
         mActivity.getSupportFragmentManager().popBackStack();
 
         if (mToConversation) {
@@ -365,7 +365,7 @@ public class RecordVideoFragment extends BaseFragment {
             e.printStackTrace();
         }
 
-        Intent sendIntent = new Intent(IABIntent.INTENT_UPLOAD_VIDEO_UPLOADING);
+        Intent sendIntent = new Intent(IABIntent.UPLOAD_VIDEO_UPLOADING);
         sendIntent.putExtra("ConversationId", mConversationId);
         sendIntent.putExtra("FileDataName", mFileDataName);
         sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
@@ -451,6 +451,9 @@ public class RecordVideoFragment extends BaseFragment {
             releaseMediaRecorder(); // release the MediaRecorder object
             camera.lock(); // take camera access back from MediaRecorder
             isRecording = false;
+
+            // Broadcast that recording was cancelled
+            IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
         }
 
         if (camera != null) {

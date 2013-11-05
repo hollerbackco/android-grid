@@ -23,7 +23,7 @@ public class HollerbackVideoService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (IABIntent.isIntent(intent, IABIntent.INTENT_SERVICE_UPLOADVIDEO)) {
+        if (IABIntent.isIntent(intent, IABIntent.SERVICE_UPLOADVIDEO)) {
             String path = intent.getStringExtra(IABIntent.PARAM_VIDEO_PATH);
             S3UploadParams s3uploadParam = new S3UploadParams();
             uploadVideoService(s3uploadParam);
