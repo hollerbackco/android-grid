@@ -17,24 +17,24 @@
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowNoTitle">true</item>
-		<item name="windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Hollerback" parent="Theme.Sherlock.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:background">#ffffffff</item>
-		<item name="windowNoTitle">true</item>
-		<item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
     </style>
-    
-	<style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
+
+    <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="actionBarItemBackground">@drawable/topbar</item>
-	</style>
-	
-	<style name="Theme.Example" parent="@style/Theme.Sherlock.Light.DarkActionBar">
-	    <item name="windowNoTitle">true</item>
-		<item name="android:windowNoTitle">true</item>
-		<item name="windowActionBar">false</item>
+    </style>
+
+    <style name="Theme.Example" parent="@style/Theme.Sherlock.Light.DarkActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
         <item name="actionBarItemBackground">@drawable/selectable_background_example</item>
         <item name="popupMenuStyle">@style/PopupMenu.Example</item>
         <item name="dropDownListViewStyle">@style/DropDownListView.Example</item>
@@ -45,9 +45,8 @@
         <item name="actionModeSplitBackground">@drawable/cab_background_bottom_example</item>
         <item name="actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Example</item>
 
-                <!-- Light.DarkActionBar specific -->
+        <!-- Light.DarkActionBar specific -->
         <item name="actionBarWidgetTheme">@style/Theme.Example.Widget</item>
-
     </style>
 
     <style name="ActionBar.Solid.Example" parent="@style/Widget.Sherlock.Light.ActionBar.Solid.Inverse">
@@ -61,11 +60,11 @@
         <item name="background">@drawable/ab_transparent_example</item>
         <item name="progressBarStyle">@style/ProgressBar.Example</item>
     </style>
-	
-    <style name="PopupMenu.Example" parent="@style/Widget.Sherlock.ListPopupWindow">	
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel_example</item>	
+
+    <style name="PopupMenu.Example" parent="@style/Widget.Sherlock.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel_example</item>
     </style>
-	
+
     <style name="DropDownListView.Example" parent="@style/Widget.Sherlock.ListView.DropDown">
         <item name="android:listSelector">@drawable/selectable_background_example</item>
     </style>
@@ -73,27 +72,27 @@
     <style name="ActionBarTabStyle.Example" parent="@style/Widget.Sherlock.ActionBar.TabView">
         <item name="android:background">@drawable/tab_indicator_ab_example</item>
     </style>
-	
+
     <style name="DropDownNav.Example" parent="@style/Widget.Sherlock.Spinner.DropDown.ActionBar">
         <item name="android:background">@drawable/spinner_background_ab_example</item>
         <item name="android:popupBackground">@drawable/menu_dropdown_panel_example</item>
         <item name="android:dropDownSelector">@drawable/selectable_background_example</item>
     </style>
-    
+
     <style name="ProgressBar.Example" parent="@style/Widget.Sherlock.ProgressBar.Horizontal">
         <item name="android:progressDrawable">@drawable/progress_horizontal_example</item>
     </style>
-    
+
     <style name="ActionButton.CloseMode.Example" parent="@style/Widget.Sherlock.ActionButton.CloseMode">
         <item name="android:background">@drawable/btn_cab_done_example</item>
     </style>
-    
+
     <!-- this style is only referenced in a Light.DarkActionBar based theme -->
     <style name="Theme.Example.Widget" parent="@style/Theme.Sherlock">
         <item name="popupMenuStyle">@style/PopupMenu.Example</item>
         <item name="dropDownListViewStyle">@style/DropDownListView.Example</item>
     </style>
-	
+
     <style name="BlueCheckBox">
         <item name="android:button">@drawable/checkbox</item>
         <item name="android:gravity">center</item>
@@ -103,4 +102,9 @@
         <item name="android:padding">0dp</item>
         <item name="android:layout_margin">0dp</item>
     </style>
+
+    <style name="DefaultTextView" parent="@android:style/Widget.TextView">
+        <item name="typeface">Gotham-Medium</item>
+    </style>
+
 </resources>

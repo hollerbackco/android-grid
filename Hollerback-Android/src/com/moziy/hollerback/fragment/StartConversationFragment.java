@@ -1,5 +1,8 @@
 package com.moziy.hollerback.fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +50,7 @@ public class StartConversationFragment extends BaseFragment {
             public void onClick(View v) {
                 RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
                 // go to the video fragment
-                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+                getFragmentManager().beginTransaction().addToBackStack(FRAGMENT_TAG).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
         });
 
@@ -55,7 +58,25 @@ public class StartConversationFragment extends BaseFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
     protected void initializeView(View view) {
+
+    }
+
+    private class InternalReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isAdded()) { // only do work if the fragment is added
+
+            }
+
+        }
 
     }
 
