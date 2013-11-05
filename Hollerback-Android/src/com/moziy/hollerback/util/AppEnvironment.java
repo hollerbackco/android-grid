@@ -21,8 +21,8 @@ public class AppEnvironment {
     // public static final String PICTURE_NAME = null;
 
     public String UPLOAD_BUCKET;
-    public String UPLOAD_BUCKET_DEV = "hb-tmp-dev";
-    public String UPLOAD_BUCKET_PROD = "hb-tmp";
+    public static final String UPLOAD_BUCKET_DEV = "hb-tmp-dev";
+    public static final String UPLOAD_BUCKET_PROD = "hb-tmp";
     public String PICTURE_BUCKET;
 
     public static final int ENV_PRODUCTION = 0x9999;

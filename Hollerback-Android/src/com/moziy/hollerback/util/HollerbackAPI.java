@@ -77,7 +77,7 @@ public class HollerbackAPI {
 
     public static final String PARAM_NUMBERS = "numbers[]";
 
-    public static final String PARAM_INVITES = "invites[]";
+    public static final String PARAM_INVITES = "invites";
 
     public static final String PARAM_PLATFORM = "platform";
 
@@ -87,5 +87,5 @@ public class HollerbackAPI {
 
     public static final String PARAM_CODE = "code";
 
-    public static final String PARAM_PART_URL = "part_url";
+    public static final String PARAM_PART_URL = "part_urls";
 }

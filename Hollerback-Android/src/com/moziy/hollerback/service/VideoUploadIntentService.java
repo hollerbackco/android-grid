@@ -15,6 +15,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.NewConvoResponse;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.FileUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
@@ -102,7 +103,7 @@ public class VideoUploadIntentService extends IntentService {
         model.save();
 
         ArrayList<String> parts = new ArrayList<String>();
-        parts.add(model.getLocalFileName());
+        parts.add(AppEnvironment.getInstance().UPLOAD_BUCKET + "/" + model.getLocalFileName());
         HBRequestManager.postConversations(contacts, parts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
         }) {
 
