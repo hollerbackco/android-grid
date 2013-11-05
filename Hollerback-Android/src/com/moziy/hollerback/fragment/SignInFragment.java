@@ -29,7 +29,7 @@ import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.JacksonHttpResponseHandler;
+import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -44,238 +44,202 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SignInFragment extends BaseFragment{
-	
-	private static final String TAG = SignInFragment.class.getSimpleName();
-	
-	private SherlockFragmentActivity mActivity;
+public class SignInFragment extends BaseFragment {
 
-	private Button mLoginBtn;
+    private static final String TAG = SignInFragment.class.getSimpleName();
 
-	private CharSequence[] mCharCountries;
-	private Country mSelectedCountry;
-	private View mRLCountrySelector;
-	private TextView mCountryText, mPhoneNumberCode;
-	private EditText mPhoneNumberField;
-	private List<Country> mCountries;
-	private AlertDialog countriesDialog;
-	private PhoneNumberUtil util;
-	private String mRegistrationPhone;
+    private SherlockFragmentActivity mActivity;
 
-	private String mFileDataName;
-	private boolean mHasFile;
-	
-	public static SignInFragment newInstance(){
-		SignInFragment f = new SignInFragment();
-		return f;
-	}
-	
-	public static SignInFragment newInstance(boolean hasFile, String fileDataName) {
+    private Button mLoginBtn;
 
-		SignInFragment f = new SignInFragment();
+    private CharSequence[] mCharCountries;
+    private Country mSelectedCountry;
+    private View mRLCountrySelector;
+    private TextView mCountryText, mPhoneNumberCode;
+    private EditText mPhoneNumberField;
+    private List<Country> mCountries;
+    private AlertDialog countriesDialog;
+    private PhoneNumberUtil util;
+    private String mRegistrationPhone;
 
-		// Supply num input as an argument.
-		Bundle bundle = new Bundle();
-		bundle.putString("fileDataName", fileDataName);
-		bundle.putBoolean("hasFile", hasFile);
-		f.setArguments(bundle);
-		return f;
-	}
-	
-	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		
-		mActivity = this.getSherlockActivity(); 
-    	this.getSherlockActivity().getSupportActionBar().show();
-    	this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
-    	this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
-    	
-		View fragmentView = inflater.inflate(R.layout.signin_fragment, null);
+    private String mFileDataName;
+    private boolean mHasFile;
 
-		
-		initializeView(fragmentView);
-		
-		util = PhoneNumberUtil.getInstance();
-		Set<String> set = util.getSupportedRegions();
+    public static SignInFragment newInstance() {
+        SignInFragment f = new SignInFragment();
+        return f;
+    }
 
-		mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
+    public static SignInFragment newInstance(boolean hasFile, String fileDataName) {
 
-		mCharCountries = new CharSequence[mCountries.size()];
+        SignInFragment f = new SignInFragment();
 
-		Locale locale = Locale.getDefault();
+        // Supply num input as an argument.
+        Bundle bundle = new Bundle();
+        bundle.putString("fileDataName", fileDataName);
+        bundle.putBoolean("hasFile", hasFile);
+        f.setArguments(bundle);
+        return f;
+    }
 
-		mSelectedCountry = new Country(locale.getISO3Country(),
-				locale.getCountry(), locale.getDisplayCountry());
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		mCountryText.setText(mSelectedCountry.name);
+        mActivity = this.getSherlockActivity();
+        this.getSherlockActivity().getSupportActionBar().show();
+        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
+        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
-		mPhoneNumberCode.setText("+"
-				+ Integer.toString(util
-						.getCountryCodeForRegion(mSelectedCountry.code)));
+        View fragmentView = inflater.inflate(R.layout.signin_fragment, null);
 
-		for (int i = 0; i < mCountries.size(); i++) {
-			mCharCountries[i] = mCountries.get(i).name;
-		}
-		
-		if(this.getArguments() != null && this.getArguments().containsKey("hasFile"))
-		{
-			mHasFile = this.getArguments().getBoolean("hasFile");
-			if(mHasFile)mFileDataName = this.getArguments().getString("fileDataName");
-		}
+        initializeView(fragmentView);
 
-		return fragmentView;
-	}
+        util = PhoneNumberUtil.getInstance();
+        Set<String> set = util.getSupportedRegions();
 
-	@Override
-	protected void initializeView(View view) {
-		mPhoneNumberField = (EditText) view
-				.findViewById(R.id.textfield_phonenumber);
-		mCountryText = (TextView) view.findViewById(R.id.tv_country_selector);
-		mPhoneNumberCode = (TextView) view
-				.findViewById(R.id.tv_phone_number_code);
-		mRLCountrySelector = view.findViewById(R.id.rl_country_selector);
-		
-		mRLCountrySelector.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				showDialog();				
-			}
-		});
+        mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
 
-		mLoginBtn = (Button) view.findViewById(R.id.submit_login);
+        mCharCountries = new CharSequence[mCountries.size()];
 
-		mLoginBtn.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				processLogin();
-			}
-		});
-	}
-	
-	
-	public void showDialog() {
+        Locale locale = Locale.getDefault();
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle("Select Your Country");
-		builder.setSingleChoiceItems(mCharCountries, -1,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int item) {
-						mSelectedCountry = mCountries.get(item);
-						mCountryText.setText(mCountries.get(item).name);
-						mPhoneNumberCode.setText("+"
-								+ Integer.toString(util
-										.getCountryCodeForRegion(mSelectedCountry.code)));
-						countriesDialog.dismiss();
-					}
-				});
-		countriesDialog = builder.create();
-		countriesDialog.show();
+        mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
 
-	}
+        mCountryText.setText(mSelectedCountry.name);
 
-	private void processLogin() {
-		if (HollerbackApplication.getInstance().regId == null) {
-			Toast.makeText(getActivity(), "Try again in a few seconds",
-					Toast.LENGTH_LONG).show();
-			return;
-		}
+        mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
 
-		if(!verifyFields())
-		{
-			return;
-		}
-		
-		LogUtil.i("Logging in with: " + mPhoneNumberField.getText().toString());
-		this.startLoading();
-		HBRequestManager.postLogin(mRegistrationPhone,
-				new JacksonHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>(){}) {
+        for (int i = 0; i < mCountries.size(); i++) {
+            mCharCountries[i] = mCountries.get(i).name;
+        }
 
-					@Override
-					public void onResponseSuccess(int statusCode,
-							LoginResponse response) {
-						onSignInSucceeded(response);
-						
-					}
+        if (this.getArguments() != null && this.getArguments().containsKey("hasFile")) {
+            mHasFile = this.getArguments().getBoolean("hasFile");
+            if (mHasFile)
+                mFileDataName = this.getArguments().getString("fileDataName");
+        }
 
-					@Override
-					public void onApiFailure(Metadata metaData) {
-						LogUtil.w(TAG, "error code: " + metaData.code);
-						
-						
-					}
-				}
-				);
+        return fragmentView;
+    }
 
-	}
-	
-	private void onSignInSucceeded(LoginResponse response){
-		//process the sign in here!
-		
-		String userName = response.user.username;
-		String phone = response.user.phone;
-		long id = response.user.id;
-		
-		/**
-		 * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
-		 */
-		PreferenceManagerUtil.setPreferenceValue(
-				HollerbackPreferences.USERNAME,
-				userName);
-		
-		PreferenceManagerUtil.setPreferenceValue(
-				HollerbackPreferences.PHONE,
-				phone);
-		
-		PreferenceManagerUtil.setPreferenceValue(
-				HollerbackPreferences.ID,
-				id);
-	
+    @Override
+    protected void initializeView(View view) {
+        mPhoneNumberField = (EditText) view.findViewById(R.id.textfield_phonenumber);
+        mCountryText = (TextView) view.findViewById(R.id.tv_country_selector);
+        mPhoneNumberCode = (TextView) view.findViewById(R.id.tv_phone_number_code);
+        mRLCountrySelector = view.findViewById(R.id.rl_country_selector);
 
-		LogUtil.i("HB", response.toString()); //TODO - Sajjad determine whether to use LogUtil or replace it.
-		SignInFragment.this.startLoading(); //TODO - Sajjad, what's going on here with startLoading?
-		SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
-		mActivity.getSupportFragmentManager()
-		.beginTransaction()
-		.replace(R.id.fragment_holder, fragment)
-		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
-        .commitAllowingStateLoss();
-	}
+        mRLCountrySelector.setOnClickListener(new View.OnClickListener() {
 
-	private PhoneNumber getPhoneNumber() {
-		if (mPhoneNumberField.getText().toString() == null
-				|| mPhoneNumberField.getText().toString().trim().isEmpty()
-				|| mPhoneNumberField.getText().toString().trim().length() < 3) {
-			return null;
-		}
-		return NumberUtil.getPhoneNumber("+"
-				+ util.getCountryCodeForRegion(mSelectedCountry.code)
-				+ mPhoneNumberField.getText().toString());
-	}
-	
-	public boolean verifyFields() {
-		String validPhone = TextValidator.isValidPhone(getPhoneNumber());
-		
+            @Override
+            public void onClick(View v) {
+                showDialog();
+            }
+        });
 
-		boolean valid = (validPhone == null);
+        mLoginBtn = (Button) view.findViewById(R.id.submit_login);
 
-		if (!valid) {
-			String message = (validPhone != null ? "\n" + validPhone : "");
+        mLoginBtn.setOnClickListener(new View.OnClickListener() {
 
-			Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-		}
-		else {
-			mRegistrationPhone = "+"
-					+ util.getCountryCodeForRegion(mSelectedCountry.code)
-					+ mPhoneNumberField.getText().toString();
-			LogUtil.i("Signing up with: " + mRegistrationPhone);
-		}
+            @Override
+            public void onClick(View v) {
+                processLogin();
+            }
+        });
+    }
 
-		return valid;
+    public void showDialog() {
 
-	}
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Select Your Country");
+        builder.setSingleChoiceItems(mCharCountries, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                mSelectedCountry = mCountries.get(item);
+                mCountryText.setText(mCountries.get(item).name);
+                mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
+                countriesDialog.dismiss();
+            }
+        });
+        countriesDialog = builder.create();
+        countriesDialog.show();
+
+    }
+
+    private void processLogin() {
+        if (HollerbackApplication.getInstance().regId == null) {
+            Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (!verifyFields()) {
+            return;
+        }
+
+        LogUtil.i("Logging in with: " + mPhoneNumberField.getText().toString());
+        this.startLoading();
+        HBRequestManager.postLogin(mRegistrationPhone, new HBAsyncHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>() {
+        }) {
+
+            @Override
+            public void onResponseSuccess(int statusCode, LoginResponse response) {
+                onSignInSucceeded(response);
+
+            }
+
+            @Override
+            public void onApiFailure(Metadata metaData) {
+                LogUtil.w(TAG, "error code: " + metaData.code);
+
+            }
+        });
+
+    }
+
+    private void onSignInSucceeded(LoginResponse response) {
+        // process the sign in here!
+
+        String userName = response.user.username;
+        String phone = response.user.phone;
+        long id = response.user.id;
+
+        /**
+         * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
+         */
+        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.USERNAME, userName);
+
+        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.PHONE, phone);
+
+        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
+
+        LogUtil.i("HB", response.toString()); // TODO - Sajjad determine whether to use LogUtil or replace it.
+        SignInFragment.this.startLoading(); // TODO - Sajjad, what's going on here with startLoading?
+        SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
+        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
+    }
+
+    private PhoneNumber getPhoneNumber() {
+        if (mPhoneNumberField.getText().toString() == null || mPhoneNumberField.getText().toString().trim().isEmpty() || mPhoneNumberField.getText().toString().trim().length() < 3) {
+            return null;
+        }
+        return NumberUtil.getPhoneNumber("+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString());
+    }
+
+    public boolean verifyFields() {
+        String validPhone = TextValidator.isValidPhone(getPhoneNumber());
+
+        boolean valid = (validPhone == null);
+
+        if (!valid) {
+            String message = (validPhone != null ? "\n" + validPhone : "");
+
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+        } else {
+            mRegistrationPhone = "+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString();
+            LogUtil.i("Signing up with: " + mRegistrationPhone);
+        }
+
+        return valid;
+
+    }
 }

@@ -4,42 +4,39 @@ import com.moziy.hollerback.model.UserModel;
 
 public class HollerbackAppState {
 
-	private static HollerbackAppState sInstance;
-	
-	public boolean loadedContacts;
+    private static HollerbackAppState sInstance;
 
-	private HollerbackAppState() {
-	}
+    public boolean loadedContacts;
 
-	public static HollerbackAppState getInstance() {
-		if (sInstance == null) {
-			sInstance = new HollerbackAppState();
-		}
-		return sInstance;
-	}
+    private HollerbackAppState() {
+    }
 
-	public static UserModel isUserLoggedIn() {
-		return null;
-	}
+    public static HollerbackAppState getInstance() {
+        if (sInstance == null) {
+            sInstance = new HollerbackAppState();
+        }
+        return sInstance;
+    }
 
-	public static boolean isValidSession() {
-		if (PreferenceManagerUtil.getPreferenceValue(
-				HollerbackPreferences.ACCESS_TOKEN, null) != null) {
-			return true;
-		}
-		return false;
-	}
+    public static UserModel isUserLoggedIn() {
+        return null;
+    }
 
-	public static String getValidToken() {
-		return PreferenceManagerUtil.getPreferenceValue(
-				HollerbackPreferences.ACCESS_TOKEN, null);
-	}
+    public static boolean isValidSession() {
+        if (PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null) != null) {
+            return true;
+        }
+        return false;
+    }
 
-	public static void logOut() {
-		PreferenceManagerUtil.setPreferenceValue(
-				HollerbackPreferences.ACCESS_TOKEN, null);
-		// Delete other preferences
-		// Delete databases
-	}
+    public static String getValidToken() {
+        return PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null);
+    }
+
+    public static void logOut() {
+        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null);
+        // Delete other preferences
+        // Delete databases
+    }
 
 }

@@ -10,10 +10,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
+public class AbstractActivity extends SherlockFragmentActivity {
+    public LoadingFragmentUtil mLoadview;
 
-public class AbstractActivity extends SherlockFragmentActivity{
-	public LoadingFragmentUtil mLoadview;
-	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

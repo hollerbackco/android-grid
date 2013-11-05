@@ -14,37 +14,37 @@ import com.moziy.hollerback.fragment.ConversationFragment;
 
 public class FragmentManagerUtil {
 
-	private HashMap<String, BaseFragment> mFragmentMap;
+    private HashMap<String, BaseFragment> mFragmentMap;
 
-	public void startFragment() {
+    public void startFragment() {
 
-	}
+    }
 
-	public void setFragmentAnimation() {
+    public void setFragmentAnimation() {
 
-	}
+    }
 
-	public void popBackFragmentStack(String fragment) {
+    public void popBackFragmentStack(String fragment) {
 
-	}
+    }
 
-	class FragmentHolder {
-		public BaseFragment fragment;
-		public boolean isActivated;
-		public String fragmentName;
-	}
+    class FragmentHolder {
+        public BaseFragment fragment;
+        public boolean isActivated;
+        public String fragmentName;
+    }
 
-//	public static void startFragment(FragmentActivity activity, Bundle b) {
-//		FragmentManager fragmentManager = activity.getSupportFragmentManager();
-//		FragmentTransaction fragmentTransaction = fragmentManager
-//				.beginTransaction();
-//		ConversationFragment fragment = ConversationFragment.newInstance(
-//				Integer.toString(TempMemoryStore.conversations.get(index)
-//						.getConversation_id()), index);
-//		fragmentTransaction.replace(R.id.fragment_holder, fragment);
-//		fragmentTransaction.addToBackStack(ConversationFragment.class
-//				.getSimpleName());
-//		fragmentTransaction.commit();
-//	}
+    // public static void startFragment(FragmentActivity activity, Bundle b) {
+    // FragmentManager fragmentManager = activity.getSupportFragmentManager();
+    // FragmentTransaction fragmentTransaction = fragmentManager
+    // .beginTransaction();
+    // ConversationFragment fragment = ConversationFragment.newInstance(
+    // Integer.toString(TempMemoryStore.conversations.get(index)
+    // .getConversation_id()), index);
+    // fragmentTransaction.replace(R.id.fragment_holder, fragment);
+    // fragmentTransaction.addToBackStack(ConversationFragment.class
+    // .getSimpleName());
+    // fragmentTransaction.commit();
+    // }
 
 }
