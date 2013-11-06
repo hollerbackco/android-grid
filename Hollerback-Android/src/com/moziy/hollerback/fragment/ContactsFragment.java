@@ -43,7 +43,7 @@ import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CollectionOpUtils;
-import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.NumberUtil;
@@ -348,7 +348,7 @@ public class ContactsFragment extends BaseFragment {
 
                     JSONObject cacheData = new JSONObject();
                     try {
-                        File tmp = new File(FileUtil.getLocalFile(FileUtil.getImageUploadName(mFileDataName)));
+                        File tmp = new File(HBFileUtil.getLocalFile(HBFileUtil.getImageUploadName(mFileDataName)));
                         String fileurl = Uri.fromFile(tmp).toString();
 
                         cacheData.put("filename", mFileDataName);
@@ -367,7 +367,7 @@ public class ContactsFragment extends BaseFragment {
                     Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
                     serviceIntent.putExtra("ConversationId", conversationId);
                     serviceIntent.putExtra("FileDataName", mFileDataName);
-                    serviceIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
+                    serviceIntent.putExtra("ImageUploadName", HBFileUtil.getImageUploadName(mFileDataName));
 
                     if (cacheData != new JSONObject()) {
                         serviceIntent.putExtra("JSONCache", cacheData.toString());

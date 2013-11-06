@@ -63,7 +63,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CameraUtil;
-import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.UploadCacheUtil;
 
@@ -88,6 +88,9 @@ public class RecordVideoFragment extends BaseFragment {
 
     private String mFileDataPath;
     protected String mFileDataName;
+    private String mFileExt; // the file extension
+    private int mPartNum;
+    private int mTotalParts;
 
     int timer = 20;
 
@@ -313,7 +316,9 @@ public class RecordVideoFragment extends BaseFragment {
         // Prepare the model for sending the video
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
         VideoModel model = new VideoModel();
-        model.setLocalFileName(mFileDataName);
+        model.setSegmented(true);
+        model.setSegmentFileName(mFileDataName);
+        model.setSegmentFileExtension(mFileExt); // the file extenstion or container
         model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
         model.setCreateDate(df.format(new Date()));
         model.setSenderName("me");
@@ -329,6 +334,9 @@ public class RecordVideoFragment extends BaseFragment {
         Intent intent = new Intent();
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
         intent.putStringArrayListExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
+        // NOTE: the part and total parts will change once that multi part chunks can be uploaded
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, 0);
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, 1);
         intent.setClass(getActivity(), VideoUploadIntentService.class);
         getActivity().startService(intent);
 
@@ -351,10 +359,10 @@ public class RecordVideoFragment extends BaseFragment {
 
         JSONObject cacheData = new JSONObject();
         try {
-            File tmp = new File(FileUtil.getLocalFile(FileUtil.getImageUploadName(mFileDataName)));
+            File tmp = new File(HBFileUtil.getLocalFile(HBFileUtil.getImageUploadName(mFileDataName + "." + mFileExt)));
             String fileurl = Uri.fromFile(tmp).toString();
 
-            cacheData.put("filename", mFileDataName);
+            cacheData.put("filename", mFileDataName + "." + mFileExt);
             cacheData.put("id", 0);
             cacheData.put("conversation_id", mConversationId);
             cacheData.put("isRead", true);
@@ -370,8 +378,8 @@ public class RecordVideoFragment extends BaseFragment {
 
         Intent sendIntent = new Intent(IABIntent.UPLOAD_VIDEO_UPLOADING);
         sendIntent.putExtra("ConversationId", mConversationId);
-        sendIntent.putExtra("FileDataName", mFileDataName);
-        sendIntent.putExtra("ImageUploadName", FileUtil.getImageUploadName(mFileDataName));
+        sendIntent.putExtra("FileDataName", mFileDataName + "." + mFileExt);
+        sendIntent.putExtra("ImageUploadName", HBFileUtil.getImageUploadName(mFileDataName));
         if (cacheData != new JSONObject()) // XXX: BAD, this will never be false
         {
             sendIntent.putExtra("JSONCache", cacheData.toString());
@@ -488,6 +496,10 @@ public class RecordVideoFragment extends BaseFragment {
         mRecordButton.startAnimation(rotation);
         mTxtPlaying.setText(R.string.tap_stop);
 
+        // intialize the part info
+        mPartNum = 0;
+        mTotalParts = 1;
+
         try {
             if (prepareVideoRecorder()) {
                 mTimer.setText("20s");
@@ -548,7 +560,7 @@ public class RecordVideoFragment extends BaseFragment {
         secondsPassed = 0;
 
         displayPreview();
-        ImageUtil.generateThumbnail(mFileDataName);
+        ImageUtil.generateThumbnail(mFileDataName + "." + mFileExt);
 
         // TODO: Review code segment above
 
@@ -573,7 +585,7 @@ public class RecordVideoFragment extends BaseFragment {
 
         mFilterButton.setVisibility(View.GONE);
 
-        Bitmap bmThumbnail = ThumbnailUtils.createVideoThumbnail(FileUtil.getLocalFile(mFileDataName), Thumbnails.FULL_SCREEN_KIND);
+        Bitmap bmThumbnail = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(mFileDataName + "." + mFileExt), Thumbnails.FULL_SCREEN_KIND);
         mImagePreview.setBackgroundDrawable(new BitmapDrawable(bmThumbnail));
 
         mPreviewVideoView.setOnCompletionListener(new OnCompletionListener() {
@@ -589,7 +601,7 @@ public class RecordVideoFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
-                playVideo(mFileDataName);
+                playVideo(mFileDataName + "." + mFileExt);
                 mPreviewPlayBtn.setEnabled(false);
             }
         });
@@ -598,8 +610,15 @@ public class RecordVideoFragment extends BaseFragment {
 
     private String getNewFileName() {
 
-        mFileDataName = FileUtil.generateRandomFileName() + "." + targetExtension;
-        mFileDataPath = FileUtil.getOutputVideoFile(mFileDataName).toString();
+        mFileDataName = HBFileUtil.generateRandomFileName();
+
+        mFileExt = "mp4"; // although get this info from the output format type
+
+        mPartNum = 0; // part info will change as video segments get recorded
+
+        mTotalParts = 1; // part info will change as video segments get recorded
+
+        mFileDataPath = HBFileUtil.getOutputVideoFile(new StringBuilder(128).append(mFileDataName).append(".").append(mPartNum).append(".").append(mFileExt).toString()).toString();
 
         Log.d(TAG, "mFileDataName: " + mFileDataName + " path: " + mFileDataPath);
 
@@ -610,7 +629,7 @@ public class RecordVideoFragment extends BaseFragment {
 
         mImagePreview.setVisibility(View.GONE);
 
-        mPreviewVideoView.setVideoPath(FileUtil.getLocalFile(fileKey));
+        mPreviewVideoView.setVideoPath(HBFileUtil.getLocalFile(fileKey));
 
         mPreviewVideoView.requestFocus();
         mPreviewVideoView.start();
@@ -637,7 +656,7 @@ public class RecordVideoFragment extends BaseFragment {
 
         CameraUtil.setFrontFacingParams(recorder, mBestCameraWidth, mBestCameraHeight);
 
-        targetExtension = FileUtil.getFileFormat(OutputFormat.MPEG_4);
+        targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
 
         CamcorderProfile prof = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
 

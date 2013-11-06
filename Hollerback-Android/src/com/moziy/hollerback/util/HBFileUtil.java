@@ -15,7 +15,7 @@ import android.util.Log;
 
 import com.moziy.hollerback.debug.LogUtil;
 
-public class FileUtil {
+public class HBFileUtil {
 
     private static String DIRECTORY_NAME = "Hollerback";
 
@@ -24,11 +24,15 @@ public class FileUtil {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
+    @Deprecated
+    // not used
     /** Create a file Uri for saving an image or video */
     public static Uri getOutputMediaFileUri(int type) {
         return Uri.fromFile(getOutputMediaFile(type));
     }
 
+    @Deprecated
+    // not used
     /** Create a File for saving an image or video */
     public static File getOutputMediaFile(int type) {
         // To be safe, you should check that the SDCard is mounted
@@ -157,6 +161,6 @@ public class FileUtil {
     }
 
     public static String getImageUploadName(String filename) {
-        return filename.split("\\.")[0] + "-thumb.png";
+        return filename + "-thumb.png";
     }
 }

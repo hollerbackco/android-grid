@@ -26,7 +26,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.video.S3UploadParams;
 import com.moziy.hollerback.view.CustomVideoView;
 import com.moziy.hollerbacky.connection.HBRequestManager;
@@ -62,12 +62,12 @@ public class S3RequestHelper {
         S3UploadParams thumb = new S3UploadParams();
 
         video.setFileName(videoName);
-        video.setFilePath(FileUtil.getLocalFile(videoName));
+        video.setFilePath(HBFileUtil.getLocalFile(videoName));
 
-        contentLength = FileUtil.getFileSize(videoName);
+        contentLength = HBFileUtil.getFileSize(videoName);
         video.conversationId = conversationId;
         thumb.setFileName(imageName);
-        thumb.setFilePath(FileUtil.getLocalFile(imageName));
+        thumb.setFilePath(HBFileUtil.getLocalFile(imageName));
         video.customMessage = customMessage;
 
         video.setOnS3UploadListener(onS3UploadListener);
@@ -371,7 +371,7 @@ public class S3RequestHelper {
                 LogUtil.i("Content Length: " + contentLength + " Request: " + request);
                 is = s3Client.getObject(reqs[0]).getObjectContent();
 
-                outputStream = new FileOutputStream(FileUtil.getOutputVideoFile(reqs[0].getKey()));
+                outputStream = new FileOutputStream(HBFileUtil.getOutputVideoFile(reqs[0].getKey()));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -457,7 +457,7 @@ public class S3RequestHelper {
                     mVideos.get(i).setVisibility(View.GONE);
                     mVideos.remove(i);
                 }
-                String path = FileUtil.getLocalFile(request);
+                String path = HBFileUtil.getLocalFile(request);
                 mTargetVideoPlayer.setVisibility(View.VISIBLE);
                 mTargetVideoPlayer.setVideoPath(path);
                 mTargetVideoPlayer.requestFocus();
@@ -514,7 +514,7 @@ public class S3RequestHelper {
                 LogUtil.i("Content Length: " + contentLength + " Request: " + request);
                 is = s3Client.getObject(reqs[0]).getObjectContent();
 
-                outputStream = new FileOutputStream(FileUtil.getOutputVideoFile(reqs[0].getKey()));
+                outputStream = new FileOutputStream(HBFileUtil.getOutputVideoFile(reqs[0].getKey()));
 
             } catch (Exception e) {
                 e.printStackTrace();

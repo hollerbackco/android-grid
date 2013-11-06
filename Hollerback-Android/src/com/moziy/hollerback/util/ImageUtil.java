@@ -13,14 +13,14 @@ public class ImageUtil {
 
     // Do this in background thread or AsyncTask later
     public static Bitmap generateThumbnail(String videoFileNameSource) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(FileUtil.getLocalFile(videoFileNameSource), Thumbnails.MICRO_KIND);
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(videoFileNameSource), Thumbnails.MICRO_KIND);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
-        writeBitmapToExternal(FileUtil.getImageUploadName(videoFileNameSource), bitmap);
+        writeBitmapToExternal(HBFileUtil.getImageUploadName(videoFileNameSource), bitmap);
         return bitmap;
     }
 
     public static String writeBitmapToExternal(String name, Bitmap bitmap) {
-        File file = FileUtil.getOutputVideoFile(name);
+        File file = HBFileUtil.getOutputVideoFile(name);
         if (file.exists())
             file.delete();
         try {
