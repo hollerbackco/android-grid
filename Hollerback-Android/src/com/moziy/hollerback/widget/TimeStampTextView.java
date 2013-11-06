@@ -7,31 +7,27 @@ import android.widget.TextView;
 
 public class TimeStampTextView extends TextView {
 
-	Context context;
-	String ttfName;
+    Context context;
+    String ttfName;
 
-	String TAG = getClass().getName();
+    String TAG = getClass().getName();
 
-	public TimeStampTextView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		this.context = context;
-	}
+    public TimeStampTextView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        this.context = context;
+    }
 
+    @Override
+    public void setTypeface(Typeface tf, int style) {
+        if (!this.isInEditMode()) {
+            Typeface normalTypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/Raleway-Regular-Lining.ttf");
+            Typeface boldTypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/Raleway-Regular-Lining.ttf");
 
-
-	@Override
-	public void setTypeface(Typeface tf, int style) {
-		if(!this.isInEditMode())
-		{
-		    Typeface normalTypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/Raleway-Regular-Lining.ttf");
-		    Typeface boldTypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/Raleway-Regular-Lining.ttf");
-		    
-		    if (style == Typeface.BOLD) {
-			    super.setTypeface(boldTypeface);
-		    }
-		    else {
-			    super.setTypeface(normalTypeface);
-		    }
-		}
-	}
+            if (style == Typeface.BOLD) {
+                super.setTypeface(boldTypeface);
+            } else {
+                super.setTypeface(normalTypeface);
+            }
+        }
+    }
 }

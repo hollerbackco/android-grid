@@ -14,63 +14,53 @@ import com.moziy.hollerback.model.Country;
 
 public class ISOUtil {
 
-	public static List<Country> getCountries(String[] regionCodes) {
-		PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-		Set<String> set = util.getSupportedRegions();
-		// Outputs "Zurich"
-		for (String number : set) {
+    public static List<Country> getCountries(String[] regionCodes) {
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        Set<String> set = util.getSupportedRegions();
+        // Outputs "Zurich"
+        for (String number : set) {
 
-		}
+        }
 
-		List<Country> countries = new ArrayList<Country>();
+        List<Country> countries = new ArrayList<Country>();
 
-		Locale[] locales = Locale.getAvailableLocales();
-		for (Locale locale : locales) {
-			String iso = "";
-			try
-			{
-				iso = locale.getISO3Country();
-			}
-			catch(MissingResourceException e)
-			{
-				e.printStackTrace();
-			}
-			
-			String code = ""; 
-			try
-			{
-				code = locale.getCountry();
-			}
-			catch(MissingResourceException e)
-			{
-				e.printStackTrace();
-			}
-					
-			String name = ""; 
-			try
-			{
-				name = locale.getDisplayCountry();
-			}
-			catch(MissingResourceException e)
-			{
-				e.printStackTrace();
-			}
-			
-			if (!"".equals(iso) && !"".equals(code) && !"".equals(name)
-					&& set.contains(code)) {
-				Country country = new Country(iso, code, name);
-				if (!countries.contains(country)) {
-					countries.add(new Country(iso, code, name));
-				}
-			}
-		}
+        Locale[] locales = Locale.getAvailableLocales();
+        for (Locale locale : locales) {
+            String iso = "";
+            try {
+                iso = locale.getISO3Country();
+            } catch (MissingResourceException e) {
+                e.printStackTrace();
+            }
 
-		Collections.sort(countries, new CountryComparator());
-		for (Country country : countries) {
-			LogUtil.i(country.toString());
-		}
+            String code = "";
+            try {
+                code = locale.getCountry();
+            } catch (MissingResourceException e) {
+                e.printStackTrace();
+            }
 
-		return countries;
-	}
+            String name = "";
+            try {
+                name = locale.getDisplayCountry();
+            } catch (MissingResourceException e) {
+                e.printStackTrace();
+            }
+
+            if (!"".equals(iso) && !"".equals(code) && !"".equals(name) && set.contains(code)) {
+                Country country = new Country(iso, code, name);
+                if (!countries.contains(country)) {
+                    countries.add(new Country(iso, code, name));
+                }
+            }
+        }
+
+        Collections.sort(countries, new CountryComparator());
+        for (Country country : countries) {
+            LogUtil.i(country.toString());
+        }
+
+        return countries;
+    }
 
 }

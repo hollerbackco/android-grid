@@ -36,289 +36,245 @@ import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
-	private SherlockFragmentActivity mActivity;
-	private EditText mNameField, mPhoneNumberField;
+    private SherlockFragmentActivity mActivity;
+    private EditText mNameField, mPhoneNumberField;
 
-	private Button mSubmitButton;
+    private Button mSubmitButton;
 
-	private View mRLCountrySelector;
+    private View mRLCountrySelector;
 
-	private TextView mCountryText, mPhoneNumberCode;
+    private TextView mCountryText, mPhoneNumberCode;
 
-	private AlertDialog countriesDialog;
+    private AlertDialog countriesDialog;
 
-	private List<Country> mCountries;
+    private List<Country> mCountries;
 
-	private CharSequence[] mCharCountries;
+    private CharSequence[] mCharCountries;
 
-	private String mRegistrationName;
-	private String mRegistrationPhone;
+    private String mRegistrationName;
+    private String mRegistrationPhone;
 
-	//passing on
-	private String mFileDataName;
+    // passing on
+    private String mFileDataName;
 
-	public static SignUpFragment newInstance(String fileDataName) {
+    public static SignUpFragment newInstance(String fileDataName) {
 
-		SignUpFragment f = new SignUpFragment();
+        SignUpFragment f = new SignUpFragment();
 
-		// Supply num input as an argument.
-		Bundle args = new Bundle();
-		args.putString("fileDataName", fileDataName);
-		f.setArguments(args);
-		return f;
-	}
-	
-	private Country mSelectedCountry;
+        // Supply num input as an argument.
+        Bundle args = new Bundle();
+        args.putString("fileDataName", fileDataName);
+        f.setArguments(args);
+        return f;
+    }
 
-	private PhoneNumberUtil util;
+    private Country mSelectedCountry;
 
-	@Override
-	protected void initializeView(View view) {
-		mNameField = (EditText) view.findViewById(R.id.textfield_name);
-		mPhoneNumberField = (EditText) view
-				.findViewById(R.id.textfield_phonenumber);
+    private PhoneNumberUtil util;
 
-		mSubmitButton = (Button) view.findViewById(R.id.register_submit);
+    @Override
+    protected void initializeView(View view) {
+        mNameField = (EditText) view.findViewById(R.id.textfield_name);
+        mPhoneNumberField = (EditText) view.findViewById(R.id.textfield_phonenumber);
 
-		mSubmitButton.setOnClickListener(this);
+        mSubmitButton = (Button) view.findViewById(R.id.register_submit);
 
-		mRLCountrySelector = view.findViewById(R.id.rl_country_selector);
+        mSubmitButton.setOnClickListener(this);
 
-		mCountryText = (TextView) view.findViewById(R.id.tv_country_selector);
-		mRLCountrySelector.setOnClickListener(this);
-		mPhoneNumberCode = (TextView) view
-				.findViewById(R.id.tv_phone_number_code);
+        mRLCountrySelector = view.findViewById(R.id.rl_country_selector);
 
-		TextView headerAccount = (TextView) view
-				.findViewById(R.id.tv_header_account);
-		TextView headerCPhone = (TextView) view
-				.findViewById(R.id.tv_header_counter_phone);
-		TextView signupAgreement = (TextView) view
-				.findViewById(R.id.tv_signup_agreement);
+        mCountryText = (TextView) view.findViewById(R.id.tv_country_selector);
+        mRLCountrySelector.setOnClickListener(this);
+        mPhoneNumberCode = (TextView) view.findViewById(R.id.tv_phone_number_code);
 
-	}
+        TextView headerAccount = (TextView) view.findViewById(R.id.tv_header_account);
+        TextView headerCPhone = (TextView) view.findViewById(R.id.tv_header_counter_phone);
+        TextView signupAgreement = (TextView) view.findViewById(R.id.tv_signup_agreement);
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		mActivity = this.getSherlockActivity(); 
-    	this.getSherlockActivity().getSupportActionBar().show();
-    	this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
-    	this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
-    	
-		// TODO Auto-generated method stub
-		View fragmentView = inflater.inflate(R.layout.signup_fragment, null);
-		initializeView(fragmentView);
+    }
 
-		util = PhoneNumberUtil.getInstance();
-		Set<String> set = util.getSupportedRegions();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mActivity = this.getSherlockActivity();
+        this.getSherlockActivity().getSupportActionBar().show();
+        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
+        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
-		mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
+        // TODO Auto-generated method stub
+        View fragmentView = inflater.inflate(R.layout.signup_fragment, null);
+        initializeView(fragmentView);
 
-		mCharCountries = new CharSequence[mCountries.size()];
+        util = PhoneNumberUtil.getInstance();
+        Set<String> set = util.getSupportedRegions();
 
-		Locale locale = Locale.getDefault();
+        mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
 
-		mSelectedCountry = new Country(locale.getISO3Country(),
-				locale.getCountry(), locale.getDisplayCountry());
+        mCharCountries = new CharSequence[mCountries.size()];
 
-		mCountryText.setText(mSelectedCountry.name);
+        Locale locale = Locale.getDefault();
 
-		mPhoneNumberCode.setText("+"
-				+ Integer.toString(util
-						.getCountryCodeForRegion(mSelectedCountry.code)));
+        mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
 
-		for (int i = 0; i < mCountries.size(); i++) {
-			mCharCountries[i] = mCountries.get(i).name;
-		}
+        mCountryText.setText(mSelectedCountry.name);
 
-		//if it doesn't have this it will crash
-		mFileDataName = this.getArguments().getString("fileDataName");
-		
-		return fragmentView;
-	}
+        mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
 
-	public void processSubmit() {
+        for (int i = 0; i < mCountries.size(); i++) {
+            mCharCountries[i] = mCountries.get(i).name;
+        }
 
-		if (verifyFields()) {
-			if (HollerbackApplication.getInstance().regId != null) {
+        // if it doesn't have this it will crash
+        mFileDataName = this.getArguments().getString("fileDataName");
 
-				HBRequestManager.postRegistration(mRegistrationName,
-						mRegistrationPhone,
-						HollerbackApplication.getInstance().regId,
-						new JsonHttpResponseHandler() {
-							@Override
-							protected Object parseResponse(String arg0)
-									throws JSONException {
-								LogUtil.i(arg0);
-								return super.parseResponse(arg0);
+        return fragmentView;
+    }
 
-							}
+    public void processSubmit() {
 
-							@Override
-							public void onFailure(Throwable arg0, JSONObject response) {
-								// TODO Auto-generated method stub
-								super.onFailure(arg0, response);
-								LogUtil.i("LOGIN FAILURE");
-								if(response.has("meta"))
-								{
-									//doesnt have user
-									try {
-										JSONObject metadata = response.getJSONObject("meta");
-										if(metadata.has("code") && metadata.getInt("code") == 400)
-										{
-											processLogin();
-										}
-										else
-										{
-											Toast.makeText(mActivity, metadata.getString("msg"), Toast.LENGTH_LONG).show();	
-										}
-									} catch (JSONException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									
-								}
-							}
+        if (verifyFields()) {
+            if (HollerbackApplication.getInstance().regId != null) {
 
-							@Override
-							public void onSuccess(int statusId, JSONObject response) {
-								// TODO Auto-generated method stub
-								super.onSuccess(statusId, response);
-								JSONUtil.processSignUp(response);
-								//has user
-								if(response.has("user"))
-								{
-									SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
-									mActivity.getSupportFragmentManager()
-									.beginTransaction()
-									.replace(R.id.fragment_holder, fragment)
-									.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-							        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
-							        .commitAllowingStateLoss();		
-								}
-							}
-						}
-						);
-			} else {
-				Toast.makeText(getActivity(), "Try again in a few seconds",
-						Toast.LENGTH_LONG).show();
-			}
-		}
-	}
+                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, HollerbackApplication.getInstance().regId, new JsonHttpResponseHandler() {
+                    @Override
+                    protected Object parseResponse(String arg0) throws JSONException {
+                        LogUtil.i(arg0);
+                        return super.parseResponse(arg0);
 
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.register_submit:
-			processSubmit();
-			break;
-		case R.id.rl_country_selector:
-			showDialog();
-			break;
-		}
-	}
-	
+                    }
 
-	private void processLogin() {
-		if (HollerbackApplication.getInstance().regId == null) {
-			Toast.makeText(getActivity(), "Try again in a few seconds",
-					Toast.LENGTH_LONG).show();
-			return;
-		}
+                    @Override
+                    public void onFailure(Throwable arg0, JSONObject response) {
+                        // TODO Auto-generated method stub
+                        super.onFailure(arg0, response);
+                        LogUtil.i("LOGIN FAILURE");
+                        if (response.has("meta")) {
+                            // doesnt have user
+                            try {
+                                JSONObject metadata = response.getJSONObject("meta");
+                                if (metadata.has("code") && metadata.getInt("code") == 400) {
+                                    processLogin();
+                                } else {
+                                    Toast.makeText(mActivity, metadata.getString("msg"), Toast.LENGTH_LONG).show();
+                                }
+                            } catch (JSONException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
 
-		HBRequestManager.postLogin(mRegistrationPhone,
-				 new JsonHttpResponseHandler() {
+                        }
+                    }
 
-					@Override
-					protected Object parseResponse(String arg0)
-							throws JSONException {
-						LogUtil.i(arg0);
-						return super.parseResponse(arg0);
+                    @Override
+                    public void onSuccess(int statusId, JSONObject response) {
+                        // TODO Auto-generated method stub
+                        super.onSuccess(statusId, response);
+                        JSONUtil.processSignUp(response);
+                        // has user
+                        if (response.has("user")) {
+                            SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
+                            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                                    .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
-					}
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.register_submit:
+                processSubmit();
+                break;
+            case R.id.rl_country_selector:
+                showDialog();
+                break;
+        }
+    }
 
-					@Override
-					public void onFailure(Throwable arg0, JSONObject arg1) {
-						// TODO Auto-generated method stub
-						super.onFailure(arg0, arg1);
-						LogUtil.i("LOGIN FAILURE");
-					}
+    private void processLogin() {
+        if (HollerbackApplication.getInstance().regId == null) {
+            Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						JSONUtil.processSignIn(response);
-						LogUtil.i("HB", response.toString());
+        HBRequestManager.postLogin(mRegistrationPhone, new JsonHttpResponseHandler() {
 
-						SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
-						mActivity.getSupportFragmentManager()
-						.beginTransaction()
-						.replace(R.id.fragment_holder, fragment)
-						.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-				        .addToBackStack(SignUpConfirmFragment.class.getSimpleName())
-				        .commitAllowingStateLoss();		
-					}
+            @Override
+            protected Object parseResponse(String arg0) throws JSONException {
+                LogUtil.i(arg0);
+                return super.parseResponse(arg0);
 
-				});
+            }
 
-	}
-	
-	
-	public void showDialog() {
+            @Override
+            public void onFailure(Throwable arg0, JSONObject arg1) {
+                // TODO Auto-generated method stub
+                super.onFailure(arg0, arg1);
+                LogUtil.i("LOGIN FAILURE");
+            }
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle("Select Your Country");
-		builder.setSingleChoiceItems(mCharCountries, -1,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int item) {
-						mSelectedCountry = mCountries.get(item);
-						mCountryText.setText(mCountries.get(item).name);
-						mPhoneNumberCode.setText("+"
-								+ Integer.toString(util
-										.getCountryCodeForRegion(mSelectedCountry.code)));
-						countriesDialog.dismiss();
-					}
-				});
-		countriesDialog = builder.create();
-		countriesDialog.show();
+            @Override
+            public void onSuccess(int statusId, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onSuccess(statusId, response);
+                JSONUtil.processSignIn(response);
+                LogUtil.i("HB", response.toString());
 
-	}
+                SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
+            }
 
-	private PhoneNumber getPhoneNumber() {
-		if (mPhoneNumberField.getText().toString() == null
-				|| mPhoneNumberField.getText().toString().trim().isEmpty()
-				|| mPhoneNumberField.getText().toString().trim().length() < 3) {
-			return null;
-		}
-		return NumberUtil.getPhoneNumber("+"
-				+ util.getCountryCodeForRegion(mSelectedCountry.code)
-				+ mPhoneNumberField.getText().toString());
-	}
+        });
 
-	public boolean verifyFields() {
-		String validPhone = TextValidator.isValidPhone(getPhoneNumber());
-		
-		String validName = TextValidator.isValidName(mNameField.getText()
-				.toString());
+    }
 
-		boolean valid = (validPhone == null && validName == null);
+    public void showDialog() {
 
-		if (!valid) {
-			String message = (validName != null ? validName + "\n" : "")
-					+ (validPhone != null ? "\n" + validPhone : "");
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Select Your Country");
+        builder.setSingleChoiceItems(mCharCountries, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                mSelectedCountry = mCountries.get(item);
+                mCountryText.setText(mCountries.get(item).name);
+                mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
+                countriesDialog.dismiss();
+            }
+        });
+        countriesDialog = builder.create();
+        countriesDialog.show();
 
-			Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-		} else {
-			mRegistrationName = mNameField.getText().toString();
-			mRegistrationPhone = "+"
-					+ util.getCountryCodeForRegion(mSelectedCountry.code)
-					+ mPhoneNumberField.getText().toString();
-			LogUtil.i("Signing up with: " + mRegistrationName + " " + mRegistrationPhone);
-		}
+    }
 
-		return valid;
+    private PhoneNumber getPhoneNumber() {
+        if (mPhoneNumberField.getText().toString() == null || mPhoneNumberField.getText().toString().trim().isEmpty() || mPhoneNumberField.getText().toString().trim().length() < 3) {
+            return null;
+        }
+        return NumberUtil.getPhoneNumber("+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString());
+    }
 
-	}
+    public boolean verifyFields() {
+        String validPhone = TextValidator.isValidPhone(getPhoneNumber());
+
+        String validName = TextValidator.isValidName(mNameField.getText().toString());
+
+        boolean valid = (validPhone == null && validName == null);
+
+        if (!valid) {
+            String message = (validName != null ? validName + "\n" : "") + (validPhone != null ? "\n" + validPhone : "");
+
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+        } else {
+            mRegistrationName = mNameField.getText().toString();
+            mRegistrationPhone = "+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString();
+            LogUtil.i("Signing up with: " + mRegistrationName + " " + mRegistrationPhone);
+        }
+
+        return valid;
+
+    }
 }

@@ -14,60 +14,58 @@ import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
 
 public class WelcomeFragmentActivity extends SherlockFragmentActivity {
 
-	public static boolean GCM_RECEIVED;
-	public static String GCM_TOKEN;
+    public static boolean GCM_RECEIVED;
+    public static String GCM_TOKEN;
 
-	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-	}
+    @Override
+    protected void onPause() {
+        // TODO Auto-generated method stub
+        super.onPause();
+    }
 
-	@Override
-	protected void onCreate(Bundle bundle) {
-		setTheme(R.style.Theme_Example); 
-		super.onCreate(bundle);
+    @Override
+    protected void onCreate(Bundle bundle) {
+        setTheme(R.style.Theme_Example);
+        super.onCreate(bundle);
 
-		setContentView(R.layout.welcome_fragment_activity);
+        setContentView(R.layout.welcome_fragment_activity);
 
-		initFragment();
+        initFragment();
 
-		HollerbackApplication.getInstance().registerGCM();
-		FlurryAgent
-				.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
-	}
+        HollerbackApplication.getInstance().registerGCM();
+        FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
+    }
 
-	OnGCMReceivedListener mGCMListener = new OnGCMReceivedListener() {
+    OnGCMReceivedListener mGCMListener = new OnGCMReceivedListener() {
 
-		@Override
-		public void onGCMReceived(String token) {
-			GCM_RECEIVED = true;
-			GCM_TOKEN = token;
-		}
-	};
+        @Override
+        public void onGCMReceived(String token) {
+            GCM_RECEIVED = true;
+            GCM_TOKEN = token;
+        }
+    };
 
-	@Override
-	protected void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-	}
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+    }
 
-	// TODO Abstract to fragment manager
-	public void initFragment() {
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		WelcomeFragment fragment = new WelcomeFragment();
-		fragmentTransaction.add(R.id.fragment_holder, fragment);
-		fragmentTransaction.addToBackStack(WelcomeFragment.class.getSimpleName());
-		fragmentTransaction.commit();
-	}
+    // TODO Abstract to fragment manager
+    public void initFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        WelcomeFragment fragment = new WelcomeFragment();
+        fragmentTransaction.add(R.id.fragment_holder, fragment);
+        fragmentTransaction.addToBackStack(WelcomeFragment.class.getSimpleName());
+        fragmentTransaction.commit();
+    }
 
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub
-		FlurryAgent.onEndSession(this);
-		super.onStop();
-	}
+    @Override
+    protected void onStop() {
+        // TODO Auto-generated method stub
+        FlurryAgent.onEndSession(this);
+        super.onStop();
+    }
 
 }

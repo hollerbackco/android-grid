@@ -4,40 +4,38 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
 
-public class CameraPreview extends SurfaceView{
-	public static enum FixedAlong{
-		width,
-		height
-	}
+public class CameraPreview extends SurfaceView {
+    public static enum FixedAlong {
+        width, height
+    }
 
-	private FixedAlong fixedAlong = FixedAlong.width;
+    private FixedAlong fixedAlong = FixedAlong.width;
 
-	public CameraPreview(Context context) {
-		super(context);
-	}
+    public CameraPreview(Context context) {
+        super(context);
+    }
 
-	public CameraPreview(Context context, AttributeSet attrs) {
-		super(context, attrs);
-	}
+    public CameraPreview(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-	public CameraPreview(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-	}
-	
-	int squareDimen = 1;
+    public CameraPreview(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+    }
 
-	
-	@Override
-	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    int squareDimen = 1;
 
-		int square = (fixedAlong == FixedAlong.width) ? getMeasuredWidth() : getMeasuredHeight();
+    @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-		if(square > squareDimen){
-			squareDimen = square;
-		}
+        int square = (fixedAlong == FixedAlong.width) ? getMeasuredWidth() : getMeasuredHeight();
 
-		setMeasuredDimension(squareDimen, squareDimen);
-	}
+        if (square > squareDimen) {
+            squareDimen = square;
+        }
+
+        setMeasuredDimension(squareDimen, squareDimen);
+    }
 
 }

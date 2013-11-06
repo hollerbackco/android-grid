@@ -19,81 +19,73 @@ import com.moziy.hollerback.util.FlurryC;
 import com.moziy.hollerback.util.HollerbackAppState;
 
 public class HollerbackMainActivity extends SherlockFragmentActivity {
-	//this way the state is always available
-	public HollerbackApplication application;
-	
-	boolean initFrag = false;
-	String convId = null;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		setTheme(R.style.Theme_Example); 
+    // this way the state is always available
+    public HollerbackApplication application;
 
-		super.onCreate(savedInstanceState);
+    boolean initFrag = false;
+    String convId = null;
 
-		application = HollerbackApplication.getInstance();
-				
-		if (AppEnvironment.getInstance().LOG_CRASHES) {
-			Crittercism.init(getApplicationContext(),
-					AppEnvironment.getInstance().CRITTERCISM_ID);
-		}
-		
-		
-		LogUtil.i("Starting MainActivity");
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        setTheme(R.style.Theme_Example);
 
-		if (!HollerbackAppState.isValidSession()) {
-			Intent i = new Intent(this,
-					WelcomeFragmentActivity.class);
-			startActivity(i);
-			this.finish();
-		}
-		this.getSupportActionBar().show();
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.hollerback_main);
+        application = HollerbackApplication.getInstance();
 
-		initFragment();
-		LogUtil.i("Completed BaseActivity");
+        if (AppEnvironment.getInstance().LOG_CRASHES) {
+            Crittercism.init(getApplicationContext(), AppEnvironment.getInstance().CRITTERCISM_ID);
+        }
 
-		FlurryAgent
-				.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
+        LogUtil.i("Starting MainActivity");
 
-		FlurryAgent.logEvent(FlurryC.EVENT_STARTSESSION, AnalyticsUtil.getMap(
-				FlurryC.PARAM_MODELNAME, AnalyticsUtil.getDeviceName(),
-				FlurryC.PARAM_OS_VERISON,
-				Integer.toString(Build.VERSION.SDK_INT)));
-	}
-	
-	@Override
-	protected void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		if (!HollerbackAppState.isValidSession()) {
-			Intent i = new Intent(this,
-					WelcomeFragmentActivity.class);
-			startActivity(i);
-			this.finish();
-		}
-	}
-	
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub
-		FlurryAgent.onEndSession(this);
-		super.onStop();
-	}
+        if (!HollerbackAppState.isValidSession()) {
+            Intent i = new Intent(this, WelcomeFragmentActivity.class);
+            startActivity(i);
+            this.finish();
+        }
+        this.getSupportActionBar().show();
 
-	public void initFragment() {
-		FragmentManager fragmentManager = getSupportFragmentManager();
+        setContentView(R.layout.hollerback_main);
 
-		int count = fragmentManager.getBackStackEntryCount();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		for (int i = 0; i < count; i++) {
-			fragmentManager.popBackStackImmediate();
-		}
-		ConversationListFragment fragment = new ConversationListFragment();
-		fragmentTransaction.add(R.id.fragment_holder, fragment);
-		fragmentTransaction.commit();
-	}
+        initFragment();
+        LogUtil.i("Completed BaseActivity");
+
+        FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
+
+        FlurryAgent.logEvent(FlurryC.EVENT_STARTSESSION,
+                AnalyticsUtil.getMap(FlurryC.PARAM_MODELNAME, AnalyticsUtil.getDeviceName(), FlurryC.PARAM_OS_VERISON, Integer.toString(Build.VERSION.SDK_INT)));
+    }
+
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+        if (!HollerbackAppState.isValidSession()) {
+            Intent i = new Intent(this, WelcomeFragmentActivity.class);
+            startActivity(i);
+            this.finish();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        // TODO Auto-generated method stub
+        FlurryAgent.onEndSession(this);
+        super.onStop();
+    }
+
+    public void initFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        int count = fragmentManager.getBackStackEntryCount();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        for (int i = 0; i < count; i++) {
+            fragmentManager.popBackStackImmediate();
+        }
+        ConversationListFragment fragment = new ConversationListFragment();
+        fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
+        fragmentTransaction.commit();
+    }
 }

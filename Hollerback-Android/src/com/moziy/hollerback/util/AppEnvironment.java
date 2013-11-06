@@ -4,74 +4,77 @@ import com.moziy.hollerback.debug.LogUtil;
 
 public class AppEnvironment {
 
-	// NEED NOT RESET //
+    // NEED NOT RESET //
 
-	public static final String APP_PREF = "HollerbackAppPrefs";
+    public static final String APP_PREF = "HollerbackAppPrefs";
 
-	// DEV
-	// http://lit-sea-1934.herokuapp.com/
+    // DEV
+    // http://lit-sea-1934.herokuapp.com/
 
-	public String BASE_URL;
+    public String BASE_URL;
 
-	// NEED NOT RESET //
+    // NEED NOT RESET //
 
-	public String ACCESS_KEY_ID = "AKIAJX65IZWDWNJQVNIA";
-	public String SECRET_KEY = "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";
+    public String ACCESS_KEY_ID = "AKIAJX65IZWDWNJQVNIA";
+    public String SECRET_KEY = "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";
 
-	// public static final String PICTURE_NAME = null;
+    // public static final String PICTURE_NAME = null;
 
-	public String UPLOAD_BUCKET = "hb-media";
+    public String UPLOAD_BUCKET;
+    public static final String UPLOAD_BUCKET_DEV = "hb-tmp-dev";
+    public static final String UPLOAD_BUCKET_PROD = "hb-tmp";
+    public String PICTURE_BUCKET;
 
-	public String PICTURE_BUCKET = "hb-media";
+    public static final int ENV_PRODUCTION = 0x9999;
+    public static final int ENV_DEVELOPMENT = 0x1234;
 
-	public static final int ENV_PRODUCTION = 0x9999;
-	public static final int ENV_DEVELOPMENT = 0x1234;
+    public final int ENV = ENV_DEVELOPMENT;
 
-	private int ENV = ENV_PRODUCTION;
+    public final String IMAGE_THUMB_SUFFIX = "-thumb.png";
 
-	public final String IMAGE_THUMB_SUFFIX = "-thumb.png";
+    public boolean ALLOW_UPLOAD_VIDEOS = true;
+    public boolean FORCE_PHONE_NUMBER_CHECK;
 
-	public boolean ALLOW_UPLOAD_VIDEOS = true;
-	public boolean FORCE_PHONE_NUMBER_CHECK;
+    public static String GOOGLE_PROJECT_NUMBER;
 
-	public static String GOOGLE_PROJECT_NUMBER;
+    public static AppEnvironment sInstance;
 
-	public static AppEnvironment sInstance;
+    public static boolean LOG_CRASHES;
 
-	public static boolean LOG_CRASHES;
+    public static final String CRITTERCISM_ID = "51a94f4d1386206f31000002";
 
-	public static final String CRITTERCISM_ID = "51a94f4d1386206f31000002";
+    public static String FLURRY_ID;
 
-	public static String FLURRY_ID;
+    public static AppEnvironment getInstance() {
+        if (sInstance == null) {
+            sInstance = new AppEnvironment();
+            sInstance.setEnvironment();
+        }
+        return sInstance;
+    }
 
-	public static AppEnvironment getInstance() {
-		if (sInstance == null) {
-			sInstance = new AppEnvironment();
-			sInstance.setEnvironment();
-		}
-		return sInstance;
-	}
-
-	// TODO: Setup Environments
-	public void setEnvironment() {
-		switch (ENV) {
-		case ENV_DEVELOPMENT:
-			LogUtil.d("Setting Development Environment");
-			BASE_URL = "http://lit-sea-1934.herokuapp.com";
-			FORCE_PHONE_NUMBER_CHECK = false;
-			GOOGLE_PROJECT_NUMBER = "69406303235";
-			LOG_CRASHES = false;
-			FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
-			break;
-		case ENV_PRODUCTION:
-			LogUtil.d("Setting Production Environment");
-			BASE_URL = "https://calm-peak-4397.herokuapp.com";
-			FORCE_PHONE_NUMBER_CHECK = true;
-			GOOGLE_PROJECT_NUMBER = "69406303235";
-			LOG_CRASHES = true;
-			FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
-			break;
-		}
-	}
+    // TODO: Setup Environments
+    public void setEnvironment() {
+        switch (ENV) {
+            case ENV_DEVELOPMENT:
+                LogUtil.d("Setting Development Environment");
+                BASE_URL = "http://lit-sea-1934.herokuapp.com";
+                FORCE_PHONE_NUMBER_CHECK = false;
+                GOOGLE_PROJECT_NUMBER = "69406303235";
+                LOG_CRASHES = false;
+                FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+                UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
+                break;
+            case ENV_PRODUCTION:
+                LogUtil.d("Setting Production Environment");
+                BASE_URL = "https://calm-peak-4397.herokuapp.com";
+                FORCE_PHONE_NUMBER_CHECK = true;
+                GOOGLE_PROJECT_NUMBER = "69406303235";
+                LOG_CRASHES = true;
+                FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
+                UPLOAD_BUCKET = UPLOAD_BUCKET_PROD;
+                break;
+        }
+    }
 
 }

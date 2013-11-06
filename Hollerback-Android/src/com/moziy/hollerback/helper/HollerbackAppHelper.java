@@ -12,31 +12,31 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class HollerbackAppHelper {
 
-	Activity mActivity;
+    Activity mActivity;
 
-	public HollerbackAppHelper(Activity activity) {
-		mActivity = activity;
-	}
+    public HollerbackAppHelper(Activity activity) {
+        mActivity = activity;
+    }
 
-	public boolean loadContacts(Activity activity) {
-		ContactFetchAsyncTask mTask = new ContactFetchAsyncTask(activity, null);
-		mTask.execute();
-		return true;
-	}
+    public boolean loadContacts(Activity activity) {
+        ContactFetchAsyncTask mTask = new ContactFetchAsyncTask(activity, null);
+        mTask.execute();
+        return true;
+    }
 
-	public boolean processContacts(SortedArray result) {
-		HBRequestManager.getContacts(result.array);
-		return true;
-	}
+    public boolean processContacts(SortedArray result) {
+        HBRequestManager.getContacts(result.array);
+        return true;
+    }
 
-	BroadcastReceiver receiver = new BroadcastReceiver() {
+    BroadcastReceiver receiver = new BroadcastReceiver() {
 
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // TODO Auto-generated method stub
 
-		}
+        }
 
-	};
+    };
 
 }

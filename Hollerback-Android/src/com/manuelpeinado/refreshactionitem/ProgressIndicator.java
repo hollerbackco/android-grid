@@ -1,17 +1,12 @@
 /*
  * Copyright (C) 2013 Manuel Peinado
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 package com.manuelpeinado.refreshactionitem;
 
@@ -97,8 +92,7 @@ class ProgressIndicator extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(mBitmap, getWidth() / 2 - mBitmap.getWidth() / 2, 
-                          getHeight() / 2 - mBitmap.getHeight() / 2, null);
+        canvas.drawBitmap(mBitmap, getWidth() / 2 - mBitmap.getWidth() / 2, getHeight() / 2 - mBitmap.getHeight() / 2, null);
     }
 
     @Override
@@ -121,7 +115,7 @@ class ProgressIndicator extends View {
         mPaintForeground.setColor(color);
         invalidate();
     }
-    
+
     /**
      * Set the background color for this indicator. The background is a dim and subtle
      * part of the indicator that appears below the actual progress

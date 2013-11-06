@@ -17,110 +17,104 @@ import com.moziy.hollerback.model.VideoModel;
 
 public class VideoGalleryAdapter extends BaseAdapter {
 
-	ArrayList<VideoModel> mVideos;
-	LayoutInflater inflater;
+    ArrayList<VideoModel> mVideos;
+    LayoutInflater inflater;
 
-	ImageFetcher mImageFetcher;
+    ImageFetcher mImageFetcher;
 
-	int mVideoWidth;
+    int mVideoWidth;
 
-	public int selectedIndex;
+    public int selectedIndex;
 
-	public VideoGalleryAdapter(ImageFetcher imageFetcher, Context context) {
-		mImageFetcher = imageFetcher;
-		inflater = LayoutInflater.from(context);
-		mVideos = new ArrayList<VideoModel>();
-	}
+    public VideoGalleryAdapter(ImageFetcher imageFetcher, Context context) {
+        mImageFetcher = imageFetcher;
+        inflater = LayoutInflater.from(context);
+        mVideos = new ArrayList<VideoModel>();
+    }
 
-	public void clearVideos() {
-		mVideos = new ArrayList<VideoModel>();
-		this.notifyDataSetChanged();
-	}
+    public void clearVideos() {
+        mVideos = new ArrayList<VideoModel>();
+        this.notifyDataSetChanged();
+    }
 
-	public ArrayList<VideoModel> getVideos() {
-		return mVideos;
-	}
+    public ArrayList<VideoModel> getVideos() {
+        return mVideos;
+    }
 
-	public void setVideos(ArrayList<VideoModel> videos) {
-		mVideos = videos;
-		this.notifyDataSetChanged();
-	}
+    public void setVideos(ArrayList<VideoModel> videos) {
+        mVideos = videos;
+        this.notifyDataSetChanged();
+    }
 
-	@Override
-	public int getCount() {
-		// TODO Auto-generated method stub
-		return mVideos.size();
-	}
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return mVideos.size();
+    }
 
-	@Override
-	public Object getItem(int position) {
-		// TODO Auto-generated method stub
-		return mVideos.get(position);
-	}
+    @Override
+    public Object getItem(int position) {
+        // TODO Auto-generated method stub
+        return mVideos.get(position);
+    }
 
-	@Override
-	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		return position;
-	}
+    @Override
+    public long getItemId(int position) {
+        // TODO Auto-generated method stub
+        return position;
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-		ViewHolder viewHolder;
+        ViewHolder viewHolder;
 
-		if (convertView == null) {
-			viewHolder = new ViewHolder();
-			convertView = inflater.inflate(R.layout.video_gallery_item, null);
-			viewHolder.videoThumbnail = (ImageView) convertView
-					.findViewById(R.id.iv_video_thumbnail);
-			viewHolder.videoThumbnail
-					.setScaleType(ImageView.ScaleType.CENTER_CROP);
-			viewHolder.unreadCircle = (ImageView) convertView
-					.findViewById(R.id.iv_unread_circle);
-			viewHolder.selectedBorder = (ImageView) convertView
-					.findViewById(R.id.iv_selected_video);
-			convertView.setTag(viewHolder);
-		} else {
-			viewHolder = (ViewHolder) convertView.getTag();
-		}
-		
-		LogUtil.i("Loading Thumb: " + mVideos.get(position).getThumbUrl());
+        if (convertView == null) {
+            viewHolder = new ViewHolder();
+            convertView = inflater.inflate(R.layout.video_gallery_item, null);
+            viewHolder.videoThumbnail = (ImageView) convertView.findViewById(R.id.iv_video_thumbnail);
+            viewHolder.videoThumbnail.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            viewHolder.unreadCircle = (ImageView) convertView.findViewById(R.id.iv_unread_circle);
+            viewHolder.selectedBorder = (ImageView) convertView.findViewById(R.id.iv_selected_video);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
 
-		if (mVideos.get(position).getThumbUrl() != null
-				&& mImageFetcher != null) {
+        LogUtil.i("Loading Thumb: " + mVideos.get(position).getThumbUrl());
 
-			mImageFetcher.loadImage(mVideos.get(position).getThumbUrl(),
-					viewHolder.videoThumbnail);
-		}
+        if (mVideos.get(position).getThumbUrl() != null && mImageFetcher != null) {
 
-		if (mVideoWidth == 0) {
-			mVideoWidth = viewHolder.videoThumbnail.getWidth();
-		}
+            mImageFetcher.loadImage(mVideos.get(position).getThumbUrl(), viewHolder.videoThumbnail);
+        }
 
-		if (mVideos.get(position).isRead()) {
-			viewHolder.unreadCircle.setVisibility(View.GONE);
-		} else {
-			viewHolder.unreadCircle.setVisibility(View.VISIBLE);
-		}
+        if (mVideoWidth == 0) {
+            mVideoWidth = viewHolder.videoThumbnail.getWidth();
+        }
 
-		if (selectedIndex == position) {
-			viewHolder.selectedBorder.setVisibility(View.VISIBLE);
-		} else {
-			viewHolder.selectedBorder.setVisibility(View.GONE);
-		}
+        if (mVideos.get(position).isRead()) {
+            viewHolder.unreadCircle.setVisibility(View.GONE);
+        } else {
+            viewHolder.unreadCircle.setVisibility(View.VISIBLE);
+        }
 
-		return convertView;
-	}
+        if (selectedIndex == position) {
+            viewHolder.selectedBorder.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.selectedBorder.setVisibility(View.GONE);
+        }
 
-	static class ViewHolder {
-		ImageView videoThumbnail;
-		ImageView unreadCircle;
-		ImageView selectedBorder;
-	}
+        return convertView;
+    }
 
-	public int getVideoImagePreviewWidth() {
-		return mVideoWidth;
-	}
+    static class ViewHolder {
+        ImageView videoThumbnail;
+        ImageView unreadCircle;
+        ImageView selectedBorder;
+    }
+
+    public int getVideoImagePreviewWidth() {
+        return mVideoWidth;
+    }
 
 }

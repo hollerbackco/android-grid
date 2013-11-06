@@ -31,81 +31,65 @@ public class CustomVideoView extends VideoView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(mForceWidth, mForceHeight);
     }
-    
-    public void changeVideoSize(int width, int height)
-    {
-    	mForceWidth = width;       
+
+    public void changeVideoSize(int width, int height) {
+        mForceWidth = width;
         mForceHeight = height;
 
         // not sure whether it is useful or not but safe to do so
-        getHolder().setFixedSize(width, height); 
-        
+        getHolder().setFixedSize(width, height);
+
         requestLayout();
-        invalidate();     // very important, so that onMeasure will be triggered
-    } 
-    
-    public void setProgressHelper(ProgressHelper progress)
-    {
-    	mProgresshelper = progress;
+        invalidate(); // very important, so that onMeasure will be triggered
     }
-    
-    public ProgressHelper getProgressHelper()
-    {
-    	return mProgresshelper;
+
+    public void setProgressHelper(ProgressHelper progress) {
+        mProgresshelper = progress;
     }
-    
-    public void stopProgressHelper()
-    {
-    	mProgresshelper.hideLoader();
+
+    public ProgressHelper getProgressHelper() {
+        return mProgresshelper;
     }
-    
-    public boolean hasProgressHelper()
-    {
-    	if(mProgresshelper != null)
-    	{
-    		return true;
-    	}
-    	else
-    	{
-    		return false;
-    	}
+
+    public void stopProgressHelper() {
+        mProgresshelper.hideLoader();
     }
-    
-    public void setNextView(View view)
-    {
-    	mNextView = view;
+
+    public boolean hasProgressHelper() {
+        if (mProgresshelper != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    
-    public View getNextView()
-    {
-    	return mNextView;
+
+    public void setNextView(View view) {
+        mNextView = view;
     }
-    
-    public boolean hasNextView()
-    {
-    	if(mNextView != null)
-    	{
-    		return true;
-    	}
-    	return false;
+
+    public View getNextView() {
+        return mNextView;
     }
-    
-    public void setBlowupParentView(View view)
-    {
-    	mBlowupParentView = view;
+
+    public boolean hasNextView() {
+        if (mNextView != null) {
+            return true;
+        }
+        return false;
     }
-    
-    public View getBlowupParentView()
-    {
-    	return mBlowupParentView;
+
+    public void setBlowupParentView(View view) {
+        mBlowupParentView = view;
     }
-    
-    public boolean hasBlowupParentView()
-    {
-    	if(mBlowupParentView != null)
-    	{
-    		return true;
-    	}
-    	return false;
+
+    public View getBlowupParentView() {
+        return mBlowupParentView;
+    }
+
+    public boolean hasBlowupParentView() {
+        if (mBlowupParentView != null) {
+            return true;
+        }
+        return false;
     }
 }

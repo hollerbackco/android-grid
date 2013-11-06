@@ -31,254 +31,221 @@ import android.widget.Toast;
  *
  */
 public class ConversationMembersFragment extends BaseFragment {
-	private SherlockFragmentActivity mActivity;
-	private ViewGroup mRootView;
-	private TextView mHeaderView;
-	private ViewGroup mFooterView;
-	private Button mBtnLeaveGroup;
-	
-	private TextView mTxtUnwatched;
-	private Button mBtnClear;
-	private ViewGroup mWrapperUnwatched;
-	private ListView mLsvMembers;
-	private String mConversationId;
-	private List<String> mMembers = new ArrayList<String>();
-	
-	private ArrayAdapter<String> mMembersAdapter;
-	
-	/**
-	 * Create a new instance of ConversationMembersFragment, providing "num" as an
-	 * argument.
-	 */
-	public static ConversationMembersFragment newInstance(String conversationId) {
+    private SherlockFragmentActivity mActivity;
+    private ViewGroup mRootView;
+    private TextView mHeaderView;
+    private ViewGroup mFooterView;
+    private Button mBtnLeaveGroup;
 
-		ConversationMembersFragment f = new ConversationMembersFragment();
+    private TextView mTxtUnwatched;
+    private Button mBtnClear;
+    private ViewGroup mWrapperUnwatched;
+    private ListView mLsvMembers;
+    private String mConversationId;
+    private List<String> mMembers = new ArrayList<String>();
 
-		// Supply num input as an argument.
-		Bundle args = new Bundle();
-		args.putString("conversationId", conversationId);
-		f.setArguments(args);
-		return f;
-	}
-	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		mActivity = this.getSherlockActivity();
-		mRootView = (ViewGroup)inflater.inflate(R.layout.conversation_member_fragment, null);
-		mHeaderView = (TextView)inflater.inflate(R.layout.view_contactheader, null);
-		mHeaderView.setText(this.getResources().getString(R.string.conversation_members));
-		mFooterView = (ViewGroup)inflater.inflate(R.layout.footer_memberlist, null);
-		
-		mConversationId = this.getArguments().getString("conversationId");
-		this.startLoading();
-		initializeView(mRootView);
-		
-		dataBind();
-		
-		return mRootView;
-	}
-	
-	@Override
-	protected void initializeView(View view) {
-		mTxtUnwatched = (TextView)mRootView.findViewById(R.id.txtUnwatched);
-		mWrapperUnwatched = (ViewGroup)mRootView.findViewById(R.id.wrapperUnwatched);
-				
-		mLsvMembers = (ListView)mRootView.findViewById(R.id.lsvMembers);
-		mLsvMembers.setItemsCanFocus(false);
-		mLsvMembers.setClickable(false);
-		mLsvMembers.addHeaderView(mHeaderView);
-		mLsvMembers.addFooterView(mFooterView);
-		
-		//mMembersAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, mMembers);
-		mMembersAdapter = new ArrayAdapter<String>(mActivity, R.layout.custom_simple_list_item, mMembers);
-		mLsvMembers.setAdapter(mMembersAdapter);
-		
-		mBtnLeaveGroup = (Button)mFooterView.findViewById(R.id.btnLeaveGroup);
-		mBtnLeaveGroup.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				leaveGroup();
-			}
-		});
-		
-		mBtnClear = (Button)mRootView.findViewById(R.id.btnClear);
-		mBtnClear.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				clearWatched();
-			}
-		});
-	}
-	
-	private void clearWatched()
-	{
-		HBRequestManager.clearNewConversationWatchedStatus(
-				mConversationId, 
-				new JsonHttpResponseHandler() {
+    private ArrayAdapter<String> mMembersAdapter;
 
-					@Override
-					protected Object parseResponse(String response)
-							throws JSONException {
-						LogUtil.i("RESPONSE: " + response);
-						return super.parseResponse(response);
-					}
-					
-					@Override
-					public void onFailure(Throwable error,
-							JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onFailure(error, response);
-						LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS
-								+ "FAILURE");
-					}
+    /**
+     * Create a new instance of ConversationMembersFragment, providing "num" as an
+     * argument.
+     */
+    public static ConversationMembersFragment newInstance(String conversationId) {
 
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						LogUtil.i("ON SUCCESS API conversation");
-						try {
-							
-							if(response.has("meta"))
-							{
-								if(response.getJSONObject("meta").getInt("code") == 200)
-								{
-									mWrapperUnwatched.setVisibility(View.GONE);
-								}
-							}
-							
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
+        ConversationMembersFragment f = new ConversationMembersFragment();
 
-				}
-			);
-	}
-	
-	private void dataBind()
-	{
-		HBRequestManager.getConversation(
-			mConversationId, 
-			new JsonHttpResponseHandler() {
+        // Supply num input as an argument.
+        Bundle args = new Bundle();
+        args.putString("conversationId", conversationId);
+        f.setArguments(args);
+        return f;
+    }
 
-				@Override
-				protected Object parseResponse(String response)
-						throws JSONException {
-					LogUtil.i("RESPONSE: " + response);
-					return super.parseResponse(response);
-				}
-				
-				@Override
-				public void onFailure(Throwable error,
-						JSONObject response) {
-					// TODO Auto-generated method stub
-					super.onFailure(error, response);
-					LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS
-							+ "FAILURE");
-				}
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mActivity = this.getSherlockActivity();
+        mRootView = (ViewGroup) inflater.inflate(R.layout.conversation_member_fragment, null);
+        mHeaderView = (TextView) inflater.inflate(R.layout.view_contactheader, null);
+        mHeaderView.setText(this.getResources().getString(R.string.conversation_members));
+        mFooterView = (ViewGroup) inflater.inflate(R.layout.footer_memberlist, null);
 
-				@Override
-				public void onSuccess(int statusId, JSONObject response) {
-					// TODO Auto-generated method stub
-					super.onSuccess(statusId, response);
-					LogUtil.i("ON SUCCESS API conversation");
-					try {
-						JSONObject data = new JSONObject();
-						if(response.has("data"))
-						{
-							data = response.getJSONObject("data");
-						}
-						else return;
-						
-						if(data.has("members"))
-						{
-							JSONArray members = data.getJSONArray("members");
-							for(int i = 0; i < members.length(); i++)
-							{
-								mMembers.add(members.getJSONObject(i).getString("name"));
-							}
-							
-							mMembersAdapter.notifyDataSetChanged();
-							mHeaderView.setText(String.valueOf(mMembers.size()) + " " + mHeaderView.getText().toString());
-						}
-						
-						if(data.has("unread_count"))
-						{
-							if(data.getInt("unread_count") != 0)
-							{
-								mTxtUnwatched.setText(String.valueOf(data.getInt("unread_count")) + " " + mActivity.getResources().getString(R.string.conversation_unwatched_videos));
-								mWrapperUnwatched.setVisibility(View.VISIBLE);
-							}
-							else
-							{
-								mWrapperUnwatched.setVisibility(View.GONE);
-							}
-							
-						}
-						mMembersAdapter.notifyDataSetChanged();
-						ConversationMembersFragment.this.stopLoading();
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+        mConversationId = this.getArguments().getString("conversationId");
+        this.startLoading();
+        initializeView(mRootView);
 
-			}
-		);
-	}
-	
-	private void leaveGroup()
-	{
-		this.startLoading();
-		HBRequestManager.leaveConversation(
-				mConversationId, 
-				new JsonHttpResponseHandler() {
+        dataBind();
 
-					@Override
-					protected Object parseResponse(String response)
-							throws JSONException {
-						LogUtil.i("RESPONSE: " + response);
-						return super.parseResponse(response);
-					}
-					
-					@Override
-					public void onFailure(Throwable error,
-							JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onFailure(error, response);
-						LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS
-								+ "FAILURE");
-					}
+        return mRootView;
+    }
 
-					@Override
-					public void onSuccess(int statusId, JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusId, response);
-						LogUtil.i("ON SUCCESS API conversation");
-						try {
-							
-							if(response.has("meta"))
-							{
-								if(response.getJSONObject("meta").getInt("code") == 200)
-								{
-									Toast.makeText(mActivity, R.string.conversation_leave_success, Toast.LENGTH_LONG).show();
-									ConversationMembersFragment.this.stopLoading();
-									mActivity.getSupportFragmentManager().popBackStack(ConversationFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-								}
-							}
-							
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
+    @Override
+    protected void initializeView(View view) {
+        mTxtUnwatched = (TextView) mRootView.findViewById(R.id.txtUnwatched);
+        mWrapperUnwatched = (ViewGroup) mRootView.findViewById(R.id.wrapperUnwatched);
 
-				}
-			);
-	}
+        mLsvMembers = (ListView) mRootView.findViewById(R.id.lsvMembers);
+        mLsvMembers.setItemsCanFocus(false);
+        mLsvMembers.setClickable(false);
+        mLsvMembers.addHeaderView(mHeaderView);
+        mLsvMembers.addFooterView(mFooterView);
+
+        // mMembersAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, mMembers);
+        mMembersAdapter = new ArrayAdapter<String>(mActivity, R.layout.custom_simple_list_item, mMembers);
+        mLsvMembers.setAdapter(mMembersAdapter);
+
+        mBtnLeaveGroup = (Button) mFooterView.findViewById(R.id.btnLeaveGroup);
+        mBtnLeaveGroup.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                leaveGroup();
+            }
+        });
+
+        mBtnClear = (Button) mRootView.findViewById(R.id.btnClear);
+        mBtnClear.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                clearWatched();
+            }
+        });
+    }
+
+    private void clearWatched() {
+        HBRequestManager.clearNewConversationWatchedStatus(mConversationId, new JsonHttpResponseHandler() {
+
+            @Override
+            protected Object parseResponse(String response) throws JSONException {
+                LogUtil.i("RESPONSE: " + response);
+                return super.parseResponse(response);
+            }
+
+            @Override
+            public void onFailure(Throwable error, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onFailure(error, response);
+                LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS + "FAILURE");
+            }
+
+            @Override
+            public void onSuccess(int statusId, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onSuccess(statusId, response);
+                LogUtil.i("ON SUCCESS API conversation");
+                try {
+
+                    if (response.has("meta")) {
+                        if (response.getJSONObject("meta").getInt("code") == 200) {
+                            mWrapperUnwatched.setVisibility(View.GONE);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    private void dataBind() {
+        HBRequestManager.getConversation(mConversationId, new JsonHttpResponseHandler() {
+
+            @Override
+            protected Object parseResponse(String response) throws JSONException {
+                LogUtil.i("RESPONSE: " + response);
+                return super.parseResponse(response);
+            }
+
+            @Override
+            public void onFailure(Throwable error, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onFailure(error, response);
+                LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS + "FAILURE");
+            }
+
+            @Override
+            public void onSuccess(int statusId, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onSuccess(statusId, response);
+                LogUtil.i("ON SUCCESS API conversation");
+                try {
+                    JSONObject data = new JSONObject();
+                    if (response.has("data")) {
+                        data = response.getJSONObject("data");
+                    } else
+                        return;
+
+                    if (data.has("members")) {
+                        JSONArray members = data.getJSONArray("members");
+                        for (int i = 0; i < members.length(); i++) {
+                            mMembers.add(members.getJSONObject(i).getString("name"));
+                        }
+
+                        mMembersAdapter.notifyDataSetChanged();
+                        mHeaderView.setText(String.valueOf(mMembers.size()) + " " + mHeaderView.getText().toString());
+                    }
+
+                    if (data.has("unread_count")) {
+                        if (data.getInt("unread_count") != 0) {
+                            mTxtUnwatched.setText(String.valueOf(data.getInt("unread_count")) + " " + mActivity.getResources().getString(R.string.conversation_unwatched_videos));
+                            mWrapperUnwatched.setVisibility(View.VISIBLE);
+                        } else {
+                            mWrapperUnwatched.setVisibility(View.GONE);
+                        }
+
+                    }
+                    mMembersAdapter.notifyDataSetChanged();
+                    ConversationMembersFragment.this.stopLoading();
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    private void leaveGroup() {
+        this.startLoading();
+        HBRequestManager.leaveConversation(mConversationId, new JsonHttpResponseHandler() {
+
+            @Override
+            protected Object parseResponse(String response) throws JSONException {
+                LogUtil.i("RESPONSE: " + response);
+                return super.parseResponse(response);
+            }
+
+            @Override
+            public void onFailure(Throwable error, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onFailure(error, response);
+                LogUtil.e(HollerbackAPI.API_CONVERSATION_DETAILS + "FAILURE");
+            }
+
+            @Override
+            public void onSuccess(int statusId, JSONObject response) {
+                // TODO Auto-generated method stub
+                super.onSuccess(statusId, response);
+                LogUtil.i("ON SUCCESS API conversation");
+                try {
+
+                    if (response.has("meta")) {
+                        if (response.getJSONObject("meta").getInt("code") == 200) {
+                            Toast.makeText(mActivity, R.string.conversation_leave_success, Toast.LENGTH_LONG).show();
+                            ConversationMembersFragment.this.stopLoading();
+                            mActivity.getSupportFragmentManager().popBackStack(ConversationFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
 }

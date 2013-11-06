@@ -1,17 +1,12 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package com.moziy.hollerback.bitmap;
@@ -201,7 +196,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
     private static final int MAXIMUM_POOL_SIZE = 128;
     private static final int KEEP_ALIVE = 1;
 
-    private static final ThreadFactory  sThreadFactory = new ThreadFactory() {
+    private static final ThreadFactory sThreadFactory = new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
         public Thread newThread(Runnable r) {
@@ -209,26 +204,21 @@ public abstract class AsyncTask<Params, Progress, Result> {
         }
     };
 
-    private static final BlockingQueue<Runnable> sPoolWorkQueue =
-            new LinkedBlockingQueue<Runnable>(10);
+    private static final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>(10);
 
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
      */
-    public static final Executor THREAD_POOL_EXECUTOR
-            = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
-            TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory,
+    public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory,
             new ThreadPoolExecutor.DiscardOldestPolicy());
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
      * order.  This serialization is global to a particular process.
      */
-    public static final Executor SERIAL_EXECUTOR = Utils.hasHoneycomb() ? new SerialExecutor() :
-            Executors.newSingleThreadExecutor(sThreadFactory);
+    public static final Executor SERIAL_EXECUTOR = Utils.hasHoneycomb() ? new SerialExecutor() : Executors.newSingleThreadExecutor(sThreadFactory);
 
-    public static final Executor DUAL_THREAD_EXECUTOR =
-            Executors.newFixedThreadPool(2, sThreadFactory);
+    public static final Executor DUAL_THREAD_EXECUTOR = Executors.newFixedThreadPool(2, sThreadFactory);
 
     private static final int MESSAGE_POST_RESULT = 0x1;
     private static final int MESSAGE_POST_PROGRESS = 0x2;
@@ -309,7 +299,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
                 mTaskInvoked.set(true);
 
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                //noinspection unchecked
+                // noinspection unchecked
                 return postResult(doInBackground(mParams));
             }
         };
@@ -322,8 +312,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
                 } catch (InterruptedException e) {
                     android.util.Log.w(LOG_TAG, e);
                 } catch (ExecutionException e) {
-                    throw new RuntimeException("An error occured while executing doInBackground()",
-                            e.getCause());
+                    throw new RuntimeException("An error occured while executing doInBackground()", e.getCause());
                 } catch (CancellationException e) {
                     postResultIfNotInvoked(null);
                 }
@@ -340,8 +329,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
 
     private Result postResult(Result result) {
         @SuppressWarnings("unchecked")
-        Message message = sHandler.obtainMessage(MESSAGE_POST_RESULT,
-                new AsyncTaskResult<Result>(this, result));
+        Message message = sHandler.obtainMessage(MESSAGE_POST_RESULT, new AsyncTaskResult<Result>(this, result));
         message.sendToTarget();
         return result;
     }
@@ -394,7 +382,9 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #doInBackground
      * @see #onCancelled(Object)
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings({
+        "UnusedDeclaration"
+    })
     protected void onPostExecute(Result result) {
     }
 
@@ -407,7 +397,9 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #publishProgress
      * @see #doInBackground
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings({
+        "UnusedDeclaration"
+    })
     protected void onProgressUpdate(Progress... values) {
     }
 
@@ -425,7 +417,9 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @see #cancel(boolean)
      * @see #isCancelled()
      */
-    @SuppressWarnings({"UnusedParameters"})
+    @SuppressWarnings({
+        "UnusedParameters"
+    })
     protected void onCancelled(Result result) {
         onCancelled();
     }
@@ -523,8 +517,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      *         while waiting.
      * @throws TimeoutException If the wait timed out.
      */
-    public final Result get(long timeout, TimeUnit unit) throws InterruptedException,
-            ExecutionException, TimeoutException {
+    public final Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         return mFuture.get(timeout, unit);
     }
 
@@ -593,17 +586,13 @@ public abstract class AsyncTask<Params, Progress, Result> {
      *
      * @see #execute(Object[])
      */
-    public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec,
-            Params... params) {
+    public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
         if (mStatus != Status.PENDING) {
             switch (mStatus) {
                 case RUNNING:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task is already running.");
+                    throw new IllegalStateException("Cannot execute task:" + " the task is already running.");
                 case FINISHED:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task has already been executed "
-                            + "(a task can be executed only once)");
+                    throw new IllegalStateException("Cannot execute task:" + " the task has already been executed " + "(a task can be executed only once)");
             }
         }
 
@@ -645,8 +634,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      */
     protected final void publishProgress(Progress... values) {
         if (!isCancelled()) {
-            sHandler.obtainMessage(MESSAGE_POST_PROGRESS,
-                    new AsyncTaskResult<Progress>(this, values)).sendToTarget();
+            sHandler.obtainMessage(MESSAGE_POST_PROGRESS, new AsyncTaskResult<Progress>(this, values)).sendToTarget();
         }
     }
 
@@ -660,7 +648,9 @@ public abstract class AsyncTask<Params, Progress, Result> {
     }
 
     private static class InternalHandler extends Handler {
-        @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
+        @SuppressWarnings({
+                "unchecked", "RawUseOfParameterizedType"
+        })
         @Override
         public void handleMessage(Message msg) {
             AsyncTaskResult result = (AsyncTaskResult) msg.obj;
@@ -680,7 +670,9 @@ public abstract class AsyncTask<Params, Progress, Result> {
         Params[] mParams;
     }
 
-    @SuppressWarnings({"RawUseOfParameterizedType"})
+    @SuppressWarnings({
+        "RawUseOfParameterizedType"
+    })
     private static class AsyncTaskResult<Data> {
         final AsyncTask mTask;
         final Data[] mData;
