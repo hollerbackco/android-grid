@@ -1,67 +1,52 @@
-<PreferenceScreen
-        xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory
-            android:title="@string/preference_category_friends">
+    <PreferenceCategory android:title="@string/preference_category_friends" >
         <Preference
-                android:key="preference_friends"
-                android:title="@string/preference_friends"
-        />
+            android:key="preference_friends"
+            android:title="@string/preference_friends" />
     </PreferenceCategory>
-    
-	<PreferenceCategory
-		android:title="@string/preference_category_account">
-		<Preference
-			android:key="preference_logout"
-			android:title="@string/preference_logout"
-        />
-		<Preference
-			android:key="preference_username"
-			android:title="@string/preference_username"
-			android:summary="@string/preference_username"
-			android:enabled="false"
-        />
-		<Preference
-			android:key="preference_phone"
-			android:title="@string/preference_phone"
-			android:summary="@string/preference_phone"
-			android:enabled="false"
-        />
+    <PreferenceCategory android:title="@string/preference_category_account" >
+        <Preference
+            android:key="preference_logout"
+            android:title="@string/preference_logout" />
+        <Preference
+            android:enabled="false"
+            android:key="preference_username"
+            android:summary="@string/preference_username"
+            android:title="@string/preference_username" />
+        <Preference
+            android:enabled="false"
+            android:key="preference_phone"
+            android:summary="@string/preference_phone"
+            android:title="@string/preference_phone" />
     </PreferenceCategory>
-    
-<!-- 	<PreferenceCategory -->
-<!-- 		android:title="@string/preference_category_library"> -->
-<!-- 		<SwitchPreference -->
-<!-- 			android:key="preference_save" -->
-<!-- 			android:title="@string/preference_save" -->
-<!--         /> -->
-<!--     </PreferenceCategory> -->
-    
-	<PreferenceCategory
-		android:title="@string/preference_category_terms">
-		<Preference
-			android:key="preference_terms"
-			android:title="@string/preference_terms"
-        />
-		<Preference
-			android:key="preference_privacy"
-			android:title="@string/preference_privacy"
-        />
+
+    <!-- <PreferenceCategory -->
+    <!-- android:title="@string/preference_category_library"> -->
+    <!-- <SwitchPreference -->
+    <!-- android:key="preference_save" -->
+    <!-- android:title="@string/preference_save" -->
+    <!-- /> -->
+    <!-- </PreferenceCategory> -->
+
+    <PreferenceCategory android:title="@string/preference_category_terms" >
+        <Preference
+            android:key="preference_terms"
+            android:title="@string/preference_terms" />
+        <Preference
+            android:key="preference_privacy"
+            android:title="@string/preference_privacy" />
     </PreferenceCategory>
-    
-	<PreferenceCategory
-		android:title="@string/preference_category_team">
-		<Preference
-			android:key="preference_feedback"
-			android:title="@string/preference_feedback"
-        />
-		<Preference
-			android:key="preference_twitter"
-			android:title="@string/preference_twitter"
-        />
-		<Preference
-			android:key="preference_facebook"
-			android:title="@string/preference_facebook"
-        />
+    <PreferenceCategory android:title="@string/preference_category_team" >
+        <Preference
+            android:key="preference_feedback"
+            android:title="@string/preference_feedback" />
+        <Preference
+            android:key="preference_twitter"
+            android:title="@string/preference_twitter" />
+        <Preference
+            android:key="preference_facebook"
+            android:title="@string/preference_facebook" />
     </PreferenceCategory>
+
 </PreferenceScreen>

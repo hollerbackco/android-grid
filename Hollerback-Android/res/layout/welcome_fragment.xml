@@ -11,36 +11,36 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
-        android:src="@drawable/hollerback_welcome_logo"
-        android:contentDescription="@string/app_name" />
-    
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/hollerback_welcome_logo" />
+
     <ImageButton
         android:id="@+id/btnRecord"
-		android:layout_width="wrap_content"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
-		android:layout_centerHorizontal="true"
-        android:background="@drawable/btn_record"
         android:layout_below="@+id/imgWelcome"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dp"
+        android:background="@drawable/btn_record"
         android:contentDescription="@string/action_record"
-        android:padding="@dimen/activity_vertical_margin"
-        />
-	<TextView
-		android:id="@+id/btn_signin"
-		android:background="@drawable/bg_selector"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentLeft="true"
-		android:layout_marginLeft="@dimen/activity_horizontal_margin"
-		android:layout_marginTop="@dimen/activity_vertical_margin"
-		android:padding="@dimen/padding_medium"
-		android:text="@string/signin"
-		android:textColor="@android:color/white"
-		android:textSize="@dimen/normal_large_size"
-		android:shadowColor="@android:color/black"
-		android:shadowDx="2"
-		android:shadowDy="2"
-		android:shadowRadius="2"
-		android:textStyle="bold"
-	 />
+        android:padding="@dimen/activity_vertical_margin" />
+
+    <TextView
+        android:id="@+id/btn_signin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/bg_selector"
+        android:padding="@dimen/padding_medium"
+        android:shadowColor="@android:color/black"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2"
+        android:text="@string/signin"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/normal_large_size"
+        android:textStyle="bold" />
+
 </RelativeLayout>

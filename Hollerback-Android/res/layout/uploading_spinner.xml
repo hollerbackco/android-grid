@@ -14,19 +14,19 @@
         android:indeterminateBehavior="repeat"
         android:indeterminateDrawable="@drawable/custom_progress_spinner" />
 
-	<TextView
+    <TextView
         android:id="@+id/tv_progress_spinner"
-        android:layout_below="@+id/pb_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/image_thumbnail_spacing"
+        android:layout_below="@+id/pb_spinner"
         android:layout_centerInParent="true"
+        android:layout_marginTop="@dimen/image_thumbnail_spacing"
         android:gravity="center"
-        android:textColor="@android:color/white"
-        android:textStyle="bold" 
         android:shadowColor="@android:color/black"
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="1"
-        />
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
+
 </RelativeLayout>

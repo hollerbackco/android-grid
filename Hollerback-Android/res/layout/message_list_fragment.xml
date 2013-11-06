@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:orientation="vertical" >
 
     <RelativeLayout
         android:id="@+id/debug_panel"
@@ -18,7 +18,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_above="@+id/debug_panel"
-        android:divider="@null"
-        android:cacheColorHint="#00000000" />
+        android:cacheColorHint="#00000000"
+        android:divider="@null" />
 
 </RelativeLayout>

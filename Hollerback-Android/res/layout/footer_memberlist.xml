@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
->
-	<Button 
-	    android:id="@+id/btnLeaveGroup"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:layout_margin="@dimen/padding_medium"
-	    android:text="@string/contact_members_leave"
-	    />
+    android:layout_height="wrap_content" >
+
+    <Button
+        android:id="@+id/btnLeaveGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/padding_medium"
+        android:text="@string/contact_members_leave" />
+
 </FrameLayout>
