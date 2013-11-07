@@ -2,6 +2,8 @@ package com.moziy.hollerbacky.connection;
 
 import java.io.IOException;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -34,7 +36,9 @@ public abstract class HBHttpResponseHandler<T extends ResponseObject> extends As
 
         // deserialize the response to the appropriate class
         try {
+            long start = System.currentTimeMillis();
             response = mapper.readValue(content, mTypeReference);
+            Log.d("performance", "deserialization time: " + (System.currentTimeMillis() - start));
         } catch (JsonParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

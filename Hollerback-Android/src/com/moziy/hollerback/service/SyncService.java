@@ -32,8 +32,8 @@ public class SyncService extends IntentService {
 
     private final Handler mHandler = new Handler(); // use a handler to post back and start the service in case we weren't able to sync
 
-    public SyncService(String name) {
-        super(name);
+    public SyncService() {
+        super(SyncService.class.getSimpleName());
     }
 
     @Override
@@ -47,12 +47,17 @@ public class SyncService extends IntentService {
 
     private void sync() {
         String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
+
+        // TEST
+        lastSynctime = null;
+        final long start = System.currentTimeMillis();
         HBRequestManager.sync(lastSynctime, new HBSyncHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {
         }) {
 
             @Override
             public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
 
+                Log.d("performance", "time to execute and deserialize: " + (System.currentTimeMillis() - start));
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
                 // lets save the sync time
@@ -81,6 +86,8 @@ public class SyncService extends IntentService {
             return;
         }
 
+        long start = System.currentTimeMillis();
+
         List<ConversationModel> conversations = new ArrayList<ConversationModel>();
         List<VideoModel> videos = new ArrayList<VideoModel>();
 
@@ -106,7 +113,7 @@ public class SyncService extends IntentService {
                     convoWhereClauseBuilder.append(" OR ");
                 }
 
-                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append(" = ").append(convo.getId());
+                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append(" = ").append("'").append(convo.getConversation_Id()).append("'");
 
             } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
 
@@ -119,7 +126,7 @@ public class SyncService extends IntentService {
                     videoWhereClauseBuilder.append(" OR ");
                 }
 
-                videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append(" = ").append(video.getGuid());
+                videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append(" = ").append("'").append(video.getGuid()).append("'");
             }
         }
 
@@ -166,6 +173,8 @@ public class SyncService extends IntentService {
         } finally {
             ActiveAndroid.endTransaction();
         }
+
+        Log.d("performance", "time to insert to db: " + (System.currentTimeMillis() - start));
 
     }
 }

@@ -32,6 +32,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.service.SyncService;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.QU;
 
@@ -84,6 +85,11 @@ public class ConversationListFragment extends BaseFragment {
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
+
+        // lets launch a test sync
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), SyncService.class);
+        getActivity().startService(intent);
     }
 
     OnItemClickListener mOnListItemClickListener = new OnItemClickListener() {
