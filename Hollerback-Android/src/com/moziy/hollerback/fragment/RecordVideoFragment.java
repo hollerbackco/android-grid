@@ -1,15 +1,11 @@
 package com.moziy.hollerback.fragment;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -26,7 +22,6 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OutputFormat;
 import android.media.ThumbnailUtils;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,9 +60,13 @@ import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
-import com.moziy.hollerback.util.UploadCacheUtil;
 
 public class RecordVideoFragment extends BaseFragment {
+
+    public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
+    public static final String FRAGMENT_ARG_PHONES = "phones";
+    public static final String FRAGMENT_ARG_TITLE = "title";
+    public static final String FRAGMENT_ARG_GOTO_CONVO = "to_conversation";
 
     protected ViewGroup mRootView;
 
@@ -77,7 +76,7 @@ public class RecordVideoFragment extends BaseFragment {
     private boolean inPreview = false;
     private boolean mToConversation = false;
     TextView mTimer;
-    Handler mHandler;
+    final Handler mHandler = new Handler();
 
     int VIDEO_SENT = 4;
 
@@ -89,8 +88,13 @@ public class RecordVideoFragment extends BaseFragment {
     private String mFileDataPath;
     protected String mFileDataName;
     private String mFileExt; // the file extension
+
+    private VideoModel mVideoModel; // the model that represents the resource that will get uploaded
+
     private int mPartNum;
     private int mTotalParts;
+
+    private ArrayList<String> mWatchedIds;
 
     int timer = 20;
 
@@ -110,7 +114,7 @@ public class RecordVideoFragment extends BaseFragment {
     private ImageButton mRecordButton, mPreviewPlayBtn, mSwitchButton, mFilterButton;
     protected Button mSendButton;
     private ImageView mImagePreview;
-    private String mConversationId;
+    private long mConversationId = -1;
     private TextView mTxtPlaying;
 
     private String[] mPhones = null;
@@ -118,21 +122,23 @@ public class RecordVideoFragment extends BaseFragment {
 
     int mBestCameraWidth, mBestCameraHeight;
 
-    public static RecordVideoFragment newInstance(String conversationId, String title) {
+    public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(IABIntent.PARAM_ID, conversationId);
-        bundle.putString("title", title);
+        bundle.putLong(IABIntent.PARAM_ID, conversationId);
+        bundle.putString(FRAGMENT_ARG_TITLE, title);
+        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static RecordVideoFragment newInstance(String conversationId, boolean toConversation, String title) {
+    public static RecordVideoFragment newInstance(long conversationId, boolean toConversation, String title, ArrayList<String> watchedIds) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(IABIntent.PARAM_ID, conversationId);
-        bundle.putString("title", title);
-        bundle.putBoolean("mToConversation", toConversation);
+        bundle.putLong(IABIntent.PARAM_ID, conversationId);
+        bundle.putString(FRAGMENT_ARG_TITLE, title);
+        bundle.putBoolean(FRAGMENT_ARG_GOTO_CONVO, toConversation);
+        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -140,10 +146,35 @@ public class RecordVideoFragment extends BaseFragment {
     public static RecordVideoFragment newInstance(String[] phones, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
-        bundle.putStringArray("phones", phones);
-        bundle.putString("title", title);
+        bundle.putStringArray(FRAGMENT_ARG_PHONES, phones);
+        bundle.putString(FRAGMENT_ARG_TITLE, title);
         fragment.setArguments(bundle);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mActivity.getSupportActionBar().setTitle(R.string.action_record);
+        mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        Bundle args = getArguments();
+
+        // bind arguments to fragment
+        if (args.containsKey(FRAGMENT_ARG_TITLE)) {
+            // setting title
+            mActivity.getSupportActionBar().setTitle(args.getString(FRAGMENT_ARG_TITLE));
+        }
+
+        if (args.containsKey(IABIntent.PARAM_ID)) {
+            mConversationId = args.getLong(IABIntent.PARAM_ID);
+            LogUtil.i("HollerbackCamera CONVO: " + mConversationId);
+        }
+
+        mPhones = args.getStringArray(FRAGMENT_ARG_PHONES);
+        mWatchedIds = args.getStringArrayList(FRAGMENT_ARG_WATCHED_IDS);
+        mToConversation = args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -167,17 +198,6 @@ public class RecordVideoFragment extends BaseFragment {
 
             return null;
         }
-        mActivity.getSupportActionBar().setTitle(R.string.action_record);
-
-        if (this.getArguments() != null && this.getArguments().containsKey("title")) {
-            // setting title
-            mActivity.getSupportActionBar().setTitle(this.getArguments().getString("title"));
-        }
-
-        mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mToConversation = this.getArguments().getBoolean("mToConversation", false);
-
-        mHandler = new Handler();
 
         mTopView = mRootView.findViewById(R.id.top_bar);
         mBottomView = mRootView.findViewById(R.id.bottom_bar);
@@ -200,11 +220,12 @@ public class RecordVideoFragment extends BaseFragment {
 
                     stopRecording();
 
-                    if (mConversationId == null) {
+                    if (mConversationId < 0) {
                         Log.d(TAG, "attempt to create new conversation");
                         inviteAndRecordVideo();
                     } else {
-                        uploadAndSend();
+                        Log.d(TAG, "attempt to post to existing conversation");
+                        postToConversation(mConversationId, mWatchedIds);
                     }
                 }
             }
@@ -226,15 +247,6 @@ public class RecordVideoFragment extends BaseFragment {
 
         mImagePreview.setLayoutParams(mImagePreviewParams);
 
-        if (this.getArguments().containsKey(IABIntent.PARAM_ID)) {
-            mConversationId = this.getArguments().getString(IABIntent.PARAM_ID);
-            LogUtil.i("HollerbackCamera CONVO: " + mConversationId);
-        }
-
-        if (this.getArguments().containsKey("phones")) {
-            mPhones = this.getArguments().getStringArray("phones");
-        }
-
         mRecordButton = (ImageButton) mRootView.findViewById(R.id.record_button);
         mRecordButton.setOnClickListener(new OnClickListener() {
 
@@ -254,15 +266,15 @@ public class RecordVideoFragment extends BaseFragment {
 
             @Override
             public void onClick(View arg0) {
-                if (mConversationId == null) {
-                    // HBRequestManager
-                    // .postConversations(TempMemoryStore.invitedUsers);
-                    LogUtil.e("Conversation ID NULL");
-                    mSendButton.setEnabled(false);
-                    inviteAndRecordVideo();
-                } else {
-                    uploadAndSend();
-                }
+                // if (mConversationId < 0) {
+                // // HBRequestManager
+                // // .postConversations(TempMemoryStore.invitedUsers);
+                // LogUtil.e("Conversation ID NULL");
+                // mSendButton.setEnabled(false);
+                // inviteAndRecordVideo();
+                // } else {
+                // uploadAndSend();
+                // }
             }
         });
 
@@ -306,37 +318,52 @@ public class RecordVideoFragment extends BaseFragment {
         // TODO: write up this portion in cleanup
     }
 
+    private void createNewConversation(ArrayList<String> contacts) {
+        sendVideo(-1, contacts, null);
+    }
+
+    private void postToConversation(long conversationId, ArrayList<String> watchedIds) {
+        sendVideo(conversationId, null, watchedIds);
+    }
+
     /**
      * 
      * @param fileName
      * @param contacts
      */
-    private void sendVideo(String fileName, ArrayList<String> contacts, long conversationId) {
+    private void sendVideo(long conversationId, ArrayList<String> contacts, ArrayList<String> watchedIds) {
 
         // Prepare the model for sending the video
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-        VideoModel model = new VideoModel();
-        model.setSegmented(true);
-        model.setSegmentFileName(mFileDataName);
-        model.setSegmentFileExtension(mFileExt); // the file extenstion or container
-        model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-        model.setCreateDate(df.format(new Date()));
-        model.setSenderName("me");
-        // TODO: if there's a conversation id then put it here
-        if (conversationId > 0) {
-            model.setConversationId(conversationId);
+        if (mVideoModel == null) {
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
+            mVideoModel = new VideoModel();
+            mVideoModel.setSegmented(true);
+            mVideoModel.setSegmentFileName(mFileDataName);
+            mVideoModel.setSegmentFileExtension(mFileExt); // the file extenstion or container
+            mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
+            mVideoModel.setCreateDate(df.format(new Date()));
+            mVideoModel.setSenderName("me");
+
+            // TODO: if there's a conversation id then put it here
+            if (conversationId > 0) {
+                mVideoModel.setConversationId(conversationId);
+            }
+
+            mVideoModel.save();
+
         }
 
-        model.save();
         // TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
-        long resourceRowId = model.getId();
+        long resourceRowId = mVideoModel.getId();
 
         Intent intent = new Intent();
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
         intent.putStringArrayListExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
+
         // NOTE: the part and total parts will change once that multi part chunks can be uploaded
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, 0);
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, 1);
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
         intent.setClass(getActivity(), VideoUploadIntentService.class);
         getActivity().startService(intent);
 
@@ -350,51 +377,6 @@ public class RecordVideoFragment extends BaseFragment {
                     .addToBackStack(ConversationFragment.class.getSimpleName()).remove(RecordVideoFragment.this).commitAllowingStateLoss();
         }
 
-    }
-
-    @Deprecated
-    private void uploadAndSend() {
-        // putting the cache stuff
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-
-        JSONObject cacheData = new JSONObject();
-        try {
-            File tmp = new File(HBFileUtil.getLocalFile(HBFileUtil.getImageUploadName(mFileDataName + "." + mFileExt)));
-            String fileurl = Uri.fromFile(tmp).toString();
-
-            cacheData.put("filename", mFileDataName + "." + mFileExt);
-            cacheData.put("id", 0);
-            cacheData.put("conversation_id", mConversationId);
-            cacheData.put("isRead", true);
-            cacheData.put("isUploading", true);
-            cacheData.put("url", fileurl);
-            cacheData.put("thumb_url", fileurl);
-            cacheData.put("created_at", df.format(new Date()));
-            cacheData.put("sender_name", "me");
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        Intent sendIntent = new Intent(IABIntent.UPLOAD_VIDEO_UPLOADING);
-        sendIntent.putExtra("ConversationId", mConversationId);
-        sendIntent.putExtra("FileDataName", mFileDataName + "." + mFileExt);
-        sendIntent.putExtra("ImageUploadName", HBFileUtil.getImageUploadName(mFileDataName));
-        if (cacheData != new JSONObject()) // XXX: BAD, this will never be false
-        {
-            sendIntent.putExtra("JSONCache", cacheData.toString());
-            UploadCacheUtil.setUploadCacheFlag(mActivity, mConversationId, cacheData);
-        }
-        IABroadcastManager.sendLocalBroadcast(sendIntent);
-
-        mActivity.getSupportFragmentManager().popBackStack();
-
-        if (mToConversation) {
-
-            ConversationFragment fragment = ConversationFragment.newInstance(mConversationId);
-            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                    .addToBackStack(ConversationFragment.class.getSimpleName()).remove(RecordVideoFragment.this).commitAllowingStateLoss();
-        }
     }
 
     private void inviteAndRecordVideo() {
@@ -412,7 +394,7 @@ public class RecordVideoFragment extends BaseFragment {
         Log.d(TAG, "first contact: " + contacts.get(0));
 
         // TODO - Sajjad: get the file info passed in to "inviteAndRecord"
-        sendVideo(mFileDataName, contacts, -1);
+        createNewConversation(contacts);
 
     }
 

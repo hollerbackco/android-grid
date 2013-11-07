@@ -19,7 +19,7 @@ public class ActiveRecordHelper {
         return null;
     }
 
-    public static List<VideoModel> getVideosForConversation(String conversationId) {
+    public static List<VideoModel> getVideosForConversation(long conversationId) {
         try {
             return new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_CONV_ID + " = ?", conversationId).execute();
         } catch (Exception e) {

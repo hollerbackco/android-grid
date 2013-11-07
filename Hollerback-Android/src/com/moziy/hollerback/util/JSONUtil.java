@@ -423,7 +423,7 @@ public class JSONUtil {
         }
     }
 
-    public static void processConversationVideos(String convoId, JSONObject json) {
+    public static void processConversationVideos(long convoId, JSONObject json) {
         try {
 
             ActiveAndroid.beginTransaction();

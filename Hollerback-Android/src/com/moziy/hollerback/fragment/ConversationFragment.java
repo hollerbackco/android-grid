@@ -75,7 +75,7 @@ public class ConversationFragment extends BaseFragment {
 
     public int TAKE_VIDEO = 0x683;
 
-    private String mConversationId;
+    private long mConversationId;
 
     // state
     boolean urlLoaded = false;
@@ -201,7 +201,7 @@ public class ConversationFragment extends BaseFragment {
 
     public void initializeArgs() {
         Bundle bundle = getArguments();
-        mConversationId = bundle.getString("conv_id");
+        mConversationId = bundle.getLong("conv_id");
         // UploadCacheUtil.clearCache(this.getActivity(), mConversationId);
 
         // this is object oriented programming, retain Application from Activity.
@@ -268,7 +268,8 @@ public class ConversationFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, conversation.getConversationName());
+                // XXX: pass in the watched ids here
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, conversation.getConversationName(), new ArrayList<String>());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(null)
                         .commitAllowingStateLoss();
 
@@ -307,13 +308,13 @@ public class ConversationFragment extends BaseFragment {
      * Create a new instance of CountingFragment, providing "num" as an
      * argument.
      */
-    public static ConversationFragment newInstance(String conversation_id) {
+    public static ConversationFragment newInstance(long conversation_id) {
 
         ConversationFragment f = new ConversationFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putString("conv_id", conversation_id);
+        args.putLong("conv_id", conversation_id);
         f.setArguments(args);
         return f;
     }
@@ -322,13 +323,13 @@ public class ConversationFragment extends BaseFragment {
      * Create a new instance of CountingFragment, providing "num" as an
      * argument.
      */
-    public static ConversationFragment newInstance(String conversation_id, boolean startRecording) {
+    public static ConversationFragment newInstance(long conversation_id, boolean startRecording) {
 
         ConversationFragment f = new ConversationFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putString("conv_id", conversation_id);
+        args.putLong("conv_id", conversation_id);
         args.putBoolean("startRecording", startRecording);
         f.setArguments(args);
         return f;

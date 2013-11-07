@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.communication.IABIntent;
-import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.helper.ActiveRecordHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -39,7 +38,7 @@ public class DataModelManager {
      * @param populated
      * @param conversationId
      */
-    public void getVideos(boolean populated, String conversationId) {
+    public void getVideos(boolean populated, long conversationId) {
         if (!populated) {
 
             // return in memory or database store solution
@@ -87,7 +86,7 @@ public class DataModelManager {
 
     }
 
-    private class GetVideoAsyncTask extends AsyncTask<String, Void, HashMap<String, ArrayList<VideoModel>>> {
+    private class GetVideoAsyncTask extends AsyncTask<Long, Void, HashMap<Long, ArrayList<VideoModel>>> {
 
         @Override
         protected void onPreExecute() {
@@ -96,16 +95,16 @@ public class DataModelManager {
         }
 
         @Override
-        protected void onPostExecute(HashMap<String, ArrayList<VideoModel>> result) {
+        protected void onPostExecute(HashMap<Long, ArrayList<VideoModel>> result) {
             // TODO Auto-generated method stub
             super.onPostExecute(result);
-            Iterator it = result.entrySet().iterator();
+            Iterator<Map.Entry<Long, ArrayList<VideoModel>>> it = result.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry pairs = (Map.Entry) it.next();
+                Map.Entry<Long, ArrayList<VideoModel>> pairs = (Map.Entry<Long, ArrayList<VideoModel>>) it.next();
                 System.out.println(pairs.getKey() + " = " + pairs.getValue());
                 Intent intent = new Intent(IABIntent.GET_CONVERSATION_VIDEOS);
 
-                String hash = HashUtil.generateHashFor(IABIntent.ASYNC_REQ_VIDEOS, (String) pairs.getKey());
+                String hash = HashUtil.generateHashFor(IABIntent.ASYNC_REQ_VIDEOS, String.valueOf(pairs.getKey()));
 
                 mObjectHash.put(hash, pairs.getValue());
 
@@ -123,13 +122,13 @@ public class DataModelManager {
         }
 
         @Override
-        protected HashMap<String, ArrayList<VideoModel>> doInBackground(String... params) {
+        protected HashMap<Long, ArrayList<VideoModel>> doInBackground(Long... params) {
 
             if (params.length != 1) {
                 return null;
             }
 
-            HashMap<String, ArrayList<VideoModel>> h = new HashMap<String, ArrayList<VideoModel>>();
+            HashMap<Long, ArrayList<VideoModel>> h = new HashMap<Long, ArrayList<VideoModel>>();
 
             ArrayList<VideoModel> videos = (ArrayList<VideoModel>) ActiveRecordHelper.getVideosForConversation(params[0]);
 

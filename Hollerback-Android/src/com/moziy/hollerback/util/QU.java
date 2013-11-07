@@ -26,10 +26,10 @@ public class QU {
         return HollerbackApplication.getInstance().getObjectMapper();
     }
 
-    public static ConversationModel getConv(String id) {
+    public static ConversationModel getConv(long id) {
         ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
         for (ConversationModel model : models) {
-            if (model.getConversation_Id() == Integer.parseInt(id)) {
+            if (model.getConversation_Id() == id) {
                 return model;
             }
 

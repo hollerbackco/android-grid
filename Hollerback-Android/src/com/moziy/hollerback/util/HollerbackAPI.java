@@ -28,23 +28,32 @@ public class HollerbackAPI {
     public static final String API_CONVERSATION_LEAVE = "/me/conversations/%1$s/leave";
 
     /**
+     * POST Video to conversation with multi parts
+     */
+    public static final String API_CONVERSATION_POST_SEGMENTED = "/me/conversations/%d/videos/parts";
+
+    /**
      * POST clear conversation watched: /me/conversations/:id/watch_all
      */
+    @Deprecated
     public static final String API_CONVERSATION_WATCHALL = "/me/conversations/%1$s/watch_all";
 
     /**
      * GET video details: /me/conversations/:id/videos
      */
+    @Deprecated
     public static final String API_CONVERSATION_DETAILS_VIDEOS_FORMAT = "/me/conversations/%1$s/videos";
 
     /**
      * POST "/me/videos/:id/read"
      */
+    @Deprecated
     public static final String API_VIDEO_READ_FORMAT = "/me/videos/%1$s/read";
 
     /**
      * POST new video '/me/conversations/:id/videos'
      */
+    @Deprecated
     public static final String API_VIDEO_POST_FORMAT = "/me/conversations/%1$s/videos";
 
     /**
@@ -87,5 +96,9 @@ public class HollerbackAPI {
 
     public static final String PARAM_CODE = "code";
 
-    public static final String PARAM_PART_URL = "part_urls";
+    public static final String PARAM_PART_URLS = "part_urls";
+
+    public static final String PARAM_WATCHED_IDS = "watched_ids";
+
+    public static final String PARAM_SUBTITLE = "subtitle";
 }

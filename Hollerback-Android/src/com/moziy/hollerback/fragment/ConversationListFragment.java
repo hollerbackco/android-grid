@@ -92,7 +92,7 @@ public class ConversationListFragment extends BaseFragment {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
 
-            startConversationFragment(Long.toString(mConversationListAdapter.getItem((int) id).getConversation_Id()));
+            startConversationFragment(mConversationListAdapter.getItem((int) id).getConversation_Id());
 
         }
 
@@ -163,7 +163,7 @@ public class ConversationListFragment extends BaseFragment {
         return super.onOptionsItemSelected(item);
     }
 
-    public void startConversationFragment(String conversationId) {
+    public void startConversationFragment(final long conversationId) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 

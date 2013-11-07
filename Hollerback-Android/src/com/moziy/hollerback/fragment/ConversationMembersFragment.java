@@ -7,13 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.util.HollerbackAPI;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
@@ -24,6 +17,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.util.HollerbackAPI;
+import com.moziy.hollerbacky.connection.HBRequestManager;
 
 /**
  * this is the one of the only fragment I've written from start to end.
@@ -50,13 +50,13 @@ public class ConversationMembersFragment extends BaseFragment {
      * Create a new instance of ConversationMembersFragment, providing "num" as an
      * argument.
      */
-    public static ConversationMembersFragment newInstance(String conversationId) {
+    public static ConversationMembersFragment newInstance(long conversationId) {
 
         ConversationMembersFragment f = new ConversationMembersFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putString("conversationId", conversationId);
+        args.putLong("conversationId", conversationId);
         f.setArguments(args);
         return f;
     }

@@ -16,6 +16,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.NewConvoResponse;
+import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
@@ -54,13 +55,8 @@ public class VideoUploadIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
 
-        // get the arguments
-        ArrayList<String> contacts = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_CONTACTS);
-
-        Log.d(TAG, "resource id: " + resourceId + " contact(s): " + contacts.get(0).toString());
-
         // lets lookup the id passed in from our intent arguments
-        VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
+        final VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
 
         if (model == null) { // TODO - Sajjad: Remove from prod version
             throw new IllegalStateException("Attempting to upload video that does not exist!");
@@ -82,11 +78,14 @@ public class VideoUploadIntentService extends IntentService {
             // lets figure out what type of posting we've got to do, new convo or existing
             if (model.getConversationId() > 0) {
                 // extract the needed information, such as the watched ids
-                ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS);
-                postToExistingConversation(model);
+                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS);
+                postToExistingConversation(model, watchedIds);
 
             } else {
 
+                // get the arguments for posting
+                final ArrayList<String> contacts = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_CONTACTS);
+                Log.d(TAG, "resource id: " + resourceId + " contact(s): " + contacts.get(0).toString());
                 postToNewConversation(model, contacts);
             }
         }
@@ -193,10 +192,43 @@ public class VideoUploadIntentService extends IntentService {
         return true;
     }
 
-    private boolean postToExistingConversation(final VideoModel model) {
-        // TODO - Fill In
+    private boolean postToExistingConversation(final VideoModel model, ArrayList<String> watchedIds) {
+
+        ArrayList<String> partUrls = new ArrayList<String>();
+        for (int i = 0; i < model.getNumParts(); i++) {
+            partUrls.add(new StringBuilder(128).append(AppEnvironment.getInstance().UPLOAD_BUCKET) // tmp-bucket
+                    .append("/") //
+                    .append(model.getSegmentFileName()) // CD/afejkd-gmmjdueh-qqeermvj
+                    .append(".") //
+                    .append(i) // 0
+                    .append(".") //
+                    .append(model.getSegmentFileExtension()) // mp4
+                    .toString()); //
+
+        }
+
+        int convoId = (int) model.getConversationId();
+        HBRequestManager.postToConversation(convoId, partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(new TypeReference<Envelope<PostToConvoResponse>>() {
+        }) {
+
+            @Override
+            public void onResponseSuccess(int statusCode, Envelope<PostToConvoResponse> response) {
+                PostToConvoResponse postResponse = response.getData();
+                Log.d(TAG, "posted to conversation: " + postResponse.conversation_id);
+
+                // update model with the post repsonse
+
+            }
+
+            @Override
+            public void onApiFailure(Metadata metaData) {
+                Log.d(TAG, "post to conversation failed");
+
+                // broadcast failure of posting conversation
+
+            }
+        });
 
         return true;
     }
-
 }
