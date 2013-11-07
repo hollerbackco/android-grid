@@ -51,11 +51,11 @@ public class JSONUtil {
             /**
              * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
              */
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.USERNAME, userName);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
 
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.PHONE, phone);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
 
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
 
         } catch (JSONException e) {
             // TODO Auto-generated catch block
@@ -77,11 +77,11 @@ public class JSONUtil {
         /**
          * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
          */
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.USERNAME, userName);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
 
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.PHONE, phone);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
 
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
 
         Intent intent = new Intent(IABIntent.SESSION_REQUEST);
         intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
@@ -112,11 +112,11 @@ public class JSONUtil {
             /**
              * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
              */
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.USERNAME, userName);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
 
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.PHONE, phone);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
 
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
 
             // Intent intent = new Intent(IABIntent.INTENT_REGISTER_REQUEST);
             // //if (user != null) {
@@ -139,7 +139,7 @@ public class JSONUtil {
             access_token = response.access_token;
         }
 
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, access_token);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
     }
 
     /**
@@ -162,7 +162,7 @@ public class JSONUtil {
                 access_token = user.getString("access_token");
             }
 
-            PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, access_token);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
 
         } catch (JSONException e) {
             // TODO Auto-generated catch block

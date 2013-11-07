@@ -26,7 +26,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
-import com.moziy.hollerback.util.HollerbackPreferences;
+import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
@@ -196,11 +196,11 @@ public class SignInFragment extends BaseFragment {
         /**
          * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
          */
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.USERNAME, userName);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
 
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.PHONE, phone);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
 
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ID, id);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
 
         LogUtil.i("HB", response.toString()); // TODO - Sajjad determine whether to use LogUtil or replace it.
         SignInFragment.this.startLoading(); // TODO - Sajjad, what's going on here with startLoading?

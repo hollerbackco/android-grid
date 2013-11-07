@@ -23,18 +23,18 @@ public class HollerbackAppState {
     }
 
     public static boolean isValidSession() {
-        if (PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null) != null) {
+        if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, null) != null) {
             return true;
         }
         return false;
     }
 
     public static String getValidToken() {
-        return PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null);
+        return PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, null);
     }
 
     public static void logOut() {
-        PreferenceManagerUtil.setPreferenceValue(HollerbackPreferences.ACCESS_TOKEN, null);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, null);
         // Delete other preferences
         // Delete databases
     }

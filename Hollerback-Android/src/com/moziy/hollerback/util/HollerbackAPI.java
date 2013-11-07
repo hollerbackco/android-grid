@@ -101,4 +101,6 @@ public class HollerbackAPI {
     public static final String PARAM_WATCHED_IDS = "watched_ids";
 
     public static final String PARAM_SUBTITLE = "subtitle";
+
+    public static final String PARAM_UPDATED_AT = "updated_at";
 }

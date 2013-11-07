@@ -6,7 +6,7 @@ import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.util.HollerbackPreferences;
+import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 import android.content.Intent;
@@ -93,7 +93,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
         });
 
         preference_username = (Preference) getPreferenceScreen().findPreference("preference_username");
-        preference_username.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.USERNAME, ""));
+        preference_username.setTitle(PreferenceManagerUtil.getPreferenceValue(HBPreferences.USERNAME, ""));
         preference_username.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
             @Override
@@ -104,7 +104,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
         });
 
         preference_phone = (Preference) getPreferenceScreen().findPreference("preference_phone");
-        preference_phone.setTitle(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""));
+        preference_phone.setTitle(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""));
         preference_phone.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
             @Override
