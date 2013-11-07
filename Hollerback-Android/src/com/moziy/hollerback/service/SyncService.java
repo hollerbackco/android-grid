@@ -1,6 +1,7 @@
 package com.moziy.hollerback.service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -8,7 +9,11 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
@@ -36,7 +41,6 @@ public class SyncService extends IntentService {
 
         // TODO: add logic for retrying
         int retryCount = intent.getIntExtra(INTENT_ARG_RETRY_COUNT, 0);
-
         sync();
 
     }
@@ -73,25 +77,95 @@ public class SyncService extends IntentService {
 
     private void updateModel(ArrayList<SyncResponse> data) {
 
+        if (data == null || data.isEmpty()) {
+            return;
+        }
+
+        List<ConversationModel> conversations = new ArrayList<ConversationModel>();
+        List<VideoModel> videos = new ArrayList<VideoModel>();
+
+        List<Long> conversationIds = new ArrayList<Long>();
+        List<String> videoIds = new ArrayList<String>();
+
+        StringBuilder convoWhereClauseBuilder = new StringBuilder(128);
+        StringBuilder videoWhereClauseBuilder = new StringBuilder(128);
+
+        int convoCount = 0;
+        int videoCount = 0;
+
+        // lots of duplication?
+        for (SyncResponse syncResponse : data) {
+            if (SyncResponse.Type.CONVERSATION.equals(syncResponse.type)) {
+
+                ConversationModel convo = (ConversationModel) syncResponse.mSync;
+                conversations.add(convo);
+                conversationIds.add(convo.getId());
+                ++convoCount;
+
+                if (convoCount > 1) {
+                    convoWhereClauseBuilder.append(" OR ");
+                }
+
+                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append(" = ").append(convo.getId());
+
+            } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
+
+                VideoModel video = (VideoModel) syncResponse.mSync;
+                videos.add(video);
+                videoIds.add(video.getGuid());
+                ++videoCount;
+
+                if (videoCount > 1) {
+                    videoWhereClauseBuilder.append(" OR ");
+                }
+
+                videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append(" = ").append(video.getGuid());
+            }
+        }
+
+        Log.d(TAG, "received " + conversations.size() + " conversations");
+        Log.d(TAG, "received " + videos.size() + " videos");
+
+        List<VideoModel> existingVideos = new Select().from(VideoModel.class).where(videoWhereClauseBuilder.toString()).execute();
+        List<ConversationModel> existingConvos = new Select().from(ConversationModel.class).where(convoWhereClauseBuilder.toString()).execute();
+
+        // remove existing model for our list
+        conversations.removeAll(existingConvos);
+        videos.removeAll(existingVideos);
+
         // if updating fails for any reason, then clear the preference that saves the last sync time
         ActiveAndroid.beginTransaction();
-        // 1. for all the conversations, get the id of all conversations
+        try {
+            if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
+                for (VideoModel v : existingVideos) {
+                    Log.d(TAG, "deleting video with id: " + v.getGuid());
+                    v.delete();
+                }
+            }
 
-        // 2. search for all the ids in the database
+            // insert the remaining videos into the database
+            for (VideoModel v : videos) {
+                Log.d(TAG, "adding video: " + v.getGuid());
+                v.save();
+            }
 
-        // 3. remove them/update them
+            if (!existingConvos.isEmpty()) {
+                for (ConversationModel c : existingConvos) {
+                    Log.d(TAG, "deleting convo with id: " + c.getConversation_Id());
+                    c.delete();
+                }
+            }
 
-        // 4. insert the rest into the database
+            for (ConversationModel c : conversations) {
+                Log.d(TAG, "adding convo: " + c.getConversation_Id());
+                c.save();
+            }
 
-        // 5. for all the videoss, get the id of all of them
+            ActiveAndroid.setTransactionSuccessful();
 
-        // 6. search for all the ids in the database
-
-        // 7. remove/update the videos
-
-        // 8. insert the rest
-        ActiveAndroid.endTransaction();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
 
     }
-
 }

@@ -169,6 +169,14 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         return this.id;
     }
 
+    public String getGuid() {
+        return guid;
+    }
+
+    public void setGuid(String guid) {
+        this.guid = guid;
+    }
+
     public int getNumParts() {
         return num_parts;
     }
