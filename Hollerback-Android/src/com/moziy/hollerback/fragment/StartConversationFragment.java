@@ -108,6 +108,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    // receive broadcasts on the status of conversations
     private class InternalReceiver extends BroadcastReceiver {
 
         private final String TAG = InternalReceiver.class.getSimpleName();
@@ -147,6 +148,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     // go back to contacts or back to the conversation list?
                     Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
+
+                    // cleanup and remove data from sql?
                 }
             } else {
                 Log.w(TAG, "received broadcast when not added");
