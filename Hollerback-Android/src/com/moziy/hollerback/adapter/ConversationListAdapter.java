@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import android.graphics.Bitmap;
@@ -30,8 +31,8 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
     DisplayImageOptions options;
 
-    protected ArrayList<ConversationModel> mConversations;
-    protected ArrayList<ConversationModel> mFilteredConversations;
+    protected List<ConversationModel> mConversations;
+    protected List<ConversationModel> mFilteredConversations;
 
     LayoutInflater inflater;
     ConversationFilter mFilter;
@@ -49,13 +50,13 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 .cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).imageScaleType(ImageScaleType.EXACTLY).build();
     }
 
-    public void setConversations(ArrayList<ConversationModel> conversations) {
+    public void setConversations(List<ConversationModel> conversations) {
         mConversations = conversations;
         mFilteredConversations = conversations;
         this.notifyDataSetChanged();
     }
 
-    public ArrayList<ConversationModel> getConversations() {
+    public List<ConversationModel> getConversations() {
         return mFilteredConversations;
     }
 

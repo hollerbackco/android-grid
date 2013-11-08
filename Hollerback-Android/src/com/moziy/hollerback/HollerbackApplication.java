@@ -3,7 +3,6 @@ package com.moziy.hollerback;
 import android.content.Context;
 import android.os.Handler;
 
-import com.fasterxml.jackson.core.JsonFactory.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,8 +20,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     private static HollerbackApplication sInstance = null;
 
     private static DataModelManager sDataModelManager = null;
-    private final ObjectMapper mObjectMapper = new ObjectMapper();
-
+    private ObjectMapper mObjectMapper;
     public String regId;
 
     Handler mGCMHandler;
@@ -39,6 +37,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         sDataModelManager = new DataModelManager();
         mGCMHandler = new Handler();
         initImageLoader(getApplicationContext());
+
     }
 
     Runnable GCMFetcherRunnable = new Runnable() {
@@ -86,8 +85,12 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     }
 
     private void initObjectMapper() {
+        mObjectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) //
+                .configure(MapperFeature.USE_GETTERS_AS_SETTERS, false) //
+                .configure(MapperFeature.AUTO_DETECT_GETTERS, false); //
         // perform any sort of configuration here
-        mObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // mObjectMapper.configure(DeserializationFeature., state)
     }
 
     public ObjectMapper getObjectMapper() {

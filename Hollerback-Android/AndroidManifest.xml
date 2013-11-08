@@ -68,7 +68,6 @@
         <activity
             android:name="com.moziy.hollerback.activity.HollerbackMainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
             android:theme="@style/Hollerback" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

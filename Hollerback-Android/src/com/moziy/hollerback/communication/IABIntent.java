@@ -30,6 +30,10 @@ public class IABIntent {
     public static final String CONVERSATION_CREATED = "ConvoCreated";
     public static final String CONVERSATION_CREATE_FAILURE = "ConvoCreateFailure";
 
+    // Sync Intent
+    public static final String NOTIFY_SYNC = "NotifySync";
+    public static final String SYNC_FAILED = "SyncFailed";
+
     public static final String PARAM_SUCCESS = "200";
     public static final String PARAM_FAILURE = "500";
     public static final String PARAM_AUTHENTICATED = "AUTH";
@@ -43,6 +47,9 @@ public class IABIntent {
     public static final String PARAM_CONVERSATION_ID = "converstionId";
     public static final String PARAM_VIDEO_PATH = "videopath";
     public static final String PARAM_VIDEO_STATUS_AS_PERCENT = "statusaspercent";
+
+    // SYNC PARAMS
+    public static final String PARAM_SYNC_RESULT = "sync_result"; // type: boolean
 
     public static final String ASYNC_REQ_VIDEOS = "vvideos";
 

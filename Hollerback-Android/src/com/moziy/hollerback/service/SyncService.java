@@ -11,6 +11,8 @@ import android.util.Log;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -68,12 +70,11 @@ public class SyncService extends IntentService {
 
             @Override
             public void onApiFailure(Metadata metaData) {
+                Log.w(TAG, "connection failure during sync");
                 if (metaData != null) {
                     Log.w(TAG, "metaData code: " + metaData.code);
                 }
-
-                // TODO - Sajjad: Implement retry logic here
-
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.SYNC_FAILED));
             }
 
         });
@@ -83,6 +84,9 @@ public class SyncService extends IntentService {
     private void updateModel(ArrayList<SyncResponse> data) {
 
         if (data == null || data.isEmpty()) {
+            Intent intent = new Intent(IABIntent.NOTIFY_SYNC);
+            intent.putExtra(IABIntent.NOTIFY_SYNC, false);
+            IABroadcastManager.sendLocalBroadcast(intent);
             return;
         }
 
@@ -102,9 +106,10 @@ public class SyncService extends IntentService {
 
         // lots of duplication?
         for (SyncResponse syncResponse : data) {
+            // syncResponse.convert();
             if (SyncResponse.Type.CONVERSATION.equals(syncResponse.type)) {
 
-                ConversationModel convo = (ConversationModel) syncResponse.mSync;
+                ConversationModel convo = (ConversationModel) syncResponse.sync;
                 conversations.add(convo);
                 conversationIds.add(convo.getId());
                 ++convoCount;
@@ -117,7 +122,7 @@ public class SyncService extends IntentService {
 
             } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
 
-                VideoModel video = (VideoModel) syncResponse.mSync;
+                VideoModel video = (VideoModel) syncResponse.sync;
                 videos.add(video);
                 videoIds.add(video.getGuid());
                 ++videoCount;
@@ -152,7 +157,7 @@ public class SyncService extends IntentService {
 
             // insert the remaining videos into the database
             for (VideoModel v : videos) {
-                Log.d(TAG, "adding video: " + v.getGuid());
+                Log.d(TAG, "adding video: " + v.getGuid() + " " + v.toString());
                 v.save();
             }
 
@@ -164,7 +169,7 @@ public class SyncService extends IntentService {
             }
 
             for (ConversationModel c : conversations) {
-                Log.d(TAG, "adding convo: " + c.getConversation_Id());
+                Log.d(TAG, "adding convo: " + c.toString());
                 c.save();
             }
 
@@ -174,6 +179,9 @@ public class SyncService extends IntentService {
             ActiveAndroid.endTransaction();
         }
 
+        Intent intent = new Intent(IABIntent.NOTIFY_SYNC);
+        intent.putExtra(IABIntent.NOTIFY_SYNC, true);
+        IABroadcastManager.sendLocalBroadcast(intent);
         Log.d("performance", "time to insert to db: " + (System.currentTimeMillis() - start));
 
     }

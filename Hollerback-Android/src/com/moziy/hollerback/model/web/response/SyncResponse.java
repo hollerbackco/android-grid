@@ -2,6 +2,9 @@ package com.moziy.hollerback.model.web.response;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.model.ConversationModel;
@@ -17,7 +20,12 @@ public class SyncResponse implements ResponseObject {
 
     public String type;
 
-    public Object sync; // based on type deserialize to correct object
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.EXTERNAL_PROPERTY, property = "type")
+    @JsonSubTypes({ //
+            @JsonSubTypes.Type(value = ConversationModel.class, name = "conversation"), //
+            @JsonSubTypes.Type(value = VideoModel.class, name = "message")
+    })
+    public SyncPayload sync; // based on type deserialize to correct object
 
     public void convert() {
         Log.d("sync", "object: " + sync);
@@ -47,9 +55,4 @@ public class SyncResponse implements ResponseObject {
     // }
     // }
 
-    // @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.EXTERNAL_PROPERTY, property = "type")
-    // @JsonSubTypes({ //
-    // @JsonSubTypes.Type(value = ConversationModel.class, name = "conversation"), //
-    // @JsonSubTypes.Type(value = VideoModel.class, name = "message")
-    // })
 }
