@@ -65,38 +65,29 @@ public class VideoUploadIntentService extends IntentService {
         }
 
         // if the model has no conversation id associated with it, then post new conversation
+        final int partNumber = intent.getIntExtra(INTENT_ARG_PART, -1);
+        final int totalParts = intent.getIntExtra(INTENT_ARG_TOTAL_PARTS, -1);
 
         if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
 
             postToNewConversation(model);
+            Log.d(TAG, "returning..");
 
-            // if the model doens't have a conversation id, then just return saying that the conversation creation failed
-            if (model.getConversationId() < 0) {
-                // add retry logic
-                Log.d(TAG, "ok, not uploading video since convo failed");
-                // TODO: we should insert a temp conversation entry to show to the user?
-                return;
+        } else {
+
+            // if it's pending upload and not transacting
+            if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
+                // lets get the part info
+
+                uploadResource(model, partNumber, totalParts);
             }
 
-        }
-
-        // if it's pending upload and not transacting
-        if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
-            // lets get the part info
-            int partNumber = intent.getIntExtra(INTENT_ARG_PART, -1);
-            int totalParts = intent.getIntExtra(INTENT_ARG_TOTAL_PARTS, -1);
-
-            uploadResource(model, partNumber, totalParts);
-        }
-
-        // now if the model state is pending post and it's not transacting, then let's go ahead and post
-        if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
-            // broadcast that we're posting?
-
-            // lets figure out what type of posting we've got to do, new convo or existing
-            if (model.getConversationId() > 0) {
+            // now if the model state is pending post and it's not transacting, then let's go ahead and post
+            if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
+                // broadcast that we're posting?
+                // a conversation must definitely be present
                 // extract the needed information, such as the watched ids
-                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS);
+                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
                 postToExistingConversation(model, watchedIds);
 
             }
@@ -183,6 +174,8 @@ public class VideoUploadIntentService extends IntentService {
                 model.save();
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+
+                // launch the
 
                 // lets create a new conversation from the response
                 Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);

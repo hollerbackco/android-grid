@@ -69,6 +69,13 @@ public class RecordVideoFragment extends BaseFragment {
     public static final String FRAGMENT_ARG_TITLE = "title";
     public static final String FRAGMENT_ARG_GOTO_CONVO = "to_conversation";
 
+    public static interface RecordingInfo {
+        public static final String RECORDED_PARTS = "recorded_parts";
+        public static final String RESOURCE_ROW_ID = "resource_row_id";
+
+        public void onRecordingFinished(Bundle info);
+    }
+
     protected ViewGroup mRootView;
 
     private SurfaceView preview = null;
@@ -361,6 +368,12 @@ public class RecordVideoFragment extends BaseFragment {
 
         // TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
         long resourceRowId = mVideoModel.getId();
+        Bundle info = new Bundle();
+        info.putLong(RecordingInfo.RESOURCE_ROW_ID, resourceRowId);
+        info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
+        if (getTargetFragment() != null) {
+            ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
+        }
 
         Intent intent = new Intent();
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);

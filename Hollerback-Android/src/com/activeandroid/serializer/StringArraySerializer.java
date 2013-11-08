@@ -22,7 +22,6 @@ public class StringArraySerializer extends TypeSerializer {
 
     @Override
     public Object serialize(Object data) {
-        Log.d("serializer", "serializing string array");
         try {
             return QU.getObjectMapper().writeValueAsString(data);
         } catch (JsonProcessingException e) {
