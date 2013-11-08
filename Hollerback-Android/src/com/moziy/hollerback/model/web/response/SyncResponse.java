@@ -1,8 +1,8 @@
 package com.moziy.hollerback.model.web.response;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import android.util.Log;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -17,14 +17,39 @@ public class SyncResponse implements ResponseObject {
 
     public String type;
 
-    public SyncPayload mSync; // based on type deserialize to correct object
+    public Object sync; // based on type deserialize to correct object
 
-    @JsonSetter("sync")
-    public void setSync(Object obj) {
+    public void convert() {
+        Log.d("sync", "object: " + sync);
         if (Type.CONVERSATION.equals(type)) {
-            mSync = HollerbackApplication.getInstance().getObjectMapper().convertValue(obj, ConversationModel.class);
+            sync = HollerbackApplication.getInstance().getObjectMapper().convertValue(sync, new TypeReference<ConversationModel>() {
+            });
+        } else if (Type.MESSAGE.equals(type)) {
+            sync = HollerbackApplication.getInstance().getObjectMapper().convertValue(sync, VideoModel.class);
         } else {
-            mSync = HollerbackApplication.getInstance().getObjectMapper().convertValue(obj, VideoModel.class);
+            Log.d("sync response", "oh no" + type);
         }
     }
+
+    // public void setSync(Object data) {
+
+    // for (String key : obj.keySet()) {
+    // Log.d("sync response", key + " , " + obj.toString());
+    // }
+    // Log.d("sync response", "setSync()" + data.toString());
+    // if (Type.CONVERSATION.equals(type)) {
+    // mPayload = HollerbackApplication.getInstance().getObjectMapper().convertValue(data, ConversationModel.class);
+    // Log.d("convo: ", ((ConversationModel) mPayload).toString());
+    // } else if (Type.CONVERSATION.equals(type)) {
+    // mPayload = HollerbackApplication.getInstance().getObjectMapper().convertValue(data, VideoModel.class);
+    // } else {
+    // Log.d("sync response", "oh no");
+    // }
+    // }
+
+    // @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.EXTERNAL_PROPERTY, property = "type")
+    // @JsonSubTypes({ //
+    // @JsonSubTypes.Type(value = ConversationModel.class, name = "conversation"), //
+    // @JsonSubTypes.Type(value = VideoModel.class, name = "message")
+    // })
 }

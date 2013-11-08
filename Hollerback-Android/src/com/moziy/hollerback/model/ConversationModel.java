@@ -1,47 +1,61 @@
 package com.moziy.hollerback.model;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
 
 @Table(name = ActiveRecordFields.T_CONVERSATION)
-public class ConversationModel extends BaseModel implements SyncPayload {
+public class ConversationModel extends BaseModel implements Serializable, SyncPayload {
 
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
 
     @Column(name = ActiveRecordFields.C_CONV_NAME)
+    @JsonProperty("name")
     private String name;
 
     @Column(name = ActiveRecordFields.C_CONV_UNREAD)
-    private int unread_count;
+    @JsonProperty("unread_count")
+    private String unread_count;
 
     @Column(name = ActiveRecordFields.C_CONV_CREATED_AT)
+    @JsonProperty("created_at")
     private String created_at;
 
     @Column(name = ActiveRecordFields.C_CONV_DELETED_AT)
+    @JsonProperty("deleted_at")
     private String deleted_at;
 
     @Column(name = ActiveRecordFields.C_CONV_LAST_MESSAGE_AT)
+    @JsonProperty("last_message_at")
     private String last_message_at;
 
     @Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_SUBTITLE)
+    @JsonProperty("most_recent_subtitle")
     private String most_recent_subtitle;
 
     @Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB_URL)
+    @JsonProperty("most_recent_thum_url")
     private String most_recent_thumb_url;
 
     @Column(name = ActiveRecordFields.C_CONV_UNSEEN_COUNT)
+    @JsonProperty("unseen_count")
     private String unseen_count;
 
     @Column(name = ActiveRecordFields.C_CONV_USER_ID)
+    @JsonProperty("user_id")
     private long user_id;
 
     @Column(name = ActiveRecordFields.C_CONV_IS_DELETED)
+    @JsonProperty("is_deleted")
     private boolean is_deleted;
+
+    @JsonProperty("updated_at")
+    private String updated_at;
 
     @Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB)
     private String recentThumbUrl;
@@ -64,16 +78,16 @@ public class ConversationModel extends BaseModel implements SyncPayload {
         return name;
     }
 
-    public void setConversation_name(String conversation_name) {
-        this.name = conversation_name;
+    public void setConversation_name(String name) {
+        this.name = name;
     }
 
     public int getConversationUnreadCount() {
-        return unread_count;
+        return Integer.valueOf(unread_count);
     }
 
     public void setConversation_unread_count(int conversation_unread_count) {
-        this.unread_count = conversation_unread_count;
+        this.unread_count = String.valueOf(conversation_unread_count);
     }
 
     public void setCreateTime(String value) {
@@ -90,6 +104,12 @@ public class ConversationModel extends BaseModel implements SyncPayload {
 
     public String getUrl() {
         return this.url;
+    }
+
+    @Override
+    public String toString() {
+
+        return "{id: " + id + ", name: " + name + ", created_at: " + created_at + ", deleted_at: " + deleted_at + ", unread_count: " + unread_count + "}";
     }
 
 }
