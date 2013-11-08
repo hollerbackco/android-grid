@@ -39,6 +39,7 @@ public class ActiveRecordFields {
     public static final String C_VID_ISREAD = "isRead";
     public static final String C_VID_NUM_PARTS = "num_parts";
     public static final String C_VID_PART_UPLOAD_STATE = "part_upload_state";
+    public static final String C_VID_RECIPIENTS = "recipients";
 
     public static final String C_VID_ISUPLOADING = "VidIsUploading";
     public static final String C_VID_ISSENT = "VidIsSent";

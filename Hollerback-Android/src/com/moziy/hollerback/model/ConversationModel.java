@@ -11,6 +11,11 @@ import com.moziy.hollerback.model.web.response.SyncPayload;
 @Table(name = ActiveRecordFields.T_CONVERSATION)
 public class ConversationModel extends BaseModel implements Serializable, SyncPayload {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
 
@@ -108,8 +113,9 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
 
     @Override
     public String toString() {
-
-        return "{id: " + id + ", name: " + name + ", created_at: " + created_at + ", deleted_at: " + deleted_at + ", unread_count: " + unread_count + "}";
+        return "ConversationModel [id=" + id + ", name=" + name + ", unread_count=" + unread_count + ", created_at=" + created_at + ", deleted_at=" + deleted_at + ", last_message_at="
+                + last_message_at + ", most_recent_subtitle=" + most_recent_subtitle + ", most_recent_thumb_url=" + most_recent_thumb_url + ", unseen_count=" + unseen_count + ", user_id=" + user_id
+                + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + "]";
     }
 
 }
