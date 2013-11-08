@@ -44,6 +44,7 @@ local.properties
 .buildpath
 
 #Jar source/docs properties files
-libs/*.properties
-
+*/libs/*.properties
+*/libs/src
+*/libs/docs
 .DS_Store
