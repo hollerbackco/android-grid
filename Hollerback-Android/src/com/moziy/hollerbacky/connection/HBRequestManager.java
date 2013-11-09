@@ -14,9 +14,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.UserModel;
-import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
-import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
@@ -270,36 +268,15 @@ public class HBRequestManager {
 
     }
 
-    public static void sync() {
+    public static void sync(String updatedAt, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+            if (updatedAt != null)
+                params.put(HollerbackAPI.PARAM_UPDATED_AT, updatedAt);
 
-            HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params,
-                    new HBAsyncHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {
-                    }) {
+            HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_SYNC, params, handler);
 
-                        @Override
-                        public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
-
-                            // TEST CODE: - Verified that data is deserialized properly
-                            // SyncPayload sync = response.data.get(0).mSync;
-                            //
-                            // if(sync instanceof VideoModel){
-                            // Log.d(TAG, "id:" + ((VideoModel) sync).getId());
-                            // }else if(sync instanceof ConversationModel){
-                            // Log.d(TAG, "id:" + ((ConversationModel) sync).getConversation_Id());
-                            // }
-
-                        }
-
-                        @Override
-                        public void onApiFailure(Metadata metaData) {
-                            Log.d(TAG, "metaData code: " + metaData.code);
-
-                        }
-
-                    });
         }
     }
 

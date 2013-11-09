@@ -18,7 +18,7 @@ import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
-import com.moziy.hollerback.util.HollerbackPreferences;
+import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
@@ -75,7 +75,7 @@ public class SignUpConfirmFragment extends BaseFragment {
     @Override
     protected void initializeView(View view) {
         mTxtPhone = (TextView) mRootView.findViewById(R.id.tv_phone);
-        mTxtPhone.setText(PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""));
+        mTxtPhone.setText(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""));
 
         mTxtVerify = (EditText) mRootView.findViewById(R.id.txtfield_verify);
 
@@ -85,7 +85,7 @@ public class SignUpConfirmFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 SignUpConfirmFragment.this.startLoading();
-                HBRequestManager.postVerification(mTxtVerify.getText().toString(), PreferenceManagerUtil.getPreferenceValue(HollerbackPreferences.PHONE, ""),
+                HBRequestManager.postVerification(mTxtVerify.getText().toString(), PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""),
                         new HBAsyncHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
                         }) {
 

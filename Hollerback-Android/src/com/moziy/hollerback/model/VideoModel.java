@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
@@ -23,38 +24,49 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     }
 
     @Column(name = ActiveRecordFields.C_VID_CREATED_AT)
+    @JsonProperty("created_at")
     private String created_at;
 
     @Column(name = ActiveRecordFields.C_VID_NEEDS_REPLY)
+    @JsonProperty("needs_reply")
     private boolean needs_reply;
 
     @Column(name = ActiveRecordFields.C_VID_SENDER_NAME)
+    @JsonProperty("sender_name")
     private String sender_name;
 
     @Column(name = ActiveRecordFields.C_VID_SENT_AT)
+    @JsonProperty("sent_at")
     private String sent_at;
 
     @Column(name = ActiveRecordFields.C_VID_GUID)
+    @JsonProperty("guid")
     private String guid;
 
     @Column(name = ActiveRecordFields.C_VID_URL)
+    @JsonProperty("url")
     private String url;
 
     private String local_url;
 
     @Column(name = ActiveRecordFields.C_VID_THUMBURL)
+    @JsonProperty("thumb_url")
     private String thumb_url;
 
     @Column(name = ActiveRecordFields.C_VID_CONV_ID)
+    @JsonProperty("conversation_id")
     private long conversation_id = -1;
 
     @Column(name = ActiveRecordFields.C_VID_IS_DELETED)
+    @JsonProperty("is_deleted")
     private boolean is_deleted;
 
     @Column(name = ActiveRecordFields.C_VID_SUBTITLE)
+    @JsonProperty("subtitle")
     private String subtitle;
 
     @Column(name = ActiveRecordFields.C_VID_ISREAD)
+    @JsonProperty("isRead")
     private boolean isRead;
 
     @Column(name = ActiveRecordFields.C_VID_FILENAME)
@@ -169,6 +181,14 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         return this.id;
     }
 
+    public String getGuid() {
+        return guid;
+    }
+
+    public void setGuid(String guid) {
+        this.guid = guid;
+    }
+
     public int getNumParts() {
         return num_parts;
     }
@@ -277,6 +297,11 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "[id: " + guid + " created_at: " + created_at + "]";
     }
 
     // XXX: BROKEN EQUALS, MUST FIX

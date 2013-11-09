@@ -1,6 +1,7 @@
 package com.moziy.hollerback.fragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,8 +9,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +27,7 @@ import android.widget.ListView;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
@@ -31,11 +37,13 @@ import com.moziy.hollerback.adapter.ConversationListAdapter;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.service.SyncService;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.QU;
 
-public class ConversationListFragment extends BaseFragment {
+public class ConversationListFragment extends BaseFragment implements OnConversationsUpdated, LoaderCallbacks<List<ConversationModel>> {
 
     public static final String FRAGMENT_TAG = ConversationListFragment.class.getSimpleName();
 
@@ -43,21 +51,20 @@ public class ConversationListFragment extends BaseFragment {
     private ViewGroup mHeader;
     private EditText mTxtSearch;
 
-    @Override
-    public void onDestroyView() {
-        // TODO Auto-generated method stub
-        super.onDestroyView();
-        mTxtSearch.removeTextChangedListener(filterTextWatcher);
-        IABroadcastManager.unregisterLocalReceiver(receiver);
-
-    }
-
     PullToRefreshListView mConversationList;
     ListView lsvBaseListView;
 
     ConversationListAdapter mConversationListAdapter;
 
     AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(AppEnvironment.getInstance().ACCESS_KEY_ID, AppEnvironment.getInstance().SECRET_KEY));
+
+    private List<ConversationModel> mConversations;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,9 +78,11 @@ public class ConversationListFragment extends BaseFragment {
 
         mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
         initializeView(fragmentView);
+
+        getLoaderManager().initLoader(0, null, this).startLoading();
         // HBRequestManager.getConversations();
 
-        QU.getDM().getConversations(false); // TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
+        // QU.getDM().getConversations(false); // TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
 
         return fragmentView;
     }
@@ -84,19 +93,8 @@ public class ConversationListFragment extends BaseFragment {
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
+
     }
-
-    OnItemClickListener mOnListItemClickListener = new OnItemClickListener() {
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            LogUtil.i("Starting Conversation: " + position + " id: " + id);
-
-            startConversationFragment(mConversationListAdapter.getItem((int) id).getConversation_Id());
-
-        }
-
-    };
 
     @Override
     public void onPause() {
@@ -107,6 +105,16 @@ public class ConversationListFragment extends BaseFragment {
             InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mTxtSearch.getWindowToken(), 0);
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        // TODO Auto-generated method stub
+        super.onDestroyView();
+        mTxtSearch.removeTextChangedListener(filterTextWatcher);
+        IABroadcastManager.unregisterLocalReceiver(receiver);
+        Log.d(FRAGMENT_TAG, "onDestroy");
+
     }
 
     @Override
@@ -128,10 +136,6 @@ public class ConversationListFragment extends BaseFragment {
         // HBRequestManager.getConversations();
         // }
         // });
-
-        mConversationListAdapter = new ConversationListAdapter(mActivity);
-        mConversationList.setAdapter(mConversationListAdapter);
-        mConversationList.setOnItemClickListener(mOnListItemClickListener);
 
     }
 
@@ -162,6 +166,18 @@ public class ConversationListFragment extends BaseFragment {
 
         return super.onOptionsItemSelected(item);
     }
+
+    OnItemClickListener mOnListItemClickListener = new OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            LogUtil.i("Starting Conversation: " + position + " id: " + id);
+
+            startConversationFragment(mConversationListAdapter.getItem((int) id).getConversation_Id());
+
+        }
+
+    };
 
     public void startConversationFragment(final long conversationId) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -240,6 +256,104 @@ public class ConversationListFragment extends BaseFragment {
             ContactsInviteFragment fragment = ContactsInviteFragment.newInstance();
             getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                     .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+        }
+    }
+
+    @Override
+    public void onUpdate(List<ConversationModel> conversations) {
+
+        // if (mConversationListAdapter == null) {
+        // mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        // }
+        //
+        // if (mActivity == null) {
+        // mActivity = getSherlockActivity();
+        // }
+        mConversationListAdapter.setConversations(conversations);
+        mConversationListAdapter.notifyDataSetChanged();
+
+        // mConversationList.onRefreshComplete();
+        ConversationListFragment.this.stopLoading();
+
+    }
+
+    @Override
+    public Loader<List<ConversationModel>> onCreateLoader(final int id, final Bundle args) {
+        return new AsyncTaskLoader<List<ConversationModel>>(getActivity()) {
+
+            private List<ConversationModel> mConvos;
+            private SyncReceiver mReceiver;
+
+            @Override
+            protected void onStartLoading() {
+                if (mConvos != null) {
+                    deliverResult(mConvos);
+                    return;
+                }
+
+                if (mReceiver == null) {
+                    mReceiver = new SyncReceiver(this);
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+
+                    // start the sync intent service
+                    Intent intent = new Intent();
+                    intent.setClass(getActivity(), SyncService.class);
+                    getActivity().startService(intent);
+                    return;
+                }
+
+                forceLoad();
+
+            }
+
+            @Override
+            public List<ConversationModel> loadInBackground() {
+                mConvos = new Select().all().from(ConversationModel.class).execute();
+                return mConvos;
+            }
+
+            @Override
+            protected void onReset() {
+                IABroadcastManager.unregisterLocalReceiver(mReceiver);
+                super.onReset();
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
+
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationListAdapter.setConversations(data);
+        mConversationList.setAdapter(mConversationListAdapter);
+        mConversationListAdapter.notifyDataSetChanged();
+
+        // mConversationList.onRefreshComplete();
+        ConversationListFragment.this.stopLoading();
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<ConversationModel>> loader) {
+        // TODO: remove all references to the data
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationList.setAdapter(mConversationListAdapter);
+        mConversationListAdapter.notifyDataSetChanged();
+
+    }
+
+    public static class SyncReceiver extends BroadcastReceiver {
+
+        private Loader<List<ConversationModel>> mLoader;
+
+        public SyncReceiver(AsyncTaskLoader<List<ConversationModel>> loader) {
+            mLoader = loader;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mLoader.onContentChanged();
         }
     }
 }

@@ -65,35 +65,6 @@ public class ContactsFragment extends BaseFragment {
     private String mFileDataName;
     private boolean isWelcomeScreen;
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        menu.add(NEXT).setActionView(R.layout.button_next).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
-        for (int i = 0; i < menu.size(); i++) {
-            if (menu.getItem(i).getTitle().toString().equalsIgnoreCase(NEXT)) { // Finding the button from custom View
-                menu.getItem(i).getActionView().findViewById(R.id.btnSignUp).setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        if (mSelectedSMSContactsAdapterData.isEmpty()) {
-                            Toast.makeText(mActivity, R.string.contacts_minimum_required, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        if (isWelcomeScreen) {
-                            inviteAndsendVideo();
-                        } else {
-                            inviteAndRecordVideo();
-                        }
-                    }
-                });
-                break;
-            }
-        }
-    }
-
     public static ContactsFragment newInstance() {
         ContactsFragment f = new ContactsFragment();
         return f;
@@ -175,6 +146,35 @@ public class ContactsFragment extends BaseFragment {
         mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, TempMemoryStore.users.sortedKeys.size(), 0);
 
         mSMSList.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        menu.add(NEXT).setActionView(R.layout.button_next).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).getTitle().toString().equalsIgnoreCase(NEXT)) { // Finding the button from custom View
+                menu.getItem(i).getActionView().findViewById(R.id.btnSignUp).setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        if (mSelectedSMSContactsAdapterData.isEmpty()) {
+                            Toast.makeText(mActivity, R.string.contacts_minimum_required, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        if (isWelcomeScreen) {
+                            inviteAndsendVideo();
+                        } else {
+                            inviteAndRecordVideo();
+                        }
+                    }
+                });
+                break;
+            }
+        }
     }
 
     protected void bindData() {

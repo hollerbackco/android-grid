@@ -1,27 +1,31 @@
 package com.moziy.hollerback.activity;
 
+import java.util.List;
+
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
 import com.flurry.android.FlurryAgent;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.ConversationListFragment;
+import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment;
+import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.FlurryC;
 import com.moziy.hollerback.util.HollerbackAppState;
 
-public class HollerbackMainActivity extends SherlockFragmentActivity {
-    // this way the state is always available
-    public HollerbackApplication application;
+public class HollerbackMainActivity extends SherlockFragmentActivity implements OnConversationsUpdated {
 
+    private List<ConversationModel> mConversations; // list of conversations
     boolean initFrag = false;
     String convId = null;
 
@@ -32,7 +36,11 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
 
         super.onCreate(savedInstanceState);
 
-        application = HollerbackApplication.getInstance();
+        Fragment worker = getSupportFragmentManager().findFragmentByTag(ConversationWorkerFragment.FRAGMENT_TAG);
+        if (worker == null) {
+            worker = new ConversationWorkerFragment();
+            getSupportFragmentManager().beginTransaction().add(worker, ConversationWorkerFragment.FRAGMENT_TAG).commit();
+        }
 
         if (AppEnvironment.getInstance().LOG_CRASHES) {
             Crittercism.init(getApplicationContext(), AppEnvironment.getInstance().CRITTERCISM_ID);
@@ -87,5 +95,15 @@ public class HollerbackMainActivity extends SherlockFragmentActivity {
         ConversationListFragment fragment = new ConversationListFragment();
         fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
+    }
+
+    public List<ConversationModel> getConversations() {
+        return mConversations;
+    }
+
+    @Override
+    public void onUpdate(List<ConversationModel> conversations) {
+        mConversations = conversations;
+
     }
 }
