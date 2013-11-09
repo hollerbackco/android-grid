@@ -168,19 +168,20 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
-
-            startConversationFragment(mConversationListAdapter.getItem((int) id).getConversation_Id());
+            ConversationModel item = mConversationListAdapter.getItem(position);
+            Log.d(FRAGMENT_TAG, "watching conversation with id: " + id);
+            startConversationFragment(mConversationListAdapter.getItem(position));
 
         }
 
     };
 
-    public void startConversationFragment(final long conversationId) {
+    public void startConversationFragment(ConversationModel conversation) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // TODO: Fetch data from API call
-        ConversationFragment fragment = ConversationFragment.newInstance(conversationId);
+        ConversationFragment fragment = ConversationFragment.newInstance(conversation);
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
         fragmentTransaction.addToBackStack(ConversationFragment.class.getSimpleName());

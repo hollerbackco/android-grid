@@ -105,6 +105,7 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
             public void onBackStackChanged() {
 
                 if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    // TODO: evalute this or simply not adding the conversation list fragment to the backstack
                     Log.d(TAG, "finishing activity sine all fragments have been removed");
                     finish();
                 }
