@@ -20,6 +20,8 @@ import com.moziy.hollerback.service.VideoUploadIntentService;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
+    private static final String ON_SAVE_ARG_RECORDING_INFO = "recording_info";
+    private static final String ON_SAVE_ARG_WAITING = "waiting";
     public static final String FRAGMENT_TAG = StartConversationFragment.class.getSimpleName();
     private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
@@ -53,7 +55,12 @@ public class StartConversationFragment extends BaseFragment implements Recording
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
         if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("waiting")) {
+
+            mIsWaiting = savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING);
+            mRecordingInfo = savedInstanceState.getBundle(ON_SAVE_ARG_RECORDING_INFO);
+
+            if (savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING)) {
+
                 Log.d(TAG, "reregistering broadcasts in configuration changes");
                 mReceiver.register();
             }
@@ -107,7 +114,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("waiting", mIsWaiting);
+        outState.putBoolean(ON_SAVE_ARG_WAITING, mIsWaiting);
+        outState.putBundle(ON_SAVE_ARG_RECORDING_INFO, mRecordingInfo);
         // save the state we were in
     }
 
