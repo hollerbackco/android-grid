@@ -98,7 +98,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onPause() {
-        // TODO Auto-generated method stub
         super.onPause();
         IABroadcastManager.unregisterLocalReceiver(receiver);
         if (mTxtSearch != null) {

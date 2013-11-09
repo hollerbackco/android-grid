@@ -49,9 +49,15 @@ public class StartConversationFragment extends BaseFragment implements Recording
         Bundle args = getArguments();
         mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
         mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
-
+        Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("waiting")) {
+                Log.d(TAG, "reregistering broadcasts in configuration changes");
+                mReceiver.register();
+            }
+        }
 
     }
 
@@ -99,6 +105,13 @@ public class StartConversationFragment extends BaseFragment implements Recording
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("waiting", mIsWaiting);
+        // save the state we were in
+    }
+
+    @Override
     protected void initializeView(View view) {
 
     }
@@ -112,6 +125,18 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private class InternalReceiver extends BroadcastReceiver {
 
         private final String TAG = InternalReceiver.class.getSimpleName();
+
+        public void register() {
+            // register for inapp events
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.CONVERSATION_CREATED);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.CONVERSATION_CREATE_FAILURE);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.RECORDING_FAILED);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.RECORDING_CANCELLED);
+        }
+
+        public void unregister() {
+            IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -149,6 +174,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
 
+                    if (mRecordingInfo != null) {
+
+                    }
                     // cleanup and remove data from sql?
                 }
             } else {
@@ -161,7 +189,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onDestroy() {
         super.onDestroy();
-        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        mReceiver.unregister();
         Log.d(TAG, "onDestroy()");
     }
 

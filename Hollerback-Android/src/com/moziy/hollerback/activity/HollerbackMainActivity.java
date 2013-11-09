@@ -55,7 +55,8 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
 
         setContentView(R.layout.hollerback_main);
 
-        initFragment();
+        if (savedInstanceState == null)
+            initFragment();
         LogUtil.i("Completed BaseActivity");
 
         FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
@@ -86,10 +87,11 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         int count = fragmentManager.getBackStackEntryCount();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
         for (int i = 0; i < count; i++) {
             fragmentManager.popBackStackImmediate();
         }
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         ConversationListFragment fragment = new ConversationListFragment();
         fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
