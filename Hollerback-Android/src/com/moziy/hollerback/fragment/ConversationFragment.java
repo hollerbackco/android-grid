@@ -50,6 +50,7 @@ import com.origamilabs.library.views.StaggeredGridView;
 
 public class ConversationFragment extends BaseFragment {
 
+    public static final String BUNDLE_ARG_CONVERSATION = "conversation_arg";
     /**
      * This piece of shit takes up 100% height unless you restrict it
      */
@@ -79,29 +80,17 @@ public class ConversationFragment extends BaseFragment {
 
     // state
     boolean urlLoaded = false;
-    private ConversationModel conversation;
+    private ConversationModel mConversation;
 
     private ArrayList<VideoModel> mVideos;
     boolean playStartInitialized;
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_info:
-                ConversationMembersFragment fragment = ConversationMembersFragment.newInstance(mConversationId);
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ConversationMembersFragment.class.getSimpleName()).commitAllowingStateLoss();
-                break;
-        }
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mConversation = (ConversationModel) getArguments().getSerializable(BUNDLE_ARG_CONVERSATION);
+        mConversationId = mConversation.getConversation_Id();
 
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        inflater.inflate(R.menu.conversation, menu);
     }
 
     @Override
@@ -122,6 +111,26 @@ public class ConversationFragment extends BaseFragment {
         initializeArgs();
 
         return mRootView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_info:
+                ConversationMembersFragment fragment = ConversationMembersFragment.newInstance(mConversationId);
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .addToBackStack(ConversationMembersFragment.class.getSimpleName()).commitAllowingStateLoss();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.conversation, menu);
     }
 
     public void playNewestVideo() {
@@ -200,16 +209,12 @@ public class ConversationFragment extends BaseFragment {
     }
 
     public void initializeArgs() {
-        Bundle bundle = getArguments();
-        mConversationId = bundle.getLong("conv_id");
-        // UploadCacheUtil.clearCache(this.getActivity(), mConversationId);
 
         // this is object oriented programming, retain Application from Activity.
         // Please change the caching system in the future
-        conversation = QU.getConv(mConversationId);
-        if (conversation != null) {
+        if (mConversation != null) {
             LogUtil.i("Conversation Fragment: ID: " + mConversationId);
-            mActivity.getSupportActionBar().setTitle(conversation.getConversationName());
+            mActivity.getSupportActionBar().setTitle(mConversation.getConversationName());
         } else {
             mActivity.getSupportFragmentManager().popBackStack();
         }
@@ -269,7 +274,7 @@ public class ConversationFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 // XXX: pass in the watched ids here
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, conversation.getConversationName(), new ArrayList<String>());
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, mConversation.getConversationName(), new ArrayList<String>());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(null)
                         .commitAllowingStateLoss();
 
@@ -308,13 +313,13 @@ public class ConversationFragment extends BaseFragment {
      * Create a new instance of CountingFragment, providing "num" as an
      * argument.
      */
-    public static ConversationFragment newInstance(long conversation_id) {
+    public static ConversationFragment newInstance(ConversationModel conversation) {
 
         ConversationFragment f = new ConversationFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putLong("conv_id", conversation_id);
+        args.putSerializable(BUNDLE_ARG_CONVERSATION, conversation);
         f.setArguments(args);
         return f;
     }

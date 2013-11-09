@@ -44,7 +44,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     private String most_recent_subtitle;
 
     @Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB_URL)
-    @JsonProperty("most_recent_thum_url")
+    @JsonProperty("most_recent_thumb_url")
     private String most_recent_thumb_url;
 
     @Column(name = ActiveRecordFields.C_CONV_UNSEEN_COUNT)

@@ -12,14 +12,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.activeandroid.query.Delete;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
+    private static final String ON_SAVE_ARG_RECORDING_INFO = "recording_info";
+    private static final String ON_SAVE_ARG_WAITING = "waiting";
     public static final String FRAGMENT_TAG = StartConversationFragment.class.getSimpleName();
     private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
@@ -49,9 +53,20 @@ public class StartConversationFragment extends BaseFragment implements Recording
         Bundle args = getArguments();
         mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
         mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
-
+        Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
+        if (savedInstanceState != null) {
+
+            mIsWaiting = savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING);
+            mRecordingInfo = savedInstanceState.getBundle(ON_SAVE_ARG_RECORDING_INFO);
+
+            if (savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING)) {
+
+                Log.d(TAG, "reregistering broadcasts in configuration changes");
+                mReceiver.register();
+            }
+        }
 
     }
 
@@ -99,6 +114,14 @@ public class StartConversationFragment extends BaseFragment implements Recording
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(ON_SAVE_ARG_WAITING, mIsWaiting);
+        outState.putBundle(ON_SAVE_ARG_RECORDING_INFO, mRecordingInfo);
+        // save the state we were in
+    }
+
+    @Override
     protected void initializeView(View view) {
 
     }
@@ -112,6 +135,18 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private class InternalReceiver extends BroadcastReceiver {
 
         private final String TAG = InternalReceiver.class.getSimpleName();
+
+        public void register() {
+            // register for inapp events
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.CONVERSATION_CREATED);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.CONVERSATION_CREATE_FAILURE);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.RECORDING_FAILED);
+            IABroadcastManager.registerForLocalBroadcast(this, IABIntent.RECORDING_CANCELLED);
+        }
+
+        public void unregister() {
+            IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -149,6 +184,13 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
 
+                    if (mRecordingInfo != null) {
+
+                        long rowId = mRecordingInfo.getLong(RESOURCE_ROW_ID);
+                        Log.d(TAG, "deleting row: " + rowId);
+                        new Delete().from(VideoModel.class).where("Id = ?", rowId).executeSingle();
+
+                    }
                     // cleanup and remove data from sql?
                 }
             } else {
@@ -161,7 +203,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onDestroy() {
         super.onDestroy();
-        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        mReceiver.unregister();
         Log.d(TAG, "onDestroy()");
     }
 

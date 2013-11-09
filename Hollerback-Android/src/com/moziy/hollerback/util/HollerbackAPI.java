@@ -41,7 +41,6 @@ public class HollerbackAPI {
     /**
      * GET video details: /me/conversations/:id/videos
      */
-    @Deprecated
     public static final String API_CONVERSATION_DETAILS_VIDEOS_FORMAT = "/me/conversations/%1$s/videos";
 
     /**
