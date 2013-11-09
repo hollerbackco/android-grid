@@ -12,10 +12,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.activeandroid.query.Delete;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
@@ -183,6 +185,10 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Log.w(TAG, "conversation failed");
 
                     if (mRecordingInfo != null) {
+
+                        long rowId = mRecordingInfo.getLong(RESOURCE_ROW_ID);
+                        Log.d(TAG, "deleting row: " + rowId);
+                        new Delete().from(VideoModel.class).where("Id = ?", rowId).executeSingle();
 
                     }
                     // cleanup and remove data from sql?
