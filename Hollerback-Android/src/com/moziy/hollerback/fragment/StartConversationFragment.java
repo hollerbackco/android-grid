@@ -15,8 +15,10 @@ import android.widget.Toast;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.service.VideoUploadIntentService;
 
-public class StartConversationFragment extends BaseFragment {
+public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
     public static final String FRAGMENT_TAG = StartConversationFragment.class.getSimpleName();
     private static final String TAG = FRAGMENT_TAG;
@@ -35,6 +37,7 @@ public class StartConversationFragment extends BaseFragment {
     private ProgressBar mProgressSpinner;
     private String[] mPhones;
     private String mTitle;
+    private Bundle mRecordingInfo = null;
 
     private boolean mIsWaiting = false; // whether we're waiting on an event
 
@@ -74,6 +77,8 @@ public class StartConversationFragment extends BaseFragment {
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
 
                 RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
+                f.setTargetFragment(StartConversationFragment.this, 0);
+
                 // go to the video fragment
                 getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
@@ -98,6 +103,12 @@ public class StartConversationFragment extends BaseFragment {
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // receive broadcasts on the status of conversations
     private class InternalReceiver extends BroadcastReceiver {
 
         private final String TAG = InternalReceiver.class.getSimpleName();
@@ -109,8 +120,23 @@ public class StartConversationFragment extends BaseFragment {
 
                 if (intent.filterEquals(new Intent(IABIntent.CONVERSATION_CREATED))) {
                     mIsWaiting = false;
-                    Log.d(TAG, "conversation created!");
+                    Log.d(TAG, "conversation created!, let's upload");
                     mProgressSpinner.setVisibility(View.INVISIBLE); // TODO: add transition animation
+
+                    if (mRecordingInfo == null) {
+                        throw new IllegalStateException("no recording info found: expected bundle from recording fragment");
+                    }
+
+                    long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
+                    int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
+                    for (int i = 0; i < totalParts; i++) {
+                        Intent uploadIntent = new Intent();
+                        uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
+                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
+                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
+                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, i);
+                        getActivity().startService(uploadIntent);
+                    }
 
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
                     getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // go back to the conversation fragment, popping everything
@@ -122,6 +148,8 @@ public class StartConversationFragment extends BaseFragment {
                     // go back to contacts or back to the conversation list?
                     Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
+
+                    // cleanup and remove data from sql?
                 }
             } else {
                 Log.w(TAG, "received broadcast when not added");
@@ -135,6 +163,12 @@ public class StartConversationFragment extends BaseFragment {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
         Log.d(TAG, "onDestroy()");
+    }
+
+    @Override
+    public void onRecordingFinished(Bundle info) {
+        mRecordingInfo = info;
+
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -67,6 +68,13 @@ public class RecordVideoFragment extends BaseFragment {
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
     public static final String FRAGMENT_ARG_GOTO_CONVO = "to_conversation";
+
+    public static interface RecordingInfo {
+        public static final String RECORDED_PARTS = "recorded_parts";
+        public static final String RESOURCE_ROW_ID = "resource_row_id";
+
+        public void onRecordingFinished(Bundle info);
+    }
 
     protected ViewGroup mRootView;
 
@@ -331,7 +339,7 @@ public class RecordVideoFragment extends BaseFragment {
      * @param fileName
      * @param contacts
      */
-    private void sendVideo(long conversationId, ArrayList<String> contacts, ArrayList<String> watchedIds) {
+    private void sendVideo(long conversationId, ArrayList<String> recipients, ArrayList<String> watchedIds) {
 
         // Prepare the model for sending the video
         if (mVideoModel == null) {
@@ -344,6 +352,10 @@ public class RecordVideoFragment extends BaseFragment {
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
             mVideoModel.setCreateDate(df.format(new Date()));
             mVideoModel.setSenderName("me");
+            mVideoModel.setGuid(UUID.randomUUID().toString());
+            mVideoModel.setRecipients(recipients.toArray(new String[] {}));
+
+            Log.d(TAG, "recipient: " + mVideoModel.getRecipients()[0]);
 
             // TODO: if there's a conversation id then put it here
             if (conversationId > 0) {
@@ -356,10 +368,15 @@ public class RecordVideoFragment extends BaseFragment {
 
         // TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
         long resourceRowId = mVideoModel.getId();
+        Bundle info = new Bundle();
+        info.putLong(RecordingInfo.RESOURCE_ROW_ID, resourceRowId);
+        info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
+        if (getTargetFragment() != null) {
+            ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
+        }
 
         Intent intent = new Intent();
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
-        intent.putStringArrayListExtra(VideoUploadIntentService.INTENT_ARG_CONTACTS, contacts);
 
         // NOTE: the part and total parts will change once that multi part chunks can be uploaded
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
@@ -447,8 +464,11 @@ public class RecordVideoFragment extends BaseFragment {
             mCamera.lock(); // take camera access back from MediaRecorder
             isRecording = false;
 
+            // TODO: delete the video as cleanup and remove the model
+
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
+
         }
 
         if (mCamera != null) {

@@ -1,6 +1,7 @@
 package com.moziy.hollerbacky.connection;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONException;
@@ -280,12 +281,12 @@ public class HBRequestManager {
         }
     }
 
-    public static void postConversations(ArrayList<String> contacts, ArrayList<String> partUrls, AsyncHttpResponseHandler handler) {
+    public static void postConversations(List<String> contacts, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
             params.put(HollerbackAPI.PARAM_INVITES, contacts);
-            params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
+            // params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
 
             HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONVERSATION, params, handler);
 

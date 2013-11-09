@@ -1,6 +1,8 @@
 package com.moziy.hollerback.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -62,31 +64,32 @@ public class VideoUploadIntentService extends IntentService {
             throw new IllegalStateException("Attempting to upload video that does not exist!");
         }
 
-        // if it's pending upload and not transacting
-        if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
-            // lets get the part info
-            int partNumber = intent.getIntExtra(INTENT_ARG_PART, -1);
-            int totalParts = intent.getIntExtra(INTENT_ARG_TOTAL_PARTS, -1);
+        // if the model has no conversation id associated with it, then post new conversation
+        final int partNumber = intent.getIntExtra(INTENT_ARG_PART, -1);
+        final int totalParts = intent.getIntExtra(INTENT_ARG_TOTAL_PARTS, -1);
 
-            uploadResource(model, partNumber, totalParts);
-        }
+        if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
 
-        // now if the model state is pending post and it's not transacting, then let's go ahead and post
-        if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
-            // broadcast that we're posting?
+            postToNewConversation(model);
+            Log.d(TAG, "returning..");
 
-            // lets figure out what type of posting we've got to do, new convo or existing
-            if (model.getConversationId() > 0) {
+        } else {
+
+            // if it's pending upload and not transacting
+            if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
+                // lets get the part info
+
+                uploadResource(model, partNumber, totalParts);
+            }
+
+            // now if the model state is pending post and it's not transacting, then let's go ahead and post
+            if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
+                // broadcast that we're posting?
+                // a conversation must definitely be present
                 // extract the needed information, such as the watched ids
-                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS);
+                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
                 postToExistingConversation(model, watchedIds);
 
-            } else {
-
-                // get the arguments for posting
-                final ArrayList<String> contacts = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_CONTACTS);
-                Log.d(TAG, "resource id: " + resourceId + " contact(s): " + contacts.get(0).toString());
-                postToNewConversation(model, contacts);
             }
         }
     }
@@ -134,23 +137,24 @@ public class VideoUploadIntentService extends IntentService {
         model.save(); // ok, let's save the state :-)
     }
 
-    private boolean postToNewConversation(final VideoModel model, final ArrayList<String> contacts) {
+    private boolean postToNewConversation(final VideoModel model) {
 
         // presumption that all the files have been uploaded
-
+        Log.d(TAG, "recipients: " + model.getRecipients()[0]);
+        List<String> contacts = Arrays.asList(model.getRecipients());
         // mark the model as transacting
         model.setTransacting();
         model.save();
 
-        ArrayList<String> parts = new ArrayList<String>();
+        // ArrayList<String> parts = new ArrayList<String>();
+        //
+        // for (int i = 0; i < model.getNumParts(); i++) {
+        // StringBuilder sb = new StringBuilder(128);
+        // sb.append(AppEnvironment.getInstance().UPLOAD_BUCKET).append("/").append(model.getSegmentFileName()).append(".").append(i).append(".").append(model.getSegmentFileExtension());
+        // parts.add(sb.toString());
+        // }
 
-        for (int i = 0; i < model.getNumParts(); i++) {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append(AppEnvironment.getInstance().UPLOAD_BUCKET).append("/").append(model.getSegmentFileName()).append(".").append(i).append(".").append(model.getSegmentFileExtension());
-            parts.add(sb.toString());
-        }
-
-        HBRequestManager.postConversations(contacts, parts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
+        HBRequestManager.postConversations(contacts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
         }) {
 
             @Override
@@ -160,7 +164,7 @@ public class VideoUploadIntentService extends IntentService {
                 Log.d(TAG, "thread id: " + Thread.currentThread().getId());
 
                 // nice it succeeded, lets update the model
-                model.setState(VideoModel.ResourceState.UPLOADED);
+                model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
                 model.clearTransacting();
 
                 NewConvoResponse conversationResp = response.getData();
@@ -170,6 +174,8 @@ public class VideoUploadIntentService extends IntentService {
                 model.save();
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+
+                // launch the
 
                 // lets create a new conversation from the response
                 Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);

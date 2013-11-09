@@ -287,11 +287,13 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             protected void onStartLoading() {
                 if (mConvos != null) {
+                    Log.d(FRAGMENT_TAG, "delivering results");
                     deliverResult(mConvos);
                     return;
                 }
 
                 if (mReceiver == null) {
+                    Log.d(FRAGMENT_TAG, "launch sync");
                     mReceiver = new SyncReceiver(this);
                     IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
                     IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
@@ -303,6 +305,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                     return;
                 }
 
+                Log.d(FRAGMENT_TAG, "onstartloading");
                 forceLoad();
 
             }
@@ -323,10 +326,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
-
+        Log.d(FRAGMENT_TAG, "loader finished");
         mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
         mConversationListAdapter.setConversations(data);
         mConversationList.setAdapter(mConversationListAdapter);
+        mConversationList.setOnItemClickListener(mOnListItemClickListener);
         mConversationListAdapter.notifyDataSetChanged();
 
         // mConversationList.onRefreshComplete();
@@ -353,6 +357,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d("SyncReceiver", "onReceive");
             mLoader.onContentChanged();
         }
     }

@@ -96,6 +96,10 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     @Column(name = ActiveRecordFields.C_VID_PART_UPLOAD_STATE)
     private boolean[] part_upload_state = new boolean[num_parts]; // the size of this will always be equal to num_parts
 
+    // add a list of phone numbers/contacts that this is supposed to get sent to in case there's a failure
+    @Column(name = ActiveRecordFields.C_VID_RECIPIENTS)
+    private String[] recipients;
+
     @Deprecated
     @Column(name = ActiveRecordFields.C_VID_ISUPLOADING)
     private boolean isUploading;
@@ -241,6 +245,14 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         this.segment_file_extension = extension;
     }
 
+    public String[] getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(String[] recipients) {
+        this.recipients = recipients;
+    }
+
     public boolean isSent() {
         return isSent;
     }
@@ -301,16 +313,11 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
     @Override
     public String toString() {
-        return "[id: " + guid + " created_at: " + created_at + "]";
+        return "VideoModel [created_at=" + created_at + ", needs_reply=" + needs_reply + ", sender_name=" + sender_name + ", sent_at=" + sent_at + ", guid=" + guid + ", url=" + url + ", local_url="
+                + local_url + ", thumb_url=" + thumb_url + ", conversation_id=" + conversation_id + ", is_deleted=" + is_deleted + ", subtitle=" + subtitle + ", isRead=" + isRead
+                + ", local_filename=" + local_filename + ", is_segmented=" + is_segmented + ", segment_filename=" + segment_filename + ", segment_file_extension=" + segment_file_extension + ", id="
+                + id + ", state=" + state + ", transacting=" + transacting + ", num_parts=" + num_parts + ", part_upload_state=" + Arrays.toString(part_upload_state) + ", recipients=" + recipients
+                + ", isUploading=" + isUploading + ", isSent=" + isSent + "]";
     }
 
-    // XXX: BROKEN EQUALS, MUST FIX
-    // @Override
-    // public boolean equals(Object obj) {
-    // VideoModel video = (VideoModel) obj;
-    // if (id == video.id) {
-    // return true;
-    // }
-    // return false;
-    // }
 }
