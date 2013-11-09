@@ -79,10 +79,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
         initializeView(fragmentView);
 
-        getLoaderManager().initLoader(0, null, this).startLoading();
-        // HBRequestManager.getConversations();
-
-        // QU.getDM().getConversations(false); // TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
+        getLoaderManager().initLoader(0, null, this); // the loader will be autostarted
 
         return fragmentView;
     }
@@ -283,24 +280,24 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             private List<ConversationModel> mConvos;
             private SyncReceiver mReceiver;
 
+            // initialization block
+            {
+                Log.d(FRAGMENT_TAG, "launch sync");
+                mReceiver = new SyncReceiver(this);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+
+                // start the sync intent service
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), SyncService.class);
+                getActivity().startService(intent);
+            }
+
             @Override
             protected void onStartLoading() {
                 if (mConvos != null) {
                     Log.d(FRAGMENT_TAG, "delivering results");
                     deliverResult(mConvos);
-                    return;
-                }
-
-                if (mReceiver == null) {
-                    Log.d(FRAGMENT_TAG, "launch sync");
-                    mReceiver = new SyncReceiver(this);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
-
-                    // start the sync intent service
-                    Intent intent = new Intent();
-                    intent.setClass(getActivity(), SyncService.class);
-                    getActivity().startService(intent);
                     return;
                 }
 
@@ -312,6 +309,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             public List<ConversationModel> loadInBackground() {
                 mConvos = new Select().all().from(ConversationModel.class).execute();
+                Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
             }
 
@@ -356,7 +354,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("SyncReceiver", "onReceive");
+            Log.d("SyncReceiver", "onReceive - " + "isStarted: " + mLoader.isStarted());
+
             mLoader.onContentChanged();
         }
     }
