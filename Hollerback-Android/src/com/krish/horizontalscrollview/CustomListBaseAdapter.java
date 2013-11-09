@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -165,7 +164,7 @@ public class CustomListBaseAdapter extends BaseAdapter {
                     }
                     viewHolder.txtSent.setVisibility(View.GONE);
 
-                    HBRequestManager.postVideoRead(Integer.toString(model.getVideoId()));
+                    HBRequestManager.postVideoRead(model.getVideoId());
                 }
                 viewHolder.unreadCircle.setVisibility(View.GONE);
             }

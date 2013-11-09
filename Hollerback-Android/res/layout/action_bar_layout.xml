@@ -26,10 +26,10 @@
         android:id="@+id/tv_action_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#fff"
-        android:textSize="21sp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"
+        android:textColor="#fff"
+        android:textSize="21sp" />
 
     <ImageButton
         android:id="@+id/ib_action_right"

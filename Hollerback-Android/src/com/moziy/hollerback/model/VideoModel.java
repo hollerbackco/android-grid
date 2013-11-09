@@ -143,6 +143,14 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         return transacting;
     }
 
+    public void setVideoId(String id) {
+        this.id = id;
+    }
+
+    public String getVideoId() {
+        return this.id;
+    }
+
     public boolean isSent() {
         return isSent;
     }
@@ -157,12 +165,6 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
     public void setUploading(boolean isuploading) {
         this.isUploading = isuploading;
-    }
-
-    // The video id is no longer an integer
-    @Deprecated
-    public int getVideoId() {
-        return 0;
     }
 
     // the video id is no longer an integer

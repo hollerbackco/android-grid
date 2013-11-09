@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="hb_blue" >#0012FF</color>
-    
-	<color name="background_transparent">#CF747373</color>
+
+    <color name="hb_blue">#0012FF</color>
+    <color name="background_transparent">#CF747373</color>
     <color name="timer_green">#18B203</color>
     <color name="timer_default">#405966</color>
-    
-	<color name="pressed_example">#CC33B5E5</color>
-	<color name="camera_color">#323f4A</color>
-	
-	<color name="background_welcome">#29B9EB</color>
-	<color name="background_header">#DFE2DF</color>
-	<color name="gray_font">#626262</color>
-	<color name="flat">#07A7F7</color>
-	
-	<color name="bg_click">#52c1ff</color>
-	<color name="bg_row_click">#f0f0f0</color>
-	
+    <color name="pressed_example">#CC33B5E5</color>
+    <color name="camera_color">#323f4A</color>
+    <color name="background_welcome">#29B9EB</color>
+    <color name="background_header">#DFE2DF</color>
+    <color name="gray_font">#626262</color>
+    <color name="flat">#07A7F7</color>
+    <color name="bg_click">#52c1ff</color>
+    <color name="bg_row_click">#f0f0f0</color>
+
 </resources>
