@@ -7,7 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
@@ -25,6 +27,7 @@ import com.moziy.hollerback.util.HollerbackAppState;
 
 public class HollerbackMainActivity extends SherlockFragmentActivity implements OnConversationsUpdated {
 
+    private static final String TAG = HollerbackMainActivity.class.getSimpleName();
     private List<ConversationModel> mConversations; // list of conversations
     boolean initFrag = false;
     String convId = null;
@@ -95,6 +98,19 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
         ConversationListFragment fragment = new ConversationListFragment();
         fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
+
+        fragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener() {
+
+            @Override
+            public void onBackStackChanged() {
+
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    Log.d(TAG, "finishing activity sine all fragments have been removed");
+                    finish();
+                }
+
+            }
+        });
     }
 
     public List<ConversationModel> getConversations() {
