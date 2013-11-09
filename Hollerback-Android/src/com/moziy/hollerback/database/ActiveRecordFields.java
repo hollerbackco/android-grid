@@ -33,7 +33,12 @@ public class ActiveRecordFields {
     public static final String C_VID_STATE = "state";
     public static final String C_VID_TRANSACTING = "transacting";
     public static final String C_VID_FILENAME = "local_filename";
+    public static final String C_VID_IS_SEGMENTED = "is_segmented";
+    public static final String C_VID_SEGMENTED_FILENAME = "segment_filename";
+    public static final String C_VID_SEGMENTED_FILE_EXT = "segment_file_extension";
     public static final String C_VID_ISREAD = "isRead";
+    public static final String C_VID_NUM_PARTS = "num_parts";
+    public static final String C_VID_PART_UPLOAD_STATE = "part_upload_state";
 
     public static final String C_VID_ISUPLOADING = "VidIsUploading";
     public static final String C_VID_ISSENT = "VidIsSent";

@@ -153,8 +153,9 @@ public class CustomListBaseAdapter extends BaseAdapter {
 
                     mVideoViews.add(viewHolder.videoPlayer);
                     VideoModel model = mVideoModels.get(position);
-                    mS3RequestHelper.downloadS3(AppEnvironment.getInstance().PICTURE_BUCKET, model.getLocalFileName(), viewHolder.progresshelper, viewHolder.videoPlayer, mWrapperInformation,
-                            mVideoViews);
+                    // TODO - Sajjad Review this in more detail
+                    mS3RequestHelper.downloadS3(AppEnvironment.getInstance().PICTURE_BUCKET, model.getLocalFileName() + "." + "mp4", viewHolder.progresshelper, viewHolder.videoPlayer,
+                            mWrapperInformation, mVideoViews);
 
                     if (!model.isRead()) {
                         model.setRead(true);

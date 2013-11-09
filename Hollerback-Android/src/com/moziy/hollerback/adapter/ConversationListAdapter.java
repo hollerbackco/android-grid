@@ -6,16 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.fragment.RecordVideoFragment;
-import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.util.ConversionUtil;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-
 import android.graphics.Bitmap;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -26,6 +16,16 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.fragment.RecordVideoFragment;
+import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.util.ConversionUtil;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
     DisplayImageOptions options;
@@ -127,9 +127,12 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
             @Override
             public void onClick(View v) {
-                // Peter: no idea why it's int here and string everywhere else, this was written prior
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(String.valueOf(mFilteredConversations.get(position).getConversation_Id()), true, mFilteredConversations.get(position)
-                        .getConversationName());
+                // Peter: no idea why it's int here and string everywhere else, this was written prior:
+                // I changed it to be "long" everywhere :)
+
+                // XXX: Make sure that the watched ids are sent here
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mFilteredConversations.get(position).getConversation_Id(), true, mFilteredConversations.get(position)
+                        .getConversationName(), new ArrayList<String>());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .addToBackStack(RecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
             }

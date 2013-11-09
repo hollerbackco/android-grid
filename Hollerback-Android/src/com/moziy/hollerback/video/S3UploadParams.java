@@ -3,7 +3,7 @@ package com.moziy.hollerback.video;
 import android.content.Context;
 
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.util.FileUtil;
+import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 
 public class S3UploadParams {
@@ -70,6 +70,6 @@ public class S3UploadParams {
     }
 
     public String getThumbnailName() {
-        return FileUtil.getImageUploadName(mFileName);
+        return HBFileUtil.getImageUploadName(mFileName);
     }
 }

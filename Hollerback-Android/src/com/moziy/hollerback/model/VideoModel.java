@@ -1,9 +1,11 @@
 package com.moziy.hollerback.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
 
@@ -44,7 +46,7 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     private String thumb_url;
 
     @Column(name = ActiveRecordFields.C_VID_CONV_ID)
-    private long conversation_id;
+    private long conversation_id = -1;
 
     @Column(name = ActiveRecordFields.C_VID_IS_DELETED)
     private boolean is_deleted;
@@ -58,6 +60,15 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     @Column(name = ActiveRecordFields.C_VID_FILENAME)
     private String local_filename; // TODO - Sajjad: double check that this is in fact the local file name
 
+    @Column(name = ActiveRecordFields.C_VID_IS_SEGMENTED)
+    private boolean is_segmented;
+
+    @Column(name = ActiveRecordFields.C_VID_SEGMENTED_FILENAME)
+    private String segment_filename;
+
+    @Column(name = ActiveRecordFields.C_VID_SEGMENTED_FILE_EXT)
+    private String segment_file_extension; // the file extension "mp4", "amr", "3gpp", etc: conveys the container info
+
     @Column(name = ActiveRecordFields.C_VID_ID)
     private String id;
 
@@ -66,6 +77,12 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
     @Column(name = ActiveRecordFields.C_VID_TRANSACTING)
     private boolean transacting; // Whether this resource is being actively transitioned from one state to the next
+
+    @Column(name = ActiveRecordFields.C_VID_NUM_PARTS)
+    private int num_parts = 1; // default of 100: This will get adjusted once the actual num_parts is known. We do this to ensure that the video doesn't get posted
+
+    @Column(name = ActiveRecordFields.C_VID_PART_UPLOAD_STATE)
+    private boolean[] part_upload_state = new boolean[num_parts]; // the size of this will always be equal to num_parts
 
     @Deprecated
     @Column(name = ActiveRecordFields.C_VID_ISUPLOADING)
@@ -143,12 +160,65 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         return transacting;
     }
 
-    public void setVideoId(String id) {
-        this.id = id;
+    @JsonSetter("id")
+    public void setVideoId(String videoId) {
+        this.id = videoId;
     }
 
     public String getVideoId() {
         return this.id;
+    }
+
+    public int getNumParts() {
+        return num_parts;
+    }
+
+    public void setNumParts(int parts) {
+        this.num_parts = parts;
+        this.part_upload_state = Arrays.copyOf(this.part_upload_state, parts);
+
+    }
+
+    public void setPartUploadState(int part, boolean state) {
+        if (part_upload_state.length > part) {
+            part_upload_state[part] = state;
+        }
+    }
+
+    public boolean getPartUploadState(int part) {
+        return part_upload_state[part];
+    }
+
+    public boolean isUploadSuccessfull() {
+        for (int i = 0; i < part_upload_state.length; i++) {
+            if (part_upload_state[i] == false)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isSegmented() {
+        return is_segmented;
+    }
+
+    public void setSegmented(boolean segmented) {
+        is_segmented = true;
+    }
+
+    public String getSegmentFileName() {
+        return segment_filename;
+    }
+
+    public void setSegmentFileName(String name) {
+        segment_filename = name;
+    }
+
+    public String getSegmentFileExtension() {
+        return segment_file_extension;
+    }
+
+    public void setSegmentFileExtension(String extension) {
+        this.segment_file_extension = extension;
     }
 
     public boolean isSent() {

@@ -8,9 +8,9 @@ public class PostToConvoParams implements RequestParams {
 
     public String access_token;
 
-    public ArrayList<String> urls;
+    public ArrayList<String> urls; // presigned urls
 
-    public ArrayList<String> part_urls;
+    public ArrayList<String> part_urls; // bucket/key
 
     public String subtitle;
 

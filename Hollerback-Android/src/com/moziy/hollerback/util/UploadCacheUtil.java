@@ -13,8 +13,8 @@ public class UploadCacheUtil {
 
     private static String UPLOADCACHING = "UPLOADCACHING";
 
-    public static void clearCache(Context c, String conversationId) {
-        JSONSharedPreferences.remove(c, UPLOADCACHING, conversationId);
+    public static void clearCache(Context c, long conversationId) {
+        JSONSharedPreferences.remove(c, UPLOADCACHING, String.valueOf(conversationId));
     }
 
     public static void setUploadCacheFlag(Context c, String conversationId, JSONObject object) {
@@ -44,18 +44,18 @@ public class UploadCacheUtil {
         }
     }
 
-    public static JSONArray getCacheFlags(Context c, String conversationId) {
+    public static JSONArray getCacheFlags(Context c, long conversationId) {
         try {
-            JSONArray videoArray = JSONSharedPreferences.loadJSONArray(c, UPLOADCACHING, conversationId);
+            JSONArray videoArray = JSONSharedPreferences.loadJSONArray(c, UPLOADCACHING, String.valueOf(conversationId));
             return videoArray;
         } catch (JSONException e) {
             return null;
         }
     }
 
-    public static boolean hasVideoCache(Context c, String conversationId) {
+    public static boolean hasVideoCache(Context c, long conversationId) {
         try {
-            JSONArray videoArray = JSONSharedPreferences.loadJSONArray(c, UPLOADCACHING, conversationId);
+            JSONArray videoArray = JSONSharedPreferences.loadJSONArray(c, UPLOADCACHING, String.valueOf(conversationId));
             if (videoArray.length() > 0) {
                 return true;
             }

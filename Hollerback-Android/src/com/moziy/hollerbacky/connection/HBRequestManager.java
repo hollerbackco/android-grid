@@ -1,6 +1,7 @@
 package com.moziy.hollerbacky.connection;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -302,48 +303,12 @@ public class HBRequestManager {
         }
     }
 
-    // TODO - Sajjad : Remove as it's not used
-    public static void postConversations(ArrayList<String> contacts) {
-        if (HollerbackAppState.isValidSession()) {
-            RequestParams params = new RequestParams();
-            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
-
-            params.put(HollerbackAPI.PARAM_INVITES, contacts);
-
-            HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONVERSATION, params, new JsonHttpResponseHandler() {
-
-                @Override
-                protected Object parseResponse(String arg0) throws JSONException {
-                    LogUtil.i(arg0);
-                    return super.parseResponse(arg0);
-
-                }
-
-                @Override
-                public void onFailure(Throwable arg0, JSONObject arg1) {
-                    super.onFailure(arg0, arg1);
-                    LogUtil.e(HollerbackAPI.API_CONVERSATION + "FAILURE");
-                }
-
-                @Override
-                public void onSuccess(int arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
-                    super.onSuccess(arg0, arg1);
-                    LogUtil.i("ON SUCCESS API CONVO");
-                    JSONUtil.processPostConversations(arg1);
-                }
-
-            });
-
-        }
-    }
-
-    public static void postConversations(ArrayList<String> contacts, ArrayList<String> part_urls, AsyncHttpResponseHandler handler) {
+    public static void postConversations(ArrayList<String> contacts, ArrayList<String> partUrls, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
             params.put(HollerbackAPI.PARAM_INVITES, contacts);
-            params.put(HollerbackAPI.PARAM_PART_URL, part_urls);
+            params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
 
             HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONVERSATION, params, handler);
 
@@ -351,6 +316,21 @@ public class HBRequestManager {
             // TODO - Sajjad: Remove for prod
             throw new IllegalStateException("Invalid Session");
         }
+    }
+
+    public static void postToConversation(int convoId, ArrayList<String> partUrls, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {
+        if (HollerbackAppState.isValidSession()) {
+            RequestParams params = new RequestParams();
+            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+            params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
+            params.put(HollerbackAPI.PARAM_WATCHED_IDS, watchedIds);
+            params.put(HollerbackAPI.PARAM_SUBTITLE, "");
+            HollerbackAsyncClient.getInstance().post(String.format(Locale.US, HollerbackAPI.API_CONVERSATION_POST_SEGMENTED, convoId), params, handler);
+
+        } else {
+            throw new IllegalStateException("Invalid Session");
+        }
+
     }
 
     public static void conversationInvite(ArrayList<String> contacts, JsonHttpResponseHandler handler) {
@@ -420,7 +400,7 @@ public class HBRequestManager {
         }
     }
 
-    public static void getConversationVideos(final String conversationId) {
+    public static void getConversationVideos(final long conversationId) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
 
