@@ -236,7 +236,7 @@ public class ConversationMembersFragment extends BaseFragment {
                         if (response.getJSONObject("meta").getInt("code") == 200) {
                             Toast.makeText(mActivity, R.string.conversation_leave_success, Toast.LENGTH_LONG).show();
                             ConversationMembersFragment.this.stopLoading();
-                            mActivity.getSupportFragmentManager().popBackStack(ConversationFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                            mActivity.getSupportFragmentManager().popBackStack(ConversationHistoryFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         }
                     }
 

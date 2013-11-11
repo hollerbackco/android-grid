@@ -10,7 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.fragment.BaseFragment;
-import com.moziy.hollerback.fragment.ConversationFragment;
+import com.moziy.hollerback.fragment.ConversationHistoryFragment;
 
 public class FragmentManagerUtil {
 

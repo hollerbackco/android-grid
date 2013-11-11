@@ -181,10 +181,10 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // TODO: Fetch data from API call
-        ConversationFragment fragment = ConversationFragment.newInstance(conversation);
+        ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-        fragmentTransaction.addToBackStack(ConversationFragment.class.getSimpleName());
+        fragmentTransaction.addToBackStack(ConversationHistoryFragment.class.getSimpleName());
         fragmentTransaction.commit();
     }
 
