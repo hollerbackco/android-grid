@@ -16,6 +16,7 @@ public class S3DownloadTask implements Task {
     private AmazonS3Client mS3Client;
     private GetObjectRequest mS3GetRequest;
     private boolean mIsSuccess = true;
+    private boolean mIsFinished = false;
 
     public S3DownloadTask(AmazonS3Client S3Client, GetObjectRequest s3GetRequest) {
         mS3Client = S3Client;
@@ -59,14 +60,14 @@ public class S3DownloadTask implements Task {
                     fout.close();
                 }
             } catch (IOException e) {
+                mIsSuccess = false;
                 e.printStackTrace();
             }
 
-            if (mIsSuccess && mTaskListener != null) {
-                mTaskListener.onTaskComplete(this);
-            } else if (!mIsSuccess && mTaskListener != null) {
-                mTaskListener.onTaskError(this);
-            }
+        }
+
+        synchronized (this) {
+            mIsFinished = true;
         }
     }
 
@@ -78,12 +79,18 @@ public class S3DownloadTask implements Task {
 
     public void setTaskListener(Task.Listener mListener) {
         mTaskListener = mListener;
+
     }
 
     @Override
     public Listener getTaskListener() {
 
         return mTaskListener;
+    }
+
+    @Override
+    public boolean isFinished() {
+        return mIsFinished;
     }
 
 }

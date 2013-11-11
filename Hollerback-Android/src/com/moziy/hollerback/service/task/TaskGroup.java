@@ -46,13 +46,6 @@ public abstract class TaskGroup implements Task {
         mIsRunning = false;
         mHasRun = true;
 
-        // perform the callback
-        if (mOverallStatus && mListener != null) {
-            mListener.onTaskComplete(this);
-        } else if (mListener != null) {
-            mListener.onTaskError(this);
-        }
-
     }
 
     public void reset() {

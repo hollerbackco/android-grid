@@ -10,6 +10,8 @@ public interface Task extends Runnable {
 
     public boolean isSuccess();
 
+    public boolean isFinished();
+
     public void setTaskListener(Task.Listener listener);
 
     public Task.Listener getTaskListener();
