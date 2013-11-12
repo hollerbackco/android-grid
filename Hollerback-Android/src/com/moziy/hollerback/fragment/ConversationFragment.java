@@ -53,7 +53,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
     private VideoView mVideoView; // the video view
 
-    private boolean mPausedDuringPlayback;
+    private boolean mPlayingDuringConfigChange;
+    private boolean mPausedDuringPlayback; // not saved
     private int mPosition = 0;
 
     @Override
@@ -83,8 +84,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 mTaskQueue = (LinkedList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE);
             }
 
-            // if we were in the middle of playing, then adjust the playback elements such as seek position
-            mPausedDuringPlayback = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
         }
 
         // Start work on getting the list of unseen videos for this conversation
@@ -117,13 +116,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState != null) {
-
+            // if we were in the middle of playing, then adjust the playback elements such as seek position
+            mPlayingDuringConfigChange = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
+            if (mPlayingDuringConfigChange) {
+                playVideo(mPlayBackQueue.peek());
+            }
         }
 
-        // if (mPausedDuringPlayback) {
-        // mViewRecreatedDuringPlayback = true;
-        // playVideo(mPlayBackQueue.peek());
-        // }
     }
 
     @Override
@@ -134,7 +133,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // mVideoView.start();
         // }
         if (mPausedDuringPlayback) { // reset the flag
-            mPausedDuringPlayback = false;
             playVideo(mPlayBackQueue.peek());
         }
     }
@@ -142,11 +140,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onPause() {
 
+        // allow for config changes while we were paused{
+
         mPausedDuringPlayback = mVideoView.isPlaying();
         Log.d(TAG, "onPause - currentPosition: " + mPosition);
-        if (mPausedDuringPlayback) {
+        if (mPausedDuringPlayback)
             mVideoView.stopPlayback();
-        }
+
         super.onPause();
 
     }
@@ -168,7 +168,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, mTaskQueue);
         }
 
-        outState.putBoolean(PLAYING_INSTANCE_STATE, mPausedDuringPlayback);
+        if (mPlayingDuringConfigChange || mPausedDuringPlayback) {
+            mPlayingDuringConfigChange = true;
+        }
+        outState.putBoolean(PLAYING_INSTANCE_STATE, mPlayingDuringConfigChange);
 
         super.onSaveInstanceState(outState);
 
@@ -290,10 +293,11 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public void onPrepared(MediaPlayer mp) {
         // only play if we're in the resumed state
         Log.d(TAG, "onPrepared()");
-        if (isResumed())
+        if (isResumed()) {
             mVideoView.start();
-        else
+        } else {
             Log.d(TAG, "not playing because not in resumed state");
+        }
         // if (mPausedDuringPlayback) { //NOTE: Seeking doesn't seem to be handled properly
         // mVideoView.seekTo(mPosition);
         // mPausedDuringPlayback = false;
