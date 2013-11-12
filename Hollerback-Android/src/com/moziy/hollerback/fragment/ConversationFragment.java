@@ -54,7 +54,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private VideoView mVideoView; // the video view
 
     private boolean mPausedDuringPlayback;
-    private boolean mViewRecreatedDuringPlayback;
     private int mPosition = 0;
 
     @Override
@@ -138,18 +137,16 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             mPausedDuringPlayback = false;
             playVideo(mPlayBackQueue.peek());
         }
-        mViewRecreatedDuringPlayback = false; // clear the state
     }
 
     @Override
     public void onPause() {
 
         mPausedDuringPlayback = mVideoView.isPlaying();
-        // mPosition = mVideoView.getCurrentPosition();
-        // if (mVideoView.isPlaying()) {
-        // mVideoView.pause();
-        // }
         Log.d(TAG, "onPause - currentPosition: " + mPosition);
+        if (mPausedDuringPlayback) {
+            mVideoView.stopPlayback();
+        }
         super.onPause();
 
     }
@@ -306,6 +303,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     }
 
     private void setVideoSeen(VideoModel video) {
+
         ActiveAndroidTask<VideoModel> t = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where("Id = ?", video.getId()));
         t.setTaskListener(new Task.Listener() {
 
@@ -322,8 +320,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 video.setRead(true); // mark the video as watched
                 video.save();
 
+                // TODO - Sajjad: Create a service to go and remove the watched videos
+
             }
         });
+
+        // delete the file from the
+
         TaskExecuter executer = new TaskExecuter();
         executer.executeTask(t);
     }
