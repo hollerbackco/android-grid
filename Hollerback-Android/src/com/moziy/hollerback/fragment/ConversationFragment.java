@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -36,6 +35,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public static final String CONVO_ID_INSTANCE_STATE = "CONVO_ID_INSTANCE_STATE";
     public static final String VIDEO_MODEL_INSTANCE_STATE = "VIDEO_MODEL_INSTANCE_STATE";
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
+    public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
+    public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
 
     public static ConversationFragment newInstance(long conversationId) {
         ConversationFragment c = new ConversationFragment();
@@ -49,7 +50,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private ArrayList<VideoModel> mVideos;
     private Map<String, VideoModel> mVideoMap;
     private LinkedList<VideoModel> mPlayBackQueue; // the queue used for playback
-    private Queue<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
+    private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
     private VideoView mVideoView; // the video view
 
     private boolean mPausedDuringPlayback;
@@ -59,9 +60,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
-        mTaskQueue = new LinkedList<Task>();
 
         if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
             Log.d(TAG, "restoring instance");
@@ -81,12 +80,18 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 mPlayBackQueue = (LinkedList<VideoModel>) savedInstanceState.getSerializable(PLAYBACK_QUEUE_INSTANCE_STATE);
             }
 
+            if (savedInstanceState.containsKey(TASK_QUEUE_INSTANCE_STATE)) {
+                mTaskQueue = (LinkedList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE);
+            }
+
             // if we were in the middle of playing, then adjust the playback elements such as seek position
+            mPausedDuringPlayback = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
         }
 
         // Start work on getting the list of unseen videos for this conversation
         Fragment worker;
-        if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) {
+        if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) { // we check the model and the worker because the worker removes itself once work is
+            mTaskQueue = new LinkedList<Task>();// done
             mTaskQueue.add(new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_CONV_ID + " = ?", mConvoId)));
 
             // figure out how many tasks we need to create
@@ -112,18 +117,26 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (mPausedDuringPlayback) {
-            mViewRecreatedDuringPlayback = true;
-            playVideo(mPlayBackQueue.peek());
+        if (savedInstanceState != null) {
+
         }
+
+        // if (mPausedDuringPlayback) {
+        // mViewRecreatedDuringPlayback = true;
+        // playVideo(mPlayBackQueue.peek());
+        // }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
-            Log.d(TAG, "starting paused playback");
-            mVideoView.start();
+        // if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
+        // Log.d(TAG, "starting paused playback");
+        // mVideoView.start();
+        // }
+        if (mPausedDuringPlayback) { // reset the flag
+            mPausedDuringPlayback = false;
+            playVideo(mPlayBackQueue.peek());
         }
         mViewRecreatedDuringPlayback = false; // clear the state
     }
@@ -132,10 +145,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public void onPause() {
 
         mPausedDuringPlayback = mVideoView.isPlaying();
-        mPosition = mVideoView.getCurrentPosition();
-        if (mVideoView.isPlaying()) {
-            mVideoView.pause();
-        }
+        // mPosition = mVideoView.getCurrentPosition();
+        // if (mVideoView.isPlaying()) {
+        // mVideoView.pause();
+        // }
         Log.d(TAG, "onPause - currentPosition: " + mPosition);
         super.onPause();
 
@@ -153,6 +166,12 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         if (mPlayBackQueue != null) {
             outState.putSerializable(PLAYBACK_QUEUE_INSTANCE_STATE, mPlayBackQueue);
         }
+
+        if (mTaskQueue != null) {
+            outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, mTaskQueue);
+        }
+
+        outState.putBoolean(PLAYING_INSTANCE_STATE, mPausedDuringPlayback);
 
         super.onSaveInstanceState(outState);
 
@@ -198,7 +217,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         }
 
         for (VideoModel video : mVideos) {
-
+            Log.d(TAG, "processing video with state: " + video.toString());
             if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState())) {
 
                 // for the number of videos, lets create two workers, to download video alternately
