@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.VideoModel;
 
 public class HBFileUtil {
 
@@ -62,6 +63,14 @@ public class HBFileUtil {
         }
 
         return mediaFile;
+    }
+
+    public static File getOutputVideoFile(VideoModel video) {
+        String filename = video.getGuid();
+
+        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filename + ".mp4");
+
+        return media;
     }
 
     /** Create a File for saving an image or video */

@@ -1,6 +1,7 @@
 package com.moziy.hollerback;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -68,19 +69,23 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
     public void getGCM(OnGCMReceivedListener listener) {
         this.listener = listener;
-        registerGCM();
-        mGCMHandler.post(GCMFetcherRunnable);
+        if (!"sdk".equals(Build.PRODUCT)) {
+            registerGCM();
+            mGCMHandler.post(GCMFetcherRunnable);
+        }
     }
 
     public void registerGCM() {
-        GCMRegistrar.checkDevice(this);
-        GCMRegistrar.checkManifest(this);
-        regId = GCMRegistrar.getRegistrationId(this);
-        if (regId.equals("")) {
-            GCMRegistrar.register(this, AppEnvironment.getInstance().GOOGLE_PROJECT_NUMBER);
-            LogUtil.i("GCM Registering");
-        } else {
-            LogUtil.i("GCM Already registered: " + regId);
+        if (!"sdk".equals(Build.PRODUCT)) {
+            GCMRegistrar.checkDevice(this);
+            GCMRegistrar.checkManifest(this);
+            regId = GCMRegistrar.getRegistrationId(this);
+            if (regId.equals("")) {
+                GCMRegistrar.register(this, AppEnvironment.getInstance().GOOGLE_PROJECT_NUMBER);
+                LogUtil.i("GCM Registering");
+            } else {
+                LogUtil.i("GCM Already registered: " + regId);
+            }
         }
     }
 

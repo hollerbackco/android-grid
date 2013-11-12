@@ -1,6 +1,5 @@
 package com.moziy.hollerback.fragment.workers;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.moziy.hollerback.service.task.Task;
-import com.moziy.hollerback.service.task.TaskExecuter;
 
 public abstract class AbsTaskWorker extends Fragment {
     private static final String TAG = AbsTaskWorker.class.getSimpleName();
@@ -17,7 +15,7 @@ public abstract class AbsTaskWorker extends Fragment {
         public Task getTask();
     }
 
-    private TaskExecuter mExecuter;
+    private AsyncTask<Task, Task, Task> mExecuter;
     private TaskClient mTaskClient;
     private Task mTask;
 
@@ -26,18 +24,38 @@ public abstract class AbsTaskWorker extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
+        Log.d(TAG, "myId: " + getTag());
+
         mTaskClient = ((TaskClient) getTargetFragment());
         mTask = mTaskClient.getTask();
         mTask.setTaskListener(mTaskClient);
 
         // start executing the task
-        mExecuter = new TaskExecuter() {
+        mExecuter = new AsyncTask<Task, Task, Task>() {
+
+            @Override
+            protected Task doInBackground(Task... params) {
+                params[0].run();
+                return params[0];
+            }
 
             @Override
             protected void onPostExecute(Task result) {
                 super.onPostExecute(result);
+
+                if (mTaskClient != null) {
+                    if (result.isSuccess()) {
+                        mTaskClient.onTaskComplete(result);
+                    } else {
+                        mTaskClient.onTaskError(result);
+                    }
+                } else {
+                    Log.d(TAG, "not delivering results because of null callback");
+                }
+
                 Log.d(TAG, "removing self from fragment manager");
                 getFragmentManager().beginTransaction().remove(AbsTaskWorker.this).commitAllowingStateLoss();
+
             }
 
         };
@@ -50,17 +68,4 @@ public abstract class AbsTaskWorker extends Fragment {
 
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mTaskClient = ((TaskClient) getTargetFragment());
-        mTask.setTaskListener(mTaskClient);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mTaskClient = null;
-        mTask.setTaskListener(null);
-    }
 }

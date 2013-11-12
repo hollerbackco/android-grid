@@ -158,6 +158,7 @@ public class SyncService extends IntentService {
             // insert the remaining videos into the database
             for (VideoModel v : videos) {
                 Log.d(TAG, "adding video: " + v.getGuid() + " " + v.toString());
+                v.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
                 v.save();
             }
 
