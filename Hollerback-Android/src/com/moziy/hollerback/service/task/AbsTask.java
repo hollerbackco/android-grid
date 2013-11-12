@@ -2,8 +2,8 @@ package com.moziy.hollerback.service.task;
 
 public abstract class AbsTask implements Task {
     protected Task.Listener mTaskListener;
-    protected boolean mIsSuccess = true;
-    protected boolean mIsFinished = false;
+    volatile protected boolean mIsSuccess = true;
+    volatile protected boolean mIsFinished = false;
 
     @Override
     public void setTaskListener(Listener listener) {

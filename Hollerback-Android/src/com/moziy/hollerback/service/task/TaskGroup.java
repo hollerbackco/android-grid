@@ -2,14 +2,16 @@ package com.moziy.hollerback.service.task;
 
 import java.util.ArrayList;
 
-public abstract class TaskGroup implements Task {
+import android.os.Handler;
 
-    private Task.Listener mListener;
+public class TaskGroup extends AbsTask {
+
     private final ArrayList<Task> mTasks = new ArrayList<Task>();
     private final ArrayList<Task> mFailedTasks = new ArrayList<Task>();
-    private boolean mOverallStatus;
-    private boolean mHasRun;
-    private boolean mIsRunning;
+    volatile private boolean mHasRun;
+    volatile private boolean mIsRunning; // make sure other thread sees the status
+
+    private final Handler mHandler = new Handler();
 
     public TaskGroup() {
     }
@@ -27,20 +29,22 @@ public abstract class TaskGroup implements Task {
     }
 
     @Override
-    public void run() {
+    public void run() { // typically runs in the background thread
         mIsRunning = true;
-        mOverallStatus = true;
+        mIsSuccess = true;
 
-        // run the tasks
-        for (Task t : mTasks) {
+        for (int i = 0; i < mTasks.size(); i++) {
+            final Task t = mTasks.get(i);
 
             t.run();
 
             if (!t.isSuccess()) {
                 mFailedTasks.add(t);
-                mOverallStatus = false;
+                mIsSuccess = false;
+
             }
 
+            postResult(t);
         }
 
         mIsRunning = false;
@@ -48,8 +52,30 @@ public abstract class TaskGroup implements Task {
 
     }
 
+    private void postResult(final Task t) {
+        if (t.getTaskListener() != null) {
+            mHandler.post(new Runnable() {
+                public void run() {
+                    t.getTaskListener().onTaskError(t);
+                }
+            });
+        } else {
+            mHandler.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    t.getTaskListener().onTaskComplete(t);
+
+                }
+            });
+        }
+    }
+
     public void reset() {
-        mOverallStatus = true;
+        if (isRunning()) { // TODO - Sajjad: Remove from prod
+            throw new IllegalStateException("can't reset while task is running!");
+        }
+        mIsSuccess = true;
         mHasRun = false;
         mIsRunning = false;
         mFailedTasks.clear();
@@ -64,9 +90,12 @@ public abstract class TaskGroup implements Task {
         return mFailedTasks;
     }
 
-    @Override
-    public Listener getTaskListener() {
-
-        return mListener;
+    public boolean isRunning() {
+        return mIsRunning;
     }
+
+    public boolean hasRun() {
+        return mHasRun;
+    }
+
 }
