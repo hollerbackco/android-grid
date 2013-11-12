@@ -26,6 +26,7 @@ import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.HBFileUtil;
 
@@ -243,8 +244,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // once the playback is complete, lets see if the next one is ready
         VideoModel video = mPlayBackQueue.poll(); // remove the one that just finished
 
-        video.setRead(true); // mark the video as watched
-        video.save();
+        setVideoSeen(video);
+
+        // delete the video from the sdcard
 
         if (!mPlayBackQueue.isEmpty()) {
             Log.d(TAG, "playback after completion and queue is not empty");
@@ -270,4 +272,27 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // }
 
     }
+
+    private void setVideoSeen(VideoModel video) {
+        ActiveAndroidTask<VideoModel> t = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where("Id = ?", video.getId()));
+        t.setTaskListener(new Task.Listener() {
+
+            @Override
+            public void onTaskError(Task t) {
+                // if we couldn't write to the db..?
+                Log.w(TAG, "error updating database: ");
+            }
+
+            @Override
+            public void onTaskComplete(Task t) {
+                VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
+                Log.d(TAG, "fetching latest from db: " + video.toString());
+                video.setRead(true); // mark the video as watched
+                video.save();
+            }
+        });
+        TaskExecuter executer = new TaskExecuter();
+        executer.executeTask(t);
+    }
+
 }

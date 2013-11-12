@@ -68,8 +68,16 @@ public class HBFileUtil {
     public static File getOutputVideoFile(VideoModel video) {
         String filename = video.getGuid();
 
-        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filename + ".mp4");
-
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME);
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(TAG, "failed to create directory");
+                return null;
+            }
+        }
+        // XXX: parse the filename rather than assuming it's mp4
+        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + filename + ".mp4");
         return media;
     }
 
