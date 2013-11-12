@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import android.app.Activity;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,13 +53,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private VideoView mVideoView; // the video view
 
     private boolean mPausedDuringPlayback;
+    private boolean mViewRecreatedDuringPlayback;
     private int mPosition = 0;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,7 +63,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
         mTaskQueue = new LinkedList<Task>();
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
             Log.d(TAG, "restoring instance");
             // restore the video model if, see what the status of the resource is, and also if we're in the middle of playback
             if (savedInstanceState.containsKey(VIDEO_MODEL_INSTANCE_STATE)) {
@@ -119,8 +113,19 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         super.onActivityCreated(savedInstanceState);
 
         if (mPausedDuringPlayback) {
+            mViewRecreatedDuringPlayback = true;
             playVideo(mPlayBackQueue.peek());
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
+            Log.d(TAG, "starting paused playback");
+            mVideoView.start();
+        }
+        mViewRecreatedDuringPlayback = false; // clear the state
     }
 
     @Override
@@ -128,6 +133,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         mPausedDuringPlayback = mVideoView.isPlaying();
         mPosition = mVideoView.getCurrentPosition();
+        if (mVideoView.isPlaying()) {
+            mVideoView.pause();
+        }
         Log.d(TAG, "onPause - currentPosition: " + mPosition);
         super.onPause();
 
@@ -207,7 +215,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 // if we've already been downloaded and we're on the first of the playback queue, then begin playback
                 if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
                     playVideo(video);
-
                 }
             }
         }
@@ -241,12 +248,14 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onCompletion(MediaPlayer mp) {
         Log.d(TAG, "video playback complete");
+        mp.reset();
+
         // once the playback is complete, lets see if the next one is ready
         VideoModel video = mPlayBackQueue.poll(); // remove the one that just finished
 
         setVideoSeen(video);
 
-        // delete the video from the sdcard
+        // delete the video from the sdcard?
 
         if (!mPlayBackQueue.isEmpty()) {
             Log.d(TAG, "playback after completion and queue is not empty");
@@ -263,8 +272,12 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+        // only play if we're in the resumed state
         Log.d(TAG, "onPrepared()");
-        mVideoView.start();
+        if (isResumed())
+            mVideoView.start();
+        else
+            Log.d(TAG, "not playing because not in resumed state");
         // if (mPausedDuringPlayback) { //NOTE: Seeking doesn't seem to be handled properly
         // mVideoView.seekTo(mPosition);
         // mPausedDuringPlayback = false;
@@ -289,6 +302,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 Log.d(TAG, "fetching latest from db: " + video.toString());
                 video.setRead(true); // mark the video as watched
                 video.save();
+
             }
         });
         TaskExecuter executer = new TaskExecuter();
