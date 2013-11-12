@@ -90,7 +90,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         Fragment worker;
         if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) { // we check the model and the worker because the worker removes itself once work is
             mTaskQueue = new LinkedList<Task>();// done
-            mTaskQueue.add(new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_CONV_ID + " = ?", mConvoId)));
+            mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
+                    new Select()//
+                            .from(VideoModel.class) //
+                            .where(ActiveRecordFields.C_VID_CONV_ID + " = ? AND " + ActiveRecordFields.C_VID_ISREAD + " = ?", mConvoId, 0))); //
 
             // figure out how many tasks we need to create
             worker = new AbsTaskWorker() {
