@@ -89,7 +89,7 @@ public class ConversationHistoryFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mConversation = (ConversationModel) getArguments().getSerializable(BUNDLE_ARG_CONVERSATION);
-        mConversationId = mConversation.getConversation_Id();
+        mConversationId = mConversation.getConversationId();
 
     }
 

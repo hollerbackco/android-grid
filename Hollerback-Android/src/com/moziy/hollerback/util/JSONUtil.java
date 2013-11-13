@@ -394,7 +394,7 @@ public class JSONUtil {
                 int i = -1;
                 for (ConversationModel convo : conversations) {
                     i++;
-                    if (convo.getConversation_Id() == model.getConversation_Id()) {
+                    if (convo.getConversationId() == model.getConversationId()) {
                         idToReplace = i;
 
                     }
@@ -415,8 +415,8 @@ public class JSONUtil {
             QU.getDM().putIntoHash(HashUtil.getConvHash(), conversations);
 
             Intent intent = new Intent(IABIntent.POST_CONVERSATIONS);
-            intent.putExtra(IABIntent.PARAM_ID, Long.toString(model.getConversation_Id()));
-            LogUtil.i("Sending Broadcast: " + model.getConversation_Id());
+            intent.putExtra(IABIntent.PARAM_ID, Long.toString(model.getConversationId()));
+            LogUtil.i("Sending Broadcast: " + model.getConversationId());
             IABroadcastManager.sendLocalBroadcast(intent);
         } catch (Exception e) {
             e.printStackTrace();

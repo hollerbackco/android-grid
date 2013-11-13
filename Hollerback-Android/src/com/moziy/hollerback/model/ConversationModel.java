@@ -71,7 +71,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     @Column(name = ActiveRecordFields.C_CONV_URL)
     private String url;
 
-    public long getConversation_Id() {
+    public long getConversationId() {
         return id;
     }
 
@@ -101,6 +101,11 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
 
     public String getCreateTime() {
         return this.created_at;
+    }
+
+    public String getLastMessageAt() {
+        return last_message_at;
+
     }
 
     public void setUrl(String value) {

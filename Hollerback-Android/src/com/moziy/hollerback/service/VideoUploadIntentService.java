@@ -171,11 +171,11 @@ public class VideoUploadIntentService extends IntentService {
                 ConversationModel conversationResp = response.getData();
 
                 // lets bind the video to the conversation
-                model.setConversationId(conversationResp.getConversation_Id());
+                model.setConversationId(conversationResp.getConversationId());
                 model.save();
 
                 // if the conversation we created, is actually found in our db, then update it
-                ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversation_Id()).executeSingle();
+                ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
                 if (dbConvo != null) {
                     Log.d(TAG, "deleting record: " + dbConvo.toString());
                     // delete record
@@ -191,7 +191,7 @@ public class VideoUploadIntentService extends IntentService {
                 // launch the
 
                 // lets create a new conversation from the response
-                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversation_Id());
+                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversationId());
             }
 
             @Override

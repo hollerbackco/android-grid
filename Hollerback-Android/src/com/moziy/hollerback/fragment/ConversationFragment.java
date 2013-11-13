@@ -325,6 +325,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
                 Log.d(TAG, "fetching latest from db: " + video.toString());
                 video.setRead(true); // mark the video as watched
+                video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
                 video.save();
 
                 // TODO - Sajjad: Create a service to go and remove the watched videos

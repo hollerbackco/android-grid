@@ -21,6 +21,10 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         public static final String PENDING_DOWNLOAD = "pending_download";
         public static final String DOWNLOADING = "downloading";
         public static final String ON_DISK = "on_disk";
+        public static final String UNWATCHED = "unwatched"; // => equivalent to isRead=false
+        public static final String WATCHED_PENDING_POST = "watched_pending_post";
+        public static final String WATCHED_AND_POSTED = "watched_and_posted";
+
     }
 
     @Column(name = ActiveRecordFields.C_VID_CREATED_AT)
@@ -69,6 +73,9 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     @JsonProperty("isRead")
     private boolean isRead;
 
+    @Column(name = ActiveRecordFields.C_VID_WATCHED_STATE)
+    private String watched_state;
+
     @Column(name = ActiveRecordFields.C_VID_FILENAME)
     private String local_filename; // TODO - Sajjad: double check that this is in fact the local file name
 
@@ -85,7 +92,7 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     private String id;
 
     @Column(name = ActiveRecordFields.C_VID_STATE)
-    private String state; // REST state of this resource
+    private String state; // REST state of this resource: more of networking state
 
     @Column(name = ActiveRecordFields.C_VID_TRANSACTING)
     private boolean transacting; // Whether this resource is being actively transitioned from one state to the next
@@ -154,6 +161,14 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
     public void setRead(boolean isRead) {
         this.isRead = isRead;
+    }
+
+    public String getWatchedState() {
+        return watched_state;
+    }
+
+    public void setWatchedState(String watchedState) {
+        watched_state = watchedState;
     }
 
     public void setState(String state) {

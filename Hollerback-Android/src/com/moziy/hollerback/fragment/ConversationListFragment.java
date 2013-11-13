@@ -169,7 +169,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
             ConversationModel item = mConversationListAdapter.getItem(position);
-            Log.d(FRAGMENT_TAG, "watching conversation with id: " + item.getConversation_Id());
+            Log.d(FRAGMENT_TAG, "watching conversation with id: " + item.getConversationId());
             startConversationFragment(mConversationListAdapter.getItem(position));
 
         }
@@ -183,7 +183,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         // TODO: Fetch data from API call
         // ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
 
-        ConversationFragment fragment = ConversationFragment.newInstance(conversation.getConversation_Id());
+        ConversationFragment fragment = ConversationFragment.newInstance(conversation.getConversationId());
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
         fragmentTransaction.addToBackStack(ConversationHistoryFragment.class.getSimpleName());

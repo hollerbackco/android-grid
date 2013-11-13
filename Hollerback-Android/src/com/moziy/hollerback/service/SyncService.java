@@ -118,7 +118,7 @@ public class SyncService extends IntentService {
                     convoWhereClauseBuilder.append(" OR ");
                 }
 
-                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append("=").append(convo.getConversation_Id());
+                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append("=").append(convo.getConversationId());
 
             } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
 
@@ -172,7 +172,7 @@ public class SyncService extends IntentService {
             if (!existingConvos.isEmpty()) {
 
                 for (ConversationModel c : existingConvos) {
-                    Log.d(TAG, "deleting convo with id: " + c.getConversation_Id());
+                    Log.d(TAG, "deleting convo with id: " + c.getConversationId());
                     c.delete();
                 }
 
