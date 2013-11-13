@@ -1,7 +1,8 @@
-package com.activeandroid.serializer;
+package com.moziy.hollerback.activeandroid;
 
 import java.io.IOException;
 
+import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;

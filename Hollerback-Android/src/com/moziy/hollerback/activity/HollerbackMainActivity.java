@@ -7,7 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
@@ -25,15 +27,14 @@ import com.moziy.hollerback.util.HollerbackAppState;
 
 public class HollerbackMainActivity extends SherlockFragmentActivity implements OnConversationsUpdated {
 
+    private static final String TAG = HollerbackMainActivity.class.getSimpleName();
     private List<ConversationModel> mConversations; // list of conversations
     boolean initFrag = false;
     String convId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         setTheme(R.style.Theme_Example);
-
         super.onCreate(savedInstanceState);
 
         Fragment worker = getSupportFragmentManager().findFragmentByTag(ConversationWorkerFragment.FRAGMENT_TAG);
@@ -57,7 +58,8 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
 
         setContentView(R.layout.hollerback_main);
 
-        initFragment();
+        if (savedInstanceState == null)
+            initFragment();
         LogUtil.i("Completed BaseActivity");
 
         FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
@@ -88,13 +90,28 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         int count = fragmentManager.getBackStackEntryCount();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
         for (int i = 0; i < count; i++) {
             fragmentManager.popBackStackImmediate();
         }
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         ConversationListFragment fragment = new ConversationListFragment();
         fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
+
+        fragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener() {
+
+            @Override
+            public void onBackStackChanged() {
+
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    // TODO: evalute this or simply not adding the conversation list fragment to the backstack
+                    Log.d(TAG, "finishing activity sine all fragments have been removed");
+                    finish();
+                }
+
+            }
+        });
     }
 
     public List<ConversationModel> getConversations() {

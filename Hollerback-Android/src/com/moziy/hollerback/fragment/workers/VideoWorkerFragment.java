@@ -2,21 +2,25 @@ package com.moziy.hollerback.fragment.workers;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.moziy.hollerback.model.VideoModel;
 
+// a worker fragment that retrieves unseen videos from the database
 public class VideoWorkerFragment extends SherlockFragment {
 
     private static final String TAG = VideoWorkerFragment.class.getSimpleName();
+    public static final String CONVO_ID_BUNDLE_ARG_KEY = "convo_id";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        long convoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
+        getVideos(convoId);
 
     }
 
@@ -26,16 +30,27 @@ public class VideoWorkerFragment extends SherlockFragment {
 
             @Override
             protected List<VideoModel> doInBackground(Long... params) {
-                // TODO Auto-generated method stub
+
                 return null;
             }
 
             @Override
             protected void onPostExecute(List<VideoModel> result) {
-                Log.d(TAG, "loaded video");
+
             }
 
-        };
+        }.execute(convoId);
 
     }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
 }

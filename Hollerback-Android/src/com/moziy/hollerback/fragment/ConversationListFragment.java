@@ -79,10 +79,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
         initializeView(fragmentView);
 
-        getLoaderManager().initLoader(0, null, this).startLoading();
-        // HBRequestManager.getConversations();
-
-        // QU.getDM().getConversations(false); // TODO - SAJJAD: Evaluate whether this should be placed after the broadcast registration
+        getLoaderManager().initLoader(0, null, this); // the loader will be autostarted
 
         return fragmentView;
     }
@@ -98,7 +95,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onPause() {
-        // TODO Auto-generated method stub
         super.onPause();
         IABroadcastManager.unregisterLocalReceiver(receiver);
         if (mTxtSearch != null) {
@@ -113,7 +109,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         super.onDestroyView();
         mTxtSearch.removeTextChangedListener(filterTextWatcher);
         IABroadcastManager.unregisterLocalReceiver(receiver);
-        Log.d(FRAGMENT_TAG, "onDestroy");
+        Log.d(FRAGMENT_TAG, "onDestroyView");
 
     }
 
@@ -172,22 +168,25 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
-
-            startConversationFragment(mConversationListAdapter.getItem((int) id).getConversation_Id());
+            ConversationModel item = mConversationListAdapter.getItem(position);
+            Log.d(FRAGMENT_TAG, "watching conversation with id: " + item.getConversation_Id());
+            startConversationFragment(mConversationListAdapter.getItem(position));
 
         }
 
     };
 
-    public void startConversationFragment(final long conversationId) {
+    public void startConversationFragment(ConversationModel conversation) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // TODO: Fetch data from API call
-        ConversationFragment fragment = ConversationFragment.newInstance(conversationId);
+        // ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
+
+        ConversationFragment fragment = ConversationFragment.newInstance(conversation.getConversation_Id());
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-        fragmentTransaction.addToBackStack(ConversationFragment.class.getSimpleName());
+        fragmentTransaction.addToBackStack(ConversationHistoryFragment.class.getSimpleName());
         fragmentTransaction.commit();
     }
 
@@ -284,24 +283,32 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             private List<ConversationModel> mConvos;
             private SyncReceiver mReceiver;
 
+            // initialization block
+            {
+                Log.d(FRAGMENT_TAG, "launch sync");
+                mReceiver = new SyncReceiver(this);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
+
+                // start the sync intent service
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), SyncService.class);
+                getActivity().startService(intent);
+            }
+
+            @Override
+            public void onContentChanged() {
+                mConvos = null; // delete the contents
+                Log.d(FRAGMENT_TAG, "removing convos");
+                super.onContentChanged();
+            }
+
             @Override
             protected void onStartLoading() {
                 if (mConvos != null) {
                     Log.d(FRAGMENT_TAG, "delivering results");
                     deliverResult(mConvos);
-                    return;
-                }
-
-                if (mReceiver == null) {
-                    Log.d(FRAGMENT_TAG, "launch sync");
-                    mReceiver = new SyncReceiver(this);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
-
-                    // start the sync intent service
-                    Intent intent = new Intent();
-                    intent.setClass(getActivity(), SyncService.class);
-                    getActivity().startService(intent);
                     return;
                 }
 
@@ -312,7 +319,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             @Override
             public List<ConversationModel> loadInBackground() {
+                Log.d(FRAGMENT_TAG, "thread id: " + Thread.currentThread().getId());
                 mConvos = new Select().all().from(ConversationModel.class).execute();
+                Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
             }
 
@@ -357,7 +366,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("SyncReceiver", "onReceive");
+            Log.d("SyncReceiver", "onReceive - " + "isStarted: " + mLoader.isStarted());
+
             mLoader.onContentChanged();
         }
     }

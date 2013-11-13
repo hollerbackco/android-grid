@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.VideoModel;
 
 public class HBFileUtil {
 
@@ -62,6 +63,22 @@ public class HBFileUtil {
         }
 
         return mediaFile;
+    }
+
+    public static File getOutputVideoFile(VideoModel video) {
+        String filename = video.getGuid();
+
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME);
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(TAG, "failed to create directory");
+                return null;
+            }
+        }
+        // XXX: parse the filename rather than assuming it's mp4
+        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + filename + ".mp4");
+        return media;
     }
 
     /** Create a File for saving an image or video */

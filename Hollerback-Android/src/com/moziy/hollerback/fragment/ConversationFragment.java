@@ -1,448 +1,339 @@
 package com.moziy.hollerback.fragment;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.VideoView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.krish.horizontalscrollview.CustomListBaseAdapter;
-import com.moziy.hollerback.HollerbackInterfaces.OnCustomItemClickListener;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.activeandroid.query.Select;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.bitmap.ImageCache;
-import com.moziy.hollerback.bitmap.ImageFetcher;
-import com.moziy.hollerback.communication.IABIntent;
-import com.moziy.hollerback.communication.IABroadcastManager;
-import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.helper.S3RequestHelper;
-import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
+import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.service.VideoUploadService;
-import com.moziy.hollerback.util.ConversionUtil;
-import com.moziy.hollerback.util.JsonModelUtil;
-import com.moziy.hollerback.util.QU;
-import com.moziy.hollerback.util.UploadCacheUtil;
-import com.moziy.hollerback.view.CustomVideoView;
-import com.origamilabs.library.views.StaggeredGridView;
+import com.moziy.hollerback.service.task.ActiveAndroidTask;
+import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.service.task.VideoDownloadTask;
+import com.moziy.hollerback.util.HBFileUtil;
 
-public class ConversationFragment extends BaseFragment {
+public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
 
-    /**
-     * This piece of shit takes up 100% height unless you restrict it
-     */
-    private StaggeredGridView mVideoGallery;
-    private CustomListBaseAdapter mVideoGalleryAdapter;
-    private ViewGroup mRootView;
-    private TextView mTxtVideoInfo;
-    private SherlockFragmentActivity mActivity;
-    private LinearLayout mWrapperInformation;
-    // Image Loading
-    private ImageFetcher mImageFetcher;
-    private int mImageThumbSize;
+    private static final String TAG = ConversationFragment.class.getSimpleName();
+    public static final String CONVO_ID_BUNDLE_ARG_KEY = "CONVO_ID";
+    public static final String CONVO_ID_INSTANCE_STATE = "CONVO_ID_INSTANCE_STATE";
+    public static final String VIDEO_MODEL_INSTANCE_STATE = "VIDEO_MODEL_INSTANCE_STATE";
+    public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
+    public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
+    public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
 
-    private static final String IMAGE_CACHE_DIR = "thumbs";
-
-    // Image Loading
-
-    // Video Playback Stuff
-    private S3RequestHelper mS3RequestHelper;
-
-    // Reply stuff
-    private ImageButton mReplyBtn;
-
-    public int TAKE_VIDEO = 0x683;
-
-    private long mConversationId;
-
-    // state
-    boolean urlLoaded = false;
-    private ConversationModel conversation;
-
-    private ArrayList<VideoModel> mVideos;
-    boolean playStartInitialized;
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_info:
-                ConversationMembersFragment fragment = ConversationMembersFragment.newInstance(mConversationId);
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ConversationMembersFragment.class.getSimpleName()).commitAllowingStateLoss();
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
+    public static ConversationFragment newInstance(long conversationId) {
+        ConversationFragment c = new ConversationFragment();
+        Bundle args = new Bundle();
+        args.putLong(CONVO_ID_BUNDLE_ARG_KEY, conversationId);
+        c.setArguments(args);
+        return c;
     }
 
+    private long mConvoId;
+    private ArrayList<VideoModel> mVideos;
+    private Map<String, VideoModel> mVideoMap;
+    private LinkedList<VideoModel> mPlayBackQueue; // the queue used for playback
+    private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
+    private VideoView mVideoView; // the video view
+
+    private boolean mPlayingDuringConfigChange;
+    private boolean mPausedDuringPlayback; // not saved
+    private int mPosition = 0;
+
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        inflater.inflate(R.menu.conversation, menu);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
+
+        if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
+            Log.d(TAG, "restoring instance");
+            // restore the video model if, see what the status of the resource is, and also if we're in the middle of playback
+            if (savedInstanceState.containsKey(VIDEO_MODEL_INSTANCE_STATE)) {
+                mVideos = (ArrayList<VideoModel>) savedInstanceState.getSerializable(VIDEO_MODEL_INSTANCE_STATE);
+
+                // check to see if any of the videos have or been downloaded
+                mVideoMap = new HashMap<String, VideoModel>();
+                for (VideoModel video : mVideos) {
+                    mVideoMap.put(video.getGuid(), video);
+
+                }
+            }
+
+            if (savedInstanceState.containsKey(PLAYBACK_QUEUE_INSTANCE_STATE)) {
+                mPlayBackQueue = (LinkedList<VideoModel>) savedInstanceState.getSerializable(PLAYBACK_QUEUE_INSTANCE_STATE);
+            }
+
+            if (savedInstanceState.containsKey(TASK_QUEUE_INSTANCE_STATE)) {
+                mTaskQueue = (LinkedList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE);
+            }
+
+        }
+
+        // Start work on getting the list of unseen videos for this conversation
+        Fragment worker;
+        if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) { // we check the model and the worker because the worker removes itself once work is
+            mTaskQueue = new LinkedList<Task>();// done
+            mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
+                    new Select()//
+                            .from(VideoModel.class) //
+                            .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_ISREAD + "=?", mConvoId, 0))); //
+
+            // figure out how many tasks we need to create
+            worker = new AbsTaskWorker() {
+            };
+            worker.setTargetFragment(this, 0);
+            getFragmentManager().beginTransaction().add(worker, TAG + "model_worker").commit();
+        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = this.getSherlockActivity();
-        mRootView = (ViewGroup) inflater.inflate(R.layout.conversation_fragment, null);
+        View v = inflater.inflate(R.layout.conversation_layout, container, false);
+        mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
 
-        ImageCache.ImageCacheParams cacheParams = new ImageCache.ImageCacheParams(getActivity(), IMAGE_CACHE_DIR);
+        Log.d(TAG, "onCreateView");
 
-        mImageFetcher = new ImageFetcher(getActivity(), mImageThumbSize);
-        mImageFetcher.setLoadingImage(R.drawable.placeholder_sq);
-        mImageFetcher.addImageCache(getActivity().getSupportFragmentManager(), cacheParams);
-
-        mS3RequestHelper = new S3RequestHelper();
-
-        initializeView(mRootView);
-
-        initializeArgs();
-
-        return mRootView;
-    }
-
-    public void playNewestVideo() {
-        if (playStartInitialized) {
-            if (mVideoGalleryAdapter.getCount() > 0) {
-
-                mVideoGalleryAdapter.notifyDataSetChanged();
-
-            }
-            setGalleryToEnd();
-            return;
-        }
-
-        if (mVideoGalleryAdapter.getCount() < 1) {
-            return;
-        }
-
-        playStartInitialized = true;
-        boolean set = false;
-
-        for (int i = mVideoGalleryAdapter.getCount() - 1; i >= 0; i--) {
-            if (mVideoGalleryAdapter.getItem(i).isRead() == false) {
-
-                // model.setRead(true);
-                set = true;
-                mVideoGalleryAdapter.notifyDataSetChanged();
-                // }
-            }
-        }
-
-        if (!set) {
-            if (mVideoGalleryAdapter.getCount() > 0) {
-
-                mVideoGalleryAdapter.notifyDataSetChanged();
-
-            }
-            setGalleryToEnd();
-        }
-
+        return v;
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        mImageFetcher.setPauseWork(false);
-        mImageFetcher.setExitTasksEarly(true);
-        mImageFetcher.flushCache();
-        IABroadcastManager.unregisterLocalReceiver(receiver);
-    }
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mImageFetcher != null) {
-            mImageFetcher.closeCache();
+        if (savedInstanceState != null) {
+            // if we were in the middle of playing, then adjust the playback elements such as seek position
+            mPlayingDuringConfigChange = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
+            if (mPlayingDuringConfigChange) {
+                playVideo(mPlayBackQueue.peek());
+            }
         }
-        IABroadcastManager.unregisterLocalReceiver(receiver);
-        if (mS3RequestHelper != null) {
-            mS3RequestHelper.clearOnProgressListener();
-        }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        this.startLoading();
-
-        // TODO: Do this less often
-        mImageFetcher.setExitTasksEarly(false);
-
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_URLS);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATION_VIDEOS);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.UPLOAD_VIDEO_UPDATE);
-        QU.getDM().getVideos(false, mConversationId);
-
-    }
-
-    public void initializeArgs() {
-        Bundle bundle = getArguments();
-        mConversationId = bundle.getLong("conv_id");
-        // UploadCacheUtil.clearCache(this.getActivity(), mConversationId);
-
-        // this is object oriented programming, retain Application from Activity.
-        // Please change the caching system in the future
-        conversation = QU.getConv(mConversationId);
-        if (conversation != null) {
-            LogUtil.i("Conversation Fragment: ID: " + mConversationId);
-            mActivity.getSupportActionBar().setTitle(conversation.getConversationName());
-        } else {
-            mActivity.getSupportFragmentManager().popBackStack();
+        // if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
+        // Log.d(TAG, "starting paused playback");
+        // mVideoView.start();
+        // }
+        if (mPausedDuringPlayback) { // reset the flag
+            playVideo(mPlayBackQueue.peek());
         }
     }
 
     @Override
-    protected void initializeView(View view) {
-        mWrapperInformation = (LinearLayout) mRootView.findViewById(R.id.wrapperInformation);
-        mWrapperInformation.setOnClickListener(new View.OnClickListener() {
+    public void onPause() {
+
+        // allow for config changes while we were paused{
+
+        mPausedDuringPlayback = mVideoView.isPlaying();
+        Log.d(TAG, "onPause - currentPosition: " + mPosition);
+        if (mPausedDuringPlayback)
+            mVideoView.stopPlayback();
+
+        super.onPause();
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putLong(CONVO_ID_INSTANCE_STATE, mConvoId);
+
+        if (mVideos != null) {
+            outState.putSerializable(VIDEO_MODEL_INSTANCE_STATE, mVideos);
+        }
+
+        // TODO: Save the video seek position, the video file that is being played so that once restored we can begin playing
+        if (mPlayBackQueue != null) {
+            outState.putSerializable(PLAYBACK_QUEUE_INSTANCE_STATE, mPlayBackQueue);
+        }
+
+        if (mTaskQueue != null) {
+            outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, mTaskQueue);
+        }
+
+        if (mPlayingDuringConfigChange || mPausedDuringPlayback) {
+            mPlayingDuringConfigChange = true;
+        }
+        outState.putBoolean(PLAYING_INSTANCE_STATE, mPlayingDuringConfigChange);
+
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    public void onTaskComplete(Task t) {
+        if (t instanceof ActiveAndroidTask) {
+
+            handleModelTaskComplete(t);
+
+        } else if (t instanceof VideoDownloadTask) {
+
+            handleVideoDownload((VideoDownloadTask) t);
+        }
+
+    }
+
+    @Override
+    public void onTaskError(Task t) {
+        Log.d(TAG, "there was a problem with a task");
+        // TODO: handle this later
+
+        // retry the task
+
+    }
+
+    @Override
+    public Task getTask() {
+        return mTaskQueue.poll();
+    }
+
+    private void handleModelTaskComplete(Task t) {
+
+        mVideos = new ArrayList<VideoModel>(((ActiveAndroidTask<VideoModel>) t).getResults());
+        Log.d(TAG, "total unread videos found: " + mVideos.size());
+        mVideoMap = new HashMap<String, VideoModel>();
+        mPlayBackQueue = new LinkedList<VideoModel>();
+        for (VideoModel video : mVideos) {
+            mVideoMap.put(video.getGuid(), video);
+            // add the videos to the playback queue
+            mPlayBackQueue.add(video);
+        }
+
+        for (VideoModel video : mVideos) {
+            Log.d(TAG, "processing video with state: " + video.toString());
+            if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState())) {
+
+                // for the number of videos, lets create two workers, to download video alternately
+                AbsTaskWorker worker = new AbsTaskWorker() {
+                };
+                VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
+                mTaskQueue.add(downloadTask);
+                // lets create an S3 task and ask our worker to run it
+                worker.setTargetFragment(this, 0);
+                getFragmentManager().beginTransaction().add(worker, video.getGuid()).commit();
+
+            } else if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
+
+                // if we've already been downloaded and we're on the first of the playback queue, then begin playback
+                if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
+                    playVideo(video);
+                }
+            }
+        }
+
+        Log.d(TAG, "active android task completed");
+    }
+
+    private void handleVideoDownload(VideoDownloadTask t) {
+
+        Log.d(TAG, "video download task completed");
+        VideoModel video = mVideoMap.get(((VideoDownloadTask) t).getVideoId());
+        Log.d(TAG, "downloaded video with id: " + video.getGuid());
+        video.setState(VideoModel.ResourceState.ON_DISK); // even though the download task sets it, but this copy doesn't have the state set
+
+        // check to see if this is the next video that must be played
+        VideoModel queuedVideo = mPlayBackQueue.peek();
+        if (queuedVideo.getGuid().equals(video.getGuid())) { // if the queued is the one that just got downloaded then just play
+            Log.d(TAG, "playing back video that was just downloaded");
+            playVideo(video);
+        }
+
+    }
+
+    private void playVideo(VideoModel v) {
+        Log.d(TAG, "starting playback of: " + v.getGuid());
+        mVideoView.setOnPreparedListener(this);
+        mVideoView.setVideoURI(Uri.fromFile(HBFileUtil.getOutputVideoFile(v)));
+        mVideoView.setOnCompletionListener(this);
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        Log.d(TAG, "video playback complete");
+        mp.reset();
+
+        // once the playback is complete, lets see if the next one is ready
+        VideoModel video = mPlayBackQueue.poll(); // remove the one that just finished
+
+        setVideoSeen(video);
+
+        // delete the video from the sdcard?
+
+        if (!mPlayBackQueue.isEmpty()) {
+            Log.d(TAG, "playback after completion and queue is not empty");
+            video = mPlayBackQueue.peek();
+
+            if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
+                Log.d(TAG, "starting to play video after completion");
+                playVideo(video);
+
+            }
+        }
+
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        // only play if we're in the resumed state
+        Log.d(TAG, "onPrepared()");
+        if (isResumed()) {
+            mVideoView.start();
+        } else {
+            Log.d(TAG, "not playing because not in resumed state");
+        }
+        // if (mPausedDuringPlayback) { //NOTE: Seeking doesn't seem to be handled properly
+        // mVideoView.seekTo(mPosition);
+        // mPausedDuringPlayback = false;
+        // Log.d(TAG, "seeking to position: " + mPosition);
+        // }
+
+    }
+
+    private void setVideoSeen(VideoModel video) {
+
+        ActiveAndroidTask<VideoModel> t = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where("Id = ?", video.getId()));
+        t.setTaskListener(new Task.Listener() {
 
             @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                ViewGroup convertView = (ViewGroup) mWrapperInformation.getTag();
-                final ViewGroup gridWrapper = (ViewGroup) convertView.findViewById(R.id.gridWrapper);
-                if (gridWrapper != null) {
-                    final CustomVideoView videoView = (CustomVideoView) gridWrapper.findViewById(R.id.videoPlayer);
-                    videoView.changeVideoSize(gridWrapper.getWidth() * 2, gridWrapper.getHeight() * 2);
-                    int length = videoView.getCurrentPosition();
+            public void onTaskError(Task t) {
+                // if we couldn't write to the db..?
+                Log.w(TAG, "error updating database: ");
+            }
 
-                    videoView.pause();
-                    gridWrapper.removeView(videoView);
+            @Override
+            public void onTaskComplete(Task t) {
+                VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
+                Log.d(TAG, "fetching latest from db: " + video.toString());
+                video.setRead(true); // mark the video as watched
+                video.save();
 
-                    final LinearLayout blowupView = (LinearLayout) mRootView.findViewById(R.id.blowupView);
-                    blowupView.addView(videoView);
-                    blowupView.setVisibility(View.VISIBLE);
-                    videoView.seekTo(length);
-                    videoView.setBlowupParentView(blowupView);
-                    videoView.start();
-                    blowupView.setOnClickListener(new View.OnClickListener() {
+                // TODO - Sajjad: Create a service to go and remove the watched videos
 
-                        @Override
-                        public void onClick(View v) {
-                            videoView.setBlowupParentView(null);
-                            videoView.setVisibility(View.GONE);
-                            blowupView.removeView(videoView);
-                            gridWrapper.addView(videoView);
-                            blowupView.setVisibility(View.GONE);
-                        }
-                    });
-                }
             }
         });
 
-        mVideoGallery = (StaggeredGridView) view.findViewById(R.id.hlz_video_gallery);
-        mVideoGallery.setColumnCount(2);
-
-        mVideoGalleryAdapter = new CustomListBaseAdapter(mActivity, mImageFetcher, mS3RequestHelper, mWrapperInformation);
-
-        mVideoGallery.setAdapter(mVideoGalleryAdapter);
-
-        mVideoGalleryAdapter.setOnCustomItemClickListener(mListener);
-        mReplyBtn = (ImageButton) view.findViewById(R.id.btn_video_reply);
-
-        mReplyBtn.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // XXX: pass in the watched ids here
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, conversation.getConversationName(), new ArrayList<String>());
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(null)
-                        .commitAllowingStateLoss();
-
-            }
-        });
-
-        mTxtVideoInfo = (TextView) mRootView.findViewById(R.id.txtVideoInfo);
+        TaskExecuter executer = new TaskExecuter();
+        executer.executeTask(t);
     }
 
-    int currentPlayingPosition;
-    OnCustomItemClickListener mListener = new OnCustomItemClickListener() {
-
-        @Override
-        public void onItemClicked(int position, View convertView) {
-
-            LogUtil.i("Clicked ON: " + position);
-            currentPlayingPosition = position;
-            VideoModel model = mVideoGalleryAdapter.getItem(position);
-
-            try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-                Date date = df.parse(model.getCreateDate());
-                mTxtVideoInfo.setText(model.getSenderName() + " " + ConversionUtil.timeAgo(date));
-
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            mWrapperInformation.setVisibility(View.VISIBLE);
-            mWrapperInformation.setTag(convertView);
-        }
-    };
-
-    /**
-     * Create a new instance of CountingFragment, providing "num" as an
-     * argument.
-     */
-    public static ConversationFragment newInstance(long conversation_id) {
-
-        ConversationFragment f = new ConversationFragment();
-
-        // Supply num input as an argument.
-        Bundle args = new Bundle();
-        args.putLong("conv_id", conversation_id);
-        f.setArguments(args);
-        return f;
-    }
-
-    /**
-     * Create a new instance of CountingFragment, providing "num" as an
-     * argument.
-     */
-    public static ConversationFragment newInstance(long conversation_id, boolean startRecording) {
-
-        ConversationFragment f = new ConversationFragment();
-
-        // Supply num input as an argument.
-        Bundle args = new Bundle();
-        args.putLong("conv_id", conversation_id);
-        args.putBoolean("startRecording", startRecording);
-        f.setArguments(args);
-        return f;
-    }
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (IABIntent.isIntent(intent, IABIntent.UPLOAD_VIDEO_UPDATE)) {
-                /*
-                 * ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU .getDM() .getObjectForToken( intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
-                 * 
-                 * //Currently that's only last one, going to update this logic later when it gets //more usage mVideos.remove(mVideos.size() - 1); mVideos.add(tempVideos.get(0));
-                 * mVideoGalleryAdapter.notifyDataSetChanged(); if (mVideoGalleryAdapter.getCount() > 0) { setGalleryToEnd(); }
-                 */
-
-                // stops the progress
-                for (int i = 0; i < mVideoGalleryAdapter.mUploadingHelper.size(); i++) {
-                    mVideoGalleryAdapter.mUploadingHelper.get(i).getProgressHelper().hideLoader();
-                    mVideoGalleryAdapter.mUploadingHelper.get(i).getTxtSent().setVisibility(View.VISIBLE);
-                }
-
-                if (mVideos != null) {
-                    for (int i = 0; i < mVideos.size(); i++) {
-                        // XXX: This code for updating the model should be set elsewhere probably after we posted successfully
-                        if (mVideos.get(i).isUploading()) {
-                            mVideos.get(i).setUploading(false);
-                            mVideos.get(i).setSent(true);
-                        }
-                    }
-                }
-
-                mVideoGalleryAdapter.mUploadingHelper.clear();
-            } else if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATION_VIDEOS)) {
-
-                ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
-
-                // helper.getS3URLParams(generateUploadParams(hash,
-                // intent.getStringExtra(IABIntent.PARAM_ID)));
-
-                // TODO - Sajjad : Review this!
-                if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
-                    LogUtil.i("Setting: same data set");
-                    return;
-                }
-
-                mVideos = (ArrayList<VideoModel>) tempVideos.clone();
-
-                // TODO: Come back here for review, what is being cached here, and how is it related to Upload.
-                if (UploadCacheUtil.hasVideoCache(mActivity, mConversationId)) {
-                    // upload service running
-                    if (isUploadRunning()) {
-                        JSONArray caches = UploadCacheUtil.getCacheFlags(mActivity, mConversationId);
-                        for (int i = 0; i < caches.length(); i++) {
-                            try {
-                                VideoModel tmpmodel = JsonModelUtil.createVideo(caches.getJSONObject(i));
-                                mVideos.add(tmpmodel);
-                            } catch (JSONException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        }
-                    } else {
-                        // if service is no longer running, clean the cache.
-                        UploadCacheUtil.clearCache(mActivity, mConversationId);
-                    }
-                }
-
-                if (mVideos != null) {
-
-                    LogUtil.i("Setting Received videos: " + mVideos.size());
-
-                    if (mVideoGalleryAdapter.getCount() == 0) {
-                        mVideoGalleryAdapter.setListItems(mVideos);
-                    }
-                    mVideoGalleryAdapter.notifyDataSetChanged();
-                    LogUtil.d("Setting new Videos size: " + mVideos.size());
-
-                    // TODO: Fix issues here
-                    LogUtil.i("Setting center index: " + mVideos.size());
-                    LogUtil.i("Setting count index: " + mVideoGalleryAdapter.getCount());
-                    if (mVideoGalleryAdapter.getCount() > 0) {
-                        setGalleryToEnd();
-                    }
-                }
-                ConversationFragment.this.stopLoading();
-            }
-        }
-    };
-
-    /**
-     * check if service is running
-     * @param tmp
-     * @return
-     */
-    public boolean isUploadRunning() {
-        ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void setGalleryToEnd() {
-        mVideoGallery.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("sajjad", "scroll to bottom");
-                // mVideoGallery.scrollToBottom();
-            }
-        });
-    }
 }

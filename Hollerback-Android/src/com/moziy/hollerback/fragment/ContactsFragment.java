@@ -30,15 +30,12 @@ import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.activeandroid.ActiveAndroid;
-import com.activeandroid.query.Delete;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.HollerbackInterfaces.OnContactSelectedListener;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.adapter.ContactsListAdapter;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.service.VideoUploadService;
@@ -247,9 +244,6 @@ public class ContactsFragment extends BaseFragment {
 
         ArrayList<UserModel> contactItemList = new ArrayList<UserModel>();
 
-        ActiveAndroid.beginTransaction();
-        new Delete().from(ConversationModel.class).execute();
-
         for (int i = 0; i < count; i++) {
 
             String displayName = c.getString(displayNameColIndex);
@@ -273,9 +267,6 @@ public class ContactsFragment extends BaseFragment {
             contactItem.save();
             boolean b2 = c.moveToNext();
         }
-
-        ActiveAndroid.setTransactionSuccessful();
-        ActiveAndroid.endTransaction();
 
         c.close();
 

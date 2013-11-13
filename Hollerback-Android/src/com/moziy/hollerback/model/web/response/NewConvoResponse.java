@@ -19,9 +19,4 @@ public class NewConvoResponse implements ResponseObject {
 
     public ArrayList<VideoModel> videos; // TODO - sajjad: Re-evaluate this to see if "VideoModel" is the appropriate model to use here
 
-    @Override
-    public String toString() {
-        return "NewConvoResponse [id=" + id + ", unread_count=" + unread_count + ", members=" + members + ", invites=" + invites + ", videos=" + videos + "]";
-    }
-
 }

@@ -13,11 +13,12 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.helper.S3RequestHelper;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
-import com.moziy.hollerback.model.web.response.NewConvoResponse;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
@@ -73,7 +74,7 @@ public class VideoUploadIntentService extends IntentService {
             postToNewConversation(model);
             Log.d(TAG, "returning..");
 
-        } else {
+        } else { // a conversation exists
 
             // if it's pending upload and not transacting
             if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
@@ -154,11 +155,11 @@ public class VideoUploadIntentService extends IntentService {
         // parts.add(sb.toString());
         // }
 
-        HBRequestManager.postConversations(contacts, new HBSyncHttpResponseHandler<Envelope<NewConvoResponse>>(new TypeReference<Envelope<NewConvoResponse>>() {
+        HBRequestManager.postConversations(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
         }) {
 
             @Override
-            public void onResponseSuccess(int statusCode, Envelope<NewConvoResponse> response) {
+            public void onResponseSuccess(int statusCode, Envelope<ConversationModel> response) {
 
                 // let's check the thread it
                 Log.d(TAG, "thread id: " + Thread.currentThread().getId());
@@ -167,18 +168,30 @@ public class VideoUploadIntentService extends IntentService {
                 model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
                 model.clearTransacting();
 
-                NewConvoResponse conversationResp = response.getData();
+                ConversationModel conversationResp = response.getData();
 
                 // lets bind the video to the conversation
-                model.setConversationId(conversationResp.id);
+                model.setConversationId(conversationResp.getConversation_Id());
                 model.save();
+
+                // if the conversation we created, is actually found in our db, then update it
+                ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversation_Id()).executeSingle();
+                if (dbConvo != null) {
+                    Log.d(TAG, "deleting record: " + dbConvo.toString());
+                    // delete record
+                    dbConvo.delete();
+                }
+
+                // inserting
+                Log.d(TAG, "inserting: " + conversationResp.toString());
+                conversationResp.save();
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
 
                 // launch the
 
                 // lets create a new conversation from the response
-                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.id);
+                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversation_Id());
             }
 
             @Override
@@ -214,8 +227,9 @@ public class VideoUploadIntentService extends IntentService {
         }
 
         int convoId = (int) model.getConversationId();
-        HBRequestManager.postToConversation(convoId, partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(new TypeReference<Envelope<PostToConvoResponse>>() {
-        }) {
+        HBRequestManager.postToConversation(convoId, model.getGuid(), partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(
+                new TypeReference<Envelope<PostToConvoResponse>>() {
+                }) {
 
             @Override
             public void onResponseSuccess(int statusCode, Envelope<PostToConvoResponse> response) {

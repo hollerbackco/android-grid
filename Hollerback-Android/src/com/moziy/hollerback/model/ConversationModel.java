@@ -14,7 +14,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     /**
      * 
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 776201028447951350L;
 
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
@@ -44,7 +44,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     private String most_recent_subtitle;
 
     @Column(name = ActiveRecordFields.C_CONV_MOST_RECENT_THUMB_URL)
-    @JsonProperty("most_recent_thum_url")
+    @JsonProperty("most_recent_thumb_url")
     private String most_recent_thumb_url;
 
     @Column(name = ActiveRecordFields.C_CONV_UNSEEN_COUNT)
