@@ -14,7 +14,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     /**
      * 
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 776201028447951350L;
 
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
