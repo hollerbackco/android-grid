@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 
+import com.activeandroid.ActiveAndroid;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
+        ActiveAndroid.setLoggingEnabled(true);
 
         initObjectMapper();
 

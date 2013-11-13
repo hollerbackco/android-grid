@@ -65,6 +65,9 @@
         <meta-data
             android:name="AA_DB_VERSION"
             android:value="1" />
+        <meta-data
+            android:name="AA_SERIALIZERS"
+            android:value="com.moziy.hollerback.activeandroid.StringArraySerializer" />
 
         <activity
             android:name="com.moziy.hollerback.activity.SplashScreenActivity"
