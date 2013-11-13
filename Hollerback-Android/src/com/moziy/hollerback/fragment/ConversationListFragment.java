@@ -109,7 +109,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         super.onDestroyView();
         mTxtSearch.removeTextChangedListener(filterTextWatcher);
         IABroadcastManager.unregisterLocalReceiver(receiver);
-        Log.d(FRAGMENT_TAG, "onDestroy");
+        Log.d(FRAGMENT_TAG, "onDestroyView");
 
     }
 
@@ -289,11 +289,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 mReceiver = new SyncReceiver(this);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
 
                 // start the sync intent service
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), SyncService.class);
                 getActivity().startService(intent);
+            }
+
+            @Override
+            public void onContentChanged() {
+                mConvos = null; // delete the contents
+                Log.d(FRAGMENT_TAG, "removing convos");
+                super.onContentChanged();
             }
 
             @Override
@@ -311,6 +319,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             @Override
             public List<ConversationModel> loadInBackground() {
+                Log.d(FRAGMENT_TAG, "thread id: " + Thread.currentThread().getId());
                 mConvos = new Select().all().from(ConversationModel.class).execute();
                 Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
