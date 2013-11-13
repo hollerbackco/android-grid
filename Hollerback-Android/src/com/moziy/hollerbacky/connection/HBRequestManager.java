@@ -296,10 +296,11 @@ public class HBRequestManager {
         }
     }
 
-    public static void postToConversation(int convoId, ArrayList<String> partUrls, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {
+    public static void postToConversation(int convoId, String guid, ArrayList<String> partUrls, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+            params.put(HollerbackAPI.PARAM_GUID, guid);
             params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
             params.put(HollerbackAPI.PARAM_WATCHED_IDS, watchedIds);
             params.put(HollerbackAPI.PARAM_SUBTITLE, "");

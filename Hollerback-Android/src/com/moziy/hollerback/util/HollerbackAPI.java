@@ -102,4 +102,6 @@ public class HollerbackAPI {
     public static final String PARAM_SUBTITLE = "subtitle";
 
     public static final String PARAM_UPDATED_AT = "updated_at";
+
+    public static final String PARAM_GUID = "guid";
 }
