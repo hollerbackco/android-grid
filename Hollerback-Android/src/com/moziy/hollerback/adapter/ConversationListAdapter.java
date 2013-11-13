@@ -52,7 +52,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
     public void setConversations(List<ConversationModel> conversations) {
         mConversations = conversations;
-        mFilteredConversations = conversations;
+        mFilteredConversations = new ArrayList<ConversationModel>();
+        mFilteredConversations.addAll(mConversations);
         this.notifyDataSetChanged();
     }
 
@@ -114,7 +115,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
         try {
-            Date date = df.parse(mFilteredConversations.get(position).getCreateTime());
+            Date date = df.parse(mFilteredConversations.get(position).getLastMessageAt());
             viewHolder.conversationTime.setText(ConversionUtil.timeAgo(date));
         } catch (ParseException e) {
             e.printStackTrace();
@@ -132,7 +133,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 // I changed it to be "long" everywhere :)
 
                 // XXX: Make sure that the watched ids are sent here
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mFilteredConversations.get(position).getConversation_Id(), true, mFilteredConversations.get(position)
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mFilteredConversations.get(position).getConversationId(), true, mFilteredConversations.get(position)
                         .getConversationName(), new ArrayList<String>());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .addToBackStack(RecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
