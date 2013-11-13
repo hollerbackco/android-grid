@@ -93,7 +93,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
                     new Select()//
                             .from(VideoModel.class) //
-                            .where(ActiveRecordFields.C_VID_CONV_ID + " = ? AND " + ActiveRecordFields.C_VID_ISREAD + " = ?", mConvoId, 0))); //
+                            .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_ISREAD + "=?", mConvoId, 0))); //
 
             // figure out how many tasks we need to create
             worker = new AbsTaskWorker() {
@@ -331,8 +331,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             }
         });
-
-        // delete the file from the
 
         TaskExecuter executer = new TaskExecuter();
         executer.executeTask(t);

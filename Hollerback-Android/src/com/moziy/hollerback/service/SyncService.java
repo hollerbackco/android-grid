@@ -118,7 +118,7 @@ public class SyncService extends IntentService {
                     convoWhereClauseBuilder.append(" OR ");
                 }
 
-                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append(" = ").append("'").append(convo.getConversation_Id()).append("'");
+                convoWhereClauseBuilder.append(ActiveRecordFields.C_CONV_ID).append("=").append(convo.getConversation_Id());
 
             } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
 
@@ -131,7 +131,7 @@ public class SyncService extends IntentService {
                     videoWhereClauseBuilder.append(" OR ");
                 }
 
-                videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append(" = ").append("'").append(video.getGuid()).append("'");
+                videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append("=").append("'").append(video.getGuid()).append("'");
             }
         }
 
@@ -141,41 +141,51 @@ public class SyncService extends IntentService {
         List<VideoModel> existingVideos = new Select().from(VideoModel.class).where(videoWhereClauseBuilder.toString()).execute();
         List<ConversationModel> existingConvos = new Select().from(ConversationModel.class).where(convoWhereClauseBuilder.toString()).execute();
 
-        // remove existing model for our list
-        conversations.removeAll(existingConvos);
-        videos.removeAll(existingVideos);
+        Log.d(TAG, "existing videos: " + (existingVideos != null ? existingVideos.size() : 0));
+        Log.d(TAG, "existing convos: " + (existingConvos != null ? existingConvos.size() : 0));
 
-        // if updating fails for any reason, then clear the preference that saves the last sync time
+        // remove existing model for our list
+        // conversations.removeAll(existingConvos);
+        // videos.removeAll(existingVideos);
         ActiveAndroid.beginTransaction();
         try {
+            // if updating fails for any reason, then clear the preference that saves the last sync time
             if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
+
                 for (VideoModel v : existingVideos) {
                     Log.d(TAG, "deleting video with id: " + v.getGuid());
                     v.delete();
                 }
+
             }
 
-            // insert the remaining videos into the database
-            for (VideoModel v : videos) {
-                Log.d(TAG, "adding video: " + v.getGuid() + " " + v.toString());
-                v.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
-                v.save();
+            if (!videos.isEmpty()) {
+
+                // insert the remaining videos into the database
+                for (VideoModel v : videos) {
+                    Log.d(TAG, "adding video: " + v.getGuid() + " " + v.toString());
+                    v.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
+                    v.save();
+                }
             }
 
             if (!existingConvos.isEmpty()) {
+
                 for (ConversationModel c : existingConvos) {
                     Log.d(TAG, "deleting convo with id: " + c.getConversation_Id());
                     c.delete();
                 }
+
             }
 
-            for (ConversationModel c : conversations) {
-                Log.d(TAG, "adding convo: " + c.toString());
-                c.save();
-            }
+            if (!conversations.isEmpty()) {
 
+                for (ConversationModel c : conversations) {
+                    Log.d(TAG, "adding convo: " + c.toString());
+                    c.save();
+                }
+            }
             ActiveAndroid.setTransactionSuccessful();
-
         } finally {
             ActiveAndroid.endTransaction();
         }
