@@ -52,8 +52,8 @@ public class SyncService extends IntentService {
     private void sync() {
         String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
 
-        // TEST
-        lastSynctime = null;
+        // // TEST
+        // lastSynctime = null;
         final long start = System.currentTimeMillis();
         HBRequestManager.sync(lastSynctime, new HBSyncHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {
         }) {
