@@ -50,7 +50,7 @@ public class SyncService extends IntentService {
     }
 
     private void sync() {
-        String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
+        final String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
 
         // // TEST
         // lastSynctime = null;
@@ -65,6 +65,7 @@ public class SyncService extends IntentService {
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
                 // lets save the sync time
+
                 updateModel(response.data);
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
 
@@ -72,6 +73,10 @@ public class SyncService extends IntentService {
 
             @Override
             public void onApiFailure(Metadata metaData) {
+
+                // if there was an error, lets update the sync time to the last one we had
+                PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, lastSynctime);
+
                 Log.w(TAG, "connection failure during sync");
                 if (metaData != null) {
                     Log.w(TAG, "metaData code: " + metaData.code);
