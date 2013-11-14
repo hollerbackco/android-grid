@@ -1,7 +1,9 @@
 package com.moziy.hollerback.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -81,6 +83,11 @@ public class SyncService extends IntentService {
 
     }
 
+    // XXX: handle the case where server.last_msg_at < client.last_msg_at, but a video has been sent down that doesn't exist in the client db
+    /**
+     *
+     * @param data
+     */
     private void updateModel(ArrayList<SyncResponse> data) {
 
         if (data == null || data.isEmpty()) {
@@ -92,11 +99,8 @@ public class SyncService extends IntentService {
 
         long start = System.currentTimeMillis();
 
-        List<ConversationModel> conversations = new ArrayList<ConversationModel>();
-        List<VideoModel> videos = new ArrayList<VideoModel>();
-
-        List<Long> conversationIds = new ArrayList<Long>();
-        List<String> videoIds = new ArrayList<String>();
+        Map<Long, ConversationModel> newConvoMap = new HashMap<Long, ConversationModel>();
+        Map<String, VideoModel> newVideoMap = new HashMap<String, VideoModel>();
 
         StringBuilder convoWhereClauseBuilder = new StringBuilder(128);
         StringBuilder videoWhereClauseBuilder = new StringBuilder(128);
@@ -110,8 +114,7 @@ public class SyncService extends IntentService {
             if (SyncResponse.Type.CONVERSATION.equals(syncResponse.type)) {
 
                 ConversationModel convo = (ConversationModel) syncResponse.sync;
-                conversations.add(convo);
-                conversationIds.add(convo.getId());
+                newConvoMap.put(convo.getConversationId(), convo);
                 ++convoCount;
 
                 if (convoCount > 1) {
@@ -123,8 +126,7 @@ public class SyncService extends IntentService {
             } else if (SyncResponse.Type.MESSAGE.equals(syncResponse.type)) {
 
                 VideoModel video = (VideoModel) syncResponse.sync;
-                videos.add(video);
-                videoIds.add(video.getGuid());
+                newVideoMap.put(video.getGuid(), video);
                 ++videoCount;
 
                 if (videoCount > 1) {
@@ -134,9 +136,6 @@ public class SyncService extends IntentService {
                 videoWhereClauseBuilder.append(ActiveRecordFields.C_VID_GUID).append("=").append("'").append(video.getGuid()).append("'");
             }
         }
-
-        Log.d(TAG, "received " + conversations.size() + " conversations");
-        Log.d(TAG, "received " + videos.size() + " videos");
 
         List<VideoModel> existingVideos = new Select().from(VideoModel.class).where(videoWhereClauseBuilder.toString()).execute();
         List<ConversationModel> existingConvos = new Select().from(ConversationModel.class).where(convoWhereClauseBuilder.toString()).execute();
@@ -149,41 +148,50 @@ public class SyncService extends IntentService {
         // videos.removeAll(existingVideos);
         ActiveAndroid.beginTransaction();
         try {
+
             // if updating fails for any reason, then clear the preference that saves the last sync time
             if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
-
-                for (VideoModel v : existingVideos) {
-                    Log.d(TAG, "deleting video with id: " + v.getGuid());
-                    v.delete();
+                for (VideoModel existingVideo : existingVideos) { // a video's state should not change on the server once we recieve it on the client
+                    Log.d(TAG, "KEEPING:\n" + existingVideo.toString());
+                    // lets lookup the new video, and make sure that we don't update it
+                    newVideoMap.remove(existingVideo.getGuid());
                 }
-
             }
 
-            if (!videos.isEmpty()) {
-
+            if (!newVideoMap.isEmpty()) {
                 // insert the remaining videos into the database
-                for (VideoModel v : videos) {
-                    Log.d(TAG, "adding video: " + v.getGuid() + " " + v.toString());
-                    v.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
-                    v.save();
+                for (VideoModel newVideo : newVideoMap.values()) {
+                    newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
+                    newVideo.setState(VideoModel.ResourceState.UNWATCHED);
+                    newVideo.save();
+                    Log.d(TAG, "ADDING:\n " + newVideo.toString());
                 }
+
             }
 
             if (!existingConvos.isEmpty()) {
 
-                for (ConversationModel c : existingConvos) {
-                    Log.d(TAG, "deleting convo with id: " + c.getConversationId());
-                    c.delete();
+                for (ConversationModel existingConversation : existingConvos) {
+                    // lookup the new conversation and look at the last message time
+                    ConversationModel newConversation = newConvoMap.get(existingConversation.getConversationId());
+                    if (newConversation.getLastMessageAtInMillis() <= existingConversation.getLastMessageAtInMillis()) {
+                        newConvoMap.remove(newConversation.getConversationId());
+                        Log.d(TAG, "KEEPING:\n" + newConversation.toString());
+                    } else {
+                        Log.d(TAG, "DELETING:\n" + existingConversation.toString());
+                        existingConversation.delete(); // delete it so that it gets updated
+                    }
                 }
 
             }
 
-            if (!conversations.isEmpty()) {
+            if (!newConvoMap.isEmpty()) {
 
-                for (ConversationModel c : conversations) {
-                    Log.d(TAG, "adding convo: " + c.toString());
-                    c.save();
+                for (ConversationModel newConversation : newConvoMap.values()) {
+                    newConversation.save();
+                    Log.d(TAG, "ADDING:\n" + newConversation.toString());
                 }
+
             }
             ActiveAndroid.setTransactionSuccessful();
         } finally {
