@@ -153,7 +153,7 @@ public class SyncService extends IntentService {
             if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
                 for (VideoModel existingVideo : existingVideos) { // a video's state should not change on the server once we recieve it on the client
                     Log.d(TAG, "KEEPING:\n" + existingVideo.toString());
-                    // lets lookup the new video, and make sure that we don't update it
+                    // lets lookup the new video, and make sure that we don't update it unless the update time of the video is different than our update time
                     newVideoMap.remove(existingVideo.getGuid());
                 }
             }
@@ -162,7 +162,7 @@ public class SyncService extends IntentService {
                 // insert the remaining videos into the database
                 for (VideoModel newVideo : newVideoMap.values()) {
                     newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
-                    newVideo.setState(VideoModel.ResourceState.UNWATCHED);
+                    newVideo.setWatchedState(VideoModel.ResourceState.UNWATCHED);
                     newVideo.save();
                     Log.d(TAG, "ADDING:\n " + newVideo.toString());
                 }

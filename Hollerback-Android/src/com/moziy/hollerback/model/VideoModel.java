@@ -155,38 +155,47 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         this.local_filename = fileName;
     }
 
+    // used for watching
     public boolean isRead() {
         return isRead;
     }
 
+    // used for watching
     public void setRead(boolean isRead) {
         this.isRead = isRead;
     }
 
+    // used when watching
     public String getWatchedState() {
         return watched_state;
     }
 
+    // used when watching)
     public void setWatchedState(String watchedState) {
         watched_state = watchedState;
     }
 
+    // used in all cases when transacting (both watching, uploading, downloading)
     public void setState(String state) {
         this.state = state;
     }
 
+    // used in all cases when transacting (both watching, uploading, downloading)
     public String getState() {
         return this.state;
     }
 
+    // used in all cases when transacting (both watching, uploading, downloading)
     public void setTransacting() {
         transacting = true;
     }
 
+    // used in all cases when transacting (both watching, uploading, downloading)
     public void clearTransacting() {
         transacting = false;
     }
 
+    // used in all cases when transacting (both watching, uploading, downloading)
     public boolean isTransacting() {
         return transacting;
     }
@@ -208,26 +217,31 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         this.guid = guid;
     }
 
+    // used when uploading a video - recording
     public int getNumParts() {
         return num_parts;
     }
 
+    // used when uploading a video
     public void setNumParts(int parts) {
         this.num_parts = parts;
         this.part_upload_state = Arrays.copyOf(this.part_upload_state, parts);
 
     }
 
+    // used when uploading a video
     public void setPartUploadState(int part, boolean state) {
         if (part_upload_state.length > part) {
             part_upload_state[part] = state;
         }
     }
 
+    // used when uploading a video
     public boolean getPartUploadState(int part) {
         return part_upload_state[part];
     }
 
+    // used when uploading a video
     public boolean isUploadSuccessfull() {
         for (int i = 0; i < part_upload_state.length; i++) {
             if (part_upload_state[i] == false)
@@ -236,34 +250,42 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
         return true;
     }
 
+    // used when uploading a video
     public boolean isSegmented() {
         return is_segmented;
     }
 
+    // used when uploading a video
     public void setSegmented(boolean segmented) {
         is_segmented = true;
     }
 
+    // used when uploading a video
     public String getSegmentFileName() {
         return segment_filename;
     }
 
+    // used when uploading a video
     public void setSegmentFileName(String name) {
         segment_filename = name;
     }
 
+    // used when uploading a video
     public String getSegmentFileExtension() {
         return segment_file_extension;
     }
 
+    // used when uploading a video
     public void setSegmentFileExtension(String extension) {
         this.segment_file_extension = extension;
     }
 
+    // used when creating a conversation
     public String[] getRecipients() {
         return recipients;
     }
 
+    // used when creating a conversation
     public void setRecipients(String[] recipients) {
         this.recipients = recipients;
     }

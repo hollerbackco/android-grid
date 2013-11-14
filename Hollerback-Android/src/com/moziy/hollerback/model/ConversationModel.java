@@ -1,12 +1,15 @@
 package com.moziy.hollerback.model;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Date;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
+import com.moziy.hollerback.util.TimeUtil;
 
 @Table(name = ActiveRecordFields.T_CONVERSATION)
 public class ConversationModel extends BaseModel implements Serializable, SyncPayload {
@@ -106,6 +109,18 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     public String getLastMessageAt() {
         return last_message_at;
 
+    }
+
+    public long getLastMessageAtInMillis() {
+        try {
+            Date d = TimeUtil.SERVER_TIME_FORMAT.parse(last_message_at);
+            return d.getTime();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 
     public void setUrl(String value) {

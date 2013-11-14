@@ -8,6 +8,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,6 +18,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
@@ -44,6 +46,8 @@ public class VideoUploadIntentService extends IntentService {
     public static final String INTENT_ARG_PART = "part_number"; // optional if the intent is to just post
     // type: int
     public static final String INTENT_ARG_TOTAL_PARTS = "total_parts";
+    // type: long
+    public static final String INTENT_ARG_TIMESTAMP = "timestamp";
 
     public interface Type {
         public static final String NEW_CONVERSATION = "new_conversation";
@@ -85,11 +89,8 @@ public class VideoUploadIntentService extends IntentService {
 
             // now if the model state is pending post and it's not transacting, then let's go ahead and post
             if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
-                // broadcast that we're posting?
-                // a conversation must definitely be present
-                // extract the needed information, such as the watched ids
-                final ArrayList<String> watchedIds = (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
-                postToExistingConversation(model, watchedIds);
+
+                postToExistingConversation(model);
 
             }
         }
@@ -155,7 +156,7 @@ public class VideoUploadIntentService extends IntentService {
         // parts.add(sb.toString());
         // }
 
-        HBRequestManager.postConversations(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
+        HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
         }) {
 
             @Override
@@ -211,7 +212,16 @@ public class VideoUploadIntentService extends IntentService {
         return true;
     }
 
-    private boolean postToExistingConversation(final VideoModel model, ArrayList<String> watchedIds) {
+    private boolean postToExistingConversation(final VideoModel model) {
+
+        // get all watched videos
+        final List<VideoModel> watchedVideos = getWatchedVideos();
+
+        // mark them as transacting
+        setVideosAsTransacting(watchedVideos);
+
+        // get all the ids corresponding to the videos
+        ArrayList<String> watchedIds = getWatchedIds(watchedVideos);
 
         ArrayList<String> partUrls = new ArrayList<String>();
         for (int i = 0; i < model.getNumParts(); i++) {
@@ -236,19 +246,102 @@ public class VideoUploadIntentService extends IntentService {
                 PostToConvoResponse postResponse = response.getData();
                 Log.d(TAG, "posted to conversation: " + postResponse.conversation_id);
 
+                // update the video such that it's state is uploaded
+                model.setState(ResourceState.UPLOADED);
+                model.save();
+
+                // update the videos as watched
+                markVideosAsWatched(watchedVideos);
+
                 // update model with the post repsonse
+                clearVideoTransacting(watchedVideos);
 
             }
 
             @Override
             public void onApiFailure(Metadata metaData) {
                 Log.d(TAG, "post to conversation failed");
-
                 // broadcast failure of posting conversation
+                clearVideoTransacting(watchedVideos);
 
             }
         });
 
         return true;
     }
+
+    // TODO - Food for thought..move these methods into a utility class?
+
+    private List<VideoModel> getWatchedVideos() {
+
+        List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
+        return watchedVideos;
+    }
+
+    private ArrayList<String> getWatchedIds(List<VideoModel> watchedVideos) {
+
+        final ArrayList<String> watchedIds = new ArrayList<String>();// (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
+
+        for (VideoModel watchedVideo : watchedVideos) {
+            watchedIds.add(watchedVideo.getGuid());
+        }
+        // lets just query the watched ids
+
+        return watchedIds;
+    }
+
+    private void markVideosAsWatched(List<VideoModel> watchedVideos) {
+        if (watchedVideos.isEmpty()) {
+            return;
+        }
+
+        // udpate all the watched videos state to watched
+        ActiveAndroid.beginTransaction();
+        try {
+            for (VideoModel v : watchedVideos) {
+                v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+                v.save();
+            }
+
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+    private void setVideosAsTransacting(List<VideoModel> videos) {
+
+        if (videos.isEmpty())
+            return;
+
+        ActiveAndroid.beginTransaction();
+
+        try {
+            for (VideoModel watchedVideo : videos) {
+                watchedVideo.setTransacting();
+                watchedVideo.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+    private void clearVideoTransacting(List<VideoModel> videos) {
+        if (videos.isEmpty())
+            return;
+
+        ActiveAndroid.beginTransaction();
+
+        try {
+            for (VideoModel watchedVideo : videos) {
+                watchedVideo.clearTransacting();
+                watchedVideo.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
 }
