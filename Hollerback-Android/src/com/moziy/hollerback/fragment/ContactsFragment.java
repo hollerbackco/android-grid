@@ -301,7 +301,7 @@ public class ContactsFragment extends BaseFragment {
         ArrayList<String> contacts = new ArrayList<String>();
         contacts.addAll(Arrays.asList(phones));
 
-        HBRequestManager.postConversations(contacts, new JsonHttpResponseHandler() {
+        HBRequestManager.createNewConversation(contacts, new JsonHttpResponseHandler() {
 
             @Override
             protected Object parseResponse(String arg0) throws JSONException {
