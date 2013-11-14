@@ -5,11 +5,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.flurry.android.FlurryAgent;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.WelcomeFragment;
-import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
 
 public class WelcomeFragmentActivity extends SherlockFragmentActivity {
@@ -33,7 +31,6 @@ public class WelcomeFragmentActivity extends SherlockFragmentActivity {
         initFragment();
 
         HollerbackApplication.getInstance().registerGCM();
-        FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
     }
 
     OnGCMReceivedListener mGCMListener = new OnGCMReceivedListener() {
@@ -64,7 +61,6 @@ public class WelcomeFragmentActivity extends SherlockFragmentActivity {
     @Override
     protected void onStop() {
         // TODO Auto-generated method stub
-        FlurryAgent.onEndSession(this);
         super.onStop();
     }
 
