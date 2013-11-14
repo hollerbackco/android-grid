@@ -1,6 +1,5 @@
 package com.moziy.hollerback.fragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -30,18 +29,17 @@ import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.SettingPreferenceActivity;
 import com.moziy.hollerback.adapter.ConversationListAdapter;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.SyncService;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.QU;
 
 public class ConversationListFragment extends BaseFragment implements OnConversationsUpdated, LoaderCallbacks<List<ConversationModel>> {
 
@@ -51,8 +49,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     private ViewGroup mHeader;
     private EditText mTxtSearch;
 
-    PullToRefreshListView mConversationList;
-    ListView lsvBaseListView;
+    // PullToRefreshListView mConversationList;
+    // ListView lsvBaseListView;
+    ListView mConversationList;
 
     ConversationListAdapter mConversationListAdapter;
 
@@ -89,14 +88,14 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         // TODO Auto-generated method stub
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
-        IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
+        // IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
 
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        IABroadcastManager.unregisterLocalReceiver(receiver);
+        // IABroadcastManager.unregisterLocalReceiver(receiver);
         if (mTxtSearch != null) {
             InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mTxtSearch.getWindowToken(), 0);
@@ -108,22 +107,22 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         // TODO Auto-generated method stub
         super.onDestroyView();
         mTxtSearch.removeTextChangedListener(filterTextWatcher);
-        IABroadcastManager.unregisterLocalReceiver(receiver);
+        // IABroadcastManager.unregisterLocalReceiver(receiver);
         Log.d(FRAGMENT_TAG, "onDestroyView");
 
     }
 
     @Override
     protected void initializeView(View view) {
-        mConversationList = (PullToRefreshListView) view.findViewById(R.id.message_listview);
+        mConversationList = (ListView) view.findViewById(R.id.message_listview);
 
         mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
         mTxtSearch.addTextChangedListener(filterTextWatcher);
 
-        lsvBaseListView = mConversationList.getRefreshableView();
-        lsvBaseListView.addHeaderView(mHeader);
-        mConversationList.setShowIndicator(false);
-        mConversationList.setPullToRefreshEnabled(false);
+        // lsvBaseListView = mConversationList.getRefreshableView();
+        // lsvBaseListView.addHeaderView(mHeader);
+        // mConversationList.setShowIndicator(false);
+        // mConversationList.setPullToRefreshEnabled(false);
         // mConversationList.setOnRefreshListener(new OnRefreshListener() {
         //
         // @Override
@@ -212,26 +211,26 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         return f;
     }
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATIONS)) {
-                // mConversationListAdapter
-                // .setConversations(TempMemoryStore.conversations);
-                String hash = intent.getStringExtra(IABIntent.PARAM_INTENT_DATA);
-
-                ArrayList<ConversationModel> conversations = (ArrayList<ConversationModel>) QU.getDM().getObjectForToken(hash);
-
-                mConversationListAdapter.setConversations(conversations);
-                mConversationListAdapter.notifyDataSetChanged();
-
-                mConversationList.onRefreshComplete();
-                ConversationListFragment.this.stopLoading();
-            }
-
-        }
-    };
+    // BroadcastReceiver receiver = new BroadcastReceiver() {
+    //
+    // @Override
+    // public void onReceive(Context context, Intent intent) {
+    // if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATIONS)) {
+    // // mConversationListAdapter
+    // // .setConversations(TempMemoryStore.conversations);
+    // String hash = intent.getStringExtra(IABIntent.PARAM_INTENT_DATA);
+    //
+    // ArrayList<ConversationModel> conversations = (ArrayList<ConversationModel>) QU.getDM().getObjectForToken(hash);
+    //
+    // mConversationListAdapter.setConversations(conversations);
+    // mConversationListAdapter.notifyDataSetChanged();
+    //
+    // // mConversationList.onRefreshComplete();
+    // ConversationListFragment.this.stopLoading();
+    // }
+    //
+    // }
+    // };
 
     private TextWatcher filterTextWatcher = new TextWatcher() {
 
@@ -321,7 +320,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             public List<ConversationModel> loadInBackground() {
                 Log.d(FRAGMENT_TAG, "thread id: " + Thread.currentThread().getId());
-                mConvos = new Select().all().from(ConversationModel.class).execute();
+                mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
                 Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
             }
