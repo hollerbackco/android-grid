@@ -290,6 +290,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
+                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_UPDATED); // if a conversation got updated, lets repopulate
 
                 // start the sync intent service
                 Intent intent = new Intent();
