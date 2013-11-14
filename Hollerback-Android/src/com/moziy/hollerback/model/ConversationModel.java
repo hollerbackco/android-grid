@@ -111,6 +111,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
 
     }
 
+    public void setLastMessageAt() {
+        last_message_at = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+    }
+
     public long getLastMessageAtInMillis() {
         try {
             Date d = TimeUtil.SERVER_TIME_FORMAT.parse(last_message_at);

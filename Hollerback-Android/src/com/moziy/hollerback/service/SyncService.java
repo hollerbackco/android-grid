@@ -65,8 +65,8 @@ public class SyncService extends IntentService {
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
                 // lets save the sync time
-                PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
                 updateModel(response.data);
+                PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
 
             }
 
@@ -137,8 +137,15 @@ public class SyncService extends IntentService {
             }
         }
 
-        List<VideoModel> existingVideos = new Select().from(VideoModel.class).where(videoWhereClauseBuilder.toString()).execute();
-        List<ConversationModel> existingConvos = new Select().from(ConversationModel.class).where(convoWhereClauseBuilder.toString()).execute();
+        List<VideoModel> existingVideos = new ArrayList<VideoModel>();
+        if (!newVideoMap.isEmpty()) {
+            existingVideos = new Select().from(VideoModel.class).where(videoWhereClauseBuilder.toString()).execute();
+        }
+
+        List<ConversationModel> existingConvos = new ArrayList<ConversationModel>();
+        if (!newConvoMap.isEmpty()) {
+            existingConvos = new Select().from(ConversationModel.class).where(convoWhereClauseBuilder.toString()).execute();
+        }
 
         Log.d(TAG, "existing videos: " + (existingVideos != null ? existingVideos.size() : 0));
         Log.d(TAG, "existing convos: " + (existingConvos != null ? existingConvos.size() : 0));
