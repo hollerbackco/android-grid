@@ -119,6 +119,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
         mTxtSearch.addTextChangedListener(filterTextWatcher);
 
+        mConversationList.addHeaderView(mHeader, null, false); // add a header
         // lsvBaseListView = mConversationList.getRefreshableView();
         // lsvBaseListView.addHeaderView(mHeader);
         // mConversationList.setShowIndicator(false);
@@ -167,9 +168,10 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
-            ConversationModel item = mConversationListAdapter.getItem(position);
+            ConversationModel item = (ConversationModel) parent.getItemAtPosition(position);
+
             Log.d(FRAGMENT_TAG, "watching conversation with id: " + item.getConversationId());
-            startConversationFragment(mConversationListAdapter.getItem(position));
+            startConversationFragment(item);
 
         }
 

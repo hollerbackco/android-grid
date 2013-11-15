@@ -23,10 +23,8 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.ConversionUtil;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
-    DisplayImageOptions options;
 
     protected List<ConversationModel> mConversations;
     protected List<ConversationModel> mFilteredConversations;
@@ -69,7 +67,6 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return mFilteredConversations.size();
     }
 
