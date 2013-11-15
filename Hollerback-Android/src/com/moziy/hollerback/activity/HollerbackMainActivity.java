@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
@@ -21,7 +20,7 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HollerbackAppState;
 
-public class HollerbackMainActivity extends SherlockFragmentActivity implements OnConversationsUpdated {
+public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated {
 
     private static final String TAG = HollerbackMainActivity.class.getSimpleName();
     private List<ConversationModel> mConversations; // list of conversations

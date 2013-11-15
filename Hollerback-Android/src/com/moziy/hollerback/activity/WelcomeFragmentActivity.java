@@ -4,13 +4,12 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.WelcomeFragment;
 import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
 
-public class WelcomeFragmentActivity extends SherlockFragmentActivity {
+public class WelcomeFragmentActivity extends BaseActivity {
 
     public static boolean GCM_RECEIVED;
     public static String GCM_TOKEN;

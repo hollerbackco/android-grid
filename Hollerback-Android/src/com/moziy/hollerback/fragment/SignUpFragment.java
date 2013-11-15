@@ -132,9 +132,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     public void processSubmit() {
 
         if (verifyFields()) {
-            if (HollerbackApplication.getInstance().regId != null) {
+            if (HollerbackApplication.getInstance().mGcmRegId != null) {
 
-                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, HollerbackApplication.getInstance().regId, new JsonHttpResponseHandler() {
+                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, HollerbackApplication.getInstance().mGcmRegId, new JsonHttpResponseHandler() {
                     @Override
                     protected Object parseResponse(String arg0) throws JSONException {
                         LogUtil.i(arg0);
@@ -196,7 +196,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     private void processLogin() {
-        if (HollerbackApplication.getInstance().regId == null) {
+        if (HollerbackApplication.getInstance().mGcmRegId == null) {
             Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }

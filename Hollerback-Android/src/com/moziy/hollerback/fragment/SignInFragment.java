@@ -156,7 +156,7 @@ public class SignInFragment extends BaseFragment {
     }
 
     private void processLogin() {
-        if (HollerbackApplication.getInstance().regId == null) {
+        if (HollerbackApplication.getInstance().mGcmRegId == null) {
             Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }
