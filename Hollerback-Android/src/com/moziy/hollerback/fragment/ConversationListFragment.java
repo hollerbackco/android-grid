@@ -90,6 +90,10 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         // IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
 
+        // TODO - Sajjad: refresh conversation list
+        if (mConversationListAdapter != null) // notify so that we get the latest results on the screen
+            mConversationListAdapter.notifyDataSetChanged();
+
     }
 
     @Override
