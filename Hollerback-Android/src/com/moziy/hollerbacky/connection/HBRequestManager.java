@@ -13,7 +13,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
@@ -228,6 +230,16 @@ public class HBRequestManager {
             params = new RequestParams();
             params.put(HollerbackAPI.PARAM_PHONE, phone);
         }
+        String gcmRegId = GCMUtils.getRegistrationId(HollerbackApplication.getInstance());
+        if (!"".equals(gcmRegId)) {
+            params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, gcmRegId);
+        }
+
+        params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
+
+        // XXX: HACK Remove
+        params.put(HollerbackAPI.PARAM_EMAIL, "sajadt@yahoo.com");
+        params.put(HollerbackAPI.PARAM_PASSWORD, "myhollerback");
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, handler);
     }

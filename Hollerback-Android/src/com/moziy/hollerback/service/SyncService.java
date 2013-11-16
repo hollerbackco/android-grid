@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
@@ -43,9 +44,16 @@ public class SyncService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
+        boolean fromGcm = intent.hasExtra(GCMBroadcastReceiver.FROM_GCM_INTENT_ARG);
+
         // TODO: add logic for retrying
         int retryCount = intent.getIntExtra(INTENT_ARG_RETRY_COUNT, 0);
         sync();
+
+        if (fromGcm) { // release the wakelock
+            Log.d(TAG, "synced form gcm");
+            GCMBroadcastReceiver.completeWakefulIntent(intent);
+        }
 
     }
 

@@ -4,15 +4,10 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.WelcomeFragment;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnGCMReceivedListener;
 
 public class WelcomeFragmentActivity extends BaseActivity {
-
-    public static boolean GCM_RECEIVED;
-    public static String GCM_TOKEN;
 
     @Override
     protected void onPause() {
@@ -29,17 +24,7 @@ public class WelcomeFragmentActivity extends BaseActivity {
 
         initFragment();
 
-        HollerbackApplication.getInstance().registerGCM();
     }
-
-    OnGCMReceivedListener mGCMListener = new OnGCMReceivedListener() {
-
-        @Override
-        public void onGCMReceived(String token) {
-            GCM_RECEIVED = true;
-            GCM_TOKEN = token;
-        }
-    };
 
     @Override
     protected void onResume() {

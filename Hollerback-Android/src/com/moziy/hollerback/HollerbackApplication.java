@@ -17,7 +17,6 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         // TODO Auto-generated method stub
         super.onCreate();
         ActiveAndroid.setLoggingEnabled(true);
-
         initObjectMapper();
 
         sDataModelManager = new DataModelManager();

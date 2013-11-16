@@ -1,7 +1,6 @@
 package com.moziy.hollerback.gcm;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,12 +18,6 @@ public class GCMUtils {
 
     public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
-
-    GoogleCloudMessaging gcm;
-    AtomicInteger msgId = new AtomicInteger();
-    SharedPreferences prefs;
-
-    String regid;
 
     /**
      * Gets the current registration ID for application on GCM service.
@@ -93,7 +86,6 @@ public class GCMUtils {
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
                     regid = gcm.register(AppEnvironment.GOOGLE_PROJECT_NUMBER);
-
                     // Persist the regID - no need to register again.
                     storeRegistrationId(context, regid);
                 } catch (IOException ex) {

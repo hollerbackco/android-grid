@@ -100,7 +100,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if (mFilteredConversations.get(position).getConversationUnreadCount() > 0) {
+        if (mFilteredConversations.get(position).getUnreadCount() > 0) {
             viewHolder.newMessagesIndicator.setVisibility(View.VISIBLE);
         } else {
             viewHolder.newMessagesIndicator.setVisibility(View.INVISIBLE);
