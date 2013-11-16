@@ -4,6 +4,7 @@ import com.activeandroid.ActiveAndroid;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moziy.hollerback.lifecycle.AppLifecycle;
 import com.moziy.hollerback.util.DataModelManager;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
@@ -11,6 +12,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
     private static DataModelManager sDataModelManager = null;
     private ObjectMapper mObjectMapper;
+    private AppLifecycle mLifecycle;
 
     @Override
     public void onCreate() {
@@ -20,6 +22,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         initObjectMapper();
 
         sDataModelManager = new DataModelManager();
+        mLifecycle = new AppLifecycle();
 
     }
 
@@ -68,6 +71,10 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
     public String s(int id) {
         return getResources().getString(id);
+    }
+
+    public AppLifecycle getAppLifecycle() {
+        return mLifecycle;
     }
 
 }
