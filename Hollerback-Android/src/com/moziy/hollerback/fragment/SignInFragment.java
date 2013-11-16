@@ -6,8 +6,8 @@ import java.util.Set;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +22,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
@@ -156,7 +158,7 @@ public class SignInFragment extends BaseFragment {
     }
 
     private void processLogin() {
-        if (HollerbackApplication.getInstance().regId == null) {
+        if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
             Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }
@@ -202,11 +204,14 @@ public class SignInFragment extends BaseFragment {
 
         PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
 
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, response.access_token);
+
         LogUtil.i("HB", response.toString()); // TODO - Sajjad determine whether to use LogUtil or replace it.
-        SignInFragment.this.startLoading(); // TODO - Sajjad, what's going on here with startLoading?
-        SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
-        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
+        // SignInFragment.this.startLoading(); // TODO - Sajjad, what's going on here with startLoading?
+        // SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
+        Intent intent = new Intent(mActivity, HollerbackMainActivity.class);
+        mActivity.startActivity(intent);
+        mActivity.finish();
     }
 
     private PhoneNumber getPhoneNumber() {

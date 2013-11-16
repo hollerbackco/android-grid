@@ -27,8 +27,8 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.Country;
-import com.moziy.hollerback.util.FontUtil;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.NumberUtil;
@@ -132,9 +132,10 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     public void processSubmit() {
 
         if (verifyFields()) {
-            if (HollerbackApplication.getInstance().regId != null) {
+            String regId = GCMUtils.getRegistrationId(HollerbackApplication.getInstance());
+            if (!"".equals(regId)) {
 
-                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, HollerbackApplication.getInstance().regId, new JsonHttpResponseHandler() {
+                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, regId, new JsonHttpResponseHandler() {
                     @Override
                     protected Object parseResponse(String arg0) throws JSONException {
                         LogUtil.i(arg0);
@@ -196,7 +197,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     private void processLogin() {
-        if (HollerbackApplication.getInstance().regId == null) {
+        if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
             Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }

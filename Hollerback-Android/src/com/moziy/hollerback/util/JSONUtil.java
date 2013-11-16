@@ -244,7 +244,7 @@ public class JSONUtil {
                     ConversationModel model = new ConversationModel();
                     model.setConversation_id(conversation.getInt("id"));
                     model.setConversation_name(conversation.getString("name"));
-                    model.setConversation_unread_count(conversation.getInt("unread_count"));
+                    model.setUnreadCount(conversation.getInt("unread_count"));
                     model.setUrl(conversation.getString("most_recent_thumb_url"));
                     model.setCreateTime(conversation.getString("updated_at"));
                     model.save();
@@ -384,7 +384,7 @@ public class JSONUtil {
             ConversationModel model = new ConversationModel();
             model.setConversation_id(conversation.getInt("id"));
             model.setConversation_name(conversation.getString("name"));
-            model.setConversation_unread_count(conversation.getInt("unread_count"));
+            model.setUnreadCount(conversation.getInt("unread_count"));
 
             int idToReplace = -1;
 

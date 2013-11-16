@@ -8,21 +8,38 @@ import android.util.Log;
 
 import com.moziy.hollerback.service.task.Task;
 
-public abstract class AbsTaskWorker extends Fragment {
+public class AbsTaskWorker extends Fragment {
     private static final String TAG = AbsTaskWorker.class.getSimpleName();
+    public static final String SERIAL_EXECUTER_BUNDLE_ARG_KEY = "SERIAL_EXECUTER";
 
     public interface TaskClient extends Task.Listener {
         public Task getTask();
     }
 
+    public static AbsTaskWorker newInstance(boolean useSingleThreadPool) {
+        Bundle args = new Bundle();
+        args.putBoolean(SERIAL_EXECUTER_BUNDLE_ARG_KEY, useSingleThreadPool);
+
+        AbsTaskWorker worker = new AbsTaskWorker();
+        worker.setArguments(args);
+        return worker;
+    }
+
     private AsyncTask<Task, Task, Task> mExecuter;
     private Task mTask;
+    private boolean mRunSerially = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mTask = ((TaskClient) getTargetFragment()).getTask(); // start working on the task
+        if (getArguments() != null) {
+            Bundle args = getArguments();
+            if (args.containsKey(SERIAL_EXECUTER_BUNDLE_ARG_KEY)) {
+                mRunSerially = args.getBoolean(SERIAL_EXECUTER_BUNDLE_ARG_KEY);
+            }
+        }
 
     }
 
@@ -64,10 +81,10 @@ public abstract class AbsTaskWorker extends Fragment {
 
             };
 
-            if (Build.VERSION.SDK_INT > 11) {
+            if (Build.VERSION.SDK_INT >= 11 && !mRunSerially) {
                 mExecuter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mTask);
             } else {
-                mExecuter.execute(mTask);
+                mExecuter.execute(mTask, null); // the null is a hack
             }
         }
 

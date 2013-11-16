@@ -39,7 +39,7 @@ public class JsonModelUtil {
             ConversationModel model = new ConversationModel();
             model.setConversation_id(conversation.getInt("id"));
             model.setConversation_name(conversation.getString("name"));
-            model.setConversation_unread_count(conversation.getInt("unread_count"));
+            model.setUnreadCount(conversation.getInt("unread_count"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

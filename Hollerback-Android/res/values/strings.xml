@@ -88,7 +88,7 @@
     <string name="conversation_leave_success">Successfully left the conversation.</string>
     <string name="conversation_unwatched_videos">Unwatched Videos</string>
     <string name="invite_successful">Your friends has successfully been invited.</string>
-    <string name="record_error">There was an error recording, please restart your phone.</string>
+    <string name="record_error">There was an error recording.</string>
 
     <!-- Start Conversation -->
     <string name="tap_to_start">Tap banana to start video</string>

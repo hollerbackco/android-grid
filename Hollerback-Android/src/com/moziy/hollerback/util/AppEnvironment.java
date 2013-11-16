@@ -35,7 +35,7 @@ public class AppEnvironment {
     public boolean ALLOW_UPLOAD_VIDEOS = true;
     public boolean FORCE_PHONE_NUMBER_CHECK;
 
-    public static String GOOGLE_PROJECT_NUMBER;
+    public static final String GOOGLE_PROJECT_NUMBER = "69406303235";
 
     public static AppEnvironment sInstance;
 
@@ -60,7 +60,6 @@ public class AppEnvironment {
                 LogUtil.d("Setting Development Environment");
                 BASE_URL = "http://lit-sea-1934.herokuapp.com";
                 FORCE_PHONE_NUMBER_CHECK = false;
-                GOOGLE_PROJECT_NUMBER = "69406303235";
                 LOG_CRASHES = false;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
                 UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
@@ -70,7 +69,6 @@ public class AppEnvironment {
                 LogUtil.d("Setting Production Environment");
                 BASE_URL = "https://calm-peak-4397.herokuapp.com";
                 FORCE_PHONE_NUMBER_CHECK = true;
-                GOOGLE_PROJECT_NUMBER = "69406303235";
                 LOG_CRASHES = true;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
                 UPLOAD_BUCKET = UPLOAD_BUCKET_PROD;
