@@ -35,6 +35,9 @@ public class IABIntent {
     public static final String NOTIFY_SYNC = "NotifySync";
     public static final String SYNC_FAILED = "SyncFailed";
 
+    // Video Download Intents
+    public static final String VIDEO_DOWNLOADED = "VideoDownloaded";
+
     public static final String PARAM_SUCCESS = "200";
     public static final String PARAM_FAILURE = "500";
     public static final String PARAM_AUTHENTICATED = "AUTH";

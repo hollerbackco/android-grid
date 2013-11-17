@@ -71,6 +71,9 @@ public class TaskGroup extends AbsTask {
         }
     }
 
+    /**
+     * Resets this task so that the same download tasks can run
+     */
     public void reset() {
         if (isRunning()) { // TODO - Sajjad: Remove from prod
             throw new IllegalStateException("can't reset while task is running!");
