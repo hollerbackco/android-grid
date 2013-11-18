@@ -31,7 +31,7 @@ public class BgDownloadService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         // TODO - sajjad: Add download of thumbs!
-
+        Log.d(TAG, "bg download service launched!");
         // query the videos
         List<VideoModel> videos = getVideos();
 
@@ -74,7 +74,10 @@ public class BgDownloadService extends IntentService {
                 @Override
                 public void onTaskError(Task t) {
                     Log.w(TAG, "video with id: " + ((VideoDownloadTask) t).getVideoId() + " failed to download");
-
+                    // notify of failure in case anyone is listening
+                    Intent intent = new Intent(IABIntent.VIDEO_DOWNLOAD_FAILED);
+                    intent.putExtra(IABIntent.PARAM_ID, ((VideoDownloadTask) t).getVideoId());
+                    IABroadcastManager.sendLocalBroadcast(intent);
                 }
 
                 @Override
@@ -85,7 +88,7 @@ public class BgDownloadService extends IntentService {
                     IABroadcastManager.sendLocalBroadcast(intent);
                 }
             });
-            downloadTasks.addTask(new VideoDownloadTask(video));
+            downloadTasks.addTask(t);
         }
 
         // lets run the task group

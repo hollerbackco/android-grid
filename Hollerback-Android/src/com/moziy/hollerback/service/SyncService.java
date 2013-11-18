@@ -24,6 +24,7 @@ import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
@@ -68,9 +69,9 @@ public class SyncService extends IntentService {
                 Log.d("performance", "time to execute and deserialize: " + (System.currentTimeMillis() - start));
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
-                // lets save the sync time
-
                 boolean modelUpdated = updateModel(response.data);
+
+                // lets save the sync time
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
 
                 // lets launch the download service, if we're from a gcm notification and the model was updated
@@ -107,6 +108,9 @@ public class SyncService extends IntentService {
                 Log.w(TAG, "connection failure during sync");
                 if (metaData != null) {
                     Log.w(TAG, "metaData code: " + metaData.code);
+                    if (metaData.code == HollerbackAPI.ErrorCodes.ERROR_403) {
+                        IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.AUTH_EXCEPTION));
+                    }
                 }
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.SYNC_FAILED));
 
@@ -259,12 +263,15 @@ public class SyncService extends IntentService {
         if (HollerbackApplication.getInstance().getAppLifecycle().isIdle()) {
 
             Log.d(TAG, "app is idle, lets launch the background downloader.");
+
             intent.setClass(this, BgDownloadService.class);
             startService(intent);
             return true;
             // the wakeful is delegated to the bgdownloadservice
 
         }
+
+        Log.d(TAG, "app is not idle");
         return false;
     }
 }

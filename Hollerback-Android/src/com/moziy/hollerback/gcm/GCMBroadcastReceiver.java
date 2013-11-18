@@ -1,6 +1,5 @@
 package com.moziy.hollerback.gcm;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
@@ -19,10 +18,9 @@ public class GCMBroadcastReceiver extends WakefulBroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         Log.d(TAG, "received gcm message");
-        ComponentName component = new ComponentName(context, SyncService.class);
-        intent.setComponent(component);
-        intent.putExtra(FROM_GCM_INTENT_ARG, true);
-        startWakefulService(context, intent);
+        Intent serviceIntent = new Intent(context, SyncService.class);
+        serviceIntent.putExtra(FROM_GCM_INTENT_ARG, true);
+        startWakefulService(context, serviceIntent);
 
     }
 }

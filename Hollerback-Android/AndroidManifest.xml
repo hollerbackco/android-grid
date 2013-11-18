@@ -124,6 +124,10 @@
             android:name=".service.SyncService"
             android:exported="false" >
         </service>
+        <service
+            android:name=".service.BgDownloadService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

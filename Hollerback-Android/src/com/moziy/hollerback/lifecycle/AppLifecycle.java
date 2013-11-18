@@ -1,9 +1,10 @@
 package com.moziy.hollerback.lifecycle;
 
 import android.os.Handler;
+import android.util.Log;
 
 public class AppLifecycle {
-
+    private static final String TAG = AppLifecycle.class.getSimpleName();
     private static final long APP_IDLE_TIME = 10000L; // app will be idle in 10 seconds
     private final Handler mHandler = new Handler();
     private boolean mIsIdle = true;
@@ -26,6 +27,7 @@ public class AppLifecycle {
 
         @Override
         public void run() {
+            Log.d(TAG, "app is idle");
             mIsIdle = true;
         }
     };
