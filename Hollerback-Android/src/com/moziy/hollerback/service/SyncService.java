@@ -69,30 +69,26 @@ public class SyncService extends IntentService {
                 Log.d("performance", "time to execute and deserialize: " + (System.currentTimeMillis() - start));
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
+                // update the model with the response
                 boolean modelUpdated = updateModel(response.data);
 
                 // lets save the sync time
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
 
-                // lets launch the download service, if we're from a gcm notification and the model was updated
-                if (fromGCM) {
-                    if (modelUpdated) {
-                        Log.d(TAG, "synced form gcm");
-                        boolean launched = launchDownloadService(intent);
+                // now that we've synced lets see whether we should launch the background loader or not
+                boolean launchedBgLoader = false;
 
-                        if (!launched) {
-                            Log.d(TAG, "app is active, so download service wasn't launched, therefore, lets just clear the wakeful broadcast");
-                            // lets release the wakelock since the app isn't idle
-                            GCMBroadcastReceiver.completeWakefulIntent(intent);
-                        }
-                    } else {
-                        // lets release the wakelock since the app isn't idle
+                if (fromGCM && modelUpdated) { // launch only if model was udpated
+                    launchedBgLoader = launchDownloadService(intent); // the download service will manage completing the wakeful intent
+                    if (!launchedBgLoader) {
                         GCMBroadcastReceiver.completeWakefulIntent(intent);
                     }
+                } else if (fromGCM) {
+                    GCMBroadcastReceiver.completeWakefulIntent(intent);
                 }
 
                 // launch a notification that there was a successful sync
-                if (modelUpdated) {
+                if (modelUpdated && !launchedBgLoader) {
                     // launch a notification
                     Log.d(TAG, "launching notification");
                 }
