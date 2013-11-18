@@ -104,4 +104,8 @@ public class HollerbackAPI {
     public static final String PARAM_UPDATED_AT = "updated_at";
 
     public static final String PARAM_GUID = "guid";
+
+    public static interface ErrorCodes {
+        public static final int ERROR_403 = 403;
+    }
 }

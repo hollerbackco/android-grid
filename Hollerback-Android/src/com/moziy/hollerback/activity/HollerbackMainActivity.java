@@ -2,6 +2,8 @@ package com.moziy.hollerback.activity;
 
 import java.util.List;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,6 +14,8 @@ import android.util.Log;
 
 import com.crittercism.app.Crittercism;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment;
@@ -26,11 +30,14 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     private List<ConversationModel> mConversations; // list of conversations
     boolean initFrag = false;
     String convId = null;
+    private InternalReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_Example);
         super.onCreate(savedInstanceState);
+
+        registerBroadcasts();
 
         Fragment worker = getSupportFragmentManager().findFragmentByTag(ConversationWorkerFragment.FRAGMENT_TAG);
         if (worker == null) {
@@ -76,6 +83,12 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
     public void initFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -104,6 +117,11 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         });
     }
 
+    private void registerBroadcasts() {
+        mReceiver = new InternalReceiver();
+        IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.AUTH_EXCEPTION);
+    }
+
     public List<ConversationModel> getConversations() {
         return mConversations;
     }
@@ -111,6 +129,23 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     @Override
     public void onUpdate(List<ConversationModel> conversations) {
         mConversations = conversations;
+
+    }
+
+    private class InternalReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(IABIntent.AUTH_EXCEPTION)) {
+                Log.w(TAG, "auth failure! ask user to re-login");
+                Intent startActivityIntent = new Intent();
+                startActivityIntent.setClass(HollerbackMainActivity.this, WelcomeFragmentActivity.class);
+                startActivity(startActivityIntent);
+                finish();
+
+            }
+
+        }
 
     }
 }
