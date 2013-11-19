@@ -91,7 +91,7 @@ public class RecordVideoFragment extends BaseFragment {
     private boolean inPreview = false;
     private boolean mToConversation = false;
     TextView mTimer;
-    final Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
     int VIDEO_SENT = 4;
 
