@@ -13,14 +13,14 @@
     <RelativeLayout
         android:id="@+id/rl_video_preview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:visibility="gone" >
 
         <VideoView
             android:id="@+id/vv_video_preview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_alignParentTop="true" />
 
         <ImageView
@@ -50,7 +50,8 @@
         android:padding="@dimen/padding_medium"
         android:text="@string/tap_start"
         android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <!-- Delete the layout once everything is stripped out of the recordingfragment -->
 

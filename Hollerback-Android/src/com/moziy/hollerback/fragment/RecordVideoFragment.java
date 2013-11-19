@@ -98,8 +98,6 @@ public class RecordVideoFragment extends BaseFragment {
     int secondsPassed;
     private int currentCameraId = CameraInfo.CAMERA_FACING_FRONT;
 
-    View mTopView, mBottomView;
-
     private String mFileDataPath;
     protected String mFileDataName;
     private String mFileExt; // the file extension
@@ -171,7 +169,8 @@ public class RecordVideoFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mActivity.getSupportActionBar().setTitle(R.string.action_record);
+        // mActivity.getSupportActionBar().setTitle(R.string.action_record);
+        mActivity.getSupportActionBar().hide();
         mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Bundle args = getArguments();
@@ -214,8 +213,6 @@ public class RecordVideoFragment extends BaseFragment {
             return null;
         }
 
-        mTopView = mRootView.findViewById(R.id.top_bar);
-        mBottomView = mRootView.findViewById(R.id.bottom_bar);
         mSendButton = (Button) mRootView.findViewById(R.id.send_button);
 
         mPreviewParentView = mRootView.findViewById(R.id.rl_video_preview);
@@ -248,14 +245,15 @@ public class RecordVideoFragment extends BaseFragment {
 
         previewHolder = preview.getHolder();
         previewHolder.addCallback(surfaceCallback);
-        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        // previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); //sajjad - evaluate whether this is needed
 
         targetPreviewWidth = 480;
         targetPreviewHeight = 480;
 
+        // TODO - sajjad: evaluate this previewholder
         // this 1.5 i guess assumes 640 x 480
-        previewHolder.setFixedSize(mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth(),
-                (int) (mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth() * (targetPreviewWidth / targetPreviewHeight)));
+        // previewHolder.setFixedSize(mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth(),
+        // (int) (mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth() * (targetPreviewWidth / targetPreviewHeight)));
 
         RelativeLayout.LayoutParams mImagePreviewParams = (RelativeLayout.LayoutParams) mImagePreview.getLayoutParams();
         mImagePreviewParams.height = (int) (mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth() * (targetPreviewWidth / targetPreviewHeight));
@@ -827,7 +825,8 @@ public class RecordVideoFragment extends BaseFragment {
                 return;
             }
             Camera.Parameters parameters = mCamera.getParameters();
-            Camera.Size size = CameraUtil.getBestPreviewSize((int) targetPreviewWidth, (int) targetPreviewWidth, parameters);
+            Camera.Size size = CameraUtil.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), width, height);// CameraUtil.getBestPreviewSize((int) targetPreviewWidth, (int)
+                                                                                                                      // targetPreviewWidth, parameters);
             LogUtil.i("Best size: " + size.width + " " + size.height);
 
             mBestCameraWidth = size.width;

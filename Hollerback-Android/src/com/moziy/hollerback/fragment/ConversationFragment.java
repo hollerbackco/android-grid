@@ -81,8 +81,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
             Log.d(TAG, "restoring instance");
+
             // restore the video model if, see what the status of the resource is, and also if we're in the middle of playback
             if (savedInstanceState.containsKey(VIDEO_MODEL_INSTANCE_STATE)) {
+
                 mVideos = (ArrayList<VideoModel>) savedInstanceState.getSerializable(VIDEO_MODEL_INSTANCE_STATE);
 
                 // check to see if any of the videos have or been downloaded
@@ -110,7 +112,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // Start work on getting the list of unseen videos for this conversation
         Fragment worker;
         if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) { // we check the model and the worker because the worker removes itself once work is
+
             mTaskQueue = new LinkedList<Task>();// done
+
             mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
                     new Select()//
                             .from(VideoModel.class) //
@@ -140,6 +144,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState != null) {
+
             // if we were in the middle of playing, then adjust the playback elements such as seek position
             mPlayingDuringConfigChange = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
             if (mPlayingDuringConfigChange) {
@@ -160,10 +165,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOADED);
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOAD_FAILED);
-        // if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
-        // Log.d(TAG, "starting paused playback");
-        // mVideoView.start();
-        // }
+
         if (mPausedDuringPlayback) { // reset the flag
             playVideo(mPlayBackQueue.peek());
         }
@@ -219,6 +221,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     @Override
     public void onTaskComplete(Task t) {
+
         if (t instanceof ActiveAndroidTask) {
 
             handleModelTaskComplete(t);
@@ -232,6 +235,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     @Override
     public void onTaskError(Task t) {
+
         Log.d(TAG, "there was a problem with a task");
         // TODO: handle this later
         if (isAdded())
@@ -249,15 +253,20 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         mVideos = new ArrayList<VideoModel>(((ActiveAndroidTask<VideoModel>) t).getResults());
         Log.d(TAG, "total unread videos found: " + mVideos.size());
+
         mVideoMap = new HashMap<String, VideoModel>();
         mPlayBackQueue = new LinkedList<VideoModel>();
+
         for (VideoModel video : mVideos) {
+
             mVideoMap.put(video.getGuid(), video);
             // add the videos to the playback queue
             mPlayBackQueue.add(video);
+
         }
 
         for (VideoModel video : mVideos) {
+
             Log.d(TAG, "processing video with state: " + video.toString());
             if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState()) && !video.isTransacting()) { // create a download task for all non transacting videos
 
@@ -278,15 +287,20 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private void handleVideoDownload(VideoDownloadTask t) {
 
         Log.d(TAG, "video download task completed");
+
         VideoModel video = mVideoMap.get(((VideoDownloadTask) t).getVideoId());
         Log.d(TAG, "downloaded video with id: " + video.getGuid());
+
         video.setState(VideoModel.ResourceState.ON_DISK); // even though the download task sets it, but this copy doesn't have the state set
 
         // check to see if this is the next video that must be played
         VideoModel queuedVideo = mPlayBackQueue.peek();
+
         if (queuedVideo.getGuid().equals(video.getGuid())) { // if the queued is the one that just got downloaded then just play
+
             Log.d(TAG, "playing back video that was just downloaded");
             playVideo(video);
+
         }
 
     }
@@ -298,8 +312,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
         mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment
 
-        // lets create an S3 task and ask our worker to run it
-        worker.setTargetFragment(this, 0);
+        worker.setTargetFragment(this, 0);// lets create an S3 task and ask our worker to run it
         getFragmentManager().beginTransaction().add(worker, video.getGuid()).commit();
     }
 
@@ -312,6 +325,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+
         Log.d(TAG, "video playback complete");
         mp.reset();
 
@@ -323,25 +337,30 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // delete the video from the sdcard?
 
         if (!mPlayBackQueue.isEmpty()) {
+
             Log.d(TAG, "playback after completion and queue is not empty");
             video = mPlayBackQueue.peek();
 
             if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 Log.d(TAG, "starting to play video after completion");
                 playVideo(video);
-
             }
+
         } else {
+
             // also broadcast that the conversation has been updated
             beginRecording();
+
         }
 
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+
         // only play if we're in the resumed state
         Log.d(TAG, "onPrepared()");
+
         if (isResumed()) {
             mVideoView.start();
         } else {
@@ -357,14 +376,18 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             @Override
             public void onTaskError(Task t) {
+
                 // if we couldn't write to the db..?
                 Log.w(TAG, "error updating database after watching video ");
+
             }
 
             @Override
             public void onTaskComplete(Task t) {
+
                 VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
                 Log.d(TAG, "fetching latest from db: " + video.toString());
+
                 video.setRead(true); // mark the video as watched
                 video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
                 video.save();
