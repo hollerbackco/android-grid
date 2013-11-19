@@ -19,10 +19,12 @@ public class VideoDownloadTask extends HttpDownloadTask {
         model.setState(VideoModel.ResourceState.DOWNLOADING);
         model.setTransacting();
         model.save();
+
     }
 
     @Override
     public void run() {
+
         super.run(); // download it
 
         // depending on the status, now, mark the resource state correctly

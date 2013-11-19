@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -15,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -68,10 +71,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private int mPosition = 0;
     private Bundle mRecordingInfo;
 
+    private BgDownloadReceiver mReceiver;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
+        mReceiver = new BgDownloadReceiver();
 
         if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
             Log.d(TAG, "restoring instance");
@@ -151,6 +157,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             getFragmentManager().popBackStack();
             return;
         }
+
+        IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOADED);
+        IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOAD_FAILED);
         // if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
         // Log.d(TAG, "starting paused playback");
         // mVideoView.start();
@@ -171,6 +180,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             mVideoView.stopPlayback();
 
         super.onPause();
+
+        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+        IABroadcastManager.unregisterLocalReceiver(mReceiver);
 
     }
 
@@ -222,7 +234,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public void onTaskError(Task t) {
         Log.d(TAG, "there was a problem with a task");
         // TODO: handle this later
-
+        if (isAdded())
+            Toast.makeText(getActivity(), "Couldn't download video..", Toast.LENGTH_SHORT).show();
         // retry the task
 
     }
@@ -246,17 +259,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         for (VideoModel video : mVideos) {
             Log.d(TAG, "processing video with state: " + video.toString());
-            if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState())) {
+            if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState()) && !video.isTransacting()) { // create a download task for all non transacting videos
 
-                // for the number of videos, lets create two workers, to download video alternately
-                AbsTaskWorker worker = AbsTaskWorker.newInstance(true); // all videos will be downloaded sequentially
-
-                VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
-                mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment
-
-                // lets create an S3 task and ask our worker to run it
-                worker.setTargetFragment(this, 0);
-                getFragmentManager().beginTransaction().add(worker, video.getGuid()).commit();
+                addDownloadWorkerFor(video);
 
             } else if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
 
@@ -284,6 +289,18 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             playVideo(video);
         }
 
+    }
+
+    private void addDownloadWorkerFor(VideoModel video) {
+        // for the number of videos, lets create two workers, to download video alternately
+        AbsTaskWorker worker = AbsTaskWorker.newInstance(true); // all videos will be downloaded sequentially
+
+        VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
+        mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment
+
+        // lets create an S3 task and ask our worker to run it
+        worker.setTargetFragment(this, 0);
+        getFragmentManager().beginTransaction().add(worker, video.getGuid()).commit();
     }
 
     private void playVideo(VideoModel v) {
@@ -330,11 +347,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         } else {
             Log.d(TAG, "not playing because not in resumed state");
         }
-        // if (mPausedDuringPlayback) { //NOTE: Seeking doesn't seem to be handled properly
-        // mVideoView.seekTo(mPosition);
-        // mPausedDuringPlayback = false;
-        // Log.d(TAG, "seeking to position: " + mPosition);
-        // }
 
     }
 
@@ -401,6 +413,57 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
         f.setTargetFragment(this, 0);
         getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+    }
+
+    /**
+     * This class listens to the background download service for updates on
+     * downloads or failures of video
+     * @author sajjad
+     *
+     */
+    private class BgDownloadReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String guid = intent.getStringExtra(IABIntent.PARAM_ID);
+
+            if (intent.getAction().equals(IABIntent.VIDEO_DOWNLOADED) && guid != null) {
+
+                Log.d(TAG, "we got a video download broadcast while watching");
+
+                // if the video was downloaded, lets update the videomap
+                if (mVideoMap.containsKey(guid)) {
+
+                    VideoModel video = mVideoMap.get(guid);
+                    Log.d(TAG, "video: " + video.getGuid() + " state: " + video.getState());
+
+                    // if this happens to be the video that we should be playing next, then lets play it
+                    if (mPlayBackQueue.peek() != null && mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
+                        playVideo(video);
+                    }
+
+                }
+
+            } else if (intent.getAction().equals(IABIntent.VIDEO_DOWNLOAD_FAILED)) {
+
+                Log.d(TAG, "we got a video download failed broadcast while watching");
+
+                // lets attempt to recover by creating an on demand downloader
+                if (mVideoMap.containsKey(guid)) {
+
+                    VideoModel video = mVideoMap.get(guid);
+
+                    // lets see if there's already a worker assigned to download this video
+                    Fragment f = getFragmentManager().findFragmentByTag(guid);
+                    if (f == null) { // if there isn't one
+                        Log.d(TAG, "adding new worker for: " + video.getGuid());
+                        addDownloadWorkerFor(video);
+                    }
+                }
+
+            }
+
+        }
     }
 
 }
