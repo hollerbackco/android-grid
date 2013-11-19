@@ -91,6 +91,10 @@ public class SyncService extends IntentService {
                 if (modelUpdated && !launchedBgLoader) {
                     // launch a notification
                     Log.d(TAG, "launching notification");
+
+                    // String message = NotificationUtil.generateNewVideoMessage(this, videos);
+                    // NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(SyncService.this, getString(R.string.app_name), message),
+                    // NotificationUtil.Ids.SYNC_NOTIFICATION);
                 }
 
             }
