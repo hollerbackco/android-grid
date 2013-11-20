@@ -93,4 +93,10 @@
     <!-- Start Conversation -->
     <string name="tap_to_start">Tap banana to start video</string>
 
+    <!-- Notifications -->
+    <plurals name="notif_new_message">
+        <item quantity="one">%1$s</item>
+        <item quantity="many">You have new messages!</item>
+    </plurals>
+
 </resources>

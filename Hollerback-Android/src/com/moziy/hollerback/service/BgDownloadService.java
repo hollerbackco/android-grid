@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.activeandroid.query.Select;
+import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -15,6 +16,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
+import com.moziy.hollerback.util.NotificationUtil;
 
 public class BgDownloadService extends IntentService {
     private static final String TAG = BgDownloadService.class.getSimpleName();
@@ -41,7 +43,14 @@ public class BgDownloadService extends IntentService {
         }
 
         // download them
-        downloadVideos(videos);
+        boolean success = downloadVideos(videos);
+
+        if (success) { // lets notify the user that new videos have been downloaded
+
+            String message = NotificationUtil.generateNewVideoMessage(this, videos);
+            NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(this, getString(R.string.app_name), message), NotificationUtil.Ids.SYNC_NOTIFICATION);
+
+        }
 
         // lets release the wakelock if any
         releaseWakeLock(intent);
