@@ -90,11 +90,11 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         this.name = name;
     }
 
-    public int getConversationUnreadCount() {
+    public int getUnreadCount() {
         return Integer.valueOf(unread_count);
     }
 
-    public void setConversation_unread_count(int conversation_unread_count) {
+    public void setUnreadCount(int conversation_unread_count) {
         this.unread_count = String.valueOf(conversation_unread_count);
     }
 

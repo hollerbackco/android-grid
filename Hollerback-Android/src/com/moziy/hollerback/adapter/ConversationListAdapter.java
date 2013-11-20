@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import android.graphics.Bitmap;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,12 +23,8 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.ConversionUtil;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
-    DisplayImageOptions options;
 
     protected List<ConversationModel> mConversations;
     protected List<ConversationModel> mFilteredConversations;
@@ -38,7 +33,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
     ConversationFilter mFilter;
 
     private SherlockFragmentActivity mActivity;
-    protected ImageLoader imageLoader = ImageLoader.getInstance();
+
+    // protected ImageLoader imageLoader = ImageLoader.getInstance();
 
     public ConversationListAdapter(SherlockFragmentActivity activity) {
         mActivity = activity;
@@ -46,8 +42,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         mConversations = new ArrayList<ConversationModel>();
         mFilteredConversations = new ArrayList<ConversationModel>();
 
-        options = new DisplayImageOptions.Builder().showStubImage(R.drawable.background_opaque).showImageForEmptyUri(R.drawable.background_opaque).showImageOnFail(R.drawable.background_opaque)
-                .cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).imageScaleType(ImageScaleType.EXACTLY).build();
+        // options = new DisplayImageOptions.Builder().showStubImage(R.drawable.background_opaque).showImageForEmptyUri(R.drawable.background_opaque).showImageOnFail(R.drawable.background_opaque)
+        // .cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).imageScaleType(ImageScaleType.EXACTLY).build();
     }
 
     public void setConversations(List<ConversationModel> conversations) {
@@ -71,7 +67,6 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return mFilteredConversations.size();
     }
 
@@ -105,7 +100,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if (mFilteredConversations.get(position).getConversationUnreadCount() > 0) {
+        if (mFilteredConversations.get(position).getUnreadCount() > 0) {
             viewHolder.newMessagesIndicator.setVisibility(View.VISIBLE);
         } else {
             viewHolder.newMessagesIndicator.setVisibility(View.INVISIBLE);
@@ -122,7 +117,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         }
 
         if (mFilteredConversations.get(position).getUrl() != null) {
-            imageLoader.displayImage(mFilteredConversations.get(position).getUrl(), viewHolder.imgBackground, options);
+            // imageLoader.displayImage(mFilteredConversations.get(position).getUrl(), viewHolder.imgBackground, options);
         }
 
         viewHolder.btnRecord.setOnClickListener(new View.OnClickListener() {

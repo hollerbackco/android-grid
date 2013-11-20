@@ -494,11 +494,10 @@ public class RecordVideoFragment extends BaseFragment {
     @Override
     public void onPause() {
         if (isRecording) {
-            recorder.stop(); // stop the recording
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
             isRecording = false;
-
+            mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
 
             // Broadcast that recording was cancelled
@@ -740,9 +739,9 @@ public class RecordVideoFragment extends BaseFragment {
 
     private void releaseMediaRecorder() {
         if (recorder != null) {
-            // recorder.reset(); // clear configuration (optional here)
+            recorder.reset(); // clear configuration (optional here)
             recorder.release();
-            // recorder = null;
+            recorder = null;
         }
     }
 

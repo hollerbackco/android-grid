@@ -1,24 +1,17 @@
 package com.moziy.hollerback;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
-import com.google.android.gcm.GCMBaseIntentService;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
-import com.moziy.hollerback.debug.LogUtil;
 
-public class GCMIntentService extends GCMBaseIntentService {
+public class GCMIntentService {
 
     /**
      * Intent used to display a message in the screen.
@@ -47,47 +40,47 @@ public class GCMIntentService extends GCMBaseIntentService {
         context.sendBroadcast(intent);
     }
 
-    @Override
-    protected void onMessage(Context context, Intent intent) {
+    // @Override
+    // protected void onMessage(Context context, Intent intent) {
+    //
+    // LogUtil.i(TAG, "GCM Received message");
+    // displayMessage(context, "Message Received");
+    // String message = null;
+    // String title = null;
+    // String url = null;
+    //
+    // if (intent != null) {
+    //
+    // // Check the bundle for the pay load body and title
+    // Bundle bundle = intent.getExtras();
+    // if (bundle != null) {
+    // displayMessage(context, "Message bundle: " + bundle);
+    //
+    // LogUtil.i(TAG, "Message bundle: " + bundle);
+    // message = bundle.getString("sender_name");
+    //
+    // LogUtil.i("GCM Message data: " + message);
+    // }
+    // }
+    // // If there was no body just use a standard message
+    // if (message == null) {
+    // message = "Hollerback";
+    // }
+    //
+    // generateNotification(context, title, message, url);
+    // }
 
-        LogUtil.i(TAG, "GCM Received message");
-        displayMessage(context, "Message Received");
-        String message = null;
-        String title = null;
-        String url = null;
-
-        if (intent != null) {
-
-            // Check the bundle for the pay load body and title
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                displayMessage(context, "Message bundle: " + bundle);
-
-                LogUtil.i(TAG, "Message bundle: " + bundle);
-                message = bundle.getString("sender_name");
-
-                LogUtil.i("GCM Message data: " + message);
-            }
-        }
-        // If there was no body just use a standard message
-        if (message == null) {
-            message = "Hollerback";
-        }
-
-        generateNotification(context, title, message, url);
-    }
-
-    @Override
-    protected void onDeletedMessages(Context context, int total) {
-        /*
-         * Called when the GCM servers tells that app that pending messages have been deleted because the device was idle.
-         */
-        LogUtil.i(TAG, "Received deleted messages notification");
-        String message = "Deleted messages";
-        displayMessage(context, message);
-        // notifies user
-        generateNotification(context, "", message);
-    }
+    // @Override
+    // protected void onDeletedMessages(Context context, int total) {
+    // /*
+    // * Called when the GCM servers tells that app that pending messages have been deleted because the device was idle.
+    // */
+    // LogUtil.i(TAG, "Received deleted messages notification");
+    // String message = "Deleted messages";
+    // displayMessage(context, message);
+    // // notifies user
+    // generateNotification(context, "", message);
+    // }
 
     private Notification prepareNotification(Context context, String msg) {
         long when = System.currentTimeMillis();
@@ -107,22 +100,22 @@ public class GCMIntentService extends GCMBaseIntentService {
         return notification;
     }
 
-    @Override
-    protected void onError(Context context, String errorId) {
-        Toast.makeText(context, errorId, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    protected void onRegistered(Context context, String regId) {
-        Intent intent = new Intent(IABIntent.GCM_REGISTERED);
-        intent.putExtra(IABIntent.PARAM_GCM_REGISTRATION_ID, regId);
-        context.sendBroadcast(intent);
-    }
-
-    @Override
-    protected void onUnregistered(Context context, String regId) {
-        LogUtil.i("onUnregistered: " + regId);
-    }
+    // @Override
+    // protected void onError(Context context, String errorId) {
+    // Toast.makeText(context, errorId, Toast.LENGTH_LONG).show();
+    // }
+    //
+    // @Override
+    // protected void onRegistered(Context context, String regId) {
+    // Intent intent = new Intent(IABIntent.GCM_REGISTERED);
+    // intent.putExtra(IABIntent.PARAM_GCM_REGISTRATION_ID, regId);
+    // context.sendBroadcast(intent);
+    // }
+    //
+    // @Override
+    // protected void onUnregistered(Context context, String regId) {
+    // LogUtil.i("onUnregistered: " + regId);
+    // }
 
     /**
      * Issues a notification to inform the user that server has sent a message.

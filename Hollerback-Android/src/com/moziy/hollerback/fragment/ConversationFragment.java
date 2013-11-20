@@ -249,10 +249,11 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState())) {
 
                 // for the number of videos, lets create two workers, to download video alternately
-                AbsTaskWorker worker = new AbsTaskWorker() {
-                };
+                AbsTaskWorker worker = AbsTaskWorker.newInstance(true); // all videos will be downloaded sequentially
+
                 VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
-                mTaskQueue.add(downloadTask);
+                mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment
+
                 // lets create an S3 task and ask our worker to run it
                 worker.setTargetFragment(this, 0);
                 getFragmentManager().beginTransaction().add(worker, video.getGuid()).commit();
@@ -314,6 +315,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             }
         } else {
+            // also broadcast that the conversation has been updated
             beginRecording();
         }
 
@@ -338,13 +340,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void setVideoSeen(VideoModel video) {
 
-        ActiveAndroidTask<VideoModel> t = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where("Id = ?", video.getId()));
-        t.setTaskListener(new Task.Listener() {
+        ActiveAndroidTask<VideoModel> updateVideoTask = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where("Id = ?", video.getId()));
+        updateVideoTask.setTaskListener(new Task.Listener() {
 
             @Override
             public void onTaskError(Task t) {
                 // if we couldn't write to the db..?
-                Log.w(TAG, "error updating database: ");
+                Log.w(TAG, "error updating database after watching video ");
             }
 
             @Override
@@ -356,12 +358,17 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 video.save();
 
                 // TODO - Sajjad: Create a service to go and remove the watched videos
+                ConversationModel c = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                c.setUnreadCount(c.getUnreadCount() - 1);
+                c.save(); // save that we've unread
 
+                // broadcast that the conversations have changed
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
             }
         });
 
         TaskExecuter executer = new TaskExecuter();
-        executer.executeTask(t);
+        executer.executeTask(updateVideoTask);
     }
 
     @Override
@@ -376,7 +383,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             @Override
             public void onTaskError(Task t) {
-
+                Log.w(TAG, "error updating database in case of recording finished");
             }
 
             @Override

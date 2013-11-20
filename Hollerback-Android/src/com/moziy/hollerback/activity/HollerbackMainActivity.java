@@ -3,7 +3,6 @@ package com.moziy.hollerback.activity;
 import java.util.List;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,21 +10,17 @@ import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crittercism.app.Crittercism;
-import com.flurry.android.FlurryAgent;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.FlurryC;
 import com.moziy.hollerback.util.HollerbackAppState;
 
-public class HollerbackMainActivity extends SherlockFragmentActivity implements OnConversationsUpdated {
+public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated {
 
     private static final String TAG = HollerbackMainActivity.class.getSimpleName();
     private List<ConversationModel> mConversations; // list of conversations
@@ -62,10 +57,6 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
             initFragment();
         LogUtil.i("Completed BaseActivity");
 
-        FlurryAgent.onStartSession(this, AppEnvironment.getInstance().FLURRY_ID);
-
-        FlurryAgent.logEvent(FlurryC.EVENT_STARTSESSION,
-                AnalyticsUtil.getMap(FlurryC.PARAM_MODELNAME, AnalyticsUtil.getDeviceName(), FlurryC.PARAM_OS_VERISON, Integer.toString(Build.VERSION.SDK_INT)));
     }
 
     @Override
@@ -82,7 +73,6 @@ public class HollerbackMainActivity extends SherlockFragmentActivity implements 
     @Override
     protected void onStop() {
         // TODO Auto-generated method stub
-        FlurryAgent.onEndSession(this);
         super.onStop();
     }
 
