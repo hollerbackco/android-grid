@@ -33,7 +33,14 @@ public class BaseActivity extends SherlockFragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        HollerbackApplication.getInstance().getAppLifecycle().setActive();
         checkPlayServices();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        HollerbackApplication.getInstance().getAppLifecycle().setInactive();
     }
 
     private boolean checkPlayServices() {

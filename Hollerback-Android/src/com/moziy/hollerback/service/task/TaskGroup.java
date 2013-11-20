@@ -3,8 +3,10 @@ package com.moziy.hollerback.service.task;
 import java.util.ArrayList;
 
 import android.os.Handler;
+import android.util.Log;
 
 public class TaskGroup extends AbsTask {
+    private static final String TAG = TaskGroup.class.getSimpleName();
 
     private final ArrayList<Task> mTasks = new ArrayList<Task>();
     private final ArrayList<Task> mFailedTasks = new ArrayList<Task>();
@@ -54,23 +56,21 @@ public class TaskGroup extends AbsTask {
 
     private void postResult(final Task t) {
         if (t.getTaskListener() != null) {
-            mHandler.post(new Runnable() {
-                public void run() {
-                    t.getTaskListener().onTaskError(t);
-                }
-            });
-        } else {
-            mHandler.post(new Runnable() {
+            if (!t.isSuccess()) {
+                Log.d(TAG, "posting error");
+                t.getTaskListener().onTaskError(t);
+            } else {
+                Log.d(TAG, "posting success");
+                t.getTaskListener().onTaskComplete(t);
 
-                @Override
-                public void run() {
-                    t.getTaskListener().onTaskComplete(t);
+            }
 
-                }
-            });
         }
     }
 
+    /**
+     * Resets this task so that the same download tasks can run
+     */
     public void reset() {
         if (isRunning()) { // TODO - Sajjad: Remove from prod
             throw new IllegalStateException("can't reset while task is running!");

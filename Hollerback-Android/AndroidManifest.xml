@@ -111,6 +111,11 @@
                 <category android:name="com.moziy.hollerback" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".network.ConnectivityReceiver" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
 
         <service android:name="com.moziy.hollerback.service.VideoUploadService" />
         <service
@@ -122,6 +127,10 @@
         </service>
         <service
             android:name=".service.SyncService"
+            android:exported="false" >
+        </service>
+        <service
+            android:name=".service.BgDownloadService"
             android:exported="false" >
         </service>
     </application>

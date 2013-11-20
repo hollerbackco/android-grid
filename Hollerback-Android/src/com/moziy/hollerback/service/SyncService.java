@@ -13,6 +13,7 @@ import android.util.Log;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -23,6 +24,7 @@ import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
@@ -32,6 +34,7 @@ public class SyncService extends IntentService {
     public static final String INTENT_ARG_REQUEST_TIME = "request_time"; // the request time for a sync: System.currentTimeMillis() (now)
     public static final String INTENT_ARG_RETRY_COUNT = "retry_count"; // TODO: put that retry logic in
     public static final String INTENT_ARG_LAST_RETRY_TIME = "last_retry_time";
+    private static final int DEFAULT_RETRY_COUNT = 2;
 
     private static final String TAG = SyncService.class.getSimpleName();
 
@@ -48,16 +51,12 @@ public class SyncService extends IntentService {
 
         // TODO: add logic for retrying
         int retryCount = intent.getIntExtra(INTENT_ARG_RETRY_COUNT, 0);
-        sync();
 
-        if (fromGcm) { // release the wakelock
-            Log.d(TAG, "synced form gcm");
-            GCMBroadcastReceiver.completeWakefulIntent(intent);
-        }
+        sync(intent, fromGcm);
 
     }
 
-    private void sync() {
+    private void sync(final Intent intent, final boolean fromGCM) {
         final String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
 
         final long start = System.currentTimeMillis();
@@ -70,10 +69,29 @@ public class SyncService extends IntentService {
                 Log.d("performance", "time to execute and deserialize: " + (System.currentTimeMillis() - start));
                 Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
-                // lets save the sync time
+                // update the model with the response
+                boolean modelUpdated = updateModel(response.data);
 
-                updateModel(response.data);
+                // lets save the sync time
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
+
+                // now that we've synced lets see whether we should launch the background loader or not
+                boolean launchedBgLoader = false;
+
+                if (fromGCM && modelUpdated) { // launch only if model was udpated
+                    launchedBgLoader = launchDownloadService(intent); // the download service will manage completing the wakeful intent
+                    if (!launchedBgLoader) {
+                        GCMBroadcastReceiver.completeWakefulIntent(intent);
+                    }
+                } else if (fromGCM) {
+                    GCMBroadcastReceiver.completeWakefulIntent(intent);
+                }
+
+                // launch a notification that there was a successful sync
+                if (modelUpdated && !launchedBgLoader) {
+                    // launch a notification
+                    Log.d(TAG, "launching notification");
+                }
 
             }
 
@@ -86,8 +104,15 @@ public class SyncService extends IntentService {
                 Log.w(TAG, "connection failure during sync");
                 if (metaData != null) {
                     Log.w(TAG, "metaData code: " + metaData.code);
+                    if (metaData.code == HollerbackAPI.ErrorCodes.ERROR_403) {
+                        IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.AUTH_EXCEPTION));
+                    }
                 }
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.SYNC_FAILED));
+
+                if (fromGCM) { // clear the wakeful intent since there was a failure
+                    GCMBroadcastReceiver.completeWakefulIntent(intent);
+                }
             }
 
         });
@@ -99,13 +124,13 @@ public class SyncService extends IntentService {
      *
      * @param data
      */
-    private void updateModel(ArrayList<SyncResponse> data) {
+    private boolean updateModel(ArrayList<SyncResponse> data) {
 
         if (data == null || data.isEmpty()) {
             Intent intent = new Intent(IABIntent.NOTIFY_SYNC);
             intent.putExtra(IABIntent.NOTIFY_SYNC, false);
             IABroadcastManager.sendLocalBroadcast(intent);
-            return;
+            return false; // there was no change
         }
 
         long start = System.currentTimeMillis();
@@ -221,5 +246,28 @@ public class SyncService extends IntentService {
         IABroadcastManager.sendLocalBroadcast(intent);
         Log.d("performance", "time to insert to db: " + (System.currentTimeMillis() - start));
 
+        return true;
+    }
+
+    /**
+     *  
+     * @param intent
+     * @return true if launched, false otherwise
+     */
+    private boolean launchDownloadService(Intent intent) {
+
+        if (HollerbackApplication.getInstance().getAppLifecycle().isIdle()) {
+
+            Log.d(TAG, "app is idle, lets launch the background downloader.");
+
+            intent.setClass(this, BgDownloadService.class);
+            startService(intent);
+            return true;
+            // the wakeful is delegated to the bgdownloadservice
+
+        }
+
+        Log.d(TAG, "app is not idle");
+        return false;
     }
 }

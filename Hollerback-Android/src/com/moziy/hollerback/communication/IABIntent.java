@@ -22,6 +22,9 @@ public class IABIntent {
 
     public static final String GCM_MESSAGE = "gcmmsg";
 
+    // Session & Auth Intents
+    public static final String AUTH_EXCEPTION = "AuthException";
+
     // Recording Intent
     public static final String RECORDING_FAILED = "RecordingFailed";
     public static final String RECORDING_CANCELLED = "RecordingCancelled";
@@ -34,6 +37,10 @@ public class IABIntent {
     // Sync Intent
     public static final String NOTIFY_SYNC = "NotifySync";
     public static final String SYNC_FAILED = "SyncFailed";
+
+    // Video Download Intents
+    public static final String VIDEO_DOWNLOADED = "VideoDownloaded";
+    public static final String VIDEO_DOWNLOAD_FAILED = "VideoDownloadFailed";
 
     public static final String PARAM_SUCCESS = "200";
     public static final String PARAM_FAILURE = "500";

@@ -9,10 +9,10 @@ public class TaskExecuter extends AsyncTask<Task, Void, Task> {
     private static final String TAG = TaskExecuter.class.getSimpleName();
 
     public void executeTask(Task task) {
-        if (Build.VERSION.SDK_INT > 11) {
+        if (Build.VERSION.SDK_INT >= 11) {
             this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, task);
         } else {
-            this.execute(task);
+            this.execute(task, null);
         }
     }
 
@@ -27,12 +27,14 @@ public class TaskExecuter extends AsyncTask<Task, Void, Task> {
     protected void onPostExecute(Task result) {
         super.onPostExecute(result);
 
-        if (result.isSuccess()) {
-            Log.d(TAG, "task successfull");
-            result.getTaskListener().onTaskComplete(result);
+        if (result.getTaskListener() != null) {
+            if (result.isSuccess()) {
+                result.getTaskListener().onTaskComplete(result);
+            } else {
+                result.getTaskListener().onTaskError(result);
+            }
         } else {
-            Log.d(TAG, "task failed");
-            result.getTaskListener().onTaskError(result);
+            Log.d(TAG, "not delivering results because of null callback");
         }
     }
 
