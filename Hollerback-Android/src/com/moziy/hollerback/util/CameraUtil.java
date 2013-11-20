@@ -1,21 +1,27 @@
 package com.moziy.hollerback.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import com.moziy.hollerback.debug.LogUtil;
 
 public class CameraUtil {
-
-    public static final int AUDIO_SAMPLE_RATE = 32000;
-    public static final int AUDIO_ENCODING_BIT_RATE = 96000;
+    private static final String TAG = CameraUtil.class.getSimpleName();
+    private static final int KBPS = 1000;
+    public static final int AUDIO_SAMPLE_RATE = 32 * KBPS;
+    public static final int AUDIO_ENCODING_BIT_RATE = 96 * KBPS;
     public static final int AUDIO_ENCODER = MediaRecorder.AudioEncoder.AAC;
-    public static final int VIDEO_ENCODING_RATE = 512000;
+    public static final int VIDEO_ENCODING_RATE = 500 * KBPS;
+    public static final int VIDEO_FRAME_RATE = 30;
     public static final int VIDEO_OUTPUT_FORMAT = MediaRecorder.OutputFormat.MPEG_4;
-    public static final int VIDEO_OUTPUT_ENCODER = MediaRecorder.VideoEncoder.MPEG_4_SP;
+    public static final int VIDEO_OUTPUT_ENCODER = MediaRecorder.VideoEncoder.H264;
 
     public static Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters) {
         Camera.Size result = null;
@@ -104,6 +110,7 @@ public class CameraUtil {
 
     public static void setFrontFacingParams(MediaRecorder recorder, int width, int height) {
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
+
         recorder.setVideoEncoder(VIDEO_OUTPUT_ENCODER);
         recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
         recorder.setAudioEncodingBitRate(AUDIO_ENCODING_BIT_RATE);
@@ -113,4 +120,37 @@ public class CameraUtil {
         recorder.setVideoSize(width, height);
     }
 
+    public static void printAllCamcorderProfiles(int cameraId) {
+
+        Field[] fields = CamcorderProfile.class.getFields();
+        for (Field f : fields) {
+            try {
+
+                if (Modifier.isStatic(f.getModifiers()) && CamcorderProfile.hasProfile(cameraId, f.getInt(f))) {
+                    Log.d(TAG, f.getName() + " found");
+                    CamcorderProfile profile = CamcorderProfile.get(cameraId, f.getInt(f));
+
+                    Field[] objectFields = profile.getClass().getFields();
+                    StringBuilder sb = new StringBuilder();
+                    for (Field pfield : objectFields) {
+
+                        if (!Modifier.isStatic(pfield.getModifiers())) {
+                            sb.append(pfield.getName()).append(": ").append(pfield.get(profile)).append("\n");
+                        }
+                    }
+                    Log.d(TAG, "profile: " + (sb != null ? sb.toString() : ""));
+
+                } else if (Modifier.isStatic(f.getModifiers())) {
+                    Log.d(TAG, f.getName() + " not found");
+                }
+            } catch (IllegalArgumentException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+    }
 }

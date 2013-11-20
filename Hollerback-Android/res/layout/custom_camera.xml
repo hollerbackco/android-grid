@@ -4,11 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <SurfaceView
-        android:id="@+id/surface"
+    <!--
+         <com.moziy.hollerback.fragment.RecordVideoFragment.Preview
+        android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" />
+    -->
+
+
+    <!--
+         <SurfaceView
+        android:id="@+id/surface"
+        android:layout_width="480px"
+        android:layout_height="720px"
         android:layout_alignParentTop="true" />
+    -->
 
     <RelativeLayout
         android:id="@+id/rl_video_preview"
@@ -139,5 +149,8 @@
             android:textStyle="bold"
             android:visibility="gone" />
     </RelativeLayout>
+
+    <com.moziy.hollerback.fragment.RecordVideoFragment.Preview>
+    </com.moziy.hollerback.fragment.RecordVideoFragment.Preview>
 
 </RelativeLayout>
