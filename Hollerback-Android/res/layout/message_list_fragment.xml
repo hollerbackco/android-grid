@@ -12,8 +12,16 @@
         android:layout_alignParentBottom="true" >
     </RelativeLayout>
 
-    <com.handmark.pulltorefresh.library.PullToRefreshListView
-        xmlns:ptr="http://schemas.android.com/apk/res-auto"
+    <!-- <com.handmark.pulltorefresh.library.PullToRefreshListView -->
+    <!-- xmlns:ptr="http://schemas.android.com/apk/res-auto" -->
+    <!-- android:id="@+id/message_listview" -->
+    <!-- android:layout_width="fill_parent" -->
+    <!-- android:layout_height="fill_parent" -->
+    <!-- android:layout_above="@+id/debug_panel" -->
+    <!-- android:cacheColorHint="#00000000" -->
+    <!-- android:divider="@null" /> -->
+
+    <ListView
         android:id="@+id/message_listview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

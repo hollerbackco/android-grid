@@ -29,7 +29,7 @@ public class QU {
     public static ConversationModel getConv(long id) {
         ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
         for (ConversationModel model : models) {
-            if (model.getConversation_Id() == id) {
+            if (model.getConversationId() == id) {
                 return model;
             }
 

@@ -29,6 +29,7 @@ public class IABIntent {
     // Conversation Intents
     public static final String CONVERSATION_CREATED = "ConvoCreated";
     public static final String CONVERSATION_CREATE_FAILURE = "ConvoCreateFailure";
+    public static final String CONVERSATION_UPDATED = "CovoUpdated";
 
     // Sync Intent
     public static final String NOTIFY_SYNC = "NotifySync";

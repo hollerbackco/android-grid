@@ -1,10 +1,12 @@
 package com.moziy.hollerback.fragment;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,18 +19,25 @@ import android.widget.VideoView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.activeandroid.query.Select;
+import com.activeandroid.query.Update;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
 import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
+import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.TimeUtil;
 
-public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, RecordingInfo {
 
     private static final String TAG = ConversationFragment.class.getSimpleName();
     public static final String CONVO_ID_BUNDLE_ARG_KEY = "CONVO_ID";
@@ -37,6 +46,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
     public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
+    public static final String RECORDING_INFO_INSTANCE_STATE = "RECORDING_INFO_INSTANCE_STATE";
 
     public static ConversationFragment newInstance(long conversationId) {
         ConversationFragment c = new ConversationFragment();
@@ -56,6 +66,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private boolean mPlayingDuringConfigChange;
     private boolean mPausedDuringPlayback; // not saved
     private int mPosition = 0;
+    private Bundle mRecordingInfo;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +93,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             if (savedInstanceState.containsKey(TASK_QUEUE_INSTANCE_STATE)) {
                 mTaskQueue = (LinkedList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE);
+            }
+
+            if (savedInstanceState.containsKey(RECORDING_INFO_INSTANCE_STATE)) {
+                mRecordingInfo = savedInstanceState.getBundle(RECORDING_INFO_INSTANCE_STATE);
             }
 
         }
@@ -131,6 +146,11 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onResume() {
         super.onResume();
+
+        if (mRecordingInfo != null) { // so we got our result from the recording fragment, time to go back
+            getFragmentManager().popBackStack();
+            return;
+        }
         // if (mViewRecreatedDuringPlayback == false && mVideoView.getCurrentPosition() > 0 && (mVideoView.getDuration() - mVideoView.getCurrentPosition()) > 0) {
         // Log.d(TAG, "starting paused playback");
         // mVideoView.start();
@@ -174,6 +194,11 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         if (mPlayingDuringConfigChange || mPausedDuringPlayback) {
             mPlayingDuringConfigChange = true;
         }
+
+        if (mRecordingInfo != null) {
+            outState.putBundle(RECORDING_INFO_INSTANCE_STATE, mRecordingInfo);
+        }
+
         outState.putBoolean(PLAYING_INSTANCE_STATE, mPlayingDuringConfigChange);
 
         super.onSaveInstanceState(outState);
@@ -288,6 +313,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 playVideo(video);
 
             }
+        } else {
+            beginRecording();
         }
 
     }
@@ -325,6 +352,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
                 Log.d(TAG, "fetching latest from db: " + video.toString());
                 video.setRead(true); // mark the video as watched
+                video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
                 video.save();
 
                 // TODO - Sajjad: Create a service to go and remove the watched videos
@@ -334,6 +362,38 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         TaskExecuter executer = new TaskExecuter();
         executer.executeTask(t);
+    }
+
+    @Override
+    public void onRecordingFinished(Bundle info) {
+        mRecordingInfo = info;
+
+        // if the recording was successfull, then update the conversation, and set the last message time
+        Task t = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //
+                .set(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + "='" + TimeUtil.SERVER_TIME_FORMAT.format(new Date()) + "'") //
+                .where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId));
+        t.setTaskListener(new Task.Listener() {
+
+            @Override
+            public void onTaskError(Task t) {
+
+            }
+
+            @Override
+            public void onTaskComplete(Task t) {
+                Log.d(TAG, "updated the conversation");
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
+            }
+        });
+        new TaskExecuter().executeTask(t);
+    }
+
+    private void beginRecording() {
+
+        // we're ready to move to the recording fragment
+        RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
+        f.setTargetFragment(this, 0);
+        getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
     }
 
 }

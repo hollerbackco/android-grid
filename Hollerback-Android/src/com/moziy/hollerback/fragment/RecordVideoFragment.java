@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -50,16 +51,23 @@ import android.widget.VideoView;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.activeandroid.query.Update;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.VideoUploadService;
+import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
+import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
+import com.moziy.hollerback.util.TimeUtil;
 
 public class RecordVideoFragment extends BaseFragment {
 
@@ -344,6 +352,7 @@ public class RecordVideoFragment extends BaseFragment {
         if (mVideoModel == null) {
 
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
+            df.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
             mVideoModel = new VideoModel();
             mVideoModel.setSegmented(true);
             mVideoModel.setSegmentFileName(mFileDataName);
@@ -351,14 +360,18 @@ public class RecordVideoFragment extends BaseFragment {
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
             mVideoModel.setCreateDate(df.format(new Date()));
             mVideoModel.setSenderName("me");
+            mVideoModel.setRead(true); // since we recorded this, we've actually seen it too
             mVideoModel.setGuid(UUID.randomUUID().toString());
-            mVideoModel.setRecipients(recipients.toArray(new String[] {}));
+            if (recipients != null) {
+                mVideoModel.setRecipients(recipients.toArray(new String[] {}));
 
-            Log.d(TAG, "recipient: " + mVideoModel.getRecipients()[0]);
+                Log.d(TAG, "recipient: " + mVideoModel.getRecipients()[0]);
+            }
 
             // TODO: if there's a conversation id then put it here
             if (conversationId > 0) {
                 mVideoModel.setConversationId(conversationId);
+                updateConversationTime(conversationId);
             }
 
             mVideoModel.save();
@@ -393,6 +406,29 @@ public class RecordVideoFragment extends BaseFragment {
             // .addToBackStack(ConversationFragment.class.getSimpleName()).remove(RecordVideoFragment.this).commitAllowingStateLoss();
         }
 
+    }
+
+    private void updateConversationTime(long conversationId) {
+        String timeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        Log.d(TAG, "new convo timestamp: " + timeStamp);
+        ActiveAndroidUpdateTask updateTimeTask = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //
+                .set(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + "='" + timeStamp + "'") //
+                .where(ActiveRecordFields.C_CONV_ID + "=?", conversationId)); //
+        updateTimeTask.setTaskListener(new Task.Listener() {
+
+            @Override
+            public void onTaskError(Task t) {
+                Log.w(TAG, t.getClass().getSimpleName() + " failed");
+            }
+
+            @Override
+            public void onTaskComplete(Task t) {
+                // broadcast that the conversations have been updated
+                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
+
+            }
+        });
+        new TaskExecuter().executeTask(updateTimeTask);
     }
 
     private void inviteAndRecordVideo() {
