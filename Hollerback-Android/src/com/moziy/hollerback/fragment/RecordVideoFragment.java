@@ -185,17 +185,22 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         };
     };
 
+    public void onAttach(android.app.Activity activity) {
+        super.onAttach(activity);
+
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // lets open the camera!
-        mOpenCameraThread.run();
 
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mActivity.getWindow().addFlags(LayoutParams.FLAG_FULLSCREEN);
         mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         mActivity.getActionBar().hide();
+
+        // lets open the camera!
+        mOpenCameraThread.run();
 
         // mActivity.getSupportActionBar().setTitle(R.string.action_record);
 
@@ -436,28 +441,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
         }
-        // try {
-        // mCamera = Camera.open(currentCameraId);
-        // mRootView.setCamera(mCamera);
-        //
-        // // test
-        // // List<Size> sizes = mCamera.getParameters().getSupportedVideoSizes();
-        // // if (sizes == null) {
-        // // Log.d(TAG, "null size");
-        // // }
-        // // for (Size s : sizes) {
-        // // Log.d(TAG, "supported size: " + s.width + " x " + s.height);
-        // // }
-        //
-        // Log.e("Hollerback", "Camera successfully opened");
-        // } catch (RuntimeException e) {
-        // Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
-        // Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
-        //
-        // onRecordingFailed();
-        // }
-
-        // previewHolder.addCallback(surfaceCallback);
 
         if (!isUploadRunning()) {
             Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
@@ -602,11 +585,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onDestroy() {
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        mActivity.getWindow().clearFlags(LayoutParams.FLAG_FULLSCREEN);
+        mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mActivity.getActionBar().show();
 
         inPreview = false;
-
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-
         super.onDestroy();
     }
 
