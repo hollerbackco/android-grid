@@ -88,6 +88,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         // TODO Auto-generated method stub
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        mActivity.getSupportActionBar().show();
         // IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATIONS);
 
         // TODO - Sajjad: refresh conversation list

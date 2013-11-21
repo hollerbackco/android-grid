@@ -7,10 +7,22 @@ import android.util.Log;
 public class TaskExecuter extends AsyncTask<Task, Void, Task> {
 
     private static final String TAG = TaskExecuter.class.getSimpleName();
+    private boolean mUseSingleThreadPool = false;
+
+    public TaskExecuter() {
+    }
+
+    public TaskExecuter(boolean useSingleThreadPool) {
+        mUseSingleThreadPool = useSingleThreadPool;
+    }
 
     public void executeTask(Task task) {
+
         if (Build.VERSION.SDK_INT >= 11) {
-            this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, task);
+            if (mUseSingleThreadPool)
+                this.executeOnExecutor(SERIAL_EXECUTOR, task);
+            else
+                this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, task);
         } else {
             this.execute(task, null);
         }

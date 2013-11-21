@@ -9,7 +9,7 @@
  * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.camera;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.GINGERBREAD;

@@ -26,7 +26,6 @@ public class NotificationUtil {
     public static Notification generateNotification(Context ctx, String title, String message) {
         Intent intent = new Intent();
         intent.setClass(ctx, HollerbackMainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

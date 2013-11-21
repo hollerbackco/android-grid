@@ -1,25 +1,25 @@
-package com.moziy.hollerback.view;
+package com.moziy.hollerback.view.camera;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
 
-public class CameraPreview extends SurfaceView {
+public class SquarePreview extends SurfaceView {
     public static enum FixedAlong {
         width, height
     }
 
     private FixedAlong fixedAlong = FixedAlong.width;
 
-    public CameraPreview(Context context) {
+    public SquarePreview(Context context) {
         super(context);
     }
 
-    public CameraPreview(Context context, AttributeSet attrs) {
+    public SquarePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public CameraPreview(Context context, AttributeSet attrs, int defStyle) {
+    public SquarePreview(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
