@@ -73,10 +73,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private static final int PREFERRED_VIDEO_WIDTH = 320;
     private static final int PREFERRED_VIDEO_HEIGHT = 240;
 
-    private Camera mCamera = null;
+    private volatile Camera mCamera = null;
     private PreviewSurfaceView mCameraSurfaceView;
     private boolean inPreview = false;
-    private boolean mToConversation = false;
+    private volatile Camera.Size mBestVideoSize;
+    private Camera.Size mBestPreviewSize;
+
     TextView mTimer;
     private final Handler mHandler = new Handler();
 
@@ -115,8 +117,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private String[] mPhones = null;
     ViewPager mFilterPagers;
 
-    int mBestCameraWidth, mBestCameraHeight;
-
     private TextureView mTexturePreview;
 
     public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
@@ -149,14 +149,55 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return fragment;
     }
 
+    Thread mOpenCameraThread = new Thread() {
+
+        public void run() {
+            mCamera = Camera.open(mCurrentCameraId);
+
+            // logic:
+            // 1. see if there is a preferred video size, if so just use that
+
+            // 2. if there are no preferred video size, we must use the preview size
+
+            // query the best size / aspect ratio
+            mBestVideoSize = CameraUtil.getPreferredSize(mCamera.getParameters().getSupportedVideoSizes(), PREFERRED_VIDEO_WIDTH, PREFERRED_VIDEO_HEIGHT);
+            if (mBestVideoSize != null) { // we're done if we found a best video size
+
+                // we want our preview to have the highest quality, therefore we multiply the width and height by 10 so the optimal size is found
+                mBestPreviewSize = CameraUtil.getOptimalPreviewSize(mCamera.getParameters().getSupportedPreviewSizes(), mBestVideoSize.width * 10, mBestVideoSize.height * 10);
+                Log.d(TAG, "mBestVideoSize:" + mBestVideoSize.width + "x" + mBestVideoSize.height);
+                Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
+                return;
+            }
+
+            // camera can't support different video/preview sizes; therefore, lets get the optimal preview size
+            mBestPreviewSize = CameraUtil.getPreferredSize(mCamera.getParameters().getSupportedPreviewSizes(), PREFERRED_VIDEO_WIDTH, PREFERRED_VIDEO_HEIGHT);
+            mBestVideoSize = mBestPreviewSize;
+
+            if (mBestPreviewSize == null) {
+                Log.e(TAG, "nothing suitable found for recording");
+                // XXX: log this
+                return;
+            }
+
+            Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
+
+        };
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // lets open the camera!
+        mOpenCameraThread.run();
+
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        mActivity.getWindow().addFlags(LayoutParams.FLAG_FULLSCREEN);
+        mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mActivity.getActionBar().hide();
 
         // mActivity.getSupportActionBar().setTitle(R.string.action_record);
-        mActivity.getSupportActionBar().hide();
-        mActivity.getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Bundle args = getArguments();
 
@@ -173,12 +214,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         mPhones = args.getStringArray(FRAGMENT_ARG_PHONES);
         mWatchedIds = args.getStringArrayList(FRAGMENT_ARG_WATCHED_IDS);
-        mToConversation = args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false);
+        args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false); // TODO, CLEANUP
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ViewGroup v = (ViewGroup) inflater.inflate(R.layout.recording_layout, container, false);
 
-        View v = inflater.inflate(R.layout.recording_layout, container, false);
         mCameraSurfaceView = (PreviewSurfaceView) v.findViewById(R.id.preview);
         mCameraSurfaceView.getHolder().addCallback(this);
         mCameraSurfaceView.setOnClickListener(new View.OnClickListener() {
@@ -202,6 +243,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         });
 
         return v;
+
     }
 
     @Override
@@ -389,6 +431,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onResume() {
         super.onResume();
+
         if (this.isVisible()) {
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
@@ -530,7 +573,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
         // Step 3: Configure Camera
-        CameraUtil.setFrontFacingParams(recorder, 320, 240);
+        CameraUtil.setFrontFacingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
 
         // recorder.setvideoextension
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
@@ -563,7 +606,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         inPreview = false;
 
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onDestroy();
     }
@@ -646,48 +688,82 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        mCamera = Camera.open(mCurrentCameraId);
+        if (mOpenCameraThread.isAlive() || mCamera == null) {
+            try {
+                Log.d(TAG, "waiting on camera to open");
+                mOpenCameraThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
-        // query the best size / aspect ratio
-        Camera.Size actualSize = CameraUtil.getPreferredVideoSize(PREFERRED_VIDEO_WIDTH, PREFERRED_VIDEO_HEIGHT, mCamera.getParameters());
-
-        mCameraSurfaceView.setAspectRatio((double) actualSize.width / (double) actualSize.height); // adjust the surfaceview
+        try {
+            mCamera.setPreviewDisplay(holder);
+            CameraUtil.setCameraDisplayOrientation(getActivity(), CameraInfo.CAMERA_FACING_FRONT, mCamera);
+            Camera.Parameters params = mCamera.getParameters();
+            params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
+            mCamera.setParameters(params);
+            mCamera.startPreview();
+            inPreview = true;
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
-    Thread mOpenCameraThread = new Thread() {
-
-        public void run() {
-            mCamera = Camera.open(mCurrentCameraId);
-        };
-    };
-
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Log.d(TAG, "surface changed: " + width + " x " + height);
 
+        if (holder.getSurface() == null) {
+            // preview surface does not exist
+            return;
+        }
+
+        // TODO - Sajjad: Move this logic to a thread
+        // stop preview before making changes
         try {
+            // mCamera.stopPreview();
+        } catch (Exception e) {
+            // ignore: tried to stop a non-existent preview
+        }
 
-            // mOpenCameraThread.run();
-            // mOpenCameraThread.join();
+        // set preview size and make any resize, rotate or
+        // reformatting changes here
 
-            mCamera.setPreviewDisplay(holder);
-            mCamera.setDisplayOrientation(90);
-            mCamera.startPreview();
-            inPreview = true;
+        // start preview with new settings
+        try {
+            // mCamera.setPreviewDisplay(holder);
+            // CameraUtil.setCameraDisplayOrientation(getActivity(), CameraInfo.CAMERA_FACING_FRONT, mCamera);
+            // Camera.Parameters params = mCamera.getParameters();
+            // params.setRecordingHint(true);
+            // params.setPreviewSize(mBestVideoSize.width, mBestVideoSize.height);
+            // mCamera.setParameters(params);
+            // mCamera.startPreview();
+            // inPreview = true;
+            // lets start recording
 
+            // start recording only after the surface is exactly how we want it
+            // if (Math.abs(((double) width / (double) height) - ((double) mBestPreviewSize.width / (double) mBestPreviewSize.height)) <= 0.1) {
+            //
             mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
-                    if (!RecordVideoFragment.this.isRecording) {
+                    if (!isRecording) {
                         startRecording();
                     }
                 }
             });
+            // }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
+
+        // Camera.Size previewSize = CameraUtil.getOptimalPreviewSize(mCamera.getParameters().getSupportedPreviewSizes(), width, height);
 
     }
 

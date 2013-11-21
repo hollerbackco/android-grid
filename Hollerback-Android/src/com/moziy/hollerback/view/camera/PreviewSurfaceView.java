@@ -3,6 +3,7 @@ package com.moziy.hollerback.view.camera;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class PreviewSurfaceView extends SurfaceView {
@@ -10,24 +11,19 @@ public class PreviewSurfaceView extends SurfaceView {
     private static final double DEFAULT_ASPECT_RATIO = (4.0 / 3.0);
     private double mAspectRatio = DEFAULT_ASPECT_RATIO;
 
-    public PreviewSurfaceView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        // TODO Auto-generated constructor stub
+    public PreviewSurfaceView(Context context) {
+        super(context);
+        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public PreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        // TODO Auto-generated constructor stub
-    }
-
-    public PreviewSurfaceView(Context context) {
-        super(context);
-        // TODO Auto-generated constructor stub
+        setZOrderMediaOverlay(true);
+        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public void setAspectRatio(double ratio) {
         mAspectRatio = ratio;
-        requestLayout();
     }
 
     @Override
@@ -42,7 +38,7 @@ public class PreviewSurfaceView extends SurfaceView {
             if (((double) previewHeight / (double) previewWidth) > mAspectRatio) {
                 previewWidth = (int) (previewWidth * mAspectRatio); // make the width wider
             } else { //
-                previewHeight = (int) (previewHeight * mAspectRatio);
+                previewHeight = (int) (previewWidth * mAspectRatio);
             }
 
         } else { // width is the longer side
@@ -54,9 +50,8 @@ public class PreviewSurfaceView extends SurfaceView {
             }
 
         }
-
+        setMeasuredDimension(previewWidth, previewHeight);
         Log.d(TAG, "new width: " + previewWidth + " new height: " + previewHeight);
 
-        super.onMeasure(MeasureSpec.makeMeasureSpec(previewWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(previewHeight, MeasureSpec.EXACTLY));
     }
 }
