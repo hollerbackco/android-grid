@@ -402,7 +402,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             }
         });
 
-        TaskExecuter executer = new TaskExecuter();
+        TaskExecuter executer = new TaskExecuter(true); // allow only 1 update at a time
         executer.executeTask(updateVideoTask);
     }
 
