@@ -1,7 +1,9 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.camera;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import android.hardware.Camera;
@@ -62,6 +64,59 @@ public class CameraUtil {
 
         }
         return (result);
+    }
+
+    public static Size getPreferredVideoSize(int preferredWidth, int preferredHeight, Camera.Parameters camParams) {
+        Size actual = null;
+
+        List<Size> supportedVideoSizes = camParams.getSupportedVideoSizes();
+
+        if (supportedVideoSizes == null) {
+            return null;
+        }
+
+        // sort them in descending order
+        Collections.sort(supportedVideoSizes, new Comparator<Size>() {
+
+            @Override
+            public int compare(Size lhs, Size rhs) {
+                if (lhs.width > rhs.width) {
+                    return 1;
+                } else if (lhs.width < rhs.width) {
+                    return -1;
+                } else {
+                    // lets compare the heights
+                    if (lhs.height > rhs.height) {
+                        return 1;
+                    } else if (lhs.height < rhs.height) {
+                        return -1;
+                    }
+                }
+
+                return 0;
+            }
+
+        });
+
+        for (Size s : supportedVideoSizes) {
+
+            if (s.height == preferredHeight && s.width == preferredWidth) { // if we found a match then lets note it
+                Log.d(TAG, "getPreferredVideoSize - returning preferred");
+                return s; // we found a match
+            }
+
+            if (actual == null) {
+                actual = s;
+            } else {
+                if (s.width < actual.width && s.width > preferredWidth) { // lets find the best video size closest to the preferred
+                    Log.d(TAG, "getPreferredVideoSize() - actual: " + actual.width + " " + actual.height);
+                    actual = s;
+                }
+            }
+
+        }
+
+        return actual;
     }
 
     public static Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {

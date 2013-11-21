@@ -13,10 +13,10 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OutputFormat;
 import android.os.Build;
@@ -31,11 +31,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -53,10 +50,9 @@ import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
-import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.camera.CameraUtil;
 import com.moziy.hollerback.view.camera.PreviewSurfaceView;
 import com.moziy.hollerback.view.camera.PreviewTextureView;
 
@@ -73,6 +69,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         public void onRecordingFinished(Bundle info);
     }
+
+    private static final int PREFERRED_VIDEO_WIDTH = 320;
+    private static final int PREFERRED_VIDEO_HEIGHT = 240;
 
     private Camera mCamera = null;
     private PreviewSurfaceView mCameraSurfaceView;
@@ -110,13 +109,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     String targetExtension;
 
     // Preview shit
-    private View mPreviewParentView;
-    private VideoView mPreviewVideoView;
-    private ImageButton mRecordButton, mPreviewPlayBtn, mSwitchButton, mFilterButton;
     protected Button mSendButton;
-    private ImageView mImagePreview;
     private long mConversationId = -1;
-    private TextView mTxtPlaying;
 
     private String[] mPhones = null;
     ViewPager mFilterPagers;
@@ -158,6 +152,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // mActivity.getSupportActionBar().setTitle(R.string.action_record);
         mActivity.getSupportActionBar().hide();
@@ -492,30 +487,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         }
 
-        // mRecordButton.clearAnimation();
-        // mRecordButton.setBackgroundResource(R.drawable.recording_spinner);
-        // mTimer.setText(String.valueOf(secondsPassed) + "s");
-        // mTimer.setTextColor(mActivity.getResources().getColor(R.color.timer_default));
-        // mTxtPlaying.setVisibility(View.GONE);
-
-        // inform the user that recording has stopped
-        // mRecordButton.setImageResource(R.drawable.record_button);
         isRecording = false;
 
-        if (mFileDataPath != null) {
-            // mRecordButton.setVisibility(View.GONE);
-            // mRecordButton.setEnabled(false);
-            // mRecordButton.setClickable(false);
-            // mSendButton.setVisibility(View.VISIBLE);
-            // mSwitchButton.setVisibility(View.GONE);
-        }
         mHandler.removeCallbacks(timeTask);
         secondsPassed = 0;
 
-        // displayPreview();
-        ImageUtil.generateThumbnail(mFileDataName + "." + mFileExt);
-
-        // TODO: Review code segment above
+        // // displayPreview();
+        // ImageUtil.generateThumbnail(mFileDataName + "." + mFileExt);
 
         // Precondition: User decides to send video (no ttyl without video, etc)
     }
@@ -549,25 +527,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-        // CameraUtil.setFrontFacingParams(recorder, 480, 360);
-        CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
+        // CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
-        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-        // recorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_CIF));
-        // get optimal width/heigh
-        // Camera.Size size = CameraUtil.getOptimalPreviewSize(mCamera.getParameters().getSupportedPreviewSizes(), 640, 480);
-        // if (size == null) {
-        // Log.d(TAG, "size is null");
-        // }
-        // Log.d(TAG, "optimal size w: " + size.width + " h: " + size.height);
-        //
-        // CameraUtil.setFrontFacingParams(recorder, 320, 240);
+        // Step 3: Configure Camera
+        CameraUtil.setFrontFacingParams(recorder, 320, 240);
 
-        // try to find the profile and bitrate that best matches
-
-        recorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA));
-
-        // recorder.setvi
+        // recorder.setvideoextension
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -596,6 +561,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void onDestroy() {
 
         inPreview = false;
+
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         super.onDestroy();
     }
 
@@ -676,7 +645,14 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
         mCamera = Camera.open(mCurrentCameraId);
+
+        // query the best size / aspect ratio
+        Camera.Size actualSize = CameraUtil.getPreferredVideoSize(PREFERRED_VIDEO_WIDTH, PREFERRED_VIDEO_HEIGHT, mCamera.getParameters());
+
+        mCameraSurfaceView.setAspectRatio((double) actualSize.width / (double) actualSize.height); // adjust the surfaceview
+
     }
 
     Thread mOpenCameraThread = new Thread() {
