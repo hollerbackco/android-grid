@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -14,28 +13,21 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OutputFormat;
-import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore.Video.Thumbnails;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
@@ -65,8 +57,10 @@ import com.moziy.hollerback.util.CameraUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.view.camera.PreviewSurfaceView;
+import com.moziy.hollerback.view.camera.PreviewTextureView;
 
-public class RecordVideoFragment extends BaseFragment {
+public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
 
     public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
     public static final String FRAGMENT_ARG_PHONES = "phones";
@@ -80,12 +74,8 @@ public class RecordVideoFragment extends BaseFragment {
         public void onRecordingFinished(Bundle info);
     }
 
-    // protected ViewGroup mRootView;
-    protected Preview mRootView;
-
-    private SurfaceView preview = null;
-    private static SurfaceHolder previewHolder = null;
-    private static Camera mCamera = null;
+    private Camera mCamera = null;
+    private PreviewSurfaceView mCameraSurfaceView;
     private boolean inPreview = false;
     private boolean mToConversation = false;
     TextView mTimer;
@@ -94,7 +84,7 @@ public class RecordVideoFragment extends BaseFragment {
     int VIDEO_SENT = 4;
 
     int secondsPassed;
-    private int currentCameraId = CameraInfo.CAMERA_FACING_FRONT;
+    private int mCurrentCameraId = CameraInfo.CAMERA_FACING_FRONT;
 
     private String mFileDataPath;
     protected String mFileDataName;
@@ -132,6 +122,8 @@ public class RecordVideoFragment extends BaseFragment {
     ViewPager mFilterPagers;
 
     int mBestCameraWidth, mBestCameraHeight;
+
+    private TextureView mTexturePreview;
 
     public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
         RecordVideoFragment fragment = new RecordVideoFragment();
@@ -190,40 +182,14 @@ public class RecordVideoFragment extends BaseFragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // this is to make sure the camera runs square when allowed, otherwise we are using
-        // the mask version
-        try {
 
-            // mRootView = (ViewGroup) inflater.inflate(R.layout.custom_camera, null);
-            mRootView = new Preview(getActivity());
-
-            // mCamera.release();
-            // mCamera = null;
-
-        } catch (RuntimeException e) {
-            Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
-            Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
-
-            onRecordingFailed();
-
-            return null;
-        }
-
-        // mSendButton = (Button) mRootView.findViewById(R.id.send_button);
-        //
-        // mPreviewParentView = mRootView.findViewById(R.id.rl_video_preview);
-        // mPreviewVideoView = (VideoView) mRootView.findViewById(R.id.vv_video_preview);
-        // mPreviewPlayBtn = (ImageButton) mRootView.findViewById(R.id.ib_play_btn);
-        // mImagePreview = (ImageView) mRootView.findViewById(R.id.iv_video_preview);
-        // mFilterButton = (ImageButton) mRootView.findViewById(R.id.ib_filter_btn);
-        // mTxtPlaying = (TextView) mRootView.findViewById(R.id.txtPlaying);
-        //
-        // preview = (SurfaceView) mRootView.findViewById(R.id.surface);
-        mRootView.setOnClickListener(new View.OnClickListener() {
+        View v = inflater.inflate(R.layout.recording_layout, container, false);
+        mCameraSurfaceView = (PreviewSurfaceView) v.findViewById(R.id.preview);
+        mCameraSurfaceView.getHolder().addCallback(this);
+        mCameraSurfaceView.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-
                 if (isRecording) { // send the video once recording has stopped
 
                     stopRecording();
@@ -236,67 +202,11 @@ public class RecordVideoFragment extends BaseFragment {
                         postToConversation(mConversationId, mWatchedIds);
                     }
                 }
+
             }
         });
 
-        // previewHolder = preview.getHolder();
-        // previewHolder.addCallback(surfaceCallback);
-        // previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); //sajjad - evaluate whether this is needed
-
-        targetPreviewWidth = 480;
-        targetPreviewHeight = 480;
-
-        // TODO - sajjad: evaluate this previewholder
-        // this 1.5 i guess assumes 640 x 480
-        // previewHolder.setFixedSize(mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth(),
-        // (int) (mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth() * (targetPreviewWidth / targetPreviewHeight)));
-
-        // RelativeLayout.LayoutParams mImagePreviewParams = (RelativeLayout.LayoutParams) mImagePreview.getLayoutParams();
-        // mImagePreviewParams.height = (int) (mActivity.getWindow().getWindowManager().getDefaultDisplay().getWidth() * (targetPreviewWidth / targetPreviewHeight));
-        //
-        // mImagePreview.setLayoutParams(mImagePreviewParams);
-        //
-        // mRecordButton = (ImageButton) mRootView.findViewById(R.id.record_button);
-        // mRecordButton.setOnClickListener(new OnClickListener() {
-        //
-        // @Override
-        // public void onClick(View v) {
-        // if (isRecording) {
-        // stopRecording();
-        // } else {
-        // startRecording();
-        // }
-        // }
-        // });
-        //
-        // mTimer = (TextView) mRootView.findViewById(R.id.timer);
-        //
-        // mSendButton.setOnClickListener(new OnClickListener() {
-        //
-        // @Override
-        // public void onClick(View arg0) {
-        // // if (mConversationId < 0) {
-        // // // HBRequestManager
-        // // // .postConversations(TempMemoryStore.invitedUsers);
-        // // LogUtil.e("Conversation ID NULL");
-        // // mSendButton.setEnabled(false);
-        // // inviteAndRecordVideo();
-        // // } else {
-        // // uploadAndSend();
-        // // }
-        // }
-        // });
-
-        // mSwitchButton = (ImageButton) mRootView.findViewById(R.id.btnSwitch);
-        // mSwitchButton.setOnClickListener(new View.OnClickListener() {
-        //
-        // @Override
-        // public void onClick(View v) {
-        // switchCamera();
-        // }
-        // });
-
-        return mRootView;
+        return v;
     }
 
     @Override
@@ -325,6 +235,34 @@ public class RecordVideoFragment extends BaseFragment {
     @Override
     protected void initializeView(View view) {
         // TODO: write up this portion in cleanup
+    }
+
+    // this can be used later if we go to a complete texture view solution
+    public TextureView getTextureBasedView() {
+        mTexturePreview = new PreviewTextureView(getActivity());
+        mTexturePreview.setSurfaceTextureListener(this);
+
+        mTexturePreview.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (isRecording) { // send the video once recording has stopped
+
+                    stopRecording();
+
+                    if (mConversationId < 0) {
+                        Log.d(TAG, "attempt to create new conversation");
+                        inviteAndRecordVideo();
+                    } else {
+                        Log.d(TAG, "attempt to post to existing conversation");
+                        postToConversation(mConversationId, mWatchedIds);
+                    }
+                }
+
+            }
+        });
+
+        return mTexturePreview;
     }
 
     private void createNewConversation(ArrayList<String> contacts) {
@@ -393,17 +331,11 @@ public class RecordVideoFragment extends BaseFragment {
         // we're going back to the start conversation fragment
         mActivity.getSupportFragmentManager().popBackStack();
 
-        if (mToConversation) { // when do we go back to the conversation?
-
-            // ConversationFragment fragment = ConversationFragment.newInstance(mConversationId);
-            // mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-            // .addToBackStack(ConversationFragment.class.getSimpleName()).remove(RecordVideoFragment.this).commitAllowingStateLoss();
-        }
-
     }
 
     private void updateConversationTime(long conversationId) {
         String timeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+
         Log.d(TAG, "new convo timestamp: " + timeStamp);
         ActiveAndroidUpdateTask updateTimeTask = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //
                 .set(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + "='" + timeStamp + "'") //
@@ -466,26 +398,26 @@ public class RecordVideoFragment extends BaseFragment {
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
         }
-        try {
-            mCamera = Camera.open(currentCameraId);
-            mRootView.setCamera(mCamera);
-
-            // test
-            // List<Size> sizes = mCamera.getParameters().getSupportedVideoSizes();
-            // if (sizes == null) {
-            // Log.d(TAG, "null size");
-            // }
-            // for (Size s : sizes) {
-            // Log.d(TAG, "supported size: " + s.width + " x " + s.height);
-            // }
-
-            Log.e("Hollerback", "Camera successfully opened");
-        } catch (RuntimeException e) {
-            Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
-            Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
-
-            onRecordingFailed();
-        }
+        // try {
+        // mCamera = Camera.open(currentCameraId);
+        // mRootView.setCamera(mCamera);
+        //
+        // // test
+        // // List<Size> sizes = mCamera.getParameters().getSupportedVideoSizes();
+        // // if (sizes == null) {
+        // // Log.d(TAG, "null size");
+        // // }
+        // // for (Size s : sizes) {
+        // // Log.d(TAG, "supported size: " + s.width + " x " + s.height);
+        // // }
+        //
+        // Log.e("Hollerback", "Camera successfully opened");
+        // } catch (RuntimeException e) {
+        // Log.e("Hollerback", "Camera failed to open: " + e.getLocalizedMessage());
+        // Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
+        //
+        // onRecordingFailed();
+        // }
 
         // previewHolder.addCallback(surfaceCallback);
 
@@ -509,16 +441,6 @@ public class RecordVideoFragment extends BaseFragment {
 
         }
 
-        if (mCamera != null) {
-            if (inPreview) {
-                mCamera.stopPreview();
-
-            }
-            mRootView.setCamera(null);
-            mCamera.lock();
-            mCamera.release();
-            mCamera = null;
-        }
         mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         inPreview = false;
@@ -526,17 +448,6 @@ public class RecordVideoFragment extends BaseFragment {
     }
 
     protected void startRecording() {
-        // mSwitchButton.setEnabled(false);
-        // mSendButton.setVisibility(View.GONE);
-        //
-        // mSwitchButton.setVisibility(View.GONE);
-        // mFilterButton.setVisibility(View.GONE);
-        // mTimer.setTextColor(mActivity.getResources().getColor(R.color.timer_green));
-        // mRecordButton.setBackgroundResource(R.drawable.green_recording_spinner);
-        // Animation rotation = AnimationUtils.loadAnimation(mActivity, R.anim.rotation_reverse_clockwise);
-        // rotation.setRepeatCount(Animation.INFINITE);
-        // mRecordButton.startAnimation(rotation);
-        // mTxtPlaying.setText(R.string.tap_stop);
 
         // intialize the part info
         mPartNum = 0;
@@ -609,47 +520,6 @@ public class RecordVideoFragment extends BaseFragment {
         // Precondition: User decides to send video (no ttyl without video, etc)
     }
 
-    public void displayPreview() {
-
-        if (inPreview) {
-            mCamera.stopPreview();
-        }
-
-        mImagePreview.setVisibility(View.VISIBLE);
-
-        preview.setVisibility(View.GONE);
-
-        inPreview = false;
-
-        mPreviewParentView.setVisibility(View.VISIBLE);
-        mPreviewVideoView.setVisibility(View.VISIBLE);
-        mPreviewPlayBtn.setVisibility(View.VISIBLE);
-
-        mFilterButton.setVisibility(View.GONE);
-
-        Bitmap bmThumbnail = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(mFileDataName + "." + mFileExt), Thumbnails.FULL_SCREEN_KIND);
-        mImagePreview.setBackgroundDrawable(new BitmapDrawable(bmThumbnail));
-
-        mPreviewVideoView.setOnCompletionListener(new OnCompletionListener() {
-
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                // TODO Auto-generated method stub
-                mPreviewPlayBtn.setEnabled(true);
-            }
-        });
-
-        mPreviewPlayBtn.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                playVideo(mFileDataName + "." + mFileExt);
-                mPreviewPlayBtn.setEnabled(false);
-            }
-        });
-
-    }
-
     private String getNewFileName() {
 
         mFileDataName = HBFileUtil.generateRandomFileName();
@@ -665,17 +535,6 @@ public class RecordVideoFragment extends BaseFragment {
         Log.d(TAG, "mFileDataName: " + mFileDataName + " path: " + mFileDataPath);
 
         return mFileDataPath;
-    }
-
-    private void playVideo(String fileKey) {
-
-        mImagePreview.setVisibility(View.GONE);
-
-        mPreviewVideoView.setVideoPath(HBFileUtil.getLocalFile(fileKey));
-
-        mPreviewVideoView.requestFocus();
-        mPreviewVideoView.start();
-        LogUtil.i("vid size: " + mPreviewVideoView.getHeight() + mPreviewVideoView.getWidth());
     }
 
     private boolean prepareVideoRecorder() {
@@ -703,6 +562,9 @@ public class RecordVideoFragment extends BaseFragment {
         // Log.d(TAG, "optimal size w: " + size.width + " h: " + size.height);
         //
         // CameraUtil.setFrontFacingParams(recorder, 320, 240);
+
+        // try to find the profile and bitrate that best matches
+
         recorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA));
 
         // recorder.setvi
@@ -732,14 +594,7 @@ public class RecordVideoFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
-        if (inPreview) {
-            // mCamera.stopPreview();
-        }
-        if (mCamera != null) {
-            mCamera.release();
-            mCamera = null;
-        }
+
         inPreview = false;
         super.onDestroy();
     }
@@ -752,102 +607,9 @@ public class RecordVideoFragment extends BaseFragment {
         }
     }
 
-    // private void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
-    // android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-    // android.hardware.Camera.getCameraInfo(cameraId, info);
-    // int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-    // int degrees = 0;
-    // switch (rotation) {
-    // case Surface.ROTATION_0:
-    // degrees = 0;
-    // break;
-    // case Surface.ROTATION_90:
-    // degrees = 90;
-    // break;
-    // case Surface.ROTATION_180:
-    // degrees = 180;
-    // break;
-    // case Surface.ROTATION_270:
-    // degrees = 270;
-    // break;
-    // }
-    //
-    // int result;
-    // if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-    // result = (info.orientation + degrees) % 360;
-    // result = (360 - result) % 360; // compensate the mirror
-    // } else { // back-facing
-    // result = (info.orientation - degrees + 360) % 360;
-    // }
-    // camera.setDisplayOrientation(result);
-    // }
-
     private void broadcastFailure() {
         IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_FAILED));
     }
-
-    // SurfaceHolder.Callback surfaceCallback = new SurfaceHolder.Callback() {
-    // public void surfaceCreated(SurfaceHolder holder) {
-    // Log.d(TAG, "surface created");
-    // try {
-    // mCamera.setPreviewDisplay(previewHolder);
-    // mCamera.setDisplayOrientation(90);
-    // mCamera.getParameters().setRecordingHint(true);
-    // MediaRecorder m = new MediaRecorder();
-    // m.setCamera(mCamera);
-    // m.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-    // m.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-    // } catch (Throwable t) {
-    // Log.e("SurfaceCallback", "Exception in setPreviewDisplay()", t);
-    // }
-    // }
-    //
-    // public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    // Log.d(TAG, "surface changed");
-    // if (mCamera == null) {
-    // onRecordingFailed();
-    // return;
-    // }
-    // Camera.Parameters parameters = mCamera.getParameters();
-    //
-    // // TODO - sajjad: remove test
-    // for (Size s : parameters.getSupportedPreviewSizes()) {
-    // Log.d(TAG, "supported preview sizes: " + s.width + " " + s.height);
-    // }
-    // Camera.Size size = CameraUtil.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), width, height);// CameraUtil.getBestPreviewSize((int) targetPreviewWidth, (int)
-    // // targetPreviewWidth, parameters);
-    // LogUtil.i("Best size: " + size.width + " " + size.height);
-    //
-    // mBestCameraWidth = size.width;
-    // mBestCameraHeight = size.height;
-    //
-    // if (size != null) {
-    // // parameters.setPreviewSize(size.width, size.height);
-    // parameters.setPreviewSize(720, 480);
-    // mCamera.setParameters(parameters);
-    // mCamera.setDisplayOrientation(90);
-    // mCamera.startPreview();
-    // inPreview = true;
-    // }
-    //
-    // // once a valid surface has been created and
-    // mHandler.post(new Runnable() {
-    //
-    // @Override
-    // public void run() {
-    // if (!isRecording) {
-    // startRecording();
-    // }
-    //
-    // }
-    // });
-    //
-    // }
-    //
-    // public void surfaceDestroyed(SurfaceHolder holder) {
-    //
-    // }
-    // };
 
     private void onRecordingFailed() {
 
@@ -870,160 +632,74 @@ public class RecordVideoFragment extends BaseFragment {
         return false;
     }
 
-    /**
-     * A simple wrapper around a Camera and a SurfaceView that renders a centered preview of the Camera
-     * to the surface. We need to center the SurfaceView because not all devices have cameras that
-     * support preview sizes at the same aspect ratio as the device's display.
-     */
-    public class Preview extends ViewGroup implements SurfaceHolder.Callback {
-        private final String TAG = "Preview";
-
-        SurfaceView mSurfaceView;
-        SurfaceHolder mHolder;
-        Size mPreviewSize;
-        List<Size> mSupportedPreviewSizes;
-        Camera mCamera;
-
-        Preview(Context context) {
-            super(context);
-
-            mSurfaceView = new SurfaceView(context);
-            addView(mSurfaceView);
-
-            // Install a SurfaceHolder.Callback so we get notified when the
-            // underlying surface is created and destroyed.
-            mHolder = mSurfaceView.getHolder();
-            mHolder.addCallback(this);
-            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        }
-
-        public void setCamera(Camera camera) {
-            mCamera = camera;
-            if (mCamera != null) {
-                mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-                requestLayout();
-            }
-        }
-
-        public void switchCamera(Camera camera) {
-            setCamera(camera);
-            try {
-                camera.setPreviewDisplay(mHolder);
-            } catch (IOException exception) {
-                Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
-            }
-            Camera.Parameters parameters = camera.getParameters();
-            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            requestLayout();
-
-            camera.setParameters(parameters);
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            // We purposely disregard child measurements because act as a
-            // wrapper to a SurfaceView that centers the camera preview instead
-            // of stretching it.
-            final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-            final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-            setMeasuredDimension(width, height);
-
-            if (mSupportedPreviewSizes != null) {
-                mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
-            }
-        }
-
-        @Override
-        protected void onLayout(boolean changed, int l, int t, int r, int b) {
-            if (changed && getChildCount() > 0) {
-                final View child = getChildAt(0);
-
-                final int width = r - l;
-                final int height = b - t;
-
-                int previewWidth = width;
-                int previewHeight = height;
-                if (mPreviewSize != null) {
-                    previewWidth = mPreviewSize.width;
-                    previewHeight = mPreviewSize.height;
-                }
-
-                // Center the child SurfaceView within the parent.
-                if (width * previewHeight > height * previewWidth) {
-                    final int scaledChildWidth = previewWidth * height / previewHeight;
-                    child.layout((width - scaledChildWidth) / 2, 0, (width + scaledChildWidth) / 2, height);
-                } else {
-                    final int scaledChildHeight = previewHeight * width / previewWidth;
-                    child.layout(0, (height - scaledChildHeight) / 2, width, (height + scaledChildHeight) / 2);
-                }
-            }
-        }
-
-        public void surfaceCreated(SurfaceHolder holder) {
-            // The Surface has been created, acquire the camera and tell it where
-            // to draw.
-            try {
-                if (mCamera != null) {
-                    mCamera.setPreviewDisplay(holder);
-                }
-            } catch (IOException exception) {
-                Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
-            }
-        }
-
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            // Surface will be destroyed when we return, so stop the preview.
-            if (mCamera != null) {
-                mCamera.stopPreview();
-            }
-        }
-
-        private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
-            final double ASPECT_TOLERANCE = 0.1;
-            double targetRatio = (double) w / h;
-            if (sizes == null)
-                return null;
-
-            Size optimalSize = null;
-            double minDiff = Double.MAX_VALUE;
-
-            int targetHeight = h;
-
-            // Try to find an size match aspect ratio and size
-            for (Size size : sizes) {
-                double ratio = (double) size.width / size.height;
-                if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
-                    continue;
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-
-            // Cannot find the one match the aspect ratio, ignore the requirement
-            if (optimalSize == null) {
-                minDiff = Double.MAX_VALUE;
-                for (Size size : sizes) {
-                    if (Math.abs(size.height - targetHeight) < minDiff) {
-                        optimalSize = size;
-                        minDiff = Math.abs(size.height - targetHeight);
-                    }
-                }
-            }
-            return optimalSize;
-        }
-
-        public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-            // Now that the size is known, set up the camera parameters and begin
-            // the preview.
-            Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            requestLayout();
-
-            mCamera.setParameters(parameters);
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        mCamera = Camera.open(CameraInfo.CAMERA_FACING_FRONT);
+        try {
+            mCamera.setPreviewTexture(surface);
+            mCamera.setDisplayOrientation(90);
             mCamera.startPreview();
 
-            getHandler().post(new Runnable() {
+            mHandler.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (!RecordVideoFragment.this.isRecording) {
+                        startRecording();
+                    }
+                }
+            });
+        } catch (IOException e) {
+
+        }
+
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        mCamera.stopPreview();
+        mCamera.release();
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        mCamera = Camera.open(mCurrentCameraId);
+    }
+
+    Thread mOpenCameraThread = new Thread() {
+
+        public void run() {
+            mCamera = Camera.open(mCurrentCameraId);
+        };
+    };
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+        try {
+
+            // mOpenCameraThread.run();
+            // mOpenCameraThread.join();
+
+            mCamera.setPreviewDisplay(holder);
+            mCamera.setDisplayOrientation(90);
+            mCamera.startPreview();
+            inPreview = true;
+
+            mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -1033,7 +709,22 @@ public class RecordVideoFragment extends BaseFragment {
                 }
             });
 
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        mCamera.stopPreview();
+        mCamera.release();
+        inPreview = false;
+    }
+
+    @Override
+    public void surfaceRedrawNeeded(SurfaceHolder holder) {
+        // TODO Auto-generated method stub
 
     }
 }
