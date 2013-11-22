@@ -48,7 +48,7 @@ public class BgDownloadService extends IntentService {
         if (success) { // lets notify the user that new videos have been downloaded
 
             String message = NotificationUtil.generateNewVideoMessage(this, videos);
-            NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(this, getString(R.string.app_name), message), NotificationUtil.Ids.SYNC_NOTIFICATION);
+            NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(getString(R.string.app_name), message), NotificationUtil.Ids.SYNC_NOTIFICATION);
 
         }
 

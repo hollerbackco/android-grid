@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.model.VideoModel;
@@ -23,9 +24,11 @@ public class NotificationUtil {
         public static final int SYNC_NOTIFICATION = 100;
     }
 
-    public static Notification generateNotification(Context ctx, String title, String message) {
+    public static Notification generateNotification(String title, String message) {
         Intent intent = new Intent();
+        Context ctx = HollerbackApplication.getInstance();
         intent.setClass(ctx, HollerbackMainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
