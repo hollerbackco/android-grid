@@ -394,6 +394,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
                 // TODO - Sajjad: Create a service to go and remove the watched videos
                 ConversationModel c = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                Log.d(TAG, "new unread count: " + (c.getUnreadCount() - 1));
                 c.setUnreadCount(c.getUnreadCount() - 1);
                 c.save(); // save that we've unread
 

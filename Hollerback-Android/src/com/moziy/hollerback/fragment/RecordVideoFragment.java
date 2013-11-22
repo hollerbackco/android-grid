@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +58,7 @@ import com.moziy.hollerback.util.TimeUtil;
 import com.moziy.hollerback.util.camera.CameraUtil;
 import com.moziy.hollerback.view.camera.PreviewSurfaceView;
 import com.moziy.hollerback.view.camera.PreviewTextureView;
+import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
 
@@ -83,6 +83,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private boolean inPreview = false;
     private volatile Camera.Size mBestVideoSize;
     private Camera.Size mBestPreviewSize;
+    protected CustomButton mSendButton;
 
     TextView mTimer;
     private final Handler mHandler = new Handler();
@@ -90,7 +91,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     int VIDEO_SENT = 4;
 
     int secondsPassed;
-    private int mCurrentCameraId = CameraInfo.CAMERA_FACING_FRONT;
+    private volatile int mCurrentCameraId = CameraInfo.CAMERA_FACING_FRONT;
 
     private String mFileDataPath;
     protected String mFileDataName;
@@ -115,8 +116,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     float targetPreviewHeight;
     String targetExtension;
 
-    // Preview shit
-    protected Button mSendButton;
     private long mConversationId = -1;
 
     private String[] mPhones = null;
@@ -196,8 +195,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mWatchedIds = args.getStringArrayList(FRAGMENT_ARG_WATCHED_IDS);
         args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false); // TODO, CLEANUP
 
-        int mPartNum = 0;
-        int mTotalParts = 1;
+        mPartNum = 0;
+        mTotalParts = 0;
         mFileDataName = null;
     }
 
@@ -208,6 +207,26 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mCameraSurfaceView.getHolder().addCallback(this);
         mPreviewDelegate = new PreviewTouchDelegate();
         mCameraSurfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+        mSendButton = (CustomButton) v.findViewById(R.id.bt_send);
+        mSendButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (isRecording) { // send the video once recording has stopped
+
+                    stopRecording();
+
+                    if (mConversationId < 0) {
+                        Log.d(TAG, "attempt to create new conversation");
+                        inviteAndRecordVideo();
+                    } else {
+                        Log.d(TAG, "attempt to post to existing conversation");
+                        postToConversation(mConversationId, mWatchedIds);
+                    }
+                }
+
+            }
+        });
 
         return v;
 
@@ -435,10 +454,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         try {
             if (prepareVideoRecorder()) {
-                // mTimer.setText("20s");
-                // Camera is available and unlocked, MediaRecorder is
-                // prepared,
-                // now you can start recording
 
                 recorder.start();
 
@@ -463,7 +478,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // stop recording and release camera
         try {
             recorder.stop();
-            releaseMediaRecorder(); // release the MediaRecorder object
+            recorder.reset();
+
             mCamera.lock(); // take camera access back from MediaRecorder
         } catch (java.lang.RuntimeException e) {
 
@@ -504,7 +520,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private boolean prepareVideoRecorder() {
 
-        recorder = new MediaRecorder();
+        if (recorder == null)
+            recorder = new MediaRecorder();
 
         // Step 1: Unlock and set camera to MediaRecorder
         mCamera.unlock();
@@ -523,7 +540,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            recorder.setOrientationHint(270);
+            if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT)
+                recorder.setOrientationHint(270);
+            else
+                recorder.setOrientationHint(90);
         }
 
         // Step 4: Set output file
@@ -643,7 +663,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         startPreview(mCurrentCameraId);
-
     }
 
     @Override
@@ -691,6 +710,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mBestPreviewSize = CameraUtil.getOptimalPreviewSize(mCamera.getParameters().getSupportedPreviewSizes(), mBestVideoSize.width * 10, mBestVideoSize.height * 10);
             Log.d(TAG, "mBestVideoSize:" + mBestVideoSize.width + "x" + mBestVideoSize.height);
             Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
+
             return;
         }
 
@@ -758,39 +778,30 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private class PreviewTouchDelegate {
 
         private boolean mIsPressed = false;
+        private static final long HOLD_TIMEOUT = 300;
+
+        private long tapDownTime = 0;
 
         private GestureDetectorCompat mPreviewGestureDetector = new GestureDetectorCompat(mActivity, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public void onShowPress(MotionEvent e) {
-                mIsPressed = true;
-                // switch the cameras
-                switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_BACK);
-                Log.d(TAG, "switching camera to back camera");
-
-            }
+            // @Override
+            // public void onShowPress(MotionEvent e) {
+            // mIsPressed = true;
+            // // switch the cameras
+            // switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_BACK);
+            // Log.d(TAG, "switching camera to back camera");
+            //
+            // }
 
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
 
-                if (isRecording) { // send the video once recording has stopped
-
-                    stopRecording();
-
-                    if (mConversationId < 0) {
-                        Log.d(TAG, "attempt to create new conversation");
-                        inviteAndRecordVideo();
-                    } else {
-                        Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
-                    }
-                }
-
-                return true;
+                return false;
             }
 
             @Override
             public boolean onDown(MotionEvent e) {
-
+                Log.d("event", "down");
+                tapDownTime = System.currentTimeMillis();
                 return true;
             }
         });
@@ -809,7 +820,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     return true;
                 }
 
-                return mPreviewGestureDetector.onTouchEvent(event);
+                if (mPreviewGestureDetector.onTouchEvent(event)) {
+                    return true;
+                }
+
+                if (mIsPressed == false && (System.currentTimeMillis() - tapDownTime) > HOLD_TIMEOUT) {
+                    mIsPressed = true;
+                    // switch the cameras
+                    switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_BACK);
+                    Log.d(TAG, "switching camera to back camera");
+                    return true;
+                }
+
+                return false;
 
             }
         };

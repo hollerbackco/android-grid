@@ -10,4 +10,15 @@
         android:layout_height="wrap_content" >
     </com.moziy.hollerback.view.camera.PreviewSurfaceView>
 
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_send"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp"
+        android:text="@string/action_send_lc"
+        android:textSize="28sp" >
+    </com.moziy.hollerback.widget.CustomButton>
+
 </FrameLayout>

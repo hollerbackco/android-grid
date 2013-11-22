@@ -13,17 +13,22 @@ public class PreviewSurfaceView extends SurfaceView {
 
     public PreviewSurfaceView(Context context) {
         super(context);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        if (!isInEditMode())
+            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public PreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setZOrderMediaOverlay(true);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        if (!isInEditMode()) {
+            setZOrderMediaOverlay(true);
+            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        }
     }
 
     public void setAspectRatio(double ratio) {
         mAspectRatio = ratio;
+        Log.d(TAG, "new aspect ratio: " + ratio);
+        requestLayout();
     }
 
     @Override
@@ -32,16 +37,16 @@ public class PreviewSurfaceView extends SurfaceView {
         int previewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         boolean isHeightLongSide = (previewHeight > previewWidth ? true : false);
-
+        Log.d(TAG, "original width: " + previewWidth + " height: " + previewHeight);
         if (isHeightLongSide) {
 
             if (((double) previewHeight / (double) previewWidth) > mAspectRatio) {
-                previewWidth = (int) (previewWidth * mAspectRatio); // make the width wider
+                previewWidth = (int) ((double) previewHeight / mAspectRatio); // make the width wider
             } else { //
-                previewHeight = (int) (previewWidth * mAspectRatio);
+                previewHeight = (int) ((double) previewWidth * mAspectRatio);
             }
 
-        } else { // width is the longer side
+        } else if (((double) previewHeight / (double) previewWidth) < mAspectRatio) { // width is the longer side
 
             if ((double) previewHeight / (double) previewWidth > mAspectRatio) {
                 previewHeight = (int) (previewHeight * mAspectRatio);
