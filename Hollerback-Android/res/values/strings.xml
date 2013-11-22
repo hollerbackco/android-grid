@@ -13,6 +13,7 @@
     <string name="action_filter">Filter</string>
     <string name="action_play">Play</string>
     <string name="action_send">Send</string>
+    <string name="action_send_lc">send</string>
     <string name="action_search">Search</string>
     <string name="action_person">Person</string>
     <string name="action_record">Record</string>

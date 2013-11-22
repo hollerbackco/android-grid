@@ -4,30 +4,28 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.TextView;
+import android.widget.Button;
 
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.view.FontManager;
 
-public class CustomTextView extends TextView {
+public class CustomButton extends Button {
 
-    public CustomTextView(Context context) {
+    public CustomButton(Context context) {
         super(context);
-        // TODO Auto-generated constructor stub
+
     }
 
-    public CustomTextView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
+    public CustomButton(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
         // retrieve the attributes pertaining to the custom textview
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
         setTypefaceFromAttrs(array);
         array.recycle(); // recycle the array
     }
 
-    public CustomTextView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-
+    public CustomButton(Context context, AttributeSet attrs) {
+        super(context, attrs);
         // retrieve the attributes pertaining to the custom textview
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
         setTypefaceFromAttrs(array);
@@ -41,5 +39,4 @@ public class CustomTextView extends TextView {
             setTypeface(FontManager.getFont(fontName));
         }
     }
-
 }

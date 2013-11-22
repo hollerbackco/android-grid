@@ -8,7 +8,7 @@
         <attr name="android:requiresFadingEdge" />
         <attr name="android:fadingEdgeLength" />
     </declare-styleable>
-    <declare-styleable name="CustomTextView">
+    <declare-styleable name="CustomFont">
         <attr name="typeface" format="string" />
     </declare-styleable>
 
