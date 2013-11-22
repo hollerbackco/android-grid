@@ -782,21 +782,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         private long tapDownTime = 0;
 
+        // TODO - sajjad: We're really not using this anymore
         private GestureDetectorCompat mPreviewGestureDetector = new GestureDetectorCompat(mActivity, new GestureDetector.SimpleOnGestureListener() {
-            // @Override
-            // public void onShowPress(MotionEvent e) {
-            // mIsPressed = true;
-            // // switch the cameras
-            // switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_BACK);
-            // Log.d(TAG, "switching camera to back camera");
-            //
-            // }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-
-                return false;
-            }
 
             @Override
             public boolean onDown(MotionEvent e) {
