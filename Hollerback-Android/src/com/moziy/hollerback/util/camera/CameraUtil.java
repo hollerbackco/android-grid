@@ -173,7 +173,7 @@ public class CameraUtil {
         return false;
     }
 
-    public static void setFrontFacingParams(MediaRecorder recorder, int width, int height) {
+    public static void setRecordingParams(MediaRecorder recorder, int width, int height) {
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
         recorder.setVideoEncoder(VIDEO_OUTPUT_ENCODER);
         recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
