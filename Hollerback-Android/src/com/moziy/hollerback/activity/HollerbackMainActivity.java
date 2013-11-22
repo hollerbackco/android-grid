@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
@@ -99,22 +98,9 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         }
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         ConversationListFragment fragment = new ConversationListFragment();
-        fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG);
-        fragmentTransaction.commit();
+        // fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commit();
+        fragmentTransaction.add(R.id.fragment_holder, fragment).commit();
 
-        fragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener() {
-
-            @Override
-            public void onBackStackChanged() {
-
-                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                    // TODO: evalute this or simply not adding the conversation list fragment to the backstack
-                    Log.d(TAG, "finishing activity sine all fragments have been removed");
-                    finish();
-                }
-
-            }
-        });
     }
 
     private void registerBroadcasts() {

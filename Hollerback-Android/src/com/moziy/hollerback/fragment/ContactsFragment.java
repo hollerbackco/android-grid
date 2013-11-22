@@ -48,6 +48,8 @@ import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class ContactsFragment extends BaseFragment {
+
+    public static final String FRAGMENT_TAG = ContactsFragment.class.getSimpleName();
     private String NEXT = "NEXT";
 
     private ViewGroup mRootView;
@@ -286,8 +288,8 @@ public class ContactsFragment extends BaseFragment {
         // RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
 
         // add to backstack?
-        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).addToBackStack(null).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .commitAllowingStateLoss();
+        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).addToBackStack(FRAGMENT_TAG)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commitAllowingStateLoss();
     }
 
     /**
