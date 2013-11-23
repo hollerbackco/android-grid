@@ -3,7 +3,6 @@ package com.moziy.hollerback.view.camera;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class PreviewSurfaceView extends SurfaceView {
@@ -13,16 +12,10 @@ public class PreviewSurfaceView extends SurfaceView {
 
     public PreviewSurfaceView(Context context) {
         super(context);
-        if (!isInEditMode())
-            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public PreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (!isInEditMode()) {
-            setZOrderMediaOverlay(true);
-            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        }
     }
 
     public void setAspectRatio(double ratio) {

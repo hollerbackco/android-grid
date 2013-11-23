@@ -31,21 +31,27 @@ public abstract class BaseFragment extends SherlockFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-        mActivity = this.getSherlockActivity();
-        mLoading = new LoadingFragmentUtil(mActivity);
 
-        mActivity.getSupportActionBar().show();
-        mActivity.getSupportActionBar().setIcon(R.drawable.icon_banana);
-        mActivity.getSupportActionBar().setHomeButtonEnabled(true);
-        mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
-        mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        mActivity = this.getSherlockActivity();
+        if (!(this instanceof RecordVideoFragment)) {
+            setHasOptionsMenu(true);
+
+            mLoading = new LoadingFragmentUtil(mActivity);
+
+            mActivity.getSupportActionBar().show();
+            mActivity.getSupportActionBar().setIcon(R.drawable.icon_banana);
+            mActivity.getSupportActionBar().setHomeButtonEnabled(true);
+            mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+            mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        }
     }
 
     @Override
     public void onPause() {
-        mLoading.stopLoading();
+        if (!(this instanceof RecordVideoFragment)) {
+            mLoading.stopLoading();
+        }
         super.onPause();
     }
 
@@ -57,13 +63,15 @@ public abstract class BaseFragment extends SherlockFragment {
 
     @Override
     public void onResume() {
-        LayoutInflater inflater = LayoutInflater.from(mActivity);
-        View customView = inflater.inflate(R.layout.header_title, null);
-        TextView txtTitle = (TextView) customView.findViewById(R.id.title);
-        txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString().toUpperCase());
+        if (!(this instanceof RecordVideoFragment)) {
+            LayoutInflater inflater = LayoutInflater.from(mActivity);
+            View customView = inflater.inflate(R.layout.header_title, null);
+            TextView txtTitle = (TextView) customView.findViewById(R.id.title);
+            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString().toUpperCase());
 
-        mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
-        mActivity.getSupportActionBar().setCustomView(customView);
+            mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
+            mActivity.getSupportActionBar().setCustomView(customView);
+        }
         super.onResume();
     }
 
