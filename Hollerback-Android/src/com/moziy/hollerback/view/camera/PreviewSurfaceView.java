@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceView;
 
-public class PreviewSurfaceView extends SurfaceView {
+public class PreviewSurfaceView extends SurfaceView implements Preview {
     private static final String TAG = PreviewSurfaceView.class.getSimpleName();
     private static final double DEFAULT_ASPECT_RATIO = (4.0 / 3.0);
     private double mAspectRatio = DEFAULT_ASPECT_RATIO;
@@ -18,6 +18,7 @@ public class PreviewSurfaceView extends SurfaceView {
         super(context, attrs);
     }
 
+    @Override
     public void setAspectRatio(double ratio) {
         mAspectRatio = ratio;
         Log.d(TAG, "new aspect ratio: " + ratio);

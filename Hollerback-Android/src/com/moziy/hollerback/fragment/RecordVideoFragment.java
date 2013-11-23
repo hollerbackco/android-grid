@@ -58,6 +58,7 @@ import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.TimeUtil;
 import com.moziy.hollerback.util.camera.CameraUtil;
+import com.moziy.hollerback.view.camera.Preview;
 import com.moziy.hollerback.view.camera.PreviewSurfaceView;
 import com.moziy.hollerback.view.camera.PreviewTextureView;
 import com.moziy.hollerback.widget.CustomButton;
@@ -80,7 +81,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private static final int PREFERRED_VIDEO_HEIGHT = 240;
 
     private volatile Camera mCamera = null;
-    private PreviewSurfaceView mCameraSurfaceView;
+    private Preview mCameraPreview;
     private PreviewTouchDelegate mPreviewDelegate;
     private volatile boolean inPreview = false;
     private volatile Camera.Size mBestVideoSize;
@@ -88,6 +89,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     protected CustomButton mSendButton;
     private int mVolumeBeforeShutoff;
     private volatile boolean mSurfaceCreated = false;
+
+    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT >= 11 ? true : false);
 
     TextView mTimer;
     private final Handler mHandler = new Handler();
@@ -167,7 +170,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 @Override
                 public void run() {
 
-                    mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+                    mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
                     new Thread() {
                         public void run() {
@@ -227,10 +230,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         ViewGroup v = (ViewGroup) inflater.inflate(R.layout.recording_layout, container, false);
 
         ViewGroup previewHolder = (FrameLayout) v.findViewById(R.id.preview);
-        mCameraSurfaceView = new PreviewSurfaceView(getActivity());
-        mCameraSurfaceView.getHolder().addCallback(this);
         mPreviewDelegate = new PreviewTouchDelegate();
-        mCameraSurfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+        if (USE_SURFACE_VIEW) {
+            PreviewSurfaceView surfaceView = new PreviewSurfaceView(getActivity());
+            surfaceView.getHolder().addCallback(this);
+            surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            mCameraPreview = surfaceView;
+        } else {
+            PreviewTextureView textureView = new PreviewTextureView(getActivity());
+            textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            textureView.setSurfaceTextureListener(this);
+            mCameraPreview = textureView;
+        }
+
         mSendButton = (CustomButton) v.findViewById(R.id.bt_send);
         mSendButton.setOnClickListener(new View.OnClickListener() {
 
@@ -252,7 +264,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             }
         });
 
-        previewHolder.addView(mCameraSurfaceView);
+        previewHolder.addView((View) mCameraPreview);
 
         return v;
 
@@ -648,23 +660,22 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        mCamera = Camera.open(CameraInfo.CAMERA_FACING_FRONT);
-        try {
-            mCamera.setPreviewTexture(surface);
-            mCamera.setDisplayOrientation(90);
-            mCamera.startPreview();
+        mSurfaceCreated = true;
 
-            mHandler.post(new Runnable() {
+        if (mCamera != null && !mOpenCameraThread.isAlive()) {
+            mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
-                @Override
+            new Thread() {
                 public void run() {
-                    if (!RecordVideoFragment.this.isRecording) {
-                        startRecording();
-                    }
-                }
-            });
-        } catch (IOException e) {
+                    if (startPreview(mCurrentCameraId)) {
 
+                        if (!isRecording) {
+                            startRecording();
+                        }
+                    }
+
+                };
+            }.start();
         }
 
     }
@@ -677,8 +688,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        mCamera.stopPreview();
-        mCamera.release();
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
+        inPreview = false;
         return true;
     }
 
@@ -693,7 +708,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mSurfaceCreated = true;
 
         if (mCamera != null && !mOpenCameraThread.isAlive()) {
-            mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+            mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
             new Thread() {
                 public void run() {
@@ -791,7 +806,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
         try {
-            mCamera.setPreviewDisplay(mCameraSurfaceView.getHolder());
+            if (USE_SURFACE_VIEW) {
+                mCamera.setPreviewDisplay(((PreviewSurfaceView) mCameraPreview).getHolder());
+            } else {
+                mCamera.setPreviewTexture(((PreviewTextureView) mCameraPreview).getSurfaceTexture());
+            }
             CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
             Camera.Parameters params = mCamera.getParameters();
             params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
