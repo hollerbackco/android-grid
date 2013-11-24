@@ -1,4 +1,4 @@
-package com.moziy.hollerback.view.camera;
+package com.moziy.hollerback.camera.view;
 
 import java.io.IOException;
 import java.util.List;

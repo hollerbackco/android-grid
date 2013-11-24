@@ -1,4 +1,4 @@
-package com.moziy.hollerback.view.camera;
+package com.moziy.hollerback.camera.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -57,7 +57,7 @@ public class PreviewTextureView extends TextureView implements Preview {
             }
 
         }
-
+        Log.d(TAG, "new width: " + previewWidth + " new height: " + previewHeight);
         super.onMeasure(MeasureSpec.makeMeasureSpec(previewWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(previewHeight, MeasureSpec.EXACTLY));
     }
 }

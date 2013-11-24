@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util.camera;
+package com.moziy.hollerback.camera.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

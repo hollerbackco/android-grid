@@ -44,6 +44,11 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.camera.CameraManager;
+import com.moziy.hollerback.camera.util.CameraUtil;
+import com.moziy.hollerback.camera.view.Preview;
+import com.moziy.hollerback.camera.view.PreviewSurfaceView;
+import com.moziy.hollerback.camera.view.PreviewTextureView;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -57,10 +62,6 @@ import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.TimeUtil;
-import com.moziy.hollerback.util.camera.CameraUtil;
-import com.moziy.hollerback.view.camera.Preview;
-import com.moziy.hollerback.view.camera.PreviewSurfaceView;
-import com.moziy.hollerback.view.camera.PreviewTextureView;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
@@ -90,7 +91,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private int mVolumeBeforeShutoff;
     private volatile boolean mSurfaceCreated = false;
 
-    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT >= 11 ? true : false);
+    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 14 ? true : false);
 
     TextView mTimer;
     private final Handler mHandler = new Handler();
@@ -192,15 +193,47 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     };
 
+    private void initCamera() {
+        // lets open the camera!
+        // mOpenCameraThread.start();
+        CameraManager.getInstance().mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+
+                openCamera();
+
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+                        CameraManager.getInstance().mHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (startPreview(mCurrentCameraId)) {
+
+                                    if (!isRecording) {
+                                        startRecording();
+                                    }
+                                }
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getActivity().getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         getActivity().getWindow().addFlags(LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
-
-        // lets open the camera!
-        mOpenCameraThread.start();
 
         // mActivity.getSupportActionBar().setTitle(R.string.action_record);
 
@@ -662,21 +695,23 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         mSurfaceCreated = true;
 
-        if (mCamera != null && !mOpenCameraThread.isAlive()) {
-            mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+        initCamera();
 
-            new Thread() {
-                public void run() {
-                    if (startPreview(mCurrentCameraId)) {
-
-                        if (!isRecording) {
-                            startRecording();
-                        }
-                    }
-
-                };
-            }.start();
-        }
+        // if (mCamera != null && !mOpenCameraThread.isAlive()) {
+        // mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+        //
+        // new Thread() {
+        // public void run() {
+        // if (startPreview(mCurrentCameraId)) {
+        //
+        // if (!isRecording) {
+        // startRecording();
+        // }
+        // }
+        //
+        // };
+        // }.start();
+        // }
 
     }
 
@@ -688,12 +723,20 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-        }
-        inPreview = false;
+        CameraManager.getInstance().mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mCamera != null) {
+                    mCamera.stopPreview();
+                    mCamera.release();
+                    mCamera = null;
+                }
+                inPreview = false;
+
+            }
+        });
+
         return true;
     }
 
@@ -806,15 +849,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
         try {
+
+            CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
+            Camera.Parameters params = mCamera.getParameters();
+            params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
+            mCamera.setParameters(params);
             if (USE_SURFACE_VIEW) {
                 mCamera.setPreviewDisplay(((PreviewSurfaceView) mCameraPreview).getHolder());
             } else {
                 mCamera.setPreviewTexture(((PreviewTextureView) mCameraPreview).getSurfaceTexture());
             }
-            CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
-            Camera.Parameters params = mCamera.getParameters();
-            params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
-            mCamera.setParameters(params);
             mCamera.startPreview();
             inPreview = true;
         } catch (IOException e) {
@@ -825,24 +869,31 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return true;
     }
 
-    private void switchRecordingCamerasTo(int cameraId) {
-        if (isRecording) {
+    private void switchRecordingCamerasTo(final int cameraId) {
+        CameraManager.getInstance().mHandler.post(new Runnable() {
 
-            stopRecording();
-        }
+            @Override
+            public void run() {
+                if (isRecording) {
 
-        mCamera.release();
+                    stopRecording();
+                }
 
-        // swap cameras
-        mCurrentCameraId = cameraId; // lets change the cameras to the back camera
+                mCamera.release();
 
-        // open the new camera
-        openCamera();
+                // swap cameras
+                mCurrentCameraId = cameraId; // lets change the cameras to the back camera
 
-        startPreview(mCurrentCameraId);
-
-        // begin recording
-        startRecording();
+                // // open the new camera
+                // openCamera();
+                //
+                // startPreview(mCurrentCameraId);
+                //
+                // // begin recording
+                // startRecording();
+                initCamera();
+            }
+        });
 
     }
 

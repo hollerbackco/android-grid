@@ -9,6 +9,7 @@ import com.activeandroid.query.Update;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moziy.hollerback.camera.CameraManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.lifecycle.AppLifecycle;
 import com.moziy.hollerback.lifecycle.AppLifecycle.AppIdleListener;
@@ -37,6 +38,8 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         mLifecycle.registerIdleListener(mIdleListener);
 
         clearAllTransactingModel();
+
+        CameraManager.getInstance(); // create the looper for the camera manager
 
     }
 

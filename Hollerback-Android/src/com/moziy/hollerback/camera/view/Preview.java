@@ -1,4 +1,4 @@
-package com.moziy.hollerback.view.camera;
+package com.moziy.hollerback.camera.view;
 
 
 public interface Preview {

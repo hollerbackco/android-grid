@@ -9,10 +9,10 @@
  * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
-package com.moziy.hollerback.util.camera;
+package com.moziy.hollerback.camera.util;
 
-import com.moziy.hollerback.util.camera.CameraHelper.CameraHelperImpl;
-import com.moziy.hollerback.util.camera.CameraHelper.CameraInfo2;
+import com.moziy.hollerback.camera.util.CameraHelper.CameraHelperImpl;
+import com.moziy.hollerback.camera.util.CameraHelper.CameraInfo2;
 
 import android.annotation.TargetApi;
 import android.hardware.Camera;
