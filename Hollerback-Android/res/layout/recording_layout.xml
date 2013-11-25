@@ -11,6 +11,14 @@
         android:layout_height="wrap_content" >
     </FrameLayout>
 
+    <Button
+        android:id="@+id/bt_switch_camera"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|right"
+        android:layout_margin="10dp"
+        android:background="@drawable/ic_action_switch_video" />
+
     <com.moziy.hollerback.widget.CustomButton
         android:id="@+id/bt_send"
         android:layout_width="match_parent"

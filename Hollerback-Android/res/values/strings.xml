@@ -97,6 +97,8 @@
     <!-- Notifications -->
     <plurals name="notif_new_message">
         <item quantity="one">%1$s</item>
+        <item quantity="two">You have new messages!</item>
+        <item quantity="few">You have new messages!</item>
         <item quantity="many">You have new messages!</item>
     </plurals>
 
