@@ -25,6 +25,8 @@ import android.media.MediaRecorder.OutputFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -46,7 +48,6 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.camera.CameraManager;
 import com.moziy.hollerback.camera.util.CameraUtil;
 import com.moziy.hollerback.camera.view.Preview;
 import com.moziy.hollerback.camera.view.PreviewSurfaceView;
@@ -522,21 +523,21 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     // TODO: Clean this up!!!!!
     private void initCamera() {
 
-        CameraManager.getInstance().mHandler.post(new Runnable() {
+        BackgroundHelper.getInstance().mHandler.post(new Runnable() {
 
             @Override
             public void run() {
 
                 openCamera();
 
-                mHandler.post(new Runnable() {
+                mHandler.post(new Runnable() { // camera preview must be updated on ui thread
 
                     @Override
                     public void run() {
 
                         mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
 
-                        CameraManager.getInstance().mHandler.post(new Runnable() {
+                        BackgroundHelper.getInstance().mHandler.post(new Runnable() {
 
                             @Override
                             public void run() {
@@ -770,7 +771,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        CameraManager.getInstance().mHandler.post(new Runnable() {
+        BackgroundHelper.getInstance().mHandler.post(new Runnable() {
 
             @Override
             public void run() {
@@ -938,7 +939,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mIsSwitching = true;
         }
 
-        CameraManager.getInstance().mHandler.post(new Runnable() {
+        BackgroundHelper.getInstance().mHandler.post(new Runnable() {
 
             @Override
             public void run() {
@@ -1065,6 +1066,46 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             }
         };
 
+    }
+
+    public static class BackgroundHelper extends Thread {
+        private static BackgroundHelper sInstance;
+
+        private Looper mLooper;
+        public Handler mHandler;
+
+        public static BackgroundHelper getInstance() {
+            if (sInstance == null) {
+                sInstance = new BackgroundHelper();
+                sInstance.start();
+            }
+
+            return sInstance;
+        }
+
+        private BackgroundHelper() {
+        }
+
+        @Override
+        public void run() {
+            Looper.prepare();
+            mHandler = new CameraHandler();
+            Looper.loop();
+            mLooper = Looper.myLooper();
+        }
+
+        public static class CameraHandler extends Handler {
+
+            @Override
+            public void handleMessage(Message msg) {
+
+                switch (msg.what) {
+                    default:
+                        super.handleMessage(msg);
+                }
+
+            }
+        }
     }
 
 }
