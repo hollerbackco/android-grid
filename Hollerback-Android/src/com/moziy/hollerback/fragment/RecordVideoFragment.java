@@ -132,6 +132,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private TextureView mTexturePreview;
 
+    private volatile boolean mIsSwitching;
+    private volatile boolean mRequestSwith;
+
     public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
@@ -217,13 +220,18 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                                 boolean previewStarted = startPreview(mCurrentCameraId);
 
-                                mProgressDialog.dismiss();
-
                                 if (previewStarted) {
 
                                     if (!isRecording) {
                                         startRecording();
                                     }
+                                }
+
+                                mProgressDialog.dismiss();
+
+                                synchronized (RecordVideoFragment.this) {
+                                    if (mIsSwitching)
+                                        mIsSwitching = false;
                                 }
 
                             }
@@ -559,41 +567,45 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             }
         } catch (java.lang.RuntimeException e) {
             // Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
-
+            releaseMediaRecorder();
             onRecordingFailed();
 
         }
     }
 
-    protected void stopRecording() {
+    /**
+     * 
+     * @return whether recording was stopped successfully or not
+     */
+    protected boolean stopRecording() {
         // stop recording and release camera
         try {
             recorder.stop();
-            recorder.reset();
 
         } catch (java.lang.RuntimeException e) {
 
             onRecordingFailed();
-            isRecording = false;
-            return;
 
+            return false;
+
+        } finally {
+            isRecording = false;
+            recorder.reset();
+            recorder.release();
         }
+
         try {
             mCamera.reconnect();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return false;
         }
-
-        isRecording = false;
 
         mHandler.removeCallbacks(timeTask);
         secondsPassed = 0;
 
-        // // displayPreview();
-        // ImageUtil.generateThumbnail(mFileDataName + "." + mFileExt);
-
         // Precondition: User decides to send video (no ttyl without video, etc)
+        return true;
     }
 
     private String getNewFileName() {
@@ -617,8 +629,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private boolean prepareVideoRecorder() {
 
-        if (recorder == null)
-            recorder = new MediaRecorder();
+        recorder = new MediaRecorder();
 
         // Step 1: Unlock and set camera to MediaRecorder
         mCamera.unlock();
@@ -887,13 +898,30 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private void switchRecordingCamerasTo(final int cameraId) {
 
+        if (!isAdded()) {
+            Log.w(TAG, "switch request when fragment not added");
+            return;
+        }
+
+        synchronized (RecordVideoFragment.this) {
+            if (mIsSwitching) {
+                Log.w(TAG, "switch requested while switching");
+                return;
+            }
+
+            mIsSwitching = true;
+        }
+
         CameraManager.getInstance().mHandler.post(new Runnable() {
 
             @Override
             public void run() {
                 if (isRecording) {
 
-                    stopRecording();
+                    if (!stopRecording()) {
+                        Log.w(TAG, "attempting to stop recording failed");
+                        return;
+                    }
                 }
 
                 stopPreview();
@@ -905,12 +933,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 // swap cameras
                 mCurrentCameraId = cameraId; // lets change the cameras to the back camera
 
+                initCamera();
             }
         });
 
         mProgressDialog.show();
-
-        initCamera();
 
         // // open the new camera
         // openCamera();
@@ -953,6 +980,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
+    private int getOppositeCamera() {
+        switch (mCurrentCameraId) {
+            case CameraInfo.CAMERA_FACING_BACK:
+                return CameraInfo.CAMERA_FACING_FRONT;
+
+            default:
+                return CameraInfo.CAMERA_FACING_BACK;
+        }
+    }
+
     /**
      * This class manages and handles touch events to the camera preview
      * @author sajjad
@@ -968,12 +1005,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // TODO - sajjad: We're really not using this anymore
         private GestureDetectorCompat mPreviewGestureDetector = new GestureDetectorCompat(mActivity, new GestureDetector.SimpleOnGestureListener() {
 
-            @Override
-            public boolean onDown(MotionEvent e) {
-                Log.d("event", "down");
-                tapDownTime = System.currentTimeMillis();
-                return true;
-            }
         });
 
         OnTouchListener mOnPreviewTouchListener = new View.OnTouchListener() {
@@ -982,11 +1013,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction() == MotionEvent.ACTION_UP && mIsPressed) {
-                    Log.d(TAG, "switching camera back to front camera");
+                    // Log.d(TAG, "switching camera back to front camera");
                     mIsPressed = false;
 
-                    switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_FRONT);
+                    // switchRecordingCamerasTo(getOppositeCamera());
 
+                    return true;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    tapDownTime = System.currentTimeMillis();
                     return true;
                 }
 
@@ -997,7 +1033,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 if (mIsPressed == false && (System.currentTimeMillis() - tapDownTime) > HOLD_TIMEOUT) {
                     mIsPressed = true;
                     // switch the cameras
-                    switchRecordingCamerasTo(CameraInfo.CAMERA_FACING_BACK);
+                    switchRecordingCamerasTo(getOppositeCamera());
                     Log.d(TAG, "switching camera to back camera");
                     return true;
                 }

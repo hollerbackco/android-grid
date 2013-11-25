@@ -1,17 +1,17 @@
 package com.moziy.hollerback.fragment;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.HollerbackAppState;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.HollerbackAppState;
 
 public class WelcomeRecordVideoFragment extends RecordVideoFragment {
     private String NEXT = "NEXT";
@@ -60,12 +60,13 @@ public class WelcomeRecordVideoFragment extends RecordVideoFragment {
     }
 
     @Override
-    protected void stopRecording() {
-        super.stopRecording();
+    protected boolean stopRecording() {
+        boolean status = super.stopRecording();
         this.getSherlockActivity().getSupportActionBar().setTitle(R.string.record_review);
         mSendButton.setVisibility(View.GONE);
         showNextButton = true;
         mActivity.invalidateOptionsMenu();
+        return status;
     }
 
     public void startSignUpFragment() {
