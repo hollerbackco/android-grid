@@ -12,6 +12,7 @@ import java.util.UUID;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -116,7 +117,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     public static String TAG = "VideoApp";
 
-    private boolean isRecording = false;
+    private volatile boolean isRecording = false;
 
     static MediaRecorder recorder;
 
@@ -194,8 +195,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     };
 
     private void initCamera() {
-        // lets open the camera!
-        // mOpenCameraThread.start();
+
         CameraManager.getInstance().mHandler.post(new Runnable() {
 
             @Override
@@ -207,12 +207,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                     @Override
                     public void run() {
+
                         mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+
                         CameraManager.getInstance().mHandler.post(new Runnable() {
 
                             @Override
                             public void run() {
-                                if (startPreview(mCurrentCameraId)) {
+
+                                boolean previewStarted = startPreview(mCurrentCameraId);
+
+                                mProgressDialog.dismiss();
+
+                                if (previewStarted) {
 
                                     if (!isRecording) {
                                         startRecording();
@@ -485,6 +492,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mHandler.postDelayed(timeTask, 1000);
         }
     };
+    private ProgressDialog mProgressDialog;
 
     @Override
     public void onResume() {
@@ -503,21 +511,27 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onPause() {
+
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+
         if (isRecording) {
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
             isRecording = false;
+
             mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
 
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
 
-        } else {
-            if (mCamera != null) {
-                mCamera.release();
-                mCamera = null;
-            }
+        }
+
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
         }
 
         mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
@@ -557,12 +571,18 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             recorder.stop();
             recorder.reset();
 
-            mCamera.lock(); // take camera access back from MediaRecorder
         } catch (java.lang.RuntimeException e) {
 
             onRecordingFailed();
+            isRecording = false;
             return;
 
+        }
+        try {
+            mCamera.reconnect();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         isRecording = false;
@@ -634,6 +654,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             releaseMediaRecorder();
             return false;
         } catch (IOException e) {
+            Log.d(TAG, "TODO: delete files");
             Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
             return false;
@@ -694,24 +715,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         mSurfaceCreated = true;
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading Camera...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
 
         initCamera();
-
-        // if (mCamera != null && !mOpenCameraThread.isAlive()) {
-        // mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
-        //
-        // new Thread() {
-        // public void run() {
-        // if (startPreview(mCurrentCameraId)) {
-        //
-        // if (!isRecording) {
-        // startRecording();
-        // }
-        // }
-        //
-        // };
-        // }.start();
-        // }
 
     }
 
@@ -792,6 +802,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void openCamera() {
+        Log.d(TAG, "opening " + mCurrentCameraId + " camera");
+
         mCamera = Camera.open(mCurrentCameraId);
         disableShutterSound();
         // logic:
@@ -830,30 +842,14 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
      * @param cameraId
      * @return whether preview was started or not
      */
-    private synchronized boolean startPreview(int cameraId) {
+    private boolean startPreview(int cameraId) {
 
-        if (mCamera == null || !mSurfaceCreated) {
-            return false;
-        }
+        stopPreview();
 
-        if (inPreview) {
-            try {
-                mCamera.stopPreview();
-                inPreview = false;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        // set the proper aspect ratio
-        // mCameraSurfaceView.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+        configureCamera(cameraId);
 
         try {
 
-            CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
-            Camera.Parameters params = mCamera.getParameters();
-            params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
-            mCamera.setParameters(params);
             if (USE_SURFACE_VIEW) {
                 mCamera.setPreviewDisplay(((PreviewSurfaceView) mCameraPreview).getHolder());
             } else {
@@ -869,7 +865,28 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return true;
     }
 
+    private void configureCamera(int cameraId) {
+
+        CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
+        Camera.Parameters params = mCamera.getParameters();
+        params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
+        mCamera.setParameters(params);
+
+    }
+
+    private void stopPreview() {
+        if (inPreview) {
+            try {
+                mCamera.stopPreview();
+                inPreview = false;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void switchRecordingCamerasTo(final int cameraId) {
+
         CameraManager.getInstance().mHandler.post(new Runnable() {
 
             @Override
@@ -879,21 +896,30 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     stopRecording();
                 }
 
+                stopPreview();
+
                 mCamera.release();
+
+                mCamera = null;
 
                 // swap cameras
                 mCurrentCameraId = cameraId; // lets change the cameras to the back camera
 
-                // // open the new camera
-                // openCamera();
-                //
-                // startPreview(mCurrentCameraId);
-                //
-                // // begin recording
-                // startRecording();
-                initCamera();
             }
         });
+
+        mProgressDialog.show();
+
+        initCamera();
+
+        // // open the new camera
+        // openCamera();
+
+        // startPreview(mCurrentCameraId);
+
+        // begin recording
+        // startRecording();
+        // initCamera();
 
     }
 
