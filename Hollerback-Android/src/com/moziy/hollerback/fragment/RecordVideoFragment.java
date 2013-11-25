@@ -203,62 +203,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     };
 
-    // TODO: Clean this up!!!!!
-    private void initCamera() {
-
-        CameraManager.getInstance().mHandler.post(new Runnable() {
-
-            @Override
-            public void run() {
-
-                openCamera();
-
-                mHandler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
-
-                        CameraManager.getInstance().mHandler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                boolean previewStarted = startPreview(mCurrentCameraId);
-
-                                if (previewStarted) {
-
-                                    if (!isRecording) {
-                                        startRecording();
-                                    }
-                                }
-
-                                mProgressDialog.dismiss();
-
-                                if (mIsSwitching) {
-                                    mHandler.postDelayed(new Runnable() {
-
-                                        @Override
-                                        public void run() { // don't allow a switch for at least 300msec
-                                            synchronized (RecordVideoFragment.this) {
-                                                mIsSwitching = false;
-                                            }
-
-                                        }
-                                    }, 500);
-
-                                }
-
-                            }
-                        });
-                    }
-                });
-            }
-        });
-
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -573,6 +517,62 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         inPreview = false;
         super.onPause();
         enableShutterSound();
+    }
+
+    // TODO: Clean this up!!!!!
+    private void initCamera() {
+
+        CameraManager.getInstance().mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+
+                openCamera();
+
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+
+                        CameraManager.getInstance().mHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+
+                                boolean previewStarted = startPreview(mCurrentCameraId);
+
+                                if (previewStarted) {
+
+                                    if (!isRecording) {
+                                        startRecording();
+                                    }
+                                }
+
+                                mProgressDialog.dismiss();
+
+                                if (mIsSwitching) {
+                                    mHandler.postDelayed(new Runnable() {
+
+                                        @Override
+                                        public void run() { // don't allow a switch for at least 500msec
+                                            synchronized (RecordVideoFragment.this) {
+                                                mIsSwitching = false;
+                                            }
+
+                                        }
+                                    }, 500);
+
+                                }
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
     }
 
     protected void startRecording() {
