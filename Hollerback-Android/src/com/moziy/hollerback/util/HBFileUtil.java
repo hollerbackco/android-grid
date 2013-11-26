@@ -68,7 +68,9 @@ public class HBFileUtil {
     public static File getOutputVideoFile(VideoModel video) {
         String filename = video.getGuid();
 
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME);
+        String subDir = filename.substring(0, 2); // this is the hex portion to use
+
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir);
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
@@ -76,8 +78,9 @@ public class HBFileUtil {
                 return null;
             }
         }
+
         // XXX: parse the filename rather than assuming it's mp4
-        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + filename + ".mp4");
+        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/" + filename + ".mp4");
         return media;
     }
 
@@ -159,7 +162,8 @@ public class HBFileUtil {
      * @return
      */
     public static String generateRandomFileName() {
-        return generateRandomHexName() + "/" + UUID.randomUUID();
+        String name = UUID.randomUUID().toString();
+        return name.substring(0, 2) + "/" + name;
     }
 
     public static String getFileFormat(int fileFormat) {

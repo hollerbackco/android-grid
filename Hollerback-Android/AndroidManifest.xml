@@ -133,6 +133,11 @@
             android:name=".service.BgDownloadService"
             android:exported="false" >
         </service>
+        <service
+            android:name=".service.CleanupService"
+            android:exported="false" >
+        </service>
+"
     </application>
 
 </manifest>

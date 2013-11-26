@@ -5,6 +5,6 @@
 
     <integer name="PROXY_PORT">8888</integer>
 
-    <bool name="ENABLE_PROXY">false</bool>
+    <bool name="ENABLE_PROXY">true</bool>
 
 </resources>
