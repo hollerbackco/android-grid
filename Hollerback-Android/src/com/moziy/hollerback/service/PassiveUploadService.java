@@ -12,11 +12,11 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService.UploadUtility;
 import com.moziy.hollerback.util.ResourceRecoveryUtil;
 
-public class ResourceRecoveryService extends IntentService {
-    private static final String TAG = ResourceRecoveryService.class.getSimpleName();
+public class PassiveUploadService extends IntentService {
+    private static final String TAG = PassiveUploadService.class.getSimpleName();
 
-    public ResourceRecoveryService() {
-        super(ResourceRecoveryService.class.getSimpleName());
+    public PassiveUploadService() {
+        super(PassiveUploadService.class.getSimpleName());
     }
 
     @Override
