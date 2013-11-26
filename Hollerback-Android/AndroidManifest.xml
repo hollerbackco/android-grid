@@ -116,6 +116,10 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".util.ResourceRecoveryUtil"
+            android:exported="false" >
+        </receiver>
 
         <service android:name="com.moziy.hollerback.service.VideoUploadService" />
         <service
@@ -135,6 +139,10 @@
         </service>
         <service
             android:name=".service.CleanupService"
+            android:exported="false" >
+        </service>
+        <service
+            android:name=".service.ResourceRecoveryService"
             android:exported="false" >
         </service>
 "

@@ -15,7 +15,6 @@ import com.moziy.hollerback.lifecycle.AppLifecycle;
 import com.moziy.hollerback.lifecycle.AppLifecycle.AppIdleListener;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.BgDownloadService;
-import com.moziy.hollerback.service.CleanupService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.DataModelManager;
@@ -41,11 +40,6 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         clearAllTransactingModel();
 
         BackgroundHelper.getInstance(); // create the looper for the camera manager
-
-        // TEST CODE
-        Intent intent = new Intent();
-        intent.setClass(this, CleanupService.class);
-        startService(intent);
 
     }
 

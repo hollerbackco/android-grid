@@ -1,9 +1,9 @@
 package com.moziy.hollerback.util;
 
-import com.moziy.hollerback.HollerbackApplication;
-
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.moziy.hollerback.HollerbackApplication;
 
 public class PreferenceManagerUtil {
 
@@ -36,7 +36,7 @@ public class PreferenceManagerUtil {
     }
 
     // all float, long, String, integer, boolean setter methods
-    public void setPreferenceLongValue(String key, long value) {
+    public static void setPreferenceLongValue(String key, long value) {
 
         SharedPreferences.Editor editor = getEditor();
 

@@ -24,6 +24,7 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.ResourceRecoveryUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
@@ -65,6 +66,8 @@ public class VideoUploadIntentService extends IntentService {
         // lets lookup the id passed in from our intent arguments
         final VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
 
+        UploadUtility uploadUtility = new UploadUtility();
+
         if (model == null) { // TODO - Sajjad: Remove from prod version
             throw new IllegalStateException("Attempting to upload video that does not exist!");
         }
@@ -75,7 +78,7 @@ public class VideoUploadIntentService extends IntentService {
 
         if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
 
-            postToNewConversation(model);
+            uploadUtility.postToNewConversation(model);
             Log.d(TAG, "returning..");
 
         } else { // a conversation exists
@@ -86,264 +89,275 @@ public class VideoUploadIntentService extends IntentService {
 
                 // for each part lets upload the resource
                 for (int i = 0; i < totalParts; i++) {
-                    uploadResource(model, i, totalParts);
+                    uploadUtility.uploadResource(model, i, totalParts);
                 }
             }
 
             // now if the model state is pending post and it's not transacting, then let's go ahead and post
             if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
 
-                postToExistingConversation(model);
+                uploadUtility.postToExistingConversation(model);
 
             }
         }
     }
 
-    private void uploadResource(VideoModel model, int partNumber, int totalParts) {
+    public static class UploadUtility {
 
-        if (partNumber == -1 || totalParts == -1) {
-            throw new IllegalStateException("can't upload without having proper part information! part: " + partNumber + " totalParts: " + totalParts);
+        private static final String TAG = UploadUtility.class.getSimpleName();
+
+        public void uploadResource(VideoModel model) {
+            uploadResource(model, 0, model.getNumParts());
         }
 
-        // awesome, let's try to upload this resource to s3
-        model.setTransacting();
-        model.setNumParts(totalParts); // update the total number of parts for this resource
-        model.save();
+        public void uploadResource(VideoModel model, int partNumber, int totalParts) {
 
-        // should we broadcast that we're uploading?
-        StringBuilder sb = new StringBuilder(128).append(model.getSegmentFileName()).append(".").append(partNumber).append(".").append(model.getSegmentFileExtension());
-        String resourceName = sb.toString();
-        Log.d(TAG, "attempting to upload: " + resourceName);
-
-        // upload to S3
-        PutObjectResult result = S3RequestHelper.uploadFileToS3(resourceName, HBFileUtil.getLocalFile(resourceName));
-
-        if (result != null) { // => Yay, we uploaded the file to s3, lets see if all parts have been uploaded
-
-            model.setPartUploadState(partNumber, true); // successfully uploaded
-
-            if (model.isUploadSuccessfull()) { // uploading resource was successfull
-                Log.d(TAG, "resource parts were successfully uploaded");
-
-                // check to see if all parts have been uploaded successfully
-                model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
+            if (partNumber == -1 || totalParts == -1) {
+                throw new IllegalStateException("can't upload without having proper part information! part: " + partNumber + " totalParts: " + totalParts);
             }
-        } else {
-            // broadcast failure
-            model.setPartUploadState(partNumber, false); // couldn't upload
-            if (model.getConversationId() < 0) {
-                Log.w(TAG, "upload failed");
-                // broadcast conversation create failure
-                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
+
+            // awesome, let's try to upload this resource to s3
+            model.setTransacting();
+            model.setNumParts(totalParts); // update the total number of parts for this resource
+            model.save();
+
+            // should we broadcast that we're uploading?
+            StringBuilder sb = new StringBuilder(128).append(model.getSegmentFileName()).append(".").append(partNumber).append(".").append(model.getSegmentFileExtension());
+            String resourceName = sb.toString();
+            Log.d(TAG, "attempting to upload: " + resourceName);
+
+            // upload to S3
+            PutObjectResult result = S3RequestHelper.uploadFileToS3(resourceName, HBFileUtil.getLocalFile(resourceName));
+
+            if (result != null) { // => Yay, we uploaded the file to s3, lets see if all parts have been uploaded
+
+                model.setPartUploadState(partNumber, true); // successfully uploaded
+
+                if (model.isUploadSuccessfull()) { // uploading resource was successfull
+                    Log.d(TAG, "resource parts were successfully uploaded");
+
+                    // check to see if all parts have been uploaded successfully
+                    model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
+                }
+            } else {
+                // broadcast failure
+                model.setPartUploadState(partNumber, false); // couldn't upload
+                if (model.getConversationId() < 0) {
+                    Log.w(TAG, "upload failed");
+                    // broadcast conversation create failure
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
+                    ResourceRecoveryUtil.schedule(); // schedule for the failed video to get uploaded
+                }
             }
+
+            model.clearTransacting(); // ok, we're no longer transacting
+            model.save(); // ok, let's save the state :-)
         }
 
-        model.clearTransacting(); // ok, we're no longer transacting
-        model.save(); // ok, let's save the state :-)
-    }
+        public boolean postToNewConversation(final VideoModel model) {
 
-    private boolean postToNewConversation(final VideoModel model) {
+            // presumption that all the files have been uploaded
+            Log.d(TAG, "recipients: " + model.getRecipients()[0]);
+            List<String> contacts = Arrays.asList(model.getRecipients());
+            // mark the model as transacting
+            model.setTransacting();
+            model.save();
 
-        // presumption that all the files have been uploaded
-        Log.d(TAG, "recipients: " + model.getRecipients()[0]);
-        List<String> contacts = Arrays.asList(model.getRecipients());
-        // mark the model as transacting
-        model.setTransacting();
-        model.save();
+            // ArrayList<String> parts = new ArrayList<String>();
+            //
+            // for (int i = 0; i < model.getNumParts(); i++) {
+            // StringBuilder sb = new StringBuilder(128);
+            // sb.append(AppEnvironment.getInstance().UPLOAD_BUCKET).append("/").append(model.getSegmentFileName()).append(".").append(i).append(".").append(model.getSegmentFileExtension());
+            // parts.add(sb.toString());
+            // }
 
-        // ArrayList<String> parts = new ArrayList<String>();
-        //
-        // for (int i = 0; i < model.getNumParts(); i++) {
-        // StringBuilder sb = new StringBuilder(128);
-        // sb.append(AppEnvironment.getInstance().UPLOAD_BUCKET).append("/").append(model.getSegmentFileName()).append(".").append(i).append(".").append(model.getSegmentFileExtension());
-        // parts.add(sb.toString());
-        // }
+            HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
+            }) {
 
-        HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
-        }) {
+                @Override
+                public void onResponseSuccess(int statusCode, Envelope<ConversationModel> response) {
 
-            @Override
-            public void onResponseSuccess(int statusCode, Envelope<ConversationModel> response) {
+                    // let's check the thread it
+                    Log.d(TAG, "thread id: " + Thread.currentThread().getId());
 
-                // let's check the thread it
-                Log.d(TAG, "thread id: " + Thread.currentThread().getId());
+                    // nice it succeeded, lets update the model
+                    model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
+                    model.clearTransacting();
 
-                // nice it succeeded, lets update the model
-                model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-                model.clearTransacting();
+                    ConversationModel conversationResp = response.getData();
 
-                ConversationModel conversationResp = response.getData();
+                    // lets bind the video to the conversation
+                    model.setConversationId(conversationResp.getConversationId());
+                    model.save();
 
-                // lets bind the video to the conversation
-                model.setConversationId(conversationResp.getConversationId());
-                model.save();
+                    // if the conversation we created, is actually found in our db, then update it
+                    ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
+                    if (dbConvo != null) {
+                        Log.d(TAG, "deleting record: " + dbConvo.toString());
+                        // delete record
+                        dbConvo.delete();
+                    }
 
-                // if the conversation we created, is actually found in our db, then update it
-                ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
-                if (dbConvo != null) {
-                    Log.d(TAG, "deleting record: " + dbConvo.toString());
-                    // delete record
-                    dbConvo.delete();
+                    // inserting
+                    Log.d(TAG, "inserting: " + conversationResp.toString());
+                    conversationResp.save();
+
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+
+                    // launch the
+
+                    // lets create a new conversation from the response
+                    Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversationId());
                 }
 
-                // inserting
-                Log.d(TAG, "inserting: " + conversationResp.toString());
-                conversationResp.save();
+                @Override
+                public void onApiFailure(Metadata metaData) {
+                    Log.d(TAG, "onApiFailure");
+                    // ok we're no longer transacting so let's clear it, but lets not update the state
+                    model.clearTransacting();
+                    model.save();
 
-                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+                    Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
 
-                // launch the
+                }
 
-                // lets create a new conversation from the response
-                Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversationId());
-            }
+            });
 
-            @Override
-            public void onApiFailure(Metadata metaData) {
-                Log.d(TAG, "onApiFailure");
-                // ok we're no longer transacting so let's clear it, but lets not update the state
-                model.clearTransacting();
-                model.save();
-
-                Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
-                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
-
-            }
-
-        });
-
-        return true;
-    }
-
-    private boolean postToExistingConversation(final VideoModel model) {
-
-        // get all watched videos
-        final List<VideoModel> watchedVideos = getWatchedVideos();
-
-        // mark them as transacting
-        setVideosAsTransacting(watchedVideos);
-
-        // get all the ids corresponding to the videos
-        ArrayList<String> watchedIds = getWatchedIds(watchedVideos);
-
-        ArrayList<String> partUrls = new ArrayList<String>();
-        for (int i = 0; i < model.getNumParts(); i++) {
-            partUrls.add(new StringBuilder(128).append(AppEnvironment.getInstance().UPLOAD_BUCKET) // tmp-bucket
-                    .append("/") //
-                    .append(model.getSegmentFileName()) // CD/afejkd-gmmjdueh-qqeermvj
-                    .append(".") //
-                    .append(i) // 0
-                    .append(".") //
-                    .append(model.getSegmentFileExtension()) // mp4
-                    .toString()); //
-
+            return true;
         }
 
-        int convoId = (int) model.getConversationId();
-        HBRequestManager.postToConversation(convoId, model.getGuid(), partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(
-                new TypeReference<Envelope<PostToConvoResponse>>() {
-                }) {
+        public boolean postToExistingConversation(final VideoModel model) {
 
-            @Override
-            public void onResponseSuccess(int statusCode, Envelope<PostToConvoResponse> response) {
-                PostToConvoResponse postResponse = response.getData();
-                Log.d(TAG, "posted to conversation: " + postResponse.conversation_id);
+            // get all watched videos
+            final List<VideoModel> watchedVideos = getWatchedVideos();
 
-                // update the video such that it's state is uploaded
-                model.setState(ResourceState.UPLOADED);
-                model.save();
+            // mark them as transacting
+            setVideosAsTransacting(watchedVideos);
 
-                // update the videos as watched
-                markVideosAsWatched(watchedVideos);
+            // get all the ids corresponding to the videos
+            ArrayList<String> watchedIds = getWatchedIds(watchedVideos);
 
-                // update model with the post repsonse
-                clearVideoTransacting(watchedVideos);
-
-            }
-
-            @Override
-            public void onApiFailure(Metadata metaData) {
-                Log.d(TAG, "post to conversation failed");
-                // broadcast failure of posting conversation
-                clearVideoTransacting(watchedVideos);
+            ArrayList<String> partUrls = new ArrayList<String>();
+            for (int i = 0; i < model.getNumParts(); i++) {
+                partUrls.add(new StringBuilder(128).append(AppEnvironment.getInstance().UPLOAD_BUCKET) // tmp-bucket
+                        .append("/") //
+                        .append(model.getSegmentFileName()) // CD/afejkd-gmmjdueh-qqeermvj
+                        .append(".") //
+                        .append(i) // 0
+                        .append(".") //
+                        .append(model.getSegmentFileExtension()) // mp4
+                        .toString()); //
 
             }
-        });
 
-        return true;
-    }
+            int convoId = (int) model.getConversationId();
+            HBRequestManager.postToConversation(convoId, model.getGuid(), partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(
+                    new TypeReference<Envelope<PostToConvoResponse>>() {
+                    }) {
 
-    // TODO - Food for thought..move these methods into a utility class?
+                @Override
+                public void onResponseSuccess(int statusCode, Envelope<PostToConvoResponse> response) {
+                    PostToConvoResponse postResponse = response.getData();
+                    Log.d(TAG, "posted to conversation: " + postResponse.conversation_id);
 
-    private List<VideoModel> getWatchedVideos() {
+                    // update the video such that it's state is uploaded
+                    model.setState(ResourceState.UPLOADED);
+                    model.save();
 
-        List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
-        return watchedVideos;
-    }
+                    // update the videos as watched
+                    markVideosAsWatched(watchedVideos);
 
-    private ArrayList<String> getWatchedIds(List<VideoModel> watchedVideos) {
+                    // update model with the post repsonse
+                    clearVideoTransacting(watchedVideos);
 
-        final ArrayList<String> watchedIds = new ArrayList<String>();// (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
+                }
 
-        for (VideoModel watchedVideo : watchedVideos) {
-            watchedIds.add(watchedVideo.getGuid());
+                @Override
+                public void onApiFailure(Metadata metaData) {
+                    Log.d(TAG, "post to conversation failed");
+                    // broadcast failure of posting conversation
+                    clearVideoTransacting(watchedVideos);
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
+                    ResourceRecoveryUtil.schedule();
+
+                }
+            });
+
+            return true;
         }
-        // lets just query the watched ids
 
-        return watchedIds;
-    }
+        // TODO - Food for thought..move these methods into a utility class?
+        public List<VideoModel> getWatchedVideos() {
 
-    private void markVideosAsWatched(List<VideoModel> watchedVideos) {
-        if (watchedVideos.isEmpty()) {
-            return;
+            List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
+            return watchedVideos;
         }
 
-        // udpate all the watched videos state to watched
-        ActiveAndroid.beginTransaction();
-        try {
-            for (VideoModel v : watchedVideos) {
-                v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
-                v.save();
-            }
+        private ArrayList<String> getWatchedIds(List<VideoModel> watchedVideos) {
 
-            ActiveAndroid.setTransactionSuccessful();
-        } finally {
-            ActiveAndroid.endTransaction();
+            final ArrayList<String> watchedIds = new ArrayList<String>();// (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
+
+            for (VideoModel watchedVideo : watchedVideos) {
+                watchedIds.add(watchedVideo.getGuid());
+            }
+            // lets just query the watched ids
+
+            return watchedIds;
         }
-    }
 
-    private void setVideosAsTransacting(List<VideoModel> videos) {
-
-        if (videos.isEmpty())
-            return;
-
-        ActiveAndroid.beginTransaction();
-
-        try {
-            for (VideoModel watchedVideo : videos) {
-                watchedVideo.setTransacting();
-                watchedVideo.save();
+        private void markVideosAsWatched(List<VideoModel> watchedVideos) {
+            if (watchedVideos.isEmpty()) {
+                return;
             }
-            ActiveAndroid.setTransactionSuccessful();
-        } finally {
-            ActiveAndroid.endTransaction();
+
+            // udpate all the watched videos state to watched
+            ActiveAndroid.beginTransaction();
+            try {
+                for (VideoModel v : watchedVideos) {
+                    v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+                    v.save();
+                }
+
+                ActiveAndroid.setTransactionSuccessful();
+            } finally {
+                ActiveAndroid.endTransaction();
+            }
         }
-    }
 
-    private void clearVideoTransacting(List<VideoModel> videos) {
-        if (videos.isEmpty())
-            return;
+        private void setVideosAsTransacting(List<VideoModel> videos) {
 
-        ActiveAndroid.beginTransaction();
+            if (videos.isEmpty())
+                return;
 
-        try {
-            for (VideoModel watchedVideo : videos) {
-                watchedVideo.clearTransacting();
-                watchedVideo.save();
+            ActiveAndroid.beginTransaction();
+
+            try {
+                for (VideoModel watchedVideo : videos) {
+                    watchedVideo.setTransacting();
+                    watchedVideo.save();
+                }
+                ActiveAndroid.setTransactionSuccessful();
+            } finally {
+                ActiveAndroid.endTransaction();
             }
-            ActiveAndroid.setTransactionSuccessful();
-        } finally {
-            ActiveAndroid.endTransaction();
+        }
+
+        private void clearVideoTransacting(List<VideoModel> videos) {
+            if (videos.isEmpty())
+                return;
+
+            ActiveAndroid.beginTransaction();
+
+            try {
+                for (VideoModel watchedVideo : videos) {
+                    watchedVideo.clearTransacting();
+                    watchedVideo.save();
+                }
+                ActiveAndroid.setTransactionSuccessful();
+            } finally {
+                ActiveAndroid.endTransaction();
+            }
         }
     }
 
