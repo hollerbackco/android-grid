@@ -173,10 +173,20 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
-            ConversationModel item = (ConversationModel) parent.getItemAtPosition(position);
+            ConversationModel conversation = (ConversationModel) parent.getItemAtPosition(position);
 
-            Log.d(FRAGMENT_TAG, "watching conversation with id: " + item.getConversationId());
-            startConversationFragment(item);
+            if (conversation.getUnreadCount() > 0) {
+
+                Log.d(FRAGMENT_TAG, "watching conversation with id: " + conversation.getConversationId());
+
+                startConversationFragment(conversation);
+            } else {
+                // TODO: Fetch data from API call
+                ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment) //
+                        .addToBackStack(FRAGMENT_TAG).setTransition(FragmentTransaction.TRANSIT_ENTER_MASK).commit();
+
+            }
 
         }
 
@@ -186,13 +196,10 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        // TODO: Fetch data from API call
-        // ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
-
         ConversationFragment fragment = ConversationFragment.newInstance(conversation.getConversationId());
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-        fragmentTransaction.addToBackStack(ConversationHistoryFragment.class.getSimpleName());
+        fragmentTransaction.addToBackStack(ConversationFragment.FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 

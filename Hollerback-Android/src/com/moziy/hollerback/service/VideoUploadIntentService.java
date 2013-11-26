@@ -105,6 +105,15 @@ public class VideoUploadIntentService extends IntentService {
     public static class UploadUtility {
 
         private static final String TAG = UploadUtility.class.getSimpleName();
+        private boolean mRecoverOnFailure;
+
+        public UploadUtility() {
+            mRecoverOnFailure = true;
+        }
+
+        public UploadUtility(boolean recover) {
+            mRecoverOnFailure = recover;
+        }
 
         public void uploadResource(VideoModel model) {
             uploadResource(model, 0, model.getNumParts());
@@ -146,7 +155,9 @@ public class VideoUploadIntentService extends IntentService {
                     Log.w(TAG, "upload failed");
                     // broadcast conversation create failure
                     IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
-                    ResourceRecoveryUtil.schedule(); // schedule for the failed video to get uploaded
+
+                    if (mRecoverOnFailure)
+                        ResourceRecoveryUtil.schedule(); // schedule for the failed video to get uploaded
                 }
             }
 
@@ -279,7 +290,9 @@ public class VideoUploadIntentService extends IntentService {
                     // broadcast failure of posting conversation
                     clearVideoTransacting(watchedVideos);
                     IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
-                    ResourceRecoveryUtil.schedule();
+
+                    if (mRecoverOnFailure)
+                        ResourceRecoveryUtil.schedule();
 
                 }
             });

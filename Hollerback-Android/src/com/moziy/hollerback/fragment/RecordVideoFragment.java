@@ -720,7 +720,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     private void onRecordingFailed() {
-
+        Log.d(TAG, "recording failed");
         deleteRecording();
         getFragmentManager().popBackStack();
         broadcastFailure();
@@ -901,15 +901,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
-    private void stopPreview() {
+    private boolean stopPreview() {
         if (inPreview) {
             try {
                 mCamera.stopPreview();
                 inPreview = false;
             } catch (Exception e) {
+
                 e.printStackTrace();
+                return false;
             }
         }
+
+        return true;
     }
 
     private void switchRecordingCamerasTo(final int cameraId) {
@@ -940,7 +944,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     }
                 }
 
-                stopPreview();
+                if (!stopPreview()) {
+                    return;
+                }
 
                 mCamera.release();
 

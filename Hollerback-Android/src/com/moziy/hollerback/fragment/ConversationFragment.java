@@ -43,6 +43,7 @@ import com.moziy.hollerback.util.TimeUtil;
 public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, RecordingInfo {
 
     private static final String TAG = ConversationFragment.class.getSimpleName();
+    public static final String FRAGMENT_TAG = TAG;
     public static final String CONVO_ID_BUNDLE_ARG_KEY = "CONVO_ID";
     public static final String CONVO_ID_INSTANCE_STATE = "CONVO_ID_INSTANCE_STATE";
     public static final String VIDEO_MODEL_INSTANCE_STATE = "VIDEO_MODEL_INSTANCE_STATE";

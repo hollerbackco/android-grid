@@ -22,7 +22,7 @@ public class ResourceRecoveryService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        UploadUtility util = new UploadUtility();
+        UploadUtility util = new UploadUtility(false);
 
         StringBuilder sb = new StringBuilder();
         sb.append(ActiveRecordFields.C_VID_STATE).append("='").append(VideoModel.ResourceState.UPLOADED_PENDING_POST).append("'").append(" OR ").append(ActiveRecordFields.C_VID_STATE).append("='")
