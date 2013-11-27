@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -66,7 +67,7 @@ import com.moziy.hollerback.util.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
-
+    public static final String FRAGMENT_TAG = RecordVideoFragment.class.getSimpleName();
     public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
@@ -295,7 +296,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 break;
             case R.id.action_cancel:
                 this.onPause();
-                this.getFragmentManager().popBackStack();
+                this.getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
                 break;
 
         }
@@ -401,7 +402,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         getActivity().startService(intent);
 
         // we're going back to the start conversation fragment
-        mActivity.getSupportFragmentManager().popBackStack();
+        mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
     }
 
@@ -722,7 +723,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private void onRecordingFailed() {
         Log.d(TAG, "recording failed");
         deleteRecording();
-        getFragmentManager().popBackStack();
+        getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
         broadcastFailure();
     }
 

@@ -437,7 +437,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         // we're ready to move to the recording fragment
         RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
         f.setTargetFragment(this, 0);
-        getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+        getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
     }
 
     /**

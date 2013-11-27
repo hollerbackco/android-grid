@@ -156,12 +156,12 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             case R.id.action_find_friends:
                 ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ContactsInviteFragment.class.getSimpleName()).commitAllowingStateLoss();
+                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
                 break;
             case R.id.action_add:
                 ContactsFragment fragment = ContactsFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
+                        .commitAllowingStateLoss();
                 break;
         }
 
@@ -199,7 +199,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         ConversationFragment fragment = ConversationFragment.newInstance(conversation.getConversationId());
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-        fragmentTransaction.addToBackStack(ConversationFragment.FRAGMENT_TAG);
+        fragmentTransaction.addToBackStack(FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 
@@ -266,8 +266,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         if (requestCode == PREFERENCE_PAGE && resultCode == mActivity.RESULT_OK) {
             // It wants contact list
             ContactsInviteFragment fragment = ContactsInviteFragment.newInstance();
-            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                    .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
         }
     }
 
