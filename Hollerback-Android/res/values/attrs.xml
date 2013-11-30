@@ -11,5 +11,11 @@
     <declare-styleable name="CustomFont">
         <attr name="typeface" format="string" />
     </declare-styleable>
+    <declare-styleable name="RoundImageView">
+        <attr name="radius" format="dimension"></attr>
+        <attr name="xPosCenter" format="dimension"></attr>
+        <attr name="yPosCenter" format="dimension"></attr>
+        <attr name="foregroundColor" format="color"></attr>
+    </declare-styleable>
 
 </resources>

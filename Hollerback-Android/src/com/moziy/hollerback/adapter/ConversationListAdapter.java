@@ -19,9 +19,12 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.ConversionUtil;
+import com.moziy.hollerback.view.RoundImageView;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
@@ -30,6 +33,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
     LayoutInflater inflater;
     ConversationFilter mFilter;
+    private ColorPicker mColorPicker = new ColorPicker();
 
     private SherlockFragmentActivity mActivity;
 
@@ -87,11 +91,12 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         if (convertView == null) {
             viewHolder = new ViewHolder();
-            convertView = inflater.inflate(R.layout.message_list_item, null);
+            convertView = inflater.inflate(R.layout.message_list_item, parent, false);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.newMessagesIndicator = (ImageView) convertView.findViewById(R.id.iv_green_dot);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
-            viewHolder.imgBackground = (ImageView) convertView.findViewById(R.id.imgBackground);
+            viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
+            // viewHolder.imgBackground = (ImageView) convertView.findViewById(R.id.imgBackground);
             viewHolder.btnRecord = (ImageView) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
 
@@ -115,8 +120,16 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             e.printStackTrace();
         }
 
-        if (mFilteredConversations.get(position).getUrl() != null) {
+        if (mFilteredConversations.get(position).getMostRecentThumbUrl() != null) {
             // imageLoader.displayImage(mFilteredConversations.get(position).getUrl(), viewHolder.imgBackground, options);
+            viewHolder.thumb.setImageUrl(mFilteredConversations.get(position).getMostRecentThumbUrl(), VolleySingleton.getInstance(mActivity).getImageLoader());
+
+            int[] colors = mColorPicker.getConvoColors();
+            // Test, lets set a color
+            viewHolder.thumb.setHaloBorderColor(colors[0]);
+
+            convertView.setBackgroundColor(colors[1]);
+
         }
 
         viewHolder.btnRecord.setOnClickListener(new View.OnClickListener() {
@@ -130,7 +143,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 RecordVideoFragment fragment = RecordVideoFragment.newInstance(mFilteredConversations.get(position).getConversationId(), true, mFilteredConversations.get(position)
                         .getConversationName(), new ArrayList<String>());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(RecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
+                        .addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
             }
         });
 
@@ -143,8 +156,40 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationName;
         ImageView newMessagesIndicator;
         TextView conversationTime;
-        ImageView imgBackground;
+        RoundImageView thumb;
         ImageView btnRecord;
+    }
+
+    /**
+     * A conversation color picker
+     * @author sajjad
+     *
+     */
+    public class ColorPicker {
+
+        private int mColorIndex = 0;
+
+        private int[] mBackgroundColors = {
+                R.color.convo_blue, R.color.convo_green, R.color.convo_red, R.color.convo_purple, R.color.convo_yellow, R.color.convo_orange
+        };
+        private int[] mForegroundColors = {
+                R.color.convo_red, R.color.convo_yellow, R.color.convo_green, R.color.convo_orange, R.color.convo_purple, R.color.convo_blue_2
+        };
+
+        public int[] getConvoColors() {
+
+            int[] colors = {
+                    mActivity.getResources().getColor(mForegroundColors[mColorIndex]), mActivity.getResources().getColor(mBackgroundColors[mColorIndex])
+            };
+
+            ++mColorIndex;
+
+            if (mColorIndex >= mBackgroundColors.length) // reset if needed
+                mColorIndex = 0;
+
+            return colors;
+        }
+
     }
 
     class ConversationFilter extends Filter {

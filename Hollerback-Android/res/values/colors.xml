@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="hb_blue">#0012FF</color>
+    <color name="hb_blue">#15B1EB</color>
     <color name="background_transparent">#CF747373</color>
     <color name="timer_green">#18B203</color>
     <color name="timer_default">#405966</color>
@@ -13,5 +13,12 @@
     <color name="flat">#07A7F7</color>
     <color name="bg_click">#52c1ff</color>
     <color name="bg_row_click">#f0f0f0</color>
+    <color name="convo_red">#f32837</color>
+    <color name="convo_blue">#009ddb</color>
+    <color name="convo_green">#00cc00</color>
+    <color name="convo_yellow">#fff000</color>
+    <color name="convo_purple">#4814a0</color>
+    <color name="convo_orange">#ff7900</color>
+    <color name="convo_blue_2">#008cd2</color>
 
 </resources>
