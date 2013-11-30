@@ -15,16 +15,6 @@
         app:radius="35dp" >
     </com.moziy.hollerback.view.RoundImageView>
 
-    <ImageView
-        android:id="@+id/iv_green_dot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/padding_medium"
-        android:src="@drawable/dot_blue_small" />
-
     <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/tv_convoname"
         android:layout_width="wrap_content"
