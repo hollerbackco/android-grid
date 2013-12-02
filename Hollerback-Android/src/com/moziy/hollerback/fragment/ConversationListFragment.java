@@ -2,6 +2,8 @@ package com.moziy.hollerback.fragment;
 
 import java.util.List;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +19,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.LayoutAnimationController;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -120,6 +127,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     @Override
     protected void initializeView(View view) {
         mConversationList = (ListView) view.findViewById(R.id.message_listview);
+        initListViewAnimation();
 
         mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
         mTxtSearch.addTextChangedListener(filterTextWatcher);
@@ -181,10 +189,14 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
                 startConversationFragment(conversation);
             } else {
+
+                AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);
+                set.setTarget(((ConversationListAdapter.ViewHolder) view.getTag()).topLayer);
+                set.start();
                 // TODO: Fetch data from API call
-                ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
-                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment) //
-                        .addToBackStack(FRAGMENT_TAG).setTransition(FragmentTransaction.TRANSIT_ENTER_MASK).commit();
+                // ConversationHistoryFragment fragment = ConversationHistoryFragment.newInstance(conversation);
+                // getFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment) //
+                // .addToBackStack(FRAGMENT_TAG).setTransition(FragmentTransaction.TRANSIT_ENTER_MASK).commit();
 
             }
 
@@ -208,6 +220,22 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         startActivityForResult(intent, PREFERENCE_PAGE);
+    }
+
+    private void initListViewAnimation() {
+        AnimationSet set = new AnimationSet(true);
+
+        Animation animation = new AlphaAnimation(0.0f, 1.0f);
+        animation.setDuration(50);
+        set.addAnimation(animation);
+
+        animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, -1.0f, Animation.RELATIVE_TO_SELF, 0.0f);
+        animation.setDuration(100);
+        set.addAnimation(animation);
+
+        LayoutAnimationController controller = new LayoutAnimationController(set, 0.5f);
+
+        mConversationList.setLayoutAnimation(controller);
     }
 
     /**
