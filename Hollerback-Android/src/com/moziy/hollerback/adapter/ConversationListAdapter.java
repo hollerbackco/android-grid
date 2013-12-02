@@ -4,8 +4,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.R.color;
 import android.graphics.Color;
@@ -40,6 +42,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
     ConversationFilter mFilter;
     private ColorPicker mColorPicker = new ColorPicker();
     private int mHBTextColor;
+    private Map<ConversationModel, int[]> mConvoColorMap;
 
     private SherlockFragmentActivity mActivity;
 
@@ -60,6 +63,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         mConversations = conversations;
         mFilteredConversations = new ArrayList<ConversationModel>();
         mFilteredConversations.addAll(mConversations);
+        mConvoColorMap = new HashMap<ConversationModel, int[]>();
         this.notifyDataSetChanged();
     }
 
@@ -113,13 +117,20 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         final ConversationModel conversationModel = mFilteredConversations.get(position);
         if (conversationModel.getUnreadCount() > 0) {
-            int[] colors = mColorPicker.getConvoColors();
+            int[] colors;
+            if (mConvoColorMap.containsKey(conversationModel)) {
+                colors = mConvoColorMap.get(conversationModel);
+            } else {
+                colors = mColorPicker.getConvoColors();
+                mConvoColorMap.put(conversationModel, colors);
+            }
             viewHolder.thumb.setHaloBorderColor(colors[0]);
-            convertView.setBackgroundColor(colors[1]);
+            viewHolder.topLayer.setBackgroundColor(colors[1]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
         } else {
             convertView.setBackgroundColor(color.white);
+            viewHolder.topLayer.setBackgroundColor(Color.WHITE);
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
@@ -228,6 +239,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationTime;
         RoundImageView thumb;
         ImageView btnRecord;
+        int foregroundColor = -1;
+        int backgroundColor = -1;
     }
 
     /**
@@ -305,4 +318,21 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         return mFilter;
     }
+
+    class ConversationItem {
+        public ConversationModel conversation;
+        public int foregroundColor = -1;
+        public int backgroundColor = -1;
+    }
+
+    List<ConversationItem> getConversationItemListFor(List<ConversationModel> model) {
+        List<ConversationItem> items = new ArrayList<ConversationListAdapter.ConversationItem>();
+        for (ConversationModel m : model) {
+            ConversationItem item = new ConversationItem();
+            item.conversation = m;
+            items.add(item);
+        }
+        return items;
+    }
+
 }

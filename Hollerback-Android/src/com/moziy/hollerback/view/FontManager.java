@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.graphics.Typeface;
-import android.util.Log;
 
 import com.moziy.hollerback.HollerbackApplication;
 
@@ -36,8 +35,6 @@ public class FontManager {
         }
 
         Typeface font = sFontFileMap.get(fontName);
-
-        Log.d("fontmanager", "setting font");
         return font;
     }
 }

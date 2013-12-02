@@ -82,7 +82,7 @@ public class RoundImageView extends NetworkImageView {
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setColor(color);
         mBorderPaint.setAntiAlias(true);
-        mBorderPaint.setStrokeWidth(getResources().getDimension(R.dimen.dim_5dp)); // set to 5dp width
+        mBorderPaint.setStrokeWidth(getResources().getDimension(R.dimen.dim_4dp)); // set to 5dp width
 
         invalidate();
     }
@@ -102,7 +102,8 @@ public class RoundImageView extends NetworkImageView {
             canvas.drawBitmap(mMask, 0, 0, mPaint);
 
         if (mHaloBorderColor != -1 && mBorderPaint != null) {
-            mHaloBounds.set(1, 1, getWidth(), getHeight());
+            int pix = getResources().getDimensionPixelSize(R.dimen.dim_2dp);
+            mHaloBounds.set(pix, pix, getWidth() - pix, getHeight() - pix);
             canvas.drawOval(mHaloBounds, mBorderPaint);
         }
 
