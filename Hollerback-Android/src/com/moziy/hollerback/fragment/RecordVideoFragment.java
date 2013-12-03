@@ -433,7 +433,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             }
         });
-        new TaskExecuter().executeTask(updateTimeTask);
+        new TaskExecuter(true).executeTask(updateTimeTask); // run on a serial executer
     }
 
     private void inviteAndRecordVideo() {
