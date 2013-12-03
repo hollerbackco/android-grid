@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Hollerback</string>
+    <string name="app_name_lc">hollerback</string>
     <string name="all">All</string>
     <string name="loading_message">Hollerback is loading, please wait.</string>
     <string name="action_settings">My Account</string>
@@ -22,6 +23,10 @@
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
     <string name="action_uploading">Uploading</string>
+
+    <!-- Welcome Text -->
+    <string name="talk_to_friends">talk to your friends</string>
+    <string name="anytime_anywhere">anytime, anywhere</string>
 
     <!-- Button Strings -->
     <string name="signin">Log In</string>
@@ -76,7 +81,6 @@
     <string name="preference_twitter">Hollerback on Twitter</string>
     <string name="preference_facebook">Hollerback on Facebook</string>
     <string name="preference_new_group">New Group</string>
-    <string name="signup">Sign Up</string>
     <string name="tap_start">Tap screen to start recording</string>
     <string name="tap_stop">Tap screen to stop</string>
     <string name="timer_default">20s</string>
