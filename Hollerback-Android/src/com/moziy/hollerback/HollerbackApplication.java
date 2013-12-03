@@ -1,5 +1,6 @@
 package com.moziy.hollerback;
 
+import android.content.Intent;
 import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
@@ -10,7 +11,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.lifecycle.AppLifecycle;
+import com.moziy.hollerback.lifecycle.AppLifecycle.AppIdleListener;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.BgDownloadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.DataModelManager;
@@ -31,6 +34,7 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
         sDataModelManager = new DataModelManager();
         mLifecycle = new AppLifecycle();
+        mLifecycle.registerIdleListener(mIdleListener);
 
         clearAllTransactingModel();
 
@@ -94,5 +98,18 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         exeucter.executeTask(updateTask);
 
     }
+
+    private AppLifecycle.AppIdleListener mIdleListener = new AppIdleListener() {
+
+        @Override
+        public void onIdle() {
+
+            // launch the background download service
+            Intent intent = new Intent();
+            intent.setClass(HollerbackApplication.this, BgDownloadService.class);
+            startService(intent);
+
+        }
+    };
 
 }
