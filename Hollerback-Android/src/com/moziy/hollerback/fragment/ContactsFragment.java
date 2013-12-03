@@ -17,8 +17,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Data;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,9 +38,13 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.adapter.ContactsListAdapter;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
+import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.service.VideoUploadService;
+import com.moziy.hollerback.service.task.AbsTask;
+import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.CollectionOpUtils;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
@@ -47,8 +53,9 @@ import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
-public class ContactsFragment extends BaseFragment {
+public class ContactsFragment extends BaseFragment implements TaskClient {
 
+    private static final String TAG = ContactsFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = ContactsFragment.class.getSimpleName();
     private String NEXT = "NEXT";
 
@@ -63,6 +70,7 @@ public class ContactsFragment extends BaseFragment {
     private String mConversationTitle;
     private String mFileDataName;
     private boolean isWelcomeScreen;
+    private AbsTaskWorker mWorker;
 
     public static ContactsFragment newInstance() {
         ContactsFragment f = new ContactsFragment();
@@ -79,6 +87,19 @@ public class ContactsFragment extends BaseFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Fragment f = getFragmentManager().findFragmentByTag("worker");
+        if (f == null) {
+            this.startLoading();
+            mWorker = new AbsTaskWorker();
+            mWorker.setTargetFragment(this, 0);
+            getFragmentManager().beginTransaction().add(mWorker, "worker").commit();
+
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity.getSupportActionBar().setTitle(this.getResources().getString(R.string.preference_new_group));
         mRootView = (ViewGroup) inflater.inflate(R.layout.contact_fragment, null);
@@ -88,8 +109,6 @@ public class ContactsFragment extends BaseFragment {
             mFileDataName = this.getArguments().getString("fileDataName");
         }
         initializeView(mRootView);
-
-        bindData();
 
         return mRootView;
     }
@@ -126,8 +145,6 @@ public class ContactsFragment extends BaseFragment {
 
         };
 
-        TempMemoryStore.users = getSortedUserArray();
-
         if (isWelcomeScreen) {
             TextView txtHeader = (TextView) mRootView.findViewById(R.id.txtHeader);
             txtHeader.setVisibility(View.VISIBLE);
@@ -142,9 +159,6 @@ public class ContactsFragment extends BaseFragment {
             }
         });
 
-        mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, TempMemoryStore.users.sortedKeys.size(), 0);
-
-        mSMSList.setAdapter(mAdapter);
     }
 
     @Override
@@ -177,7 +191,7 @@ public class ContactsFragment extends BaseFragment {
     }
 
     protected void bindData() {
-        this.startLoading();
+
         // Now runs to get data
         HBRequestManager.getContacts(TempMemoryStore.users.array, new JsonHttpResponseHandler() {
 
@@ -381,5 +395,44 @@ public class ContactsFragment extends BaseFragment {
                 // just posted, now upload the video
             }
         });
+    }
+
+    @Override
+    public void onTaskComplete(Task t) {
+        TempMemoryStore.users = ((GetContactsTask) t).getContacts();
+
+        mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, TempMemoryStore.users.sortedKeys.size(), 0);
+
+        mSMSList.setAdapter(mAdapter);
+
+        bindData();
+
+    }
+
+    @Override
+    public void onTaskError(Task t) {
+        Log.d(TAG, "error retrieving contacts");
+
+    }
+
+    @Override
+    public Task getTask() {
+
+        return new GetContactsTask();
+    }
+
+    private class GetContactsTask extends AbsTask {
+
+        private SortedArray mSortedArray;
+
+        @Override
+        public void run() {
+            mSortedArray = getSortedUserArray();
+        }
+
+        public SortedArray getContacts() {
+            return mSortedArray;
+        }
+
     }
 }

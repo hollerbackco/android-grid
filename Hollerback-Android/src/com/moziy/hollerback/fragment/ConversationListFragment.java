@@ -194,6 +194,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);
                 set.setTarget(view);
                 set.start();
+
+                ContactsFragment fragment = ContactsFragment.newInstance();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
+                        .commitAllowingStateLoss();
+
                 return;
             }
 
