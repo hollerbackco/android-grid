@@ -2,12 +2,33 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/camera_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="#000000" >
 
-    <com.moziy.hollerback.view.camera.PreviewSurfaceView
+    <FrameLayout
         android:id="@+id/preview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
-    </com.moziy.hollerback.view.camera.PreviewSurfaceView>
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/bt_switch_camera"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|right"
+        android:layout_margin="10dp"
+        android:background="@drawable/ic_action_switch_video" />
+
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_send"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:focusableInTouchMode="false"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp"
+        android:text="@string/action_send_lc"
+        android:textSize="28sp" >
+    </com.moziy.hollerback.widget.CustomButton>
 
 </FrameLayout>

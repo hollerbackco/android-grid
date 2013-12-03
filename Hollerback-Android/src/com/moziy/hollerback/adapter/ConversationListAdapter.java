@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -126,11 +125,11 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             public void onClick(View v) {
                 // Peter: no idea why it's int here and string everywhere else, this was written prior:
                 // I changed it to be "long" everywhere :)
-
+                mActivity.getActionBar().hide();
                 // XXX: Make sure that the watched ids are sent here
                 RecordVideoFragment fragment = RecordVideoFragment.newInstance(mFilteredConversations.get(position).getConversationId(), true, mFilteredConversations.get(position)
                         .getConversationName(), new ArrayList<String>());
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .addToBackStack(RecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
             }
         });

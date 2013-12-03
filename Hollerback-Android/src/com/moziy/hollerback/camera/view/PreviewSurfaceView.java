@@ -1,29 +1,28 @@
-package com.moziy.hollerback.view.camera;
+package com.moziy.hollerback.camera.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class PreviewSurfaceView extends SurfaceView {
+public class PreviewSurfaceView extends SurfaceView implements Preview {
     private static final String TAG = PreviewSurfaceView.class.getSimpleName();
     private static final double DEFAULT_ASPECT_RATIO = (4.0 / 3.0);
     private double mAspectRatio = DEFAULT_ASPECT_RATIO;
 
     public PreviewSurfaceView(Context context) {
         super(context);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public PreviewSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setZOrderMediaOverlay(true);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
+    @Override
     public void setAspectRatio(double ratio) {
         mAspectRatio = ratio;
+        Log.d(TAG, "new aspect ratio: " + ratio);
+        requestLayout();
     }
 
     @Override
@@ -32,16 +31,16 @@ public class PreviewSurfaceView extends SurfaceView {
         int previewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         boolean isHeightLongSide = (previewHeight > previewWidth ? true : false);
-
+        Log.d(TAG, "original width: " + previewWidth + " height: " + previewHeight);
         if (isHeightLongSide) {
 
             if (((double) previewHeight / (double) previewWidth) > mAspectRatio) {
-                previewWidth = (int) (previewWidth * mAspectRatio); // make the width wider
+                previewWidth = (int) ((double) previewHeight / mAspectRatio); // make the width wider
             } else { //
-                previewHeight = (int) (previewWidth * mAspectRatio);
+                previewHeight = (int) ((double) previewWidth * mAspectRatio);
             }
 
-        } else { // width is the longer side
+        } else if (((double) previewHeight / (double) previewWidth) < mAspectRatio) { // width is the longer side
 
             if ((double) previewHeight / (double) previewWidth > mAspectRatio) {
                 previewHeight = (int) (previewHeight * mAspectRatio);

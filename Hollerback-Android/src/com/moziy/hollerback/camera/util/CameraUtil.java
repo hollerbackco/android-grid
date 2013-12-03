@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util.camera;
+package com.moziy.hollerback.camera.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -22,7 +22,7 @@ public class CameraUtil {
     public static final int AUDIO_SAMPLE_RATE = 32 * KBPS;
     public static final int AUDIO_ENCODING_BIT_RATE = 96 * KBPS;
     public static final int AUDIO_ENCODER = MediaRecorder.AudioEncoder.AAC;
-    public static final int VIDEO_ENCODING_RATE = 500 * KBPS;
+    public static final int VIDEO_ENCODING_RATE = 350 * KBPS;
     public static final int VIDEO_FRAME_RATE = 24;
     public static final int VIDEO_OUTPUT_FORMAT = MediaRecorder.OutputFormat.MPEG_4;
     public static final int VIDEO_OUTPUT_ENCODER = MediaRecorder.VideoEncoder.H264;
@@ -173,7 +173,7 @@ public class CameraUtil {
         return false;
     }
 
-    public static void setFrontFacingParams(MediaRecorder recorder, int width, int height) {
+    public static void setRecordingParams(MediaRecorder recorder, int width, int height) {
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
         recorder.setVideoEncoder(VIDEO_OUTPUT_ENCODER);
         recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);

@@ -13,6 +13,7 @@
     <string name="action_filter">Filter</string>
     <string name="action_play">Play</string>
     <string name="action_send">Send</string>
+    <string name="action_send_lc">send</string>
     <string name="action_search">Search</string>
     <string name="action_person">Person</string>
     <string name="action_record">Record</string>
@@ -96,6 +97,8 @@
     <!-- Notifications -->
     <plurals name="notif_new_message">
         <item quantity="one">%1$s</item>
+        <item quantity="two">You have new messages!</item>
+        <item quantity="few">You have new messages!</item>
         <item quantity="many">You have new messages!</item>
     </plurals>
 

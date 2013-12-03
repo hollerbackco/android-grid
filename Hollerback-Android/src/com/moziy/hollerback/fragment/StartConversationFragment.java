@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -174,7 +175,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     }
 
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // go back to the conversation fragment, popping everything
+                    getFragmentManager().popBackStack(ContactsFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog

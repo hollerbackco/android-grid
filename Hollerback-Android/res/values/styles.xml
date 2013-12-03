@@ -25,6 +25,7 @@
         <item name="android:background">#ffffffff</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+        <item name="android:buttonStyle">@style/DefaultButton</item>
     </style>
 
     <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
@@ -104,6 +105,10 @@
     </style>
 
     <style name="DefaultTextView" parent="@android:style/Widget.TextView">
+        <item name="typeface">Gotham-Medium</item>
+    </style>
+
+    <style name="DefaultButton" parent="@android:style/Widget.Button">
         <item name="typeface">Gotham-Medium</item>
     </style>
 

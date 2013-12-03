@@ -84,7 +84,10 @@ public class VideoUploadIntentService extends IntentService {
             if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
                 // lets get the part info
 
-                uploadResource(model, partNumber, totalParts);
+                // for each part lets upload the resource
+                for (int i = 0; i < totalParts; i++) {
+                    uploadResource(model, i, totalParts);
+                }
             }
 
             // now if the model state is pending post and it's not transacting, then let's go ahead and post
