@@ -1,52 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
-    android:layout_height="125dp"
-    android:orientation="vertical" >
+    android:layout_height="126dp"
+    android:background="#FFFFFF" >
 
-    <ImageView
-        android:id="@+id/imgBackground"
-        android:layout_width="match_parent"
-        android:layout_height="125dp"
-        android:background="@android:color/black"
-        android:contentDescription="@string/app_name"
-        android:scaleType="centerCrop" />
+    <com.moziy.hollerback.view.RoundImageView
+        android:id="@+id/iv_thumb"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="40dp"
+        android:src="@drawable/android"
+        app:radius="35dp" >
+    </com.moziy.hollerback.view.RoundImageView>
 
-    <ImageView
-        android:id="@+id/iv_green_dot"
+    <com.moziy.hollerback.widget.CustomTextView
+        android:id="@+id/tv_convoname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/padding_medium"
-        android:src="@drawable/dot_blue_small" />
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="30dp"
+        android:layout_toRightOf="@+id/iv_thumb"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="JJ Jaan"
+        android:textColor="@color/hb_blue"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
-    <LinearLayout
+    <com.moziy.hollerback.widget.TimeStampTextView
+        android:id="@+id/tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/iv_green_dot"
-        android:orientation="vertical" >
+        android:layout_alignLeft="@+id/tv_convoname"
+        android:layout_below="@+id/tv_convoname"
+        android:text="Now"
+        android:textColor="@color/hb_blue"
+        android:textSize="18sp" />
 
-        <com.moziy.hollerback.widget.GothamRndTextView
-            android:id="@+id/tv_convoname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/convo_right_margin"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <com.moziy.hollerback.widget.TimeStampTextView
-            android:id="@+id/tv_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
-    </LinearLayout>
+    <com.moziy.hollerback.widget.CustomTextView
+        android:id="@+id/tv_ttyl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tv_time"
+        android:layout_below="@+id/tv_time"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="ttyl"
+        android:textColor="@color/hb_blue"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/btnRecord"

@@ -2,5 +2,6 @@
 <resources>
 
     <item name="notification_id" type="id"/>
+    <item name="round_image_id" type="id"></item>
 
 </resources>

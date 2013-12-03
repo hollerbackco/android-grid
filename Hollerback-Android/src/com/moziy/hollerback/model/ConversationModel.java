@@ -127,6 +127,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         return 0;
     }
 
+    public String getMostRecentThumbUrl() {
+        return most_recent_thumb_url;
+    }
+
     public void setUrl(String value) {
         this.url = value;
     }
