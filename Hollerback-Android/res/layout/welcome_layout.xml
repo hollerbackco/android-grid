@@ -49,12 +49,12 @@
         android:background="#FFFFFF" />
 
     <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_signup"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="16.6"
-        android:background="#10AA15"
+        android:background="@color/slightly_desaturated_yellow"
         android:text="@string/signup"
-        android:textColor="#FFFFFF"
         android:textSize="32sp" />
 
     <View
@@ -63,12 +63,12 @@
         android:background="#FFFFFF" />
 
     <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_signin"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="16.6"
-        android:background="#1515EE"
+        android:background="@color/slightly_desaturated_blue"
         android:text="@string/signin"
-        android:textColor="#FFFFFF"
         android:textSize="32sp" />
 
 </LinearLayout>

@@ -12,24 +12,23 @@ import com.moziy.hollerback.view.FontManager;
 public class CustomButton extends Button {
 
     public CustomButton(Context context) {
-        super(context);
+        this(context, null);
 
+    }
+
+    public CustomButton(Context context, AttributeSet attrs) {
+        this(context, attrs, android.R.attr.buttonStyle);
     }
 
     public CustomButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        // retrieve the attributes pertaining to the custom textview
-        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
-        setTypefaceFromAttrs(array);
-        array.recycle(); // recycle the array
-    }
 
-    public CustomButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        // retrieve the attributes pertaining to the custom textview
-        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
-        setTypefaceFromAttrs(array);
-        array.recycle(); // recycle the array
+        if (!isInEditMode()) {
+            // retrieve the attributes pertaining to the custom textview
+            TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont, defStyle, R.style.DefaultButton);
+            setTypefaceFromAttrs(array);
+            array.recycle();
+        }
     }
 
     private void setTypefaceFromAttrs(TypedArray array) {
