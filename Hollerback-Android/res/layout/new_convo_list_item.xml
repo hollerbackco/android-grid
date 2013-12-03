@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/hb_blue"
+    android:orientation="horizontal" >
+
+    <!-- TODO: See if you can make the framelayout into a layer list of somesort -->
+
+    <FrameLayout
+        android:layout_width="@dimen/dim_70dp"
+        android:layout_height="@dimen/dim_70dp"
+        android:layout_marginBottom="@dimen/dim_28dp"
+        android:layout_marginLeft="@dimen/dim_20dp"
+        android:layout_marginTop="@dimen/dim_28dp" >
+
+        <View
+            android:id="@+id/icon"
+            android:layout_width="@dimen/dim_70dp"
+            android:layout_height="@dimen/dim_70dp"
+            android:background="@drawable/circle" />
+
+        <View
+            android:layout_width="@dimen/dim_30dp"
+            android:layout_height="@dimen/dim_30dp"
+            android:layout_gravity="center"
+            android:background="@drawable/icon_plus" >
+        </View>
+    </FrameLayout>
+
+    <com.moziy.hollerback.widget.CustomTextView
+        style="@style/DefaultTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/dim_18dp"
+        android:text="@string/new_conversation"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+</LinearLayout>

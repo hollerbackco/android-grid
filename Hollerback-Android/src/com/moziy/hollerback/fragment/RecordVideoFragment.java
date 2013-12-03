@@ -237,11 +237,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         if (USE_SURFACE_VIEW) {
             PreviewSurfaceView surfaceView = new PreviewSurfaceView(getActivity());
             surfaceView.getHolder().addCallback(this);
-            surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            surfaceView.setOnClickListener(mSendButtonClick);
+            // surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             mCameraPreview = surfaceView;
         } else {
             PreviewTextureView textureView = new PreviewTextureView(getActivity());
-            textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            textureView.setOnClickListener(mSendButtonClick);
+            // textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             textureView.setSurfaceTextureListener(this);
             mCameraPreview = textureView;
         }
@@ -256,31 +258,33 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         });
 
         mSendButton = (CustomButton) v.findViewById(R.id.bt_send);
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (isRecording) { // send the video once recording has stopped
-
-                    stopRecording();
-
-                    if (mConversationId < 0) {
-                        Log.d(TAG, "attempt to create new conversation");
-                        inviteAndRecordVideo();
-                    } else {
-                        Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
-                    }
-                }
-
-            }
-        });
+        mSendButton.setOnClickListener(mSendButtonClick);
 
         previewHolder.addView((View) mCameraPreview);
 
         return v;
 
     }
+
+    private View.OnClickListener mSendButtonClick = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            if (isRecording) { // send the video once recording has stopped
+
+                stopRecording();
+
+                if (mConversationId < 0) {
+                    Log.d(TAG, "attempt to create new conversation");
+                    inviteAndRecordVideo();
+                } else {
+                    Log.d(TAG, "attempt to post to existing conversation");
+                    postToConversation(mConversationId, mWatchedIds);
+                }
+            }
+
+        }
+    };
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

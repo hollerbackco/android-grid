@@ -49,11 +49,12 @@ import com.moziy.hollerback.service.SyncService;
 import com.moziy.hollerback.util.AppEnvironment;
 
 public class ConversationListFragment extends BaseFragment implements OnConversationsUpdated, LoaderCallbacks<List<ConversationModel>> {
-
+    private static final String TAG = ConversationListFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = ConversationListFragment.class.getSimpleName();
 
     private int PREFERENCE_PAGE;
     private ViewGroup mHeader;
+    private ViewGroup mFooter;
     private EditText mTxtSearch;
 
     // PullToRefreshListView mConversationList;
@@ -82,7 +83,10 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         this.startLoading();
 
+        mConversationList = (ListView) fragmentView.findViewById(R.id.message_listview);
+        mFooter = (ViewGroup) inflater.inflate(R.layout.new_convo_list_item, null);
         mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
+
         initializeView(fragmentView);
 
         getLoaderManager().initLoader(0, null, this); // the loader will be autostarted
@@ -126,13 +130,14 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     protected void initializeView(View view) {
-        mConversationList = (ListView) view.findViewById(R.id.message_listview);
+
         initListViewAnimation();
 
         mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
         mTxtSearch.addTextChangedListener(filterTextWatcher);
 
         mConversationList.addHeaderView(mHeader, null, false); // add a header
+        mConversationList.addFooterView(mFooter, null, true); // respond to touch events
         // lsvBaseListView = mConversationList.getRefreshableView();
         // lsvBaseListView.addHeaderView(mHeader);
         // mConversationList.setShowIndicator(false);
@@ -182,6 +187,15 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
             ConversationModel conversation = (ConversationModel) parent.getItemAtPosition(position);
+
+            if (conversation == null) {
+                // this is the footer view
+                Log.d(TAG, "footer view tapped");
+                AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);
+                set.setTarget(view);
+                set.start();
+                return;
+            }
 
             if (conversation.getUnreadCount() > 0) {
 
