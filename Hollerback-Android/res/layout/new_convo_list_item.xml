@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/hb_blue"
+    android:background="@drawable/new_conversation_background"
     android:orientation="horizontal" >
 
     <!-- TODO: See if you can make the framelayout into a layer list of somesort -->
