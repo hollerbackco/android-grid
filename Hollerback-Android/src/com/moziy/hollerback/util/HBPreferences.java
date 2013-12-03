@@ -16,4 +16,10 @@ public class HBPreferences {
     // type: string : last sync time
     public static final String LAST_SERVICE_SYNC_TIME = "last_service_sync_time";
 
+    // type: long: millis in current alarm schedule
+    public static final String RESOURCE_RECOVERY_BACKOFF_TIME = "resource_recovery_backoff_time";
+
+    // type: boolean pending alarm for recovery
+    public static final String PENDING_RECOVERY_ALARM = "pending_recovery_alarm";
+
 }

@@ -1,5 +1,6 @@
 package com.moziy.hollerback.fragment;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,8 +11,6 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -59,7 +59,6 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
-import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
@@ -68,7 +67,7 @@ import com.moziy.hollerback.util.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
-
+    public static final String FRAGMENT_TAG = RecordVideoFragment.class.getSimpleName();
     public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
@@ -79,10 +78,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         public static final String RESOURCE_ROW_ID = "resource_row_id";
 
         public void onRecordingFinished(Bundle info);
-    }
-
-    private interface OnRecordingStarted {
-        void onRecordingStarted();
     }
 
     private static final int PREFERRED_VIDEO_WIDTH = 320;
@@ -105,12 +100,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     TextView mTimer;
     private final Handler mHandler = new Handler();
 
-    int VIDEO_SENT = 4;
-
     int secondsPassed;
     private volatile int mCurrentCameraId = CameraInfo.CAMERA_FACING_FRONT;
     private volatile boolean mIsSwitching;
-    private volatile boolean mRequestSwitchBack;
 
     private String mFileDataPath;
     protected String mFileDataName;
@@ -304,7 +296,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 break;
             case R.id.action_cancel:
                 this.onPause();
-                this.getFragmentManager().popBackStack();
+                this.getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
                 break;
 
         }
@@ -410,7 +402,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         getActivity().startService(intent);
 
         // we're going back to the start conversation fragment
-        mActivity.getSupportFragmentManager().popBackStack();
+        mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
     }
 
@@ -482,10 +474,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
         }
 
-        if (!isUploadRunning()) {
-            Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
-            mActivity.startService(serviceIntent);
-        }
     }
 
     @Override
@@ -499,6 +487,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
             isRecording = false;
+
+            // cleanup
+            deleteRecording();
 
             mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
@@ -730,24 +721,23 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     private void onRecordingFailed() {
-
-        getFragmentManager().popBackStack();
+        Log.d(TAG, "recording failed");
+        deleteRecording();
+        getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
         broadcastFailure();
     }
 
-    /**
-     * check if service is running
-     * @param tmp
-     * @return
-     */
-    public boolean isUploadRunning() {
-        ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
-        for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
-                return true;
+    private void deleteRecording() {
+        if (mFileDataName != null) {
+            for (int i = 0; i < mTotalParts; i++) {
+                File f = new File(HBFileUtil.getLocalFile(mFileDataName + "." + i + ".mp4"));
+                if (f.exists()) {
+                    Log.d(TAG, "deleting: " + f.getPath());
+                    f.delete();
+                }
             }
         }
-        return false;
+
     }
 
     @Override
@@ -912,15 +902,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
-    private void stopPreview() {
+    private boolean stopPreview() {
         if (inPreview) {
             try {
                 mCamera.stopPreview();
                 inPreview = false;
             } catch (Exception e) {
+
                 e.printStackTrace();
+                return false;
             }
         }
+
+        return true;
     }
 
     private void switchRecordingCamerasTo(final int cameraId) {
@@ -951,7 +945,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     }
                 }
 
-                stopPreview();
+                if (!stopPreview()) {
+                    return;
+                }
 
                 mCamera.release();
 

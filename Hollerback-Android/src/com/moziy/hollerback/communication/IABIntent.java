@@ -42,6 +42,9 @@ public class IABIntent {
     public static final String VIDEO_DOWNLOADED = "VideoDownloaded";
     public static final String VIDEO_DOWNLOAD_FAILED = "VideoDownloadFailed";
 
+    // Video Upload Intents
+    public static final String VIDEO_UPLOAD_FAILED = "VideoUploadFailed";
+
     public static final String PARAM_SUCCESS = "200";
     public static final String PARAM_FAILURE = "500";
     public static final String PARAM_AUTHENTICATED = "AUTH";

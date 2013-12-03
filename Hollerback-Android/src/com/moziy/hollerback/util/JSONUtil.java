@@ -434,17 +434,18 @@ public class JSONUtil {
 
             if (videosArray != null) {
 
-                try {
-                    new Delete().from(VideoModel.class).where(ActiveRecordFields.C_VID_CONV_ID + " = ?", convoId).execute();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                // TODO: update the videos/replaced based on updated at flag
+                // try {
+                // new Delete().from(VideoModel.class).where(ActiveRecordFields.C_VID_CONV_ID + " = ?", convoId).execute();
+                // } catch (Exception e) {
+                // e.printStackTrace();
+                // }
                 for (int j = 0; j < videosArray.length(); j++) {
 
-                    VideoModel video = JsonModelUtil.createVideo((JSONObject) videosArray.get(j));
-                    conversationId = video.getConversationId();
-                    video.save();
-                    videos.add(video);
+                    // VideoModel video = JsonModelUtil.createVideo((JSONObject) videosArray.get(j));
+                    // conversationId = video.getConversationId();
+                    // video.save();
+                    // videos.add(video);
                 }
 
                 ActiveAndroid.setTransactionSuccessful();
