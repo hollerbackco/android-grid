@@ -17,10 +17,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.R;
@@ -61,6 +63,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     }
 
     private long mConvoId;
+    private ConversationModel mConversation;
     private ArrayList<VideoModel> mVideos;
     private Map<String, VideoModel> mVideoMap;
     private LinkedList<VideoModel> mPlayBackQueue; // the queue used for playback
@@ -71,6 +74,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private boolean mPausedDuringPlayback; // not saved
     private int mPosition = 0;
     private Bundle mRecordingInfo;
+    private ProgressBar mProgress;
 
     private BgDownloadReceiver mReceiver;
 
@@ -134,7 +138,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.conversation_layout, container, false);
         mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
-
+        mProgress = (ProgressBar) v.findViewById(R.id.progress);
+        mProgress.setVisibility(View.VISIBLE);
         Log.d(TAG, "onCreateView");
 
         return v;
@@ -274,7 +279,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 addDownloadWorkerFor(video);
 
             } else if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
-
+                mProgress.setVisibility(View.GONE);
                 // if we've already been downloaded and we're on the first of the playback queue, then begin playback
                 if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
                     playVideo(video);
@@ -298,7 +303,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         VideoModel queuedVideo = mPlayBackQueue.peek();
 
         if (queuedVideo.getGuid().equals(video.getGuid())) { // if the queued is the one that just got downloaded then just play
-
+            mProgress.setVisibility(View.GONE);
             Log.d(TAG, "playing back video that was just downloaded");
             playVideo(video);
 
@@ -386,18 +391,28 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             @Override
             public void onTaskComplete(Task t) {
 
-                VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
-                Log.d(TAG, "fetching latest from db: " + video.toString());
+                ActiveAndroid.beginTransaction();
+                try {
+                    VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
+                    Log.d(TAG, "fetching latest from db: " + video.toString());
 
-                video.setRead(true); // mark the video as watched
-                video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
-                video.save();
+                    video.setRead(true); // mark the video as watched
+                    video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
+                    video.save();
 
-                // TODO - Sajjad: Create a service to go and remove the watched videos
-                ConversationModel c = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
-                Log.d(TAG, "new unread count: " + (c.getUnreadCount() - 1));
-                c.setUnreadCount(c.getUnreadCount() - 1);
-                c.save(); // save that we've unread
+                    // TODO - Sajjad: Create a service to go and remove the watched videos
+                    if (mConversation == null) {
+                        mConversation = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                    }
+                    Log.d(TAG, "new unread count: " + (mConversation.getUnreadCount() - 1));
+                    mConversation.setUnreadCount(mConversation.getUnreadCount() - 1);
+                    mConversation.save(); // save that we've unread
+
+                    ActiveAndroid.setTransactionSuccessful();
+
+                } finally {
+                    ActiveAndroid.endTransaction();
+                }
 
                 // broadcast that the conversations have changed
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
@@ -411,6 +426,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onRecordingFinished(Bundle info) {
         mRecordingInfo = info;
+
+        if (!info.getBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true)) {
+            return;
+        }
 
         // if the recording was successfull, then update the conversation, and set the last message time
         Task t = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //

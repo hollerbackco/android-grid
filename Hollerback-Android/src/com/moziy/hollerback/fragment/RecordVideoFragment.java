@@ -76,6 +76,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public static interface RecordingInfo {
         public static final String RECORDED_PARTS = "recorded_parts";
         public static final String RESOURCE_ROW_ID = "resource_row_id";
+        public static final String STATUS_BUNDLE_ARG_KEY = "record_status";
 
         public void onRecordingFinished(Bundle info);
     }
@@ -388,6 +389,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         Bundle info = new Bundle();
         info.putLong(RecordingInfo.RESOURCE_ROW_ID, resourceRowId);
         info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
+        info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
         }
@@ -402,7 +404,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         getActivity().startService(intent);
 
         // we're going back to the start conversation fragment
-        mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        if (conversationId > 0) {
+            mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        } else {
+            getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
+        }
 
     }
 
@@ -457,10 +463,22 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             String seconds = String.valueOf(timer - secondsPassed) + "s";
             mTimer.setText(seconds);
             if (secondsPassed >= timer) {
-                stopRecording();
-            }
+                if (isRecording) { // send the video once recording has stopped
 
-            mHandler.postDelayed(timeTask, 1000);
+                    mHandler.removeCallbacks(timeTask); // remove
+                    stopRecording();
+
+                    if (mConversationId < 0) {
+                        Log.d(TAG, "attempt to create new conversation");
+                        inviteAndRecordVideo();
+                    } else {
+                        Log.d(TAG, "attempt to post to existing conversation");
+                        postToConversation(mConversationId, mWatchedIds);
+                    }
+                }
+            } else {
+                mHandler.postDelayed(timeTask, 1000);
+            }
         }
     };
     private ProgressDialog mProgressDialog;
@@ -494,8 +512,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
 
+            if (getTargetFragment() != null) {
+                Bundle recordingInfo = new Bundle();
+                recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
+                ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
+            }
+
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
+
+            getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
 
         }
 
@@ -507,8 +533,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         inPreview = false;
+
         super.onPause();
         enableShutterSound();
+
     }
 
     // TODO: Clean this up!!!!!
