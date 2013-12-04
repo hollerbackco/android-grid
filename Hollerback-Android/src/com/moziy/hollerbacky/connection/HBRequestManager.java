@@ -7,9 +7,6 @@ import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -17,8 +14,7 @@ import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
-import com.moziy.hollerback.model.web.Envelope.Metadata;
-import com.moziy.hollerback.model.web.response.VerifyResponse;
+import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.HollerbackAppState;
@@ -161,7 +157,7 @@ public class HBRequestManager {
 
     }
 
-    public static void postLogin(String email, String password, String token) {
+    public static void postLogin(String email, String password, String token, HBHttpResponseHandler<LoginResponse> responseHandler) {
 
         RequestParams params = null;
 
@@ -170,28 +166,29 @@ public class HBRequestManager {
             params.put(HollerbackAPI.PARAM_EMAIL, email);
             params.put(HollerbackAPI.PARAM_PASSWORD, password);
             params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
-
             params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
         }
 
-        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new HBAsyncHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
-        }) {
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, responseHandler);
 
-            @Override
-            public void onResponseSuccess(int statusCode, VerifyResponse response) {
-
-                Log.d("sajjad", "access token: " + response.access_token);
-                JSONUtil.processLogin(response);
-
-            }
-
-            @Override
-            public void onApiFailure(Metadata metaData) {
-                Log.d(TAG, "error code: " + metaData.code);
-
-            }
-
-        });
+        // HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new HBAsyncHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
+        // }) {
+        //
+        // @Override
+        // public void onResponseSuccess(int statusCode, VerifyResponse response) {
+        //
+        // Log.d("sajjad", "access token: " + response.access_token);
+        // JSONUtil.processLogin(response);
+        //
+        // }
+        //
+        // @Override
+        // public void onApiFailure(Metadata metaData) {
+        // Log.d(TAG, "error code: " + metaData.code);
+        //
+        // }
+        //
+        // });
         //
 
         // HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION,

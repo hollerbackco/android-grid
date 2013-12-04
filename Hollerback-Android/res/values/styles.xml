@@ -103,4 +103,8 @@
         <item name="typeface">Gotham-Medium</item>
     </style>
 
+    <style name="DefaultEditText" parent="@android:style/Widget.EditText">
+        <item name="typeface">Gotham-Medium</item>
+    </style>
+
 </resources>

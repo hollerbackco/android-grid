@@ -23,6 +23,7 @@
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
     <string name="action_uploading">Uploading</string>
+    <string name="ok">OK</string>
 
     <!-- Welcome Text -->
     <string name="talk_to_friends">talk to your friends</string>
@@ -54,7 +55,9 @@
     <string name="error_name_null">Name is not valid</string>
     <string name="error_email">Email not valid</string>
     <string name="error_phone">Phone number is not valid</string>
-    <string name="error_password">Password not valid</string>
+    <string name="error_password">Please enter a password</string>
+    <string name="error_login">Login Failed</string>
+    <string name="error_oops">Oops</string>
     <string name="error_verification">There was a problem verifying your phone number, please enter the correct code</string>
     <string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
     <string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>

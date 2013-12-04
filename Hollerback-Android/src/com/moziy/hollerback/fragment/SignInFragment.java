@@ -1,38 +1,34 @@
 package com.moziy.hollerback.fragment;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
-import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.ISOUtil;
-import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.validator.TextValidator;
+import com.moziy.hollerback.util.ValidatorUtil;
+import com.moziy.hollerback.widget.CustomEditText;
 import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
@@ -43,19 +39,8 @@ public class SignInFragment extends BaseFragment {
     private SherlockFragmentActivity mActivity;
 
     private Button mLoginBtn;
-
-    private CharSequence[] mCharCountries;
-    private Country mSelectedCountry;
-    private View mRLCountrySelector;
-    private TextView mCountryText, mPhoneNumberCode;
-    private EditText mPhoneNumberField;
-    private List<Country> mCountries;
-    private AlertDialog countriesDialog;
-    private PhoneNumberUtil util;
-    private String mRegistrationPhone;
-
-    private String mFileDataName;
-    private boolean mHasFile;
+    private CustomEditText mEmailEditText;
+    private CustomEditText mPasswordEditText;
 
     public static SignInFragment newInstance() {
         SignInFragment f = new SignInFragment();
@@ -75,57 +60,41 @@ public class SignInFragment extends BaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        mActivity = this.getSherlockActivity();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         this.getSherlockActivity().getSupportActionBar().show();
         this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
         this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+    }
 
-        View fragmentView = inflater.inflate(R.layout.signin_fragment, null);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        initializeView(fragmentView);
+        mActivity = this.getSherlockActivity();
 
-        util = PhoneNumberUtil.getInstance();
-        Set<String> set = util.getSupportedRegions();
-
-        mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
-
-        mCharCountries = new CharSequence[mCountries.size()];
+        View v = inflater.inflate(R.layout.signin_fragment, null);
+        initializeView(v);
 
         Locale locale = Locale.getDefault();
 
-        mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
-
-        mCountryText.setText(mSelectedCountry.name);
-
-        mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
-
-        for (int i = 0; i < mCountries.size(); i++) {
-            mCharCountries[i] = mCountries.get(i).name;
-        }
-
-        if (this.getArguments() != null && this.getArguments().containsKey("hasFile")) {
-            mHasFile = this.getArguments().getBoolean("hasFile");
-            if (mHasFile)
-                mFileDataName = this.getArguments().getString("fileDataName");
-        }
-
-        return fragmentView;
+        return v;
     }
 
     @Override
     protected void initializeView(View view) {
-        mPhoneNumberField = (EditText) view.findViewById(R.id.textfield_phonenumber);
-        mCountryText = (TextView) view.findViewById(R.id.tv_country_selector);
-        mPhoneNumberCode = (TextView) view.findViewById(R.id.tv_phone_number_code);
-        mRLCountrySelector = view.findViewById(R.id.rl_country_selector);
 
-        mRLCountrySelector.setOnClickListener(new View.OnClickListener() {
+        mEmailEditText = (CustomEditText) view.findViewById(R.id.et_email);
+
+        mPasswordEditText = (CustomEditText) view.findViewById(R.id.et_password);
+        mPasswordEditText.setOnEditorActionListener(new OnEditorActionListener() {
 
             @Override
-            public void onClick(View v) {
-                showDialog();
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    processLogin();
+                }
+
+                return false;
             }
         });
 
@@ -140,23 +109,6 @@ public class SignInFragment extends BaseFragment {
         });
     }
 
-    public void showDialog() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Select Your Country");
-        builder.setSingleChoiceItems(mCharCountries, -1, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                mSelectedCountry = mCountries.get(item);
-                mCountryText.setText(mCountries.get(item).name);
-                mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
-                countriesDialog.dismiss();
-            }
-        });
-        countriesDialog = builder.create();
-        countriesDialog.show();
-
-    }
-
     private void processLogin() {
         if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
             Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
@@ -167,24 +119,43 @@ public class SignInFragment extends BaseFragment {
             return;
         }
 
-        LogUtil.i("Logging in with: " + mPhoneNumberField.getText().toString());
         this.startLoading();
-        HBRequestManager.postLogin(mRegistrationPhone, new HBAsyncHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>() {
-        }) {
 
-            @Override
-            public void onResponseSuccess(int statusCode, LoginResponse response) {
-                onSignInSucceeded(response);
+        HBRequestManager.postLogin(mEmailEditText.getText().toString(), mPasswordEditText.getText().toString(), GCMUtils.getRegistrationId(HollerbackApplication.getInstance()),
+                new HBAsyncHttpResponseHandler<LoginResponse>(new TypeReference<LoginResponse>() {
+                }) {
 
-            }
+                    @Override
+                    public void onResponseSuccess(int statusCode, LoginResponse response) {
+                        SignInFragment.this.stopLoading();
+                        onSignInSucceeded(response);
 
-            @Override
-            public void onApiFailure(Metadata metaData) {
-                if (metaData != null)
-                    LogUtil.w(TAG, "error code: " + metaData.code);
+                    }
 
-            }
-        });
+                    @Override
+                    public void onApiFailure(Metadata metaData) {
+                        SignInFragment.this.stopLoading();
+                        if (metaData != null)
+                            LogUtil.w(TAG, "error code: " + metaData.code);
+
+                        if (isAdded()) { // TODO: add custom dialogs
+                            // TODO - sajjad: launch a popup saying that login failed
+                            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                            builder.setTitle(getString(R.string.error_oops));
+                            builder.setMessage(getString(R.string.error_login));
+                            builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (isAdded())
+                                        dialog.dismiss();
+
+                                }
+                            }).show();
+
+                        }
+                    }
+                });
 
     }
 
@@ -207,35 +178,43 @@ public class SignInFragment extends BaseFragment {
         PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, response.access_token);
 
         LogUtil.i("HB", response.toString()); // TODO - Sajjad determine whether to use LogUtil or replace it.
-        // SignInFragment.this.startLoading(); // TODO - Sajjad, what's going on here with startLoading?
-        // SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(false, mFileDataName);
         Intent intent = new Intent(mActivity, HollerbackMainActivity.class);
         mActivity.startActivity(intent);
         mActivity.finish();
     }
 
-    private PhoneNumber getPhoneNumber() {
-        if (mPhoneNumberField.getText().toString() == null || mPhoneNumberField.getText().toString().trim().isEmpty() || mPhoneNumberField.getText().toString().trim().length() < 3) {
-            return null;
+    private boolean verifyFields() {
+
+        boolean status = true;
+        status &= ValidatorUtil.isValidEmail(mEmailEditText.getText());
+
+        if (!status) {
+            getErrorDialog(getString(R.string.error_oops), getString(R.string.error_email), getString(R.string.ok)).show();
+            return false;
         }
-        return NumberUtil.getPhoneNumber("+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString());
+
+        status &= mPasswordEditText.getText() != null && mPasswordEditText.getText().length() > 0;
+        if (!status) {
+            getErrorDialog(getString(R.string.error_oops), getString(R.string.error_password), getString(R.string.ok)).show();
+        }
+
+        return status;// mPasswordEditText.getText() != null && mPasswordEditText.getText().length() > 0;
+
     }
 
-    public boolean verifyFields() {
-        String validPhone = TextValidator.isValidPhone(getPhoneNumber());
+    private AlertDialog getErrorDialog(String title, String message, String positiveText) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(positiveText, new DialogInterface.OnClickListener() {
 
-        boolean valid = (validPhone == null);
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (isAdded())
+                    dialog.dismiss();
 
-        if (!valid) {
-            String message = (validPhone != null ? "\n" + validPhone : "");
-
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-        } else {
-            mRegistrationPhone = "+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString();
-            LogUtil.i("Signing up with: " + mRegistrationPhone);
-        }
-
-        return valid;
-
+            }
+        });
+        return builder.create();
     }
 }

@@ -54,6 +54,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
             Intent i = new Intent(this, WelcomeFragmentActivity.class);
             startActivity(i);
             this.finish();
+            return;
         }
         this.getSupportActionBar().show();
 
