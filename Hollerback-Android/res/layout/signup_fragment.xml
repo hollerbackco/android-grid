@@ -2,32 +2,22 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_welcome" >
+    android:background="@color/background_header" >
+
+    <!-- XXX: Refactor this layout -->
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/tv_header_account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
-            android:text="@string/header_account"
-            android:textColor="#fff"
-            android:textSize="15sp" />
-
         <RelativeLayout
             android:id="@+id/rl_bx_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_header_account"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
+            android:layout_marginTop="@dimen/dim_20dp"
             android:background="#adadad"
             android:padding="1dp" >
 
@@ -52,7 +42,7 @@
             android:layout_marginRight="15dp"
             android:layout_marginTop="15dp"
             android:text="@string/header_country_code_phone"
-            android:textColor="#fff"
+            android:textColor="@color/gray_font"
             android:textSize="15sp" />
 
         <RelativeLayout

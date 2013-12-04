@@ -36,6 +36,9 @@ import com.moziy.hollerback.validator.TextValidator;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
+
+    public static final String EMAIL_BUNDLE_ARG_KEY = "EMAIL";
+    public static final String PASSWORD_BUNDLE_ARG_KEY = "PASSWORD";
     private SherlockFragmentActivity mActivity;
     private EditText mNameField, mPhoneNumberField;
 
@@ -54,6 +57,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     private String mRegistrationName;
     private String mRegistrationPhone;
 
+    private String mEmail;
+    private String mPassword;
+
     // passing on
     private String mFileDataName;
 
@@ -68,9 +74,30 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         return f;
     }
 
+    public static SignUpFragment newInstance(String email, String password) {
+
+        SignUpFragment f = new SignUpFragment();
+
+        // Supply num input as an argument.
+        Bundle args = new Bundle();
+        args.putString(EMAIL_BUNDLE_ARG_KEY, email);
+        args.putString(PASSWORD_BUNDLE_ARG_KEY, password);
+        f.setArguments(args);
+        return f;
+    }
+
     private Country mSelectedCountry;
 
     private PhoneNumberUtil util;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle args = getArguments();
+        mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);
+        mPassword = args.getString(PASSWORD_BUNDLE_ARG_KEY);
+    }
 
     @Override
     protected void initializeView(View view) {

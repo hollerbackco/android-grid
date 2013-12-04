@@ -12,6 +12,8 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class WelcomeFragment extends BaseFragment {
+    private static final String TAG = WelcomeFragment.class.getSimpleName();
+    private static final String FRAGMENT_TAG = TAG;
     private SherlockFragmentActivity mActivity;
 
     private CustomButton mSignInBtn;
@@ -44,7 +46,8 @@ public class WelcomeFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
-                // TODO, put in
+                SignupUserFragment f = new SignupUserFragment();
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
             }
         });
 

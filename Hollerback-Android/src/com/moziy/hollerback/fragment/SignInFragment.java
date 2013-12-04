@@ -183,6 +183,22 @@ public class SignInFragment extends BaseFragment {
         mActivity.finish();
     }
 
+    private AlertDialog getErrorDialog(String title, String message, String positiveText) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(positiveText, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (isAdded())
+                    dialog.dismiss();
+
+            }
+        });
+        return builder.create();
+    }
+
     private boolean verifyFields() {
 
         boolean status = true;
@@ -202,19 +218,4 @@ public class SignInFragment extends BaseFragment {
 
     }
 
-    private AlertDialog getErrorDialog(String title, String message, String positiveText) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setPositiveButton(positiveText, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (isAdded())
-                    dialog.dismiss();
-
-            }
-        });
-        return builder.create();
-    }
 }
