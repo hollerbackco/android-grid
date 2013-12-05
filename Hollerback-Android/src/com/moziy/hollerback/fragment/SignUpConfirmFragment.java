@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,6 +80,30 @@ public class SignUpConfirmFragment extends BaseFragment {
         mTxtPhone.setText(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""));
 
         mTxtVerify = (EditText) mRootView.findViewById(R.id.txtfield_verify);
+        mTxtVerify.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() == 4) { // code must be 4 digits
+                    mBtnSubmit.setVisibility(View.VISIBLE);
+                } else {
+                    mBtnSubmit.setVisibility(View.GONE);
+                }
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
         mResendText = (TextView) mRootView.findViewById(R.id.tv_click_to_resend);
 
@@ -119,9 +145,12 @@ public class SignUpConfirmFragment extends BaseFragment {
 
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
 
+                            // user is officially logged in and registered, pop everything
+                            getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
+
                             ContactsFragment fragment = ContactsFragment.newInstance(true, null);
                             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                    .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+                                    .commitAllowingStateLoss();
                         } else {
                             Log.e(TAG, "no access token sent!");
                             throw new IllegalStateException("No access token sent on successful registration!");

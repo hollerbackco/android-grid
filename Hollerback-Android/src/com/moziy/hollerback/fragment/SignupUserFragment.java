@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
@@ -87,6 +89,8 @@ public class SignupUserFragment extends BaseFragment {
 
             }
         });
+
+        ((TextView) view.findViewById(R.id.tv_eula)).setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     // XXX: refactor this into it's own utility

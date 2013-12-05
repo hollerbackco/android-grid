@@ -1,7 +1,5 @@
 package com.moziy.hollerback.fragment;
 
-import java.util.Locale;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -74,8 +72,6 @@ public class SignInFragment extends BaseFragment {
 
         View v = inflater.inflate(R.layout.signin_fragment, null);
         initializeView(v);
-
-        Locale locale = Locale.getDefault();
 
         return v;
     }

@@ -10,7 +10,9 @@ import org.json.JSONObject;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
@@ -111,12 +113,13 @@ public class HBRequestManager {
     }
 
     public static void postVerification(String veroficationCode, String phone, AsyncHttpResponseHandler handler) {
+
         RequestParams params = new RequestParams();
 
         params.put(HollerbackAPI.PARAM_CODE, veroficationCode);
         params.put(HollerbackAPI.PARAM_PHONE, phone);
         params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
-        // params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
+        params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, GCMUtils.getRegistrationId(HollerbackApplication.getInstance()));
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_VERIFY, params, handler);
 

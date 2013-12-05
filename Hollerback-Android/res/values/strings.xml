@@ -69,7 +69,7 @@
     <string name="message_sent_simple">Message Sent!</string>
     <string name="send_another">Send Another</string>
     <string name="conversation_list">Your Conversations</string>
-    <string name="signup_agreement">By clicking Submit you are indicating that you have read and agree to the Privacy Policy and Terms of Service</string>
+    <string name="signup_agreement">By clicking Next you are indicating that you have read and agree to the <a href="http://www.hollerback.co/privacy">Privacy Policy</a> and <a href="http://www.hollerback.co/terms">Terms of Service</a></string>
     <string name="signup_phone_info">We use your phone number to find the Hollerback usernames of your friends.\n We will not spam or auto-add your friends.</string>
     <string name="signup_phone_hash_info">The phone numbers from your address book:\n- will only be used to find your friends\n-will be stored as non-unique encrypted representations (or "hashes") which will be used to match users but which contain no personal identifying information</string>
     <string name="empty_conversation_list">Start using Hollerback by sending a video message to your friends!</string>

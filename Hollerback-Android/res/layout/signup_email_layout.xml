@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/dim_20dp"
+    android:paddingRight="@dimen/dim_20dp" >
 
     <include
         android:id="@+id/username_password_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dim_20dp"
-        android:layout_marginRight="@dimen/dim_20dp"
         android:layout_marginTop="@dimen/dim_20dp"
         layout="@layout/email_password_box" />
 
     <com.moziy.hollerback.widget.CustomTextView
-        android:id="@+id/eula"
+        android:id="@+id/tv_eula"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/username_password_box"
         android:gravity="center"
-        android:padding="@dimen/dim_30dp"
-        android:text="By clicking Next you are indicating that you have..." />
+        android:paddingTop="@dimen/dim_20dp"
+        android:text="@string/signup_agreement"
+        android:textColor="@color/gray_font" />
 
     <com.moziy.hollerback.widget.CustomButton
         android:id="@+id/bt_next"
@@ -27,10 +28,9 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@id/username_password_box"
         android:layout_alignRight="@id/username_password_box"
-        android:layout_below="@+id/eula"
+        android:layout_below="@+id/tv_eula"
         android:layout_centerHorizontal="true"
-        android:layout_marginLeft="@dimen/dim_20dp"
-        android:layout_marginRight="@dimen/dim_20dp"
+        android:layout_marginTop="@dimen/dim_20dp"
         android:text="@string/action_next"
         android:visibility="gone" />
 

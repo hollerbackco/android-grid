@@ -134,9 +134,9 @@
         <com.moziy.hollerback.widget.CustomTextView
             android:id="@+id/tv_phone_hash_info"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/submit_layout"
-            android:gravity="center"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/submit_layout"
+            android:gravity="center|bottom"
             android:paddingBottom="@dimen/dim_10dp"
             android:paddingLeft="@dimen/dim_40dp"
             android:paddingRight="@dimen/dim_40dp"
