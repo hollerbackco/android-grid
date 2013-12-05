@@ -1,12 +1,17 @@
 package com.moziy.hollerback.util.validators;
 
+import android.util.Log;
+
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.QU;
 
 public class ValidatorUtil {
+
+    private static final String TAG = ValidatorUtil.class.getSimpleName();
 
     public final static boolean isValidEmail(CharSequence target, String[]... outMessage) {
         boolean status;
@@ -26,10 +31,10 @@ public class ValidatorUtil {
         return status;
     }
 
-    public static boolean isValidPhone(PhoneNumber phone, String[]... outMessage) {
+    public static boolean isValidPhone(PhoneNumber phone, String region, String[]... outMessage) {
         boolean status;
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-
+        Log.d(TAG, "valid phone: " + util.format(phone, PhoneNumberFormat.E164) + " for region: " + region);
         if (phone != null && AppEnvironment.getInstance().FORCE_PHONE_NUMBER_CHECK ? util.isValidNumber(phone) : true) {
             status = true;
         } else {
