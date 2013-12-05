@@ -47,6 +47,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
     public static final String EMAIL_BUNDLE_ARG_KEY = "EMAIL";
     public static final String PASSWORD_BUNDLE_ARG_KEY = "PASSWORD";
+    public static final String REGION_BUNDLE_ARG_KEY = "REGION";
 
     public static final String SUBMITTED_BUNDLE_ARG_KEY = "SUBMITTED";
 
@@ -110,8 +111,12 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         mCharCountries = new CharSequence[mCountries.size()];
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(SUBMITTED_BUNDLE_ARG_KEY)) {
-            mIsSubmitted = savedInstanceState.getBoolean(SUBMITTED_BUNDLE_ARG_KEY);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SUBMITTED_BUNDLE_ARG_KEY)) {
+
+                mIsSubmitted = savedInstanceState.getBoolean(SUBMITTED_BUNDLE_ARG_KEY);
+            }
+
         } else {
             mIsSubmitted = false;
         }
@@ -190,6 +195,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     public void onSaveInstanceState(Bundle outState) {
 
         outState.putBoolean(SUBMITTED_BUNDLE_ARG_KEY, mIsSubmitted);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -210,6 +216,8 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                 return;
             }
 
+            final String regionCode = mSelectedCountry.code;
+
             mIsSubmitted = true;
             mLoadingBar.startLoading();
             HBRequestManager.postRegistration(mEmail, mPassword, mRegistrationName, mRegistrationPhone, new HBAsyncHttpResponseHandler<RegisterResponse>(new TypeReference<RegisterResponse>() {
@@ -226,6 +234,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.PASSWORD, mPassword);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, response.user.phone);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, response.user.id);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.REGION_CODE, regionCode);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, response.user.is_verified);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
 
@@ -326,11 +335,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     private class CustomPhoneTextWatcher extends PhoneTextWatcher {
-
-        public CustomPhoneTextWatcher() {
-            super();
-            // TODO Auto-generated constructor stub
-        }
 
         public CustomPhoneTextWatcher(String countryCode) {
             super(countryCode);

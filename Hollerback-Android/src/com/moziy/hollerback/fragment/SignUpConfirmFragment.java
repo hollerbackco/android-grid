@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
@@ -44,6 +46,7 @@ public class SignUpConfirmFragment extends BaseFragment {
     private Button mBtnSubmit;
     private EditText mTxtVerify;
     private TextView mResendText;
+    private PhoneNumberUtil mPhoneUtil;
     private final Handler mHandler = new Handler();
 
     public static SignUpConfirmFragment newInstance() {
@@ -61,6 +64,8 @@ public class SignUpConfirmFragment extends BaseFragment {
         this.getSherlockActivity().getSupportActionBar().setTitle(R.string.action_verify);
         this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
+        mPhoneUtil = PhoneNumberUtil.getInstance();
+
     }
 
     @Override
@@ -77,7 +82,14 @@ public class SignUpConfirmFragment extends BaseFragment {
     @Override
     protected void initializeView(View view) {
         mTxtPhone = (TextView) mRootView.findViewById(R.id.tv_phone);
-        mTxtPhone.setText(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""));
+
+        try {
+            mTxtPhone.setText(mPhoneUtil.format(
+                    mPhoneUtil.parse(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, ""), PreferenceManagerUtil.getPreferenceValue(HBPreferences.REGION_CODE, "")),
+                    PhoneNumberFormat.INTERNATIONAL));
+        } catch (Exception e) { // any exception just show the regular number
+            mTxtPhone.setText(PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, "")); // just display the regular version
+        }
 
         mTxtVerify = (EditText) mRootView.findViewById(R.id.txtfield_verify);
         mTxtVerify.addTextChangedListener(new TextWatcher() {

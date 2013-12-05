@@ -111,6 +111,7 @@
         <item name="borderColor">#000000</item>
         <item name="android:background">@android:color/white</item>
         <item name="android:textSize">20sp</item>
+        <item name="android:textColorHint">#44000000</item>
         <item name="android:textColor">#88000000</item>
         <item name="android:paddingLeft">@dimen/dim_60dp</item>
     </style>

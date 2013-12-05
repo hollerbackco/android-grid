@@ -47,6 +47,7 @@ public class CustomEditText extends EditText {
             mBorderPaint = new Paint();
             mBorderPaint.setColor(mBorderColor);
             mBorderPaint.setStrokeWidth(mBorderWidth);
+            mBorderPaint.setAntiAlias(true);
             mBorderPaint.setStyle(Style.STROKE);
         }
     }
