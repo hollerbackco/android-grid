@@ -36,7 +36,7 @@ public class PreferenceManagerUtil {
     }
 
     // all float, long, String, integer, boolean setter methods
-    public static void setPreferenceLongValue(String key, long value) {
+    public static void setPreferenceValue(String key, long value) {
 
         SharedPreferences.Editor editor = getEditor();
 
@@ -87,7 +87,7 @@ public class PreferenceManagerUtil {
     }
 
     // all long, int, flaot, String , boolean getter methods
-    public static long getPreferenceLongValue(String key, long defValue) {
+    public static long getPreferenceValue(String key, long defValue) {
         initPreferences();
         return mPreferences.getLong(key, defValue);
     }

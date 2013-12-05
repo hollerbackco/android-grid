@@ -105,6 +105,14 @@
 
     <style name="DefaultEditText" parent="@android:style/Widget.EditText">
         <item name="typeface">Gotham-Medium</item>
+        <item name="android:paddingBottom">@dimen/dim_10dp</item>
+        <item name="android:paddingTop">@dimen/dim_10dp</item>
+        <item name="borderWidth">@dimen/dim_1dp</item>
+        <item name="borderColor">#000000</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">#88000000</item>
+        <item name="android:paddingLeft">@dimen/dim_60dp</item>
     </style>
 
 </resources>

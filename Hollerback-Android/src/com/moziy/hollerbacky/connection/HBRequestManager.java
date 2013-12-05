@@ -10,11 +10,10 @@ import org.json.JSONObject;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.web.response.LoginResponse;
+import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.HollerbackAppState;
@@ -93,56 +92,21 @@ public class HBRequestManager {
             public void onSuccess(int arg0, JSONObject arg1) {
                 // TODO Auto-generated method stub
                 super.onSuccess(arg0, arg1);
-                JSONUtil.processSignUp(arg1);
+                // JSONUtil.processSignUp(arg1);
             }
         });
 
     }
 
-    public static void postRegistration(String name, String phone, String token) {
+    public static void postRegistration(String email, String password, String userName, String phone, HBHttpResponseHandler<RegisterResponse> responseHandler) {
         RequestParams params = new RequestParams();
 
-        params.put(HollerbackAPI.PARAM_USERNAME, name);
+        params.put(HollerbackAPI.PARAM_EMAIL, email);
+        params.put(HollerbackAPI.PARAM_PASSWORD, password);
+        params.put(HollerbackAPI.PARAM_USERNAME, userName);
         params.put(HollerbackAPI.PARAM_PHONE, phone);
 
-        params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
-
-        params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
-        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_REGISTER, params, new JsonHttpResponseHandler() {
-            @Override
-            protected Object parseResponse(String arg0) throws JSONException {
-                LogUtil.i(arg0);
-                return super.parseResponse(arg0);
-
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onFailure(arg0, arg1);
-                LogUtil.i("LOGIN FAILURE");
-            }
-
-            @Override
-            public void onSuccess(int arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onSuccess(arg0, arg1);
-                JSONUtil.processSignUp(arg1);
-            }
-        });
-
-    }
-
-    public static void postRegistration(String name, String phone, String token, JsonHttpResponseHandler handler) {
-        RequestParams params = new RequestParams();
-
-        params.put(HollerbackAPI.PARAM_USERNAME, name);
-        params.put(HollerbackAPI.PARAM_PHONE, phone);
-
-        params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
-
-        params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
-        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_REGISTER, params, handler);
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_REGISTER, params, responseHandler);
 
     }
 
@@ -152,6 +116,7 @@ public class HBRequestManager {
         params.put(HollerbackAPI.PARAM_CODE, veroficationCode);
         params.put(HollerbackAPI.PARAM_PHONE, phone);
         params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
+        // params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_VERIFY, params, handler);
 
@@ -218,27 +183,6 @@ public class HBRequestManager {
         //
         // });
 
-    }
-
-    public static void postLogin(String phone, AsyncHttpResponseHandler handler) {
-        RequestParams params = null;
-
-        if (!phone.isEmpty()) {
-            params = new RequestParams();
-            params.put(HollerbackAPI.PARAM_PHONE, phone);
-        }
-        String gcmRegId = GCMUtils.getRegistrationId(HollerbackApplication.getInstance());
-        if (!"".equals(gcmRegId)) {
-            params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, gcmRegId);
-        }
-
-        params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
-
-        // XXX: HACK Remove
-        params.put(HollerbackAPI.PARAM_EMAIL, "sajadt@yahoo.com");
-        params.put(HollerbackAPI.PARAM_PASSWORD, "myhollerback");
-
-        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, handler);
     }
 
     public static void getConversations() {

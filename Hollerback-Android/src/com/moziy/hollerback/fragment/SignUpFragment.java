@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,24 +21,32 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.Country;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.model.web.response.RegisterResponse;
+import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.ISOUtil;
-import com.moziy.hollerback.util.JSONUtil;
+import com.moziy.hollerback.util.LoadingFragmentUtil;
 import com.moziy.hollerback.util.NumberUtil;
-import com.moziy.hollerback.validator.TextValidator;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.validators.ValidatorUtil;
+import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
+    private static final String TAG = SignUpFragment.class.getSimpleName();
+    private static final String FRAGMENT_TAG = TAG;
 
     public static final String EMAIL_BUNDLE_ARG_KEY = "EMAIL";
     public static final String PASSWORD_BUNDLE_ARG_KEY = "PASSWORD";
+
+    public static final String SUBMITTED_BUNDLE_ARG_KEY = "SUBMITTED";
+
     private SherlockFragmentActivity mActivity;
     private EditText mNameField, mPhoneNumberField;
 
@@ -54,25 +62,17 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
     private CharSequence[] mCharCountries;
 
+    private View mSubmitLayout;
+
     private String mRegistrationName;
     private String mRegistrationPhone;
 
     private String mEmail;
     private String mPassword;
 
-    // passing on
-    private String mFileDataName;
+    private boolean mIsSubmitted = false;
 
-    public static SignUpFragment newInstance(String fileDataName) {
-
-        SignUpFragment f = new SignUpFragment();
-
-        // Supply num input as an argument.
-        Bundle args = new Bundle();
-        args.putString("fileDataName", fileDataName);
-        f.setArguments(args);
-        return f;
-    }
+    private LoadingFragmentUtil mLoadingBar;
 
     public static SignUpFragment newInstance(String email, String password) {
 
@@ -97,12 +97,80 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         Bundle args = getArguments();
         mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);
         mPassword = args.getString(PASSWORD_BUNDLE_ARG_KEY);
+
+        util = PhoneNumberUtil.getInstance();
+        Set<String> set = util.getSupportedRegions();
+
+        mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
+
+        mCharCountries = new CharSequence[mCountries.size()];
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(SUBMITTED_BUNDLE_ARG_KEY)) {
+            mIsSubmitted = savedInstanceState.getBoolean(SUBMITTED_BUNDLE_ARG_KEY);
+        } else {
+            mIsSubmitted = false;
+        }
+
+        // check to see if the user has actually gotten a registration response back
+        mLoadingBar = new LoadingFragmentUtil(getSherlockActivity());
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mActivity = this.getSherlockActivity();
+        this.getSherlockActivity().getSupportActionBar().show();
+        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
+        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+
+        // TODO Auto-generated method stub
+        View fragmentView = inflater.inflate(R.layout.signup_fragment, container, false);
+        initializeView(fragmentView);
+
+        Locale locale = Locale.getDefault();
+
+        mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
+
+        mCountryText.setText(mSelectedCountry.name);
+
+        mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
+
+        mSubmitLayout = fragmentView.findViewById(R.id.submit_layout);
+
+        for (int i = 0; i < mCountries.size(); i++) {
+            mCharCountries[i] = mCountries.get(i).name;
+        }
+
+        return fragmentView;
     }
 
     @Override
     protected void initializeView(View view) {
-        mNameField = (EditText) view.findViewById(R.id.textfield_name);
+        mNameField = (EditText) view.findViewById(R.id.et_username);
         mPhoneNumberField = (EditText) view.findViewById(R.id.textfield_phonenumber);
+        mPhoneNumberField.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 3) {
+                    mSubmitLayout.setVisibility(View.VISIBLE);
+                } else {
+                    mSubmitLayout.setVisibility(View.INVISIBLE);
+                }
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
         mSubmitButton = (Button) view.findViewById(R.id.register_submit);
 
@@ -121,93 +189,74 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = this.getSherlockActivity();
-        this.getSherlockActivity().getSupportActionBar().show();
-        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
-        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+    public void onResume() {
+        super.onResume();
 
-        // TODO Auto-generated method stub
-        View fragmentView = inflater.inflate(R.layout.signup_fragment, null);
-        initializeView(fragmentView);
-
-        util = PhoneNumberUtil.getInstance();
-        Set<String> set = util.getSupportedRegions();
-
-        mCountries = ISOUtil.getCountries(set.toArray(new String[set.size()]));
-
-        mCharCountries = new CharSequence[mCountries.size()];
-
-        Locale locale = Locale.getDefault();
-
-        mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
-
-        mCountryText.setText(mSelectedCountry.name);
-
-        mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
-
-        for (int i = 0; i < mCountries.size(); i++) {
-            mCharCountries[i] = mCountries.get(i).name;
+        if (mIsSubmitted && PreferenceManagerUtil.getPreferenceValue(HBPreferences.USERNAME, null) != null) {
+            // go directly to the signup fragment
+            SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
+            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
         }
+    }
 
-        // if it doesn't have this it will crash
-        mFileDataName = this.getArguments().getString("fileDataName");
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
 
-        return fragmentView;
+        outState.putBoolean(SUBMITTED_BUNDLE_ARG_KEY, mIsSubmitted);
+        super.onSaveInstanceState(outState);
     }
 
     public void processSubmit() {
 
         if (verifyFields()) {
-            String regId = GCMUtils.getRegistrationId(HollerbackApplication.getInstance());
-            if (!"".equals(regId)) {
 
-                HBRequestManager.postRegistration(mRegistrationName, mRegistrationPhone, regId, new JsonHttpResponseHandler() {
-                    @Override
-                    protected Object parseResponse(String arg0) throws JSONException {
-                        LogUtil.i(arg0);
-                        return super.parseResponse(arg0);
-
-                    }
-
-                    @Override
-                    public void onFailure(Throwable arg0, JSONObject response) {
-                        // TODO Auto-generated method stub
-                        super.onFailure(arg0, response);
-                        LogUtil.i("LOGIN FAILURE");
-                        if (response.has("meta")) {
-                            // doesnt have user
-                            try {
-                                JSONObject metadata = response.getJSONObject("meta");
-                                if (metadata.has("code") && metadata.getInt("code") == 400) {
-                                    processLogin();
-                                } else {
-                                    Toast.makeText(mActivity, metadata.getString("msg"), Toast.LENGTH_LONG).show();
-                                }
-                            } catch (JSONException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onSuccess(int statusId, JSONObject response) {
-                        // TODO Auto-generated method stub
-                        super.onSuccess(statusId, response);
-                        JSONUtil.processSignUp(response);
-                        // has user
-                        if (response.has("user")) {
-                            SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
-                            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                    .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
-                        }
-                    }
-                });
-            } else {
-                Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            if (mIsSubmitted) {
+                return;
             }
+
+            mIsSubmitted = true;
+            mLoadingBar.startLoading();
+            HBRequestManager.postRegistration(mEmail, mPassword, mRegistrationName, mRegistrationPhone, new HBAsyncHttpResponseHandler<RegisterResponse>(new TypeReference<RegisterResponse>() {
+            }) {
+
+                @Override
+                public void onResponseSuccess(int statusCode, RegisterResponse response) {
+
+                    mIsSubmitted = false;
+
+                    mLoadingBar.stopLoading();
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, response.user.username);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.EMAIL, mEmail);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.PASSWORD, mPassword);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, response.user.phone);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, response.user.id);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, response.user.is_verified);
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
+
+                    SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
+                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+
+                }
+
+                @Override
+                public void onApiFailure(Metadata metaData) {
+
+                    mLoadingBar.stopLoading();
+                    mIsSubmitted = false;
+
+                    Log.w(TAG, "Registration Failed");
+                    if (metaData != null) {
+                        Log.w(TAG, "message: " + metaData.message);
+                    }
+
+                    if (isAdded())
+                        Toast.makeText(mActivity, getString(R.string.error_registration), Toast.LENGTH_LONG).show();
+
+                }
+            });
+
         }
     }
 
@@ -221,44 +270,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                 showDialog();
                 break;
         }
-    }
-
-    private void processLogin() {
-        if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
-            Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        HBRequestManager.postLogin(mRegistrationPhone, new JsonHttpResponseHandler() {
-
-            @Override
-            protected Object parseResponse(String arg0) throws JSONException {
-                LogUtil.i(arg0);
-                return super.parseResponse(arg0);
-
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onFailure(arg0, arg1);
-                LogUtil.i("LOGIN FAILURE");
-            }
-
-            @Override
-            public void onSuccess(int statusId, JSONObject response) {
-                // TODO Auto-generated method stub
-                super.onSuccess(statusId, response);
-                JSONUtil.processSignIn(response);
-                LogUtil.i("HB", response.toString());
-
-                SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance(true, mFileDataName);
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(SignUpConfirmFragment.class.getSimpleName()).commitAllowingStateLoss();
-            }
-
-        });
-
     }
 
     public void showDialog() {
@@ -286,16 +297,17 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     public boolean verifyFields() {
-        String validPhone = TextValidator.isValidPhone(getPhoneNumber());
+        boolean valid = true;
+        String[] messageOut = new String[1];
 
-        String validName = TextValidator.isValidName(mNameField.getText().toString());
+        // check fields in opposite order
 
-        boolean valid = (validPhone == null && validName == null);
+        valid &= ValidatorUtil.isValidPhone(getPhoneNumber(), messageOut);
+
+        valid &= ValidatorUtil.isValidName(mNameField.getText().toString(), messageOut);
 
         if (!valid) {
-            String message = (validName != null ? validName + "\n" : "") + (validPhone != null ? "\n" + validPhone : "");
-
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), messageOut[0], Toast.LENGTH_LONG).show();
         } else {
             mRegistrationName = mNameField.getText().toString();
             mRegistrationPhone = "+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString();

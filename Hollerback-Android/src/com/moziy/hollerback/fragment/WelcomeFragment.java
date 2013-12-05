@@ -13,7 +13,7 @@ import com.moziy.hollerback.widget.CustomButton;
 
 public class WelcomeFragment extends BaseFragment {
     private static final String TAG = WelcomeFragment.class.getSimpleName();
-    private static final String FRAGMENT_TAG = TAG;
+    public static final String FRAGMENT_TAG = TAG;
     private SherlockFragmentActivity mActivity;
 
     private CustomButton mSignInBtn;
@@ -53,13 +53,12 @@ public class WelcomeFragment extends BaseFragment {
 
     }
 
-    public static WelcomeFragment newInstance(int num) {
+    public static WelcomeFragment newInstance() {
 
         WelcomeFragment f = new WelcomeFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putInt("num", num);
         f.setArguments(args);
         return f;
     }

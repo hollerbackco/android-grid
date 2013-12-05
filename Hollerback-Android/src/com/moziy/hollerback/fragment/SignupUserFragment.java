@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.ValidatorUtil;
+import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerback.widget.CustomButton;
 import com.moziy.hollerback.widget.CustomEditText;
 
@@ -45,6 +45,7 @@ public class SignupUserFragment extends BaseFragment {
     protected void initializeView(View view) {
 
         mEmailEditText = (CustomEditText) view.findViewById(R.id.et_email);
+        mEmailEditText.setHint(getString(R.string.email));
 
         mPasswordEditText = (CustomEditText) view.findViewById(R.id.et_password);
 

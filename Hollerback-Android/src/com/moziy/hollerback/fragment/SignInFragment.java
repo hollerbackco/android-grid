@@ -27,7 +27,7 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.ValidatorUtil;
+import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
