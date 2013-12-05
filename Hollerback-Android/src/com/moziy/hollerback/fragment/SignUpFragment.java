@@ -5,10 +5,11 @@ import java.util.Locale;
 import java.util.Set;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.text.Editable;
+import android.telephony.TelephonyManager;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +23,9 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
@@ -32,7 +35,7 @@ import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
-import com.moziy.hollerback.util.NumberUtil;
+import com.moziy.hollerback.util.PhoneTextWatcher;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
@@ -73,6 +76,8 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     private boolean mIsSubmitted = false;
 
     private LoadingFragmentUtil mLoadingBar;
+
+    private TextWatcher mPhoneTextWatcher;
 
     public static SignUpFragment newInstance(String email, String password) {
 
@@ -131,11 +136,15 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         mSelectedCountry = new Country(locale.getISO3Country(), locale.getCountry(), locale.getDisplayCountry());
 
+        mSubmitLayout = fragmentView.findViewById(R.id.submit_layout);
+
+        mPhoneTextWatcher = new CustomPhoneTextWatcher(mSelectedCountry.code);
+        mPhoneNumberField.addTextChangedListener(mPhoneTextWatcher);
+        setPhoneNumber();
+
         mCountryText.setText(mSelectedCountry.name);
 
         mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
-
-        mSubmitLayout = fragmentView.findViewById(R.id.submit_layout);
 
         for (int i = 0; i < mCountries.size(); i++) {
             mCharCountries[i] = mCountries.get(i).name;
@@ -148,29 +157,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     protected void initializeView(View view) {
         mNameField = (EditText) view.findViewById(R.id.et_username);
         mPhoneNumberField = (EditText) view.findViewById(R.id.textfield_phonenumber);
-        mPhoneNumberField.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 3) {
-                    mSubmitLayout.setVisibility(View.VISIBLE);
-                } else {
-                    mSubmitLayout.setVisibility(View.INVISIBLE);
-                }
-
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // TODO Auto-generated method stub
-
-            }
-        });
 
         mSubmitButton = (Button) view.findViewById(R.id.register_submit);
 
@@ -205,6 +191,15 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         outState.putBoolean(SUBMITTED_BUNDLE_ARG_KEY, mIsSubmitted);
         super.onSaveInstanceState(outState);
+    }
+
+    private void setPhoneNumber() {
+        TelephonyManager tm = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        String number = tm.getLine1Number();
+
+        if (number != null) {
+            mPhoneNumberField.setText(number);
+        }
     }
 
     public void processSubmit() {
@@ -281,6 +276,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                 mSelectedCountry = mCountries.get(item);
                 mCountryText.setText(mCountries.get(item).name);
                 mPhoneNumberCode.setText("+" + Integer.toString(util.getCountryCodeForRegion(mSelectedCountry.code)));
+                mPhoneNumberField.removeTextChangedListener(mPhoneTextWatcher);
+                mPhoneNumberField.getText().clear();
+                mPhoneNumberField.addTextChangedListener(new CustomPhoneTextWatcher(mSelectedCountry.code));
                 countriesDialog.dismiss();
             }
         });
@@ -293,7 +291,16 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         if (mPhoneNumberField.getText().toString() == null || mPhoneNumberField.getText().toString().trim().isEmpty() || mPhoneNumberField.getText().toString().trim().length() < 3) {
             return null;
         }
-        return NumberUtil.getPhoneNumber("+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString());
+
+        PhoneNumber number = null;
+        try {
+            number = util.parse(mPhoneNumberField.getText().toString(), mSelectedCountry.code);
+            Log.d(TAG, "getPhoneNumber() - " + number.toString());
+        } catch (NumberParseException e) {
+            e.printStackTrace();
+        }
+
+        return number;
     }
 
     public boolean verifyFields() {
@@ -302,7 +309,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         // check fields in opposite order
 
-        valid &= ValidatorUtil.isValidPhone(getPhoneNumber(), messageOut);
+        valid &= ValidatorUtil.isValidPhone(getPhoneNumber(), mSelectedCountry.code, messageOut);
 
         valid &= ValidatorUtil.isValidName(mNameField.getText().toString(), messageOut);
 
@@ -310,11 +317,36 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             Toast.makeText(getActivity(), messageOut[0], Toast.LENGTH_LONG).show();
         } else {
             mRegistrationName = mNameField.getText().toString();
-            mRegistrationPhone = "+" + util.getCountryCodeForRegion(mSelectedCountry.code) + mPhoneNumberField.getText().toString();
+            mRegistrationPhone = util.format(getPhoneNumber(), PhoneNumberFormat.E164);
             LogUtil.i("Signing up with: " + mRegistrationName + " " + mRegistrationPhone);
         }
 
         return valid;
 
+    }
+
+    private class CustomPhoneTextWatcher extends PhoneTextWatcher {
+
+        public CustomPhoneTextWatcher() {
+            super();
+            // TODO Auto-generated constructor stub
+        }
+
+        public CustomPhoneTextWatcher(String countryCode) {
+            super(countryCode);
+            // TODO Auto-generated constructor stub
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            super.onTextChanged(s, start, before, count);
+
+            if (s.length() > 3) {
+                mSubmitLayout.setVisibility(View.VISIBLE);
+            } else {
+                mSubmitLayout.setVisibility(View.INVISIBLE);
+            }
+
+        }
     }
 }

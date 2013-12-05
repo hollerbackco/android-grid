@@ -47,6 +47,7 @@
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.moziy.hollerback.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Permission to vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />

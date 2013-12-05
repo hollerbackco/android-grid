@@ -99,7 +99,7 @@
                     android:layout_marginLeft="1dp"
                     android:layout_toRightOf="@+id/tv_phone_number_code"
                     android:hint="@string/number"
-                    android:inputType="numberDecimal"
+                    android:inputType="phone"
                     android:paddingLeft="@dimen/dim_10dp" />
             </RelativeLayout>
         </RelativeLayout>
