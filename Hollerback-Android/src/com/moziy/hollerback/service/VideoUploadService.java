@@ -6,16 +6,17 @@ import java.util.concurrent.Executors;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.activeandroid.util.Log;
-import com.moziy.hollerback.communication.IABIntent;
-import com.moziy.hollerback.communication.IABroadcastManager;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.activeandroid.util.Log;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
+
+@Deprecated
 public class VideoUploadService extends Service {
     private String TAG = "UploadPhotoService";
 
