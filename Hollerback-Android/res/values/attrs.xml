@@ -17,5 +17,9 @@
         <attr name="yPosCenter" format="dimension"></attr>
         <attr name="foregroundColor" format="color"></attr>
     </declare-styleable>
+    <declare-styleable name="CustomView">
+        <attr name="borderColor" format="color"></attr>
+        <attr name="borderWidth" format="dimension"></attr>
+    </declare-styleable>
 
 </resources>

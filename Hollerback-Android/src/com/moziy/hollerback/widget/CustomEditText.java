@@ -7,33 +7,33 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
-import android.widget.TextView;
+import android.util.Log;
+import android.widget.EditText;
 
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.view.FontManager;
 
-public class CustomTextView extends TextView {
+public class CustomEditText extends EditText {
 
     private int mBorderColor;
     private float mBorderWidth;
     private Paint mBorderPaint;
 
-    public CustomTextView(Context context) {
+    public CustomEditText(Context context) {
         this(context, null);
     }
 
-    public CustomTextView(Context context, AttributeSet attrs) {
-        this(context, attrs, android.R.attr.textViewStyle);
+    public CustomEditText(Context context, AttributeSet attrs) {
+        this(context, attrs, android.R.attr.editTextStyle);
     }
 
-    public CustomTextView(Context context, AttributeSet attrs, int defStyle) {
+    public CustomEditText(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         if (!isInEditMode()) {
-            // retrieve the attributes pertaining to the custom textview
-            TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont, defStyle, R.style.DefaultTextView);
-            setTypefaceFromAttrs(array);
-            array.recycle(); // recycle the array
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomFont, defStyle, R.style.DefaultEditText);
+            setTypefaceFromAttrs(a);
+            a.recycle();
         }
 
         if (!isInEditMode()) {
@@ -47,12 +47,14 @@ public class CustomTextView extends TextView {
             mBorderPaint = new Paint();
             mBorderPaint.setColor(mBorderColor);
             mBorderPaint.setStrokeWidth(mBorderWidth);
+            mBorderPaint.setAntiAlias(true);
             mBorderPaint.setStyle(Style.STROKE);
         }
     }
 
     private void setTypefaceFromAttrs(TypedArray array) {
         String fontName = array.getString(R.styleable.CustomFont_typeface);
+        Log.d("ct", "font name: " + fontName);
         if (fontName != null) {
             setTypeface(FontManager.getFont(fontName));
         }
@@ -67,5 +69,4 @@ public class CustomTextView extends TextView {
         }
 
     }
-
 }

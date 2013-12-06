@@ -1,28 +1,29 @@
 package com.moziy.hollerback.fragment;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.moziy.hollerback.R;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.widget.CustomButton;
 
 public class WelcomeFragment extends BaseFragment {
+    private static final String TAG = WelcomeFragment.class.getSimpleName();
+    public static final String FRAGMENT_TAG = TAG;
     private SherlockFragmentActivity mActivity;
 
-    private TextView mSignInBtn;
-    private ImageButton mBtnRecord;
+    private CustomButton mSignInBtn;
+    private CustomButton mSignUpBtn;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = (SherlockFragmentActivity) this.getActivity();
         mActivity.getSupportActionBar().hide();
-        View fragmentView = inflater.inflate(R.layout.welcome_fragment, null);
+        View fragmentView = inflater.inflate(R.layout.welcome_layout, null);
 
         initializeView(fragmentView);
         return fragmentView;
@@ -31,7 +32,7 @@ public class WelcomeFragment extends BaseFragment {
     @Override
     protected void initializeView(View view) {
         // TODO Auto-generated method stub
-        mSignInBtn = (TextView) view.findViewById(R.id.btn_signin);
+        mSignInBtn = (CustomButton) view.findViewById(R.id.bt_signin);
         mSignInBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -40,25 +41,24 @@ public class WelcomeFragment extends BaseFragment {
             }
         });
 
-        mBtnRecord = (ImageButton) view.findViewById(R.id.btnRecord);
-        mBtnRecord.setOnClickListener(new View.OnClickListener() {
+        mSignUpBtn = (CustomButton) view.findViewById(R.id.bt_signup);
+        mSignUpBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                WelcomeRecordVideoFragment fragment = WelcomeRecordVideoFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(WelcomeRecordVideoFragment.class.getSimpleName()).commitAllowingStateLoss();
+                SignupUserFragment f = new SignupUserFragment();
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
             }
         });
+
     }
 
-    public static WelcomeFragment newInstance(int num) {
+    public static WelcomeFragment newInstance() {
 
         WelcomeFragment f = new WelcomeFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putInt("num", num);
         f.setArguments(args);
         return f;
     }

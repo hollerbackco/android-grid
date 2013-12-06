@@ -41,7 +41,7 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
         AlarmManager am = (AlarmManager) HollerbackApplication.getInstance().getSystemService(Context.ALARM_SERVICE);
         am.cancel(pendingIntent); // cancel any alarm with this pending intent
         am.set(AlarmManager.RTC, System.currentTimeMillis() + timeInMillis, pendingIntent);
-        PreferenceManagerUtil.setPreferenceLongValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, timeInMillis);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, timeInMillis);
     }
 
     /**
@@ -102,6 +102,6 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
         startWakefulService(context, serviceIntent);
 
         // schedule the next one
-        schedule(PreferenceManagerUtil.getPreferenceLongValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, ONE_MINUTE) * 2);
+        schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, ONE_MINUTE) * 2);
     }
 }

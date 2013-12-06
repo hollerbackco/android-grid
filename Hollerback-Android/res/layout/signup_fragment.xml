@@ -1,58 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_welcome" >
+    android:background="@color/background_header"
+    android:fillViewport="true" >
+
+    <!-- XXX: Refactor this layout -->
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/tv_header_account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
-            android:text="@string/header_account"
-            android:textColor="#fff"
-            android:textSize="15sp" />
-
-        <RelativeLayout
-            android:id="@+id/rl_bx_1"
+        <com.moziy.hollerback.widget.CustomEditText
+            android:id="@+id/et_username"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_header_account"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:background="#adadad"
-            android:padding="1dp" >
+            android:layout_height="@dimen/dim_50dp"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            android:layout_marginRight="@dimen/dim_20dp"
+            android:layout_marginTop="@dimen/dim_20dp"
+            android:hint="@string/name"
+            android:inputType="textPersonName" />
 
-            <EditText
-                android:id="@+id/textfield_name"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/tv_phone_number_code_height"
-                android:background="#fff"
-                android:hint="@string/name"
-                android:inputType="textPersonName"
-                android:padding="10dp"
-                android:textSize="17sp" />
-        </RelativeLayout>
+        <ImageView
+            android:layout_width="@dimen/dim_38dp"
+            android:layout_height="@dimen/dim_38dp"
+            android:layout_alignBottom="@id/et_username"
+            android:layout_alignLeft="@id/et_username"
+            android:layout_alignTop="@id/et_username"
+            android:layout_marginLeft="@dimen/dim_10dp"
+            android:src="@drawable/ic_action_person" />
 
-        <TextView
+        <com.moziy.hollerback.widget.CustomTextView
             android:id="@+id/tv_header_counter_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/rl_bx_1"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_below="@+id/et_username"
+            android:layout_marginBottom="@dimen/dim_10dp"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            android:layout_marginRight="@dimen/dim_20dp"
+            android:layout_marginTop="@dimen/dim_20dp"
+            android:shadowColor="#AAAAAA"
             android:text="@string/header_country_code_phone"
-            android:textColor="#fff"
+            android:textColor="@color/gray_font"
             android:textSize="15sp" />
 
         <RelativeLayout
@@ -60,8 +51,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_header_counter_phone"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            android:layout_marginRight="@dimen/dim_20dp"
             android:background="#adadad"
             android:padding="1dp" >
 
@@ -72,12 +63,14 @@
                 android:background="#fff"
                 android:clickable="true" >
 
-                <TextView
+                <com.moziy.hollerback.widget.CustomTextView
                     android:id="@+id/tv_country_selector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginLeft="@dimen/dim_10dp"
+                    android:shadowColor="#AAAAAA"
+                    android:textColor="@color/gray_font"
                     android:textSize="17sp" />
             </RelativeLayout>
 
@@ -88,7 +81,7 @@
                 android:layout_below="@+id/rl_country_selector"
                 android:layout_marginTop="1dp" >
 
-                <TextView
+                <com.moziy.hollerback.widget.CustomTextView
                     android:id="@+id/tv_phone_number_code"
                     android:layout_width="@dimen/tv_phone_number_code_width"
                     android:layout_height="match_parent"
@@ -96,42 +89,63 @@
                     android:layout_centerVertical="true"
                     android:background="#fff"
                     android:gravity="center"
-                    android:textColor="#000"
+                    android:shadowColor="#AAAAAA"
+                    android:textColor="@color/gray_font"
                     android:textSize="17sp" />
 
-                <EditText
+                <com.moziy.hollerback.widget.CustomEditText
                     android:id="@+id/textfield_phonenumber"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="1dp"
                     android:layout_toRightOf="@+id/tv_phone_number_code"
-                    android:background="#fff"
                     android:hint="@string/number"
-                    android:inputType="number"
-                    android:padding="10dp"
-                    android:textSize="17sp" />
+                    android:inputType="phone"
+                    android:paddingLeft="@dimen/dim_10dp"
+                    app:borderWidth="0dp" />
             </RelativeLayout>
         </RelativeLayout>
 
-        <Button
-            android:id="@+id/register_submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/rl_bx_2"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="10dp"
-            android:text="Submit" />
-
-        <TextView
-            android:id="@+id/tv_signup_agreement"
+        <LinearLayout
+            android:id="@+id/submit_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@+id/register_submit"
-            android:layout_margin="20dp"
-            android:gravity="center"
-            android:text="@string/signup_agreement"
-            android:textColor="#fff" />
+            android:layout_below="@+id/rl_bx_2"
+            android:layout_margin="@dimen/dim_20dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="invisible" >
+
+            <com.moziy.hollerback.widget.CustomButton
+                android:id="@+id/register_submit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_submit" />
+
+            <com.moziy.hollerback.widget.CustomTextView
+                android:id="@+id/tv_signup_agreement"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dim_20dp"
+                android:gravity="center"
+                android:shadowColor="#AAAAAA"
+                android:text="@string/signup_phone_info"
+                android:textColor="@color/gray_font" />
+        </LinearLayout>
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_phone_hash_info"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/submit_layout"
+            android:gravity="center|bottom"
+            android:paddingBottom="@dimen/dim_10dp"
+            android:paddingLeft="@dimen/dim_40dp"
+            android:paddingRight="@dimen/dim_40dp"
+            android:shadowColor="#AAAAAA"
+            android:text="@string/signup_phone_hash_info"
+            android:textColor="@color/gray_font"
+            android:textSize="10sp" />
     </RelativeLayout>
 
 </ScrollView>

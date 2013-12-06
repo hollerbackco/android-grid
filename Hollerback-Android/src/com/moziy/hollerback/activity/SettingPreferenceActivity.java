@@ -1,22 +1,24 @@
 package com.moziy.hollerback.activity;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.Preference;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.SwitchPreference;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity {
     private final String TWITTERURL = "https://twitter.com/hollerback";
@@ -47,7 +49,6 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.Theme_Example);
         super.onCreate(savedInstanceState);
         this.setTitle(R.string.action_settings);
         this.setResult(RESULT_CANCELED);
@@ -84,6 +85,9 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
                 PreferenceManagerUtil.clearPreferences();
                 ActiveAndroid.beginTransaction();
                 new Delete().from(ConversationModel.class).execute();
+                new Delete().from(VideoModel.class).execute();
+                new Delete().from(UserModel.class).execute();
+                VolleySingleton.getInstance(SettingPreferenceActivity.this).getRequestQueue().getCache().clear(); // clear everything
                 ActiveAndroid.setTransactionSuccessful();
                 ActiveAndroid.endTransaction();
                 SettingPreferenceActivity.this.finish();

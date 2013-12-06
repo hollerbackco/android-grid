@@ -7,7 +7,12 @@ public class HBPreferences {
 
     public static final String USERNAME = "User Name";
     public static final String PHONE = "Phone";
+    public static final String REGION_CODE = "RegionCode";
+    public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
     public static final String ID = "id";
+    public static final String IS_VERIFIED = "is_verified";
+    public static final String LAST_REGISTRATION_TIME = "last_registration_time";
 
     public static final String SAVED_EMAIL = "SavedEmail";
 

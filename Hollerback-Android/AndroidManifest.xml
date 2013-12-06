@@ -47,6 +47,7 @@
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.moziy.hollerback.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Permission to vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -76,7 +77,7 @@
             android:name="com.moziy.hollerback.activity.SplashScreenActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
+            android:theme="@style/Hollerback" >
         </activity>
         <activity
             android:name="com.moziy.hollerback.activity.HollerbackMainActivity"
@@ -92,13 +93,13 @@
             android:name="com.moziy.hollerback.activity.WelcomeFragmentActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
+            android:theme="@style/Hollerback" >
         </activity>
         <activity
             android:name="com.moziy.hollerback.activity.SettingPreferenceActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
+            android:theme="@style/Hollerback" >
         </activity>
 
         <receiver

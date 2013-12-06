@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -20,7 +20,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Hollerback" parent="Theme.Sherlock.NoActionBar">
+    <style name="HB" parent="Theme.Sherlock.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:background">#ffffffff</item>
         <item name="windowNoTitle">true</item>
@@ -30,24 +30,7 @@
 
     <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="actionBarItemBackground">@drawable/topbar</item>
-    </style>
-
-    <style name="Theme.Example" parent="@style/Theme.Sherlock.Light.DarkActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="actionBarItemBackground">@drawable/selectable_background_example</item>
-        <item name="popupMenuStyle">@style/PopupMenu.Example</item>
-        <item name="dropDownListViewStyle">@style/DropDownListView.Example</item>
-        <item name="actionBarTabStyle">@style/ActionBarTabStyle.Example</item>
-        <item name="actionDropDownStyle">@style/DropDownNav.Example</item>
-        <item name="actionBarStyle">@style/ActionBar.Solid.Example</item>
-        <item name="actionModeBackground">@drawable/cab_background_top_example</item>
-        <item name="actionModeSplitBackground">@drawable/cab_background_bottom_example</item>
-        <item name="actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Example</item>
-
-        <!-- Light.DarkActionBar specific -->
-        <item name="actionBarWidgetTheme">@style/Theme.Example.Widget</item>
+        <item name="android:buttonStyle">@style/DefaultButton</item>
     </style>
 
     <style name="ActionBar.Solid.Example" parent="@style/Widget.Sherlock.Light.ActionBar.Solid.Inverse">
@@ -106,10 +89,31 @@
 
     <style name="DefaultTextView" parent="@android:style/Widget.TextView">
         <item name="typeface">Gotham-Medium</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1.0</item>
+        <item name="android:shadowDy">1.0</item>
+        <item name="android:shadowRadius">0.5</item>
     </style>
 
-    <style name="DefaultButton" parent="@android:style/Widget.Button">
+    <style name="DefaultButton" parent="@android:style/Widget.Holo.Button">
         <item name="typeface">Gotham-Medium</item>
+    </style>
+
+    <style name="DefaultButton.Small" parent="@android:style/Widget.Holo.Button.Small">
+        <item name="typeface">Gotham-Medium</item>
+    </style>
+
+    <style name="DefaultEditText" parent="@android:style/Widget.EditText">
+        <item name="typeface">Gotham-Medium</item>
+        <item name="android:paddingBottom">@dimen/dim_10dp</item>
+        <item name="android:paddingTop">@dimen/dim_10dp</item>
+        <item name="borderWidth">@dimen/dim_1dp</item>
+        <item name="borderColor">#000000</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColorHint">#44000000</item>
+        <item name="android:textColor">#88000000</item>
+        <item name="android:paddingLeft">@dimen/dim_60dp</item>
     </style>
 
 </resources>
