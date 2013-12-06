@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.service.task.Task;
@@ -16,11 +15,11 @@ public class ActivityTaskWorker extends AbsTaskWorker {
     private Task mTask;
     private TaskExecuter mExecuter;
 
-    public static FragmentTaskWorker newInstance(boolean useSingleThreadPool) {
+    public static ActivityTaskWorker newInstance(boolean useSingleThreadPool) {
         Bundle args = new Bundle();
         args.putBoolean(SERIAL_EXECUTER_BUNDLE_ARG_KEY, useSingleThreadPool);
 
-        FragmentTaskWorker worker = new FragmentTaskWorker();
+        ActivityTaskWorker worker = new ActivityTaskWorker();
         worker.setArguments(args);
         return worker;
     }
@@ -50,18 +49,7 @@ public class ActivityTaskWorker extends AbsTaskWorker {
 
         // lets execute the task
         // start executing the task
-        mExecuter = new TaskExecuter() {
-
-            @Override
-            protected void onPostExecute(Task result) {
-                super.onPostExecute(result);
-
-                Log.d(TAG, "removing self from fragment manager");
-                getFragmentManager().beginTransaction().remove(ActivityTaskWorker.this).commitAllowingStateLoss();
-
-            }
-
-        };
+        mExecuter = new TaskExecuter();
 
         if (Build.VERSION.SDK_INT >= 11 && !mRunSerially) {
             mExecuter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mTask);

@@ -1,6 +1,8 @@
 package com.moziy.hollerback.activity;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,25 +20,33 @@ import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.SignUpConfirmFragment;
 import com.moziy.hollerback.fragment.WelcomeFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAppState;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
-public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated {
+public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated, TaskClient {
 
     private static final String TAG = HollerbackMainActivity.class.getSimpleName();
     private List<ConversationModel> mConversations; // list of conversations
     boolean initFrag = false;
     String convId = null;
     private InternalReceiver mReceiver;
+    private Queue<Task> mTaskQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Hollerback);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.hollerback_main);
+
+        mTaskQueue = new LinkedList<Task>();
+
+        startWorkers();
 
         registerBroadcasts();
 
@@ -113,6 +123,10 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         fragmentTransaction.commit();
     }
 
+    private void startWorkers() {
+
+    }
+
     private void registerBroadcasts() {
         mReceiver = new InternalReceiver();
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.AUTH_EXCEPTION);
@@ -142,5 +156,23 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
         }
 
+    }
+
+    @Override
+    public void onTaskComplete(Task t) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onTaskError(Task t) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Task getTask() {
+
+        return null;
     }
 }
