@@ -380,7 +380,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             @Override
             public List<ConversationModel> loadInBackground() {
-                Log.d(FRAGMENT_TAG, "thread id: " + Thread.currentThread().getId());
                 mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
                 Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
