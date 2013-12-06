@@ -61,7 +61,8 @@
     <string name="error_login">Login Failed</string>
     <string name="error_oops">Oops</string>
     <string name="error_registration">There was a problem processing your registration info.</string>
-    <string name="error_verification">There was a problem verifying your phone number, please enter the correct code</string>
+    <string name="error_verification"></string>
+    <string name="error_general">Oops, you may be disconnected from the internet.</string>
     <string name="toast_reverify_sent">We texted you a new pin</string>
     <string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
     <string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>

@@ -1,5 +1,6 @@
 package com.moziy.hollerback.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -128,7 +130,6 @@ public class SignUpConfirmFragment extends BaseFragment {
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
                     mResendText.setEnabled(false);
                     resendVerificationText();
-                    Toast.makeText(getActivity(), getString(R.string.toast_reverify_sent), Toast.LENGTH_LONG).show();
 
                 }
             }
@@ -139,6 +140,9 @@ public class SignUpConfirmFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
+
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mTxtVerify.getWindowToken(), 0);
 
                 SignUpConfirmFragment.this.startLoading();
 
@@ -172,7 +176,31 @@ public class SignUpConfirmFragment extends BaseFragment {
 
                     @Override
                     public void onApiFailure(Metadata metaData) {
-                        Log.w(TAG, "error code: " + metaData.code);
+
+                        SignUpConfirmFragment.this.stopLoading();
+
+                        String message;
+                        if (metaData != null) {
+
+                            Log.w(TAG, "error code: " + metaData.code);
+
+                            if (metaData.msg != null && !metaData.msg.isEmpty()) {
+                                message = metaData.msg;
+                            } else if (metaData.message != null && !metaData.message.isEmpty()) {
+                                message = metaData.message;
+                            } else {
+                                message = getString(R.string.error_general);
+                            }
+
+                            Log.w(TAG, "message: " + metaData.message + " " + metaData.msg);
+
+                        } else {
+                            message = getString(R.string.error_general);
+                        }
+
+                        if (isAdded()) {
+                            Toast.makeText(mActivity, message, Toast.LENGTH_LONG).show();
+                        }
 
                     }
                 });
@@ -235,6 +263,7 @@ public class SignUpConfirmFragment extends BaseFragment {
 
             @Override
             public void onResponseSuccess(int statusCode, RegisterResponse response) {
+                Toast.makeText(getActivity(), getString(R.string.toast_reverify_sent), Toast.LENGTH_LONG).show();
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
 
                 mResendText.setEnabled(false);

@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -210,6 +211,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
     public void processSubmit() {
 
+        InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mPhoneNumberField.getWindowToken(), 0);
+
         if (verifyFields()) {
 
             if (mIsSubmitted) {
@@ -250,13 +254,24 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                     mLoadingBar.stopLoading();
                     mIsSubmitted = false;
 
+                    String message;
                     Log.w(TAG, "Registration Failed");
                     if (metaData != null) {
-                        Log.w(TAG, "message: " + metaData.message);
+                        if (metaData.msg != null && !metaData.msg.isEmpty()) {
+                            message = metaData.msg;
+                        } else if (metaData.message != null && !metaData.message.isEmpty()) {
+                            message = metaData.message;
+                        } else {
+                            message = getString(R.string.error_registration);
+                        }
+                        Log.w(TAG, "message: " + metaData.message + " " + metaData.msg);
+                    } else {
+                        message = getString(R.string.error_general);
                     }
 
-                    if (isAdded())
-                        Toast.makeText(mActivity, getString(R.string.error_registration), Toast.LENGTH_LONG).show();
+                    if (isAdded()) {
+                        Toast.makeText(mActivity, message, Toast.LENGTH_LONG).show();
+                    }
 
                 }
             });
