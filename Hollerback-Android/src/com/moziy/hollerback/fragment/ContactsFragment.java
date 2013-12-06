@@ -38,8 +38,8 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.adapter.ContactsListAdapter;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.service.VideoUploadService;
@@ -70,7 +70,7 @@ public class ContactsFragment extends BaseFragment implements TaskClient {
     private String mConversationTitle;
     private String mFileDataName;
     private boolean isWelcomeScreen;
-    private AbsTaskWorker mWorker;
+    private FragmentTaskWorker mWorker;
 
     public static ContactsFragment newInstance() {
         ContactsFragment f = new ContactsFragment();
@@ -92,7 +92,7 @@ public class ContactsFragment extends BaseFragment implements TaskClient {
         Fragment f = getFragmentManager().findFragmentByTag("worker");
         if (f == null) {
             this.startLoading();
-            mWorker = new AbsTaskWorker();
+            mWorker = new FragmentTaskWorker();
             mWorker.setTargetFragment(this, 0);
             getFragmentManager().beginTransaction().add(mWorker, "worker").commit();
 
