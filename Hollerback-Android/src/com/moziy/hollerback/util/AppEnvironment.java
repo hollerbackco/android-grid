@@ -8,6 +8,8 @@ public class AppEnvironment {
 
     public static final String APP_PREF = "HollerbackAppPrefs";
 
+    public static final String DB_NAME = "hollerback.db";
+
     // DEV
     // http://lit-sea-1934.herokuapp.com/
 

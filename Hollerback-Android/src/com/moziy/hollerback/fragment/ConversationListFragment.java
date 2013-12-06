@@ -84,7 +84,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         this.startLoading();
 
         mConversationList = (ListView) fragmentView.findViewById(R.id.message_listview);
-        mFooter = (ViewGroup) inflater.inflate(R.layout.new_convo_list_item, null);
+        mFooter = (ViewGroup) inflater.inflate(R.layout.message_list_footer, null);
         mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
 
         initializeView(fragmentView);
