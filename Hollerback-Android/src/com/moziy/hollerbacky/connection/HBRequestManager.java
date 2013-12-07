@@ -3,6 +3,7 @@ package com.moziy.hollerbacky.connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -318,6 +319,23 @@ public class HBRequestManager {
             });
 
         }
+    }
+
+    public static void getContacts(ArrayList<Map<String, String>> contacts, AsyncHttpResponseHandler handler) {
+        RequestParams params = new RequestParams();
+        if (HollerbackAppState.isValidSession()) {
+
+            LogUtil.i("Token: " + HollerbackAppState.getValidToken());
+
+            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+
+            HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONTACTS, params, handler);
+        } else {
+            params.put(HollerbackAPI.PARAM_CONTACTS, contacts);
+        }
+
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONTACTS, params, handler);
+
     }
 
     public static void getContacts(ArrayList<UserModel> contacts, JsonHttpResponseHandler handler) {

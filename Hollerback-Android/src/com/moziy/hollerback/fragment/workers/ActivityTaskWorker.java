@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.service.task.Task;
@@ -11,7 +12,7 @@ import com.moziy.hollerback.service.task.TaskExecuter;
 
 public class ActivityTaskWorker extends AbsTaskWorker {
     private static final String TAG = ActivityTaskWorker.class.getSimpleName();
-    private Task.Listener mListener;
+    private TaskClient mTaskClient;
     private Task mTask;
     private TaskExecuter mExecuter;
 
@@ -27,19 +28,19 @@ public class ActivityTaskWorker extends AbsTaskWorker {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        mListener = (TaskClient) activity;
+        mTaskClient = (TaskClient) activity;
         if (mTask != null && mTask.isFinished()) {
             if (mTask.isSuccess())
-                mListener.onTaskComplete(mTask);
+                mTaskClient.onTaskComplete(mTask);
             else
-                mListener.onTaskError(mTask);
+                mTaskClient.onTaskError(mTask);
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mTaskClient = null;
     }
 
     @Override
@@ -50,6 +51,13 @@ public class ActivityTaskWorker extends AbsTaskWorker {
         // lets execute the task
         // start executing the task
         mExecuter = new TaskExecuter();
+        mTask = mTaskClient.getTask();
+        mTask.setTaskListener(mTaskClient);
+
+        if (mTask == null) {
+            Log.w(TAG, "empty task so not launching");
+            return;
+        }
 
         if (Build.VERSION.SDK_INT >= 11 && !mRunSerially) {
             mExecuter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mTask);
@@ -58,5 +66,4 @@ public class ActivityTaskWorker extends AbsTaskWorker {
         }
 
     }
-
 }

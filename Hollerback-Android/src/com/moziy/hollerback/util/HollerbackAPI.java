@@ -105,6 +105,12 @@ public class HollerbackAPI {
 
     public static final String PARAM_GUID = "guid";
 
+    public static final String PARAM_CONTACTS = "c";
+
+    public static final String PARAM_CONTACTS_NAME = "n";
+
+    public static final String PARAM_CONTACTS_PHONE = "p";
+
     public static interface ErrorCodes {
         public static final int ERROR_403 = 403;
     }

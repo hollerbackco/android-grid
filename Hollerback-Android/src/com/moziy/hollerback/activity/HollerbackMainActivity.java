@@ -1,8 +1,6 @@
 package com.moziy.hollerback.activity;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,6 +25,8 @@ import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAppState;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.contacts.ContactsDelegate;
+import com.moziy.hollerback.util.contacts.ContactsInterface;
 
 public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated, TaskClient {
 
@@ -35,18 +35,18 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     boolean initFrag = false;
     String convId = null;
     private InternalReceiver mReceiver;
-    private Queue<Task> mTaskQueue;
+    private ContactsDelegate mContactsDelegate; // handles all operations for retrieving and storing contacts
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Hollerback);
+        mContactsDelegate = new ContactsDelegate(this);
+
         super.onCreate(savedInstanceState);
 
+        mContactsDelegate.initWorkers();
+
         setContentView(R.layout.hollerback_main);
-
-        mTaskQueue = new LinkedList<Task>();
-
-        startWorkers();
 
         registerBroadcasts();
 
@@ -123,10 +123,6 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         fragmentTransaction.commit();
     }
 
-    private void startWorkers() {
-
-    }
-
     private void registerBroadcasts() {
         mReceiver = new InternalReceiver();
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.AUTH_EXCEPTION);
@@ -134,6 +130,10 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
     public List<ConversationModel> getConversations() {
         return mConversations;
+    }
+
+    public ContactsInterface getContactsInterface() {
+        return mContactsDelegate;
     }
 
     @Override
@@ -160,19 +160,19 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
     @Override
     public void onTaskComplete(Task t) {
-        // TODO Auto-generated method stub
+        mContactsDelegate.onTaskComplete(t);
 
     }
 
     @Override
     public void onTaskError(Task t) {
-        // TODO Auto-generated method stub
+        mContactsDelegate.onTaskError(t);
 
     }
 
     @Override
-    public Task getTask() {
+    public Task getTask() { // if we need to add different tasks other than contacts, we'll have to modify things
 
-        return null;
+        return mContactsDelegate.getTask();
     }
 }
