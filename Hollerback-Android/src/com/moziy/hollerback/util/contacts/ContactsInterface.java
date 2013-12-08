@@ -8,5 +8,9 @@ public interface ContactsInterface {
 
     public List<Contact> getDeviceContacts();
 
+    public List<Contact> getHollerbackContacts();
+
     public boolean deviceContactsLoaded();
+
+    public boolean hbContactsLoaded();
 }

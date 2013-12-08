@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -58,7 +59,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private static final String PHONE_COLUMN = (Build.VERSION.SDK_INT >= 16 ? Phone.NORMALIZED_NUMBER : Phone.NUMBER);
 
     private List<Contact> mContacts;
+    private List<Contact> mHBContacts;
     private boolean mContactsLoaded = false;
+    private boolean mHBContactsLoaded = false;
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
@@ -69,7 +72,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         Fragment f = mActivity.getSupportFragmentManager().findFragmentByTag(Workers.CONTACTS);
         if (f == null) {
 
-            mTaskQueue.add(new ContactsTaskGroup());
+            mTaskQueue.add(new ContactsTaskGroup(mActivity));
 
             ActivityTaskWorker worker = ActivityTaskWorker.newInstance(false);
             mActivity.getSupportFragmentManager().beginTransaction().add(worker, Workers.CONTACTS).commit();
@@ -79,7 +82,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     @Override
     public void onTaskComplete(Task t) {
         if (t instanceof GetUserContactsTask) {
-
+            Log.d(TAG, "got user contacts");
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
             mContactsLoaded = true;
@@ -87,8 +90,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             // lets see if we should launch our workers to check the contacts against the server
 
         } else if (t instanceof GetHBContactsTask) {
-            // contacts downloaded task
-            Log.w(TAG, "GetHBTask complete");
+            Log.d(TAG, "got hb contacts");
+            mHBContacts = ((GetHBContactsTask) t).getHBContacts();
+            mHBContactsLoaded = true;
         }
 
     }
@@ -112,8 +116,19 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
+    public boolean hbContactsLoaded() {
+
+        return mHBContactsLoaded;
+    }
+
+    @Override
     public List<Contact> getDeviceContacts() {
         return mContacts;
+    }
+
+    @Override
+    public List<Contact> getHollerbackContacts() {
+        return mHBContacts;
     }
 
     /**
@@ -121,7 +136,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
      * @author sajjad
      *
      */
-    private class GetUserContactsTask extends CursorTask {
+    private static class GetUserContactsTask extends CursorTask {
 
         private List<Contact> mContacts = new ArrayList<Contact>();
 
@@ -172,7 +187,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
     }
 
-    private class GetHBContactsTask extends AbsTask {
+    private static class GetHBContactsTask extends AbsTask {
 
         private List<Contact> mListToCheck;
         private List<Contact> mHollerbackFriends;
@@ -232,6 +247,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 contacts.add(contact);
             }
 
+            // now that we have the hash, lets get the contacts
             HBRequestManager.getContacts(contacts, new HBSyncHttpResponseHandler<Envelope<ArrayList<UserModel>>>(new TypeReference<Envelope<ArrayList<UserModel>>>() {
             }) {
 
@@ -242,7 +258,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                         for (UserModel u : response.data) {
                             Contact hbFriend = mContactMap.get(u.phone_hashed);
                             hbFriend.mIsOnHollerback = true; // mark the contact as an hb friend
-
+                            hbFriend.mUsername = u.username;
+                            mHollerbackFriends.add(hbFriend);
                         }
 
                     }
@@ -253,7 +270,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 @Override
                 public void onApiFailure(Metadata metaData) {
                     Log.d(TAG, "failure");
-
                     mHttpDone = true;
                 }
 
@@ -269,12 +285,21 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             }
 
         }
+
+        public List<Contact> getHBContacts() {
+            return mHollerbackFriends;
+        }
     }
 
-    private class ContactsTaskGroup extends TaskGroup {
+    /**
+     * This class chains the tasks together
+     * @author sajjad
+     *
+     */
+    private static class ContactsTaskGroup extends TaskGroup {
 
-        public ContactsTaskGroup() {
-            GetUserContactsTask contactsTask = new GetUserContactsTask(mActivity.getContentResolver(), ContactsContract.Data.CONTENT_URI, new String[] {
+        public ContactsTaskGroup(Activity activity) {
+            GetUserContactsTask contactsTask = new GetUserContactsTask(activity.getContentResolver(), ContactsContract.Data.CONTENT_URI, new String[] {
                     Data._ID, Data.DISPLAY_NAME, PHONE_COLUMN, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
             }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, ContactsContract.Data.DISPLAY_NAME);
 
