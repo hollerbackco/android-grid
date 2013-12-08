@@ -22,6 +22,9 @@ public class IABIntent {
 
     public static final String GCM_MESSAGE = "gcmmsg";
 
+    // Contact Intents
+    public static final String CONTACTS_UPDATED = "ContactsUpdated";
+
     // Session & Auth Intents
     public static final String AUTH_EXCEPTION = "AuthException";
 

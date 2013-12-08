@@ -175,7 +175,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     }
 
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    getFragmentManager().popBackStack(ContactsFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    getFragmentManager().popBackStack(OldContactsFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog

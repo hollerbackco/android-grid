@@ -75,7 +75,9 @@ public abstract class BaseFragment extends SherlockFragment {
         super.onResume();
     }
 
-    protected abstract void initializeView(View view);
+    protected void initializeView(View view) {
+
+    }
 
     protected void startLoading() {
         mLoading.startLoading();

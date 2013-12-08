@@ -13,6 +13,7 @@ import java.util.Queue;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +21,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Data;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,6 +29,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
@@ -60,8 +63,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
     private List<Contact> mContacts;
     private List<Contact> mHBContacts;
-    private boolean mContactsLoaded = false;
-    private boolean mHBContactsLoaded = false;
+    private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
+    private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
@@ -76,6 +79,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             ActivityTaskWorker worker = ActivityTaskWorker.newInstance(false);
             mActivity.getSupportFragmentManager().beginTransaction().add(worker, Workers.CONTACTS).commit();
+            mContactsLoadState = LOADING_STATE.LOADING;
+            mHBContactsLoadState = LOADING_STATE.LOADING;
         }
     }
 
@@ -85,14 +90,16 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             Log.d(TAG, "got user contacts");
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
-            mContactsLoaded = true;
+            mContactsLoadState = LOADING_STATE.DONE;
+            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
             // lets see if we should launch our workers to check the contacts against the server
 
         } else if (t instanceof GetHBContactsTask) {
             Log.d(TAG, "got hb contacts");
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
-            mHBContactsLoaded = true;
+            mHBContactsLoadState = LOADING_STATE.DONE;
+            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
 
     }
@@ -100,7 +107,13 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     @Override
     public void onTaskError(Task t) {
         if (t instanceof GetHBContactsTask) {
+            mHBContactsLoadState = LOADING_STATE.FAILED;
+            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
+        }
 
+        if (t instanceof GetUserContactsTask) {
+            mContactsLoadState = LOADING_STATE.FAILED;
+            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
 
     }
@@ -111,14 +124,14 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
-    public boolean deviceContactsLoaded() {
-        return mContactsLoaded;
+    public LOADING_STATE getDeviceContactsLoadState() {
+        return mContactsLoadState;
     }
 
     @Override
-    public boolean hbContactsLoaded() {
+    public LOADING_STATE getHbContactsLoadState() {
 
-        return mHBContactsLoaded;
+        return mHBContactsLoadState;
     }
 
     @Override

@@ -172,7 +172,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                         .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
                 break;
             case R.id.action_add:
-                ContactsFragment fragment = ContactsFragment.newInstance();
+                OldContactsFragment fragment = OldContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commitAllowingStateLoss();
                 break;
@@ -195,7 +195,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 set.setTarget(view);
                 set.start();
 
-                ContactsFragment fragment = ContactsFragment.newInstance();
+                OldContactsFragment fragment = OldContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commitAllowingStateLoss();
 

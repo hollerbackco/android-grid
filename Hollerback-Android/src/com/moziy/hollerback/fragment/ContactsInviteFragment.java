@@ -22,7 +22,7 @@ import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
-public class ContactsInviteFragment extends ContactsFragment {
+public class ContactsInviteFragment extends OldContactsFragment {
     private String INVITE = "INVITE";
 
     @Override

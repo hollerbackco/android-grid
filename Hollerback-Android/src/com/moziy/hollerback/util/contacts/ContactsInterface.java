@@ -6,11 +6,15 @@ import com.moziy.hollerback.model.Contact;
 
 public interface ContactsInterface {
 
+    public enum LOADING_STATE {
+        IDLE, LOADING, DONE, FAILED
+    };
+
     public List<Contact> getDeviceContacts();
 
     public List<Contact> getHollerbackContacts();
 
-    public boolean deviceContactsLoaded();
+    public LOADING_STATE getDeviceContactsLoadState();
 
-    public boolean hbContactsLoaded();
+    public LOADING_STATE getHbContactsLoadState();
 }

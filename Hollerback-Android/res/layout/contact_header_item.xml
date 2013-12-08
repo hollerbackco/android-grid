@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <com.moziy.hollerback.widget.CustomTextView
+        android:id="@+id/tv_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/iv_contact_type"
+        android:paddingBottom="@dimen/dim_5dp"
+        android:paddingLeft="@dimen/dim_20dp"
+        android:paddingTop="@dimen/dim_5dp"
+        android:text="Hollerback Friends"
+        android:textSize="16sp" />
+
+</LinearLayout>

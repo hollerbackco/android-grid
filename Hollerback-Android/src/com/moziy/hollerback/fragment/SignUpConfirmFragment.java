@@ -164,7 +164,9 @@ public class SignUpConfirmFragment extends BaseFragment {
                             // user is officially logged in and registered, pop everything
                             getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
 
-                            ContactsFragment fragment = ContactsFragment.newInstance(true, null);
+                            // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
+                            // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
+                            ContactsFragment fragment = new ContactsFragment();
                             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                                     .commitAllowingStateLoss();
                         } else {
