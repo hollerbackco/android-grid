@@ -29,11 +29,13 @@ import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
-import com.moziy.hollerback.model.web.ResponseObject;
 import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.CursorTask;
 import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
@@ -67,9 +69,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         Fragment f = mActivity.getSupportFragmentManager().findFragmentByTag(Workers.CONTACTS);
         if (f == null) {
 
-            mTaskQueue.add(new GetUserContactsTask(mActivity.getContentResolver(), ContactsContract.Data.CONTENT_URI, new String[] {
-                    Data._ID, Data.DISPLAY_NAME, PHONE_COLUMN, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
-            }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, ContactsContract.Data.DISPLAY_NAME));
+            mTaskQueue.add(new ContactsTaskGroup());
 
             ActivityTaskWorker worker = ActivityTaskWorker.newInstance(false);
             mActivity.getSupportFragmentManager().beginTransaction().add(worker, Workers.CONTACTS).commit();
@@ -84,20 +84,20 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mContacts = ((GetUserContactsTask) t).getContacts();
             mContactsLoaded = true;
 
-            mTaskQueue.add(new GetHBContactsTask(mContacts));
-            ActivityTaskWorker worker = ActivityTaskWorker.newInstance(false);
-            mActivity.getSupportFragmentManager().beginTransaction().add(worker, "w1").commit();
-
             // lets see if we should launch our workers to check the contacts against the server
 
-        } else {
+        } else if (t instanceof GetHBContactsTask) {
             // contacts downloaded task
+            Log.w(TAG, "GetHBTask complete");
         }
 
     }
 
     @Override
     public void onTaskError(Task t) {
+        if (t instanceof GetHBContactsTask) {
+
+        }
 
     }
 
@@ -177,16 +177,31 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         private List<Contact> mListToCheck;
         private List<Contact> mHollerbackFriends;
 
+        private Map<String, Contact> mContactMap;
+
+        private GetUserContactsTask mGetContactsTask;
+
+        private boolean mHttpDone = false;
+
         /*
          * list of contacts to check
          */
-        public GetHBContactsTask(List<Contact> list) {
-            mListToCheck = list;
-
+        public GetHBContactsTask(GetUserContactsTask getContactsTask) {
+            mGetContactsTask = getContactsTask;
         }
 
         @Override
         public void run() {
+
+            if (!mGetContactsTask.isSuccess()) {
+                Log.w(TAG, "not running GetHBTask because of failure in GetUserTask");
+                mIsSuccess = false;
+                mIsFinished = true;
+                return;
+            }
+
+            mListToCheck = mGetContactsTask.getContacts();
+            mContactMap = new HashMap<String, Contact>();
 
             MessageDigest md5;
             try {
@@ -197,16 +212,18 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             }
 
             // for each item in the list generate the phone hash
-            ArrayList<Map<String, String>> contacts = new ArrayList<Map<String, String>>();
+            final ArrayList<Map<String, String>> contacts = new ArrayList<Map<String, String>>();
             for (Contact c : mListToCheck) {
 
-                Log.d(TAG, "will send off: " + c.toString());
                 c.mPhoneHashed = md5.digest(c.mPhone.getBytes());
                 StringBuffer hexString = new StringBuffer();
                 for (int i = 0; i < c.mPhoneHashed.length; i++) {
                     hexString.append(Integer.toHexString(0xFF & c.mPhoneHashed[i]));
                 }
+
                 c.mPhoneHashHexString = hexString.toString();
+
+                mContactMap.put(c.mPhoneHashHexString, c); // create a map while we're calculating
 
                 Map<String, String> contact = new HashMap<String, String>();
                 contact.put(HollerbackAPI.PARAM_CONTACTS_NAME, c.mName);
@@ -215,21 +232,56 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 contacts.add(contact);
             }
 
-            HBRequestManager.getContacts(contacts, new HBSyncHttpResponseHandler<ResponseObject>(new TypeReference<ResponseObject>() {
+            HBRequestManager.getContacts(contacts, new HBSyncHttpResponseHandler<Envelope<ArrayList<UserModel>>>(new TypeReference<Envelope<ArrayList<UserModel>>>() {
             }) {
 
                 @Override
-                public void onResponseSuccess(int statusCode, ResponseObject response) {
-                    // TODO Auto-generated method stub
+                public void onResponseSuccess(int statusCode, Envelope<ArrayList<UserModel>> response) {
+                    if (response.data != null) {
+                        mHollerbackFriends = new ArrayList<Contact>();
+                        for (UserModel u : response.data) {
+                            Contact hbFriend = mContactMap.get(u.phone_hashed);
+                            hbFriend.mIsOnHollerback = true; // mark the contact as an hb friend
 
+                        }
+
+                    }
+
+                    mHttpDone = true;
                 }
 
                 @Override
                 public void onApiFailure(Metadata metaData) {
-                    // TODO Auto-generated method stub
+                    Log.d(TAG, "failure");
 
+                    mHttpDone = true;
                 }
+
             });
+
+            while (!mHttpDone) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+    private class ContactsTaskGroup extends TaskGroup {
+
+        public ContactsTaskGroup() {
+            GetUserContactsTask contactsTask = new GetUserContactsTask(mActivity.getContentResolver(), ContactsContract.Data.CONTENT_URI, new String[] {
+                    Data._ID, Data.DISPLAY_NAME, PHONE_COLUMN, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
+            }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, ContactsContract.Data.DISPLAY_NAME);
+
+            addTask(contactsTask);
+
+            // this task relies on the first one to successfully execute
+            addTask(new GetHBContactsTask(contactsTask));
 
         }
     }

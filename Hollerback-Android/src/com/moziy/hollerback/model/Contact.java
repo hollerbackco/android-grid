@@ -11,6 +11,7 @@ public class Contact {
     public final String mPhoneLabel;
     public final int mPhotoID;
     public boolean mIsOnHollerback;
+    public String mUsername; // if an hb friend, the username
 
     public Contact(String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
         super();
@@ -24,17 +25,6 @@ public class Contact {
     @Override
     public String toString() {
         return "Contact [mName=" + mName + ", mPhone=" + mPhone + ", mPhoneLabel=" + mPhoneLabel + "]";
-    }
-
-    /**
-     * The contact that will be sent accross the wire
-     * @author sajjad
-     *
-     */
-    public static class NetworkContact {
-        public String n;
-        public String p;
-
     }
 
 }

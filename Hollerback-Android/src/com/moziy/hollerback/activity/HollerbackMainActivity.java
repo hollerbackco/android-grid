@@ -41,9 +41,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Hollerback);
         mContactsDelegate = new ContactsDelegate(this);
-
         super.onCreate(savedInstanceState);
-
         mContactsDelegate.initWorkers();
 
         setContentView(R.layout.hollerback_main);
