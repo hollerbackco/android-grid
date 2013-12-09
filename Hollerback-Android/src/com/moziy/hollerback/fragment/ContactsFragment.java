@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -25,6 +26,8 @@ import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
 import com.moziy.hollerback.widget.CustomTextView;
 
 public class ContactsFragment extends BaseFragment {
+    private static final String TAG = ContactsFragment.class.getSimpleName();
+    public static final String FRAGMENT_TAG = TAG;
 
     private ContactsInterface mContactsInterface;
     private LayoutInflater mInflater;
@@ -37,9 +40,16 @@ public class ContactsFragment extends BaseFragment {
         super.onAttach(activity);
     }
 
+    public static ContactsFragment newInstance() {
+        ContactsFragment f = new ContactsFragment();
+
+        return f;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
         mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
         mInflater = LayoutInflater.from(getActivity());
 
@@ -53,6 +63,7 @@ public class ContactsFragment extends BaseFragment {
         View v = inflater.inflate(R.layout.contacts_layout, container, false);
 
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
+        mContactsList.setOnItemClickListener(mOnContactClick);
         mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
         mContactsList.setAdapter(mAdapter);
 
@@ -67,11 +78,27 @@ public class ContactsFragment extends BaseFragment {
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
     }
 
+    private AdapterView.OnItemClickListener mOnContactClick = new AdapterView.OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Item item = (Item) parent.getItemAtPosition(position);
+            if (item.getContact() != null) {
+                Contact c = item.getContact();
+                StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
+                    c.mPhone
+                }, getString(R.string.start_conversation));
+
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            }
+        }
+    };
+
     @Override
     protected void initializeView(View view) {
 
         if (mContactsInterface.getDeviceContactsLoadState() == LOADING_STATE.LOADING || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.LOADING) {
-            startLoading();
+            // startLoading();
         }
     }
 
@@ -90,7 +117,7 @@ public class ContactsFragment extends BaseFragment {
                 if (mContactsInterface.getDeviceContactsLoadState() == LOADING_STATE.DONE) {
                     // if getting the hb contacts failed or its done already then just display the contacts - displaying something is better than nothing
                     if (mContactsInterface.getHbContactsLoadState() == LOADING_STATE.DONE || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.FAILED) {
-                        stopLoading();
+                        // stopLoading();
                         mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
                         mContactsList.setAdapter(mAdapter);
                         mAdapter.notifyDataSetChanged();
@@ -155,7 +182,7 @@ public class ContactsFragment extends BaseFragment {
         public static final int CONTACT = 3;
 
         List<Item> mItems;
-        int itemTypeCount = 0;
+        final int itemTypeCount = 4;
 
         public ItemManager(List<Contact> hbFriends, List<Contact> contacts) {
             mItems = new ArrayList<ContactsFragment.Item>();
@@ -167,7 +194,7 @@ public class ContactsFragment extends BaseFragment {
                 }
 
                 // we officially have two item types
-                itemTypeCount += 2;
+                // itemTypeCount += 2;
             }
 
             if (contacts != null && !contacts.isEmpty()) {
@@ -176,7 +203,7 @@ public class ContactsFragment extends BaseFragment {
                     mItems.add(new ContactItem(c));
                 }
 
-                itemTypeCount += 2;
+                // itemTypeCount += 2;
             }
         }
     }
@@ -218,6 +245,11 @@ public class ContactsFragment extends BaseFragment {
             public CustomTextView name;
             public CustomTextView username;
 
+        }
+
+        @Override
+        public Contact getContact() {
+            return mContact;
         }
 
     }
@@ -264,6 +296,11 @@ public class ContactsFragment extends BaseFragment {
 
         }
 
+        @Override
+        public Contact getContact() {
+            return mContact;
+        }
+
     }
 
     private class HBHeaderItem implements Item {
@@ -282,7 +319,7 @@ public class ContactsFragment extends BaseFragment {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.mHeader.setText("Hollerback Friends");
+            holder.mHeader.setText(getString(R.string.send_to_hb_friend));
 
             return convertView;
         }
@@ -295,6 +332,12 @@ public class ContactsFragment extends BaseFragment {
 
         private class ViewHolder {
             public CustomTextView mHeader;
+        }
+
+        @Override
+        public Contact getContact() {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }
@@ -315,7 +358,7 @@ public class ContactsFragment extends BaseFragment {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.mHeader.setText("Phonebook Friends");
+            holder.mHeader.setText(getString(R.string.send_to_contact));
 
             return convertView;
         }
@@ -330,6 +373,11 @@ public class ContactsFragment extends BaseFragment {
             return ItemManager.CONTACT_HEADER;
         }
 
+        @Override
+        public Contact getContact() {
+            return null;
+        }
+
     }
 
     private interface Item {
@@ -337,6 +385,8 @@ public class ContactsFragment extends BaseFragment {
         public View getView(int position, View convertView, ViewGroup parent);
 
         public int getItemViewType();
+
+        public Contact getContact();
     }
 
 }

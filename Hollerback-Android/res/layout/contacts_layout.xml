@@ -3,11 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <include
+        android:id="@+id/et_search"
+        layout="@layout/message_list_item_header" />
+
     <ListView
         android:id="@+id/lv_contacts_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:cacheColorHint="#FFFFFF" >
+        android:layout_below="@id/et_search"
+        android:cacheColorHint="#FFFFFF"
+        android:fastScrollAlwaysVisible="false"
+        android:fastScrollEnabled="true" >
     </ListView>
 
 </RelativeLayout>

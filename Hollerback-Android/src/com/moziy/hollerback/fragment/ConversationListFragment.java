@@ -172,7 +172,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                         .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
                 break;
             case R.id.action_add:
-                OldContactsFragment fragment = OldContactsFragment.newInstance();
+                // OldContactsFragment fragment = OldContactsFragment.newInstance();
+                ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commitAllowingStateLoss();
                 break;
@@ -195,7 +196,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 set.setTarget(view);
                 set.start();
 
-                OldContactsFragment fragment = OldContactsFragment.newInstance();
+                ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commitAllowingStateLoss();
 
@@ -261,13 +262,12 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
      * Create a new instance of CountingFragment, providing "num" as an
      * argument.
      */
-    public static ConversationListFragment newInstance(int num) {
+    public static ConversationListFragment newInstance() {
 
         ConversationListFragment f = new ConversationListFragment();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putInt("num", num);
         f.setArguments(args);
         return f;
     }

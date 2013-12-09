@@ -96,7 +96,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
             fragmentManager.popBackStackImmediate();
         }
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        ConversationListFragment fragment = new ConversationListFragment();
+        ConversationListFragment fragment = ConversationListFragment.newInstance();
         // fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commit();
         fragmentTransaction.add(R.id.fragment_holder, fragment).commit();
 

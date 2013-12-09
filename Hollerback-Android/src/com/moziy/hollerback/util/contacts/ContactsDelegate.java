@@ -297,6 +297,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 }
             }
 
+            mIsSuccess = true;
+            mIsFinished = true;
+
         }
 
         public List<Contact> getHBContacts() {

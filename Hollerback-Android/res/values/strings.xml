@@ -107,8 +107,13 @@
     <string name="invite_successful">Your friends has successfully been invited.</string>
     <string name="record_error">There was an error recording.</string>
 
+    <!-- Contacts -->
+    <string name="send_to_hb_friend">Send to Hollerback Friend</string>
+    <string name="send_to_contact">Send to Friend from Contacts</string>
+
     <!-- Start Conversation -->
     <string name="tap_to_start">Tap banana to start video</string>
+    <string name="start_conversation">Start Conversation</string>
 
     <!-- Notifications -->
     <plurals name="notif_new_message">
