@@ -44,6 +44,7 @@ public class StickyHeaderListView extends FrameLayout implements OnScrollListene
     protected View mDummyHeader = null; // A invisible header used when a section has no header
     protected ListView mListView = null;
     protected ListView.OnScrollListener mListener = null;
+    private boolean mStickyEnabled = true;
 
     private int mSeparatorWidth;
     private View mSeparatorView;
@@ -211,8 +212,24 @@ public class StickyHeaderListView extends FrameLayout implements OnScrollListene
         this.addView(mSeparatorView);
     }
 
+    public void enableStickyHeader() {
+        mStickyEnabled = true;
+        if (mStickyHeader != null && mStickyHeader.getVisibility() == View.INVISIBLE) {
+            mStickyHeader.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void disableStickyHeader() {
+        mStickyEnabled = false;
+        if (mStickyHeader != null) {
+            mStickyHeader.setVisibility(View.INVISIBLE);
+        }
+    }
+
     protected void updateStickyHeader(int firstVisibleItem) {
 
+        if (!mStickyEnabled)
+            return;
         // Try to make sure we have an adapter to work with (may not succeed).
         if (mAdapter == null && mListView != null) {
             setAdapter(mListView.getAdapter());

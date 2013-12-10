@@ -8,12 +8,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -26,6 +28,7 @@ import com.moziy.hollerback.util.contacts.ContactsInterface;
 import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
+import com.moziy.hollerback.widget.CustomEditText;
 import com.moziy.hollerback.widget.CustomTextView;
 
 public class ContactsFragment extends BaseFragment {
@@ -38,6 +41,7 @@ public class ContactsFragment extends BaseFragment {
     private ListView mContactsList;
     private ContactsAdapter mAdapter;
     private InternalReceiver mReceiver;
+    private CustomEditText mSearchBar;
 
     @Override
     public void onAttach(Activity activity) {
@@ -73,7 +77,33 @@ public class ContactsFragment extends BaseFragment {
 
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
         mStickyListView.setIndexer(mAdapter);
-        // mStickyListView.setListView(mContactsList);
+
+        mSearchBar = (CustomEditText) v.findViewById(R.id.txtSearch);
+        mSearchBar.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    mStickyListView.disableStickyHeader();
+                } else {
+                    mStickyListView.enableStickyHeader();
+                }
+                mAdapter.getFilter().filter(s.toString());
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
         initializeView(v);
 
@@ -137,45 +167,36 @@ public class ContactsFragment extends BaseFragment {
         }
     }
 
-    private class ContactsAdapter extends BaseAdapter implements HeaderIndexer {
+    private class ContactsAdapter extends ArrayAdapter<Item> implements HeaderIndexer {
 
         private ItemManager mItemManager;
 
         public ContactsAdapter(List<Contact> hbContacts, List<Contact> others) {
+            super(mActivity, R.layout.contact_list_item, R.id.tv_contact_name);
             mItemManager = new ItemManager(hbContacts, others);
+            addAll(mItemManager.mItems);
         }
 
         public void setContacts(List<Contact> hbContacts, List<Contact> others) {
+            clear();
+
             mItemManager = new ItemManager(hbContacts, others);
+            addAll(mItemManager.mItems);
         }
 
-        @Override
-        public int getCount() {
-
-            return mItemManager.mItems.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-
-            return mItemManager.mItems.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-
-            return position;
-        }
+        // @Override
+        // public Item getItem(int position) {
+        // return mItemManager.mItems.get(position);
+        // }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
-            return mItemManager.mItems.get(position).getView(position, convertView, parent);
+            return getItem(position).getView(position, convertView, parent);
         }
 
         @Override
         public int getItemViewType(int position) {
-            return mItemManager.mItems.get(position).getItemViewType();
+            return getItem(position).getItemViewType();
         }
 
         @Override
@@ -249,6 +270,7 @@ public class ContactsFragment extends BaseFragment {
         public HBFriendItem(Contact c, int headerPosition) {
             mContact = c;
             mHeaderPosition = headerPosition;
+
         }
 
         @Override
@@ -292,6 +314,11 @@ public class ContactsFragment extends BaseFragment {
             return this.mHeaderPosition;
         }
 
+        @Override
+        public String toString() {
+            return mContact.mName.toLowerCase();
+        }
+
     }
 
     private class ContactItem implements Item {
@@ -329,6 +356,11 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public int getItemViewType() {
             return ItemManager.CONTACT;
+        }
+
+        @Override
+        public String toString() {
+            return mContact.mName.toLowerCase();
         }
 
         private class ViewHolder {
