@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
+import com.moziy.hollerback.view.StickyHeaderListView;
+import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
 import com.moziy.hollerback.widget.CustomTextView;
 
 public class ContactsFragment extends BaseFragment {
@@ -31,6 +34,7 @@ public class ContactsFragment extends BaseFragment {
 
     private ContactsInterface mContactsInterface;
     private LayoutInflater mInflater;
+    private StickyHeaderListView mStickyListView;
     private ListView mContactsList;
     private ContactsAdapter mAdapter;
     private InternalReceiver mReceiver;
@@ -66,6 +70,10 @@ public class ContactsFragment extends BaseFragment {
         mContactsList.setOnItemClickListener(mOnContactClick);
         mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
         mContactsList.setAdapter(mAdapter);
+
+        mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
+        mStickyListView.setIndexer(mAdapter);
+        // mStickyListView.setListView(mContactsList);
 
         initializeView(v);
 
@@ -118,8 +126,7 @@ public class ContactsFragment extends BaseFragment {
                     // if getting the hb contacts failed or its done already then just display the contacts - displaying something is better than nothing
                     if (mContactsInterface.getHbContactsLoadState() == LOADING_STATE.DONE || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.FAILED) {
                         // stopLoading();
-                        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
-                        mContactsList.setAdapter(mAdapter);
+                        mAdapter.setContacts(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
                         mAdapter.notifyDataSetChanged();
                     }
 
@@ -130,11 +137,15 @@ public class ContactsFragment extends BaseFragment {
         }
     }
 
-    private class ContactsAdapter extends BaseAdapter {
+    private class ContactsAdapter extends BaseAdapter implements HeaderIndexer {
 
         private ItemManager mItemManager;
 
         public ContactsAdapter(List<Contact> hbContacts, List<Contact> others) {
+            mItemManager = new ItemManager(hbContacts, others);
+        }
+
+        public void setContacts(List<Contact> hbContacts, List<Contact> others) {
             mItemManager = new ItemManager(hbContacts, others);
         }
 
@@ -172,6 +183,18 @@ public class ContactsFragment extends BaseFragment {
             return mItemManager.itemTypeCount;
         }
 
+        @Override
+        public int getHeaderPositionFromItemPosition(int position) {
+
+            return mItemManager.mItems.get(position).getHeaderPosition();
+        }
+
+        @Override
+        public int getHeaderItemsNumber(int headerPosition) {
+
+            return ((HeaderItem) mItemManager.mItems.get(headerPosition)).getNumberOfItems();
+        }
+
     }
 
     private class ItemManager {
@@ -183,27 +206,37 @@ public class ContactsFragment extends BaseFragment {
 
         List<Item> mItems;
         final int itemTypeCount = 4;
+        int mHbHeaderPosition = 0;
+        int mContactsHeaderPosition = 0;
 
         public ItemManager(List<Contact> hbFriends, List<Contact> contacts) {
             mItems = new ArrayList<ContactsFragment.Item>();
             if (hbFriends != null && !hbFriends.isEmpty()) {
 
-                mItems.add(new HBHeaderItem());
+                mHbHeaderPosition = mItems.size();
+                HBHeaderItem hbHeader = new HBHeaderItem(mHbHeaderPosition);
+
+                hbHeader.setNumberOfItems(hbFriends.size());
+                mItems.add(hbHeader);
+                Log.d(TAG, "hb header pos: " + mHbHeaderPosition + " size: " + hbFriends.size());
                 for (Contact c : hbFriends) {
-                    mItems.add(new HBFriendItem(c));
+                    mItems.add(new HBFriendItem(c, mHbHeaderPosition));
+
                 }
 
-                // we officially have two item types
-                // itemTypeCount += 2;
             }
 
             if (contacts != null && !contacts.isEmpty()) {
-                mItems.add(new ContactHeaderItem());
+
+                mContactsHeaderPosition = mItems.size();
+                ContactHeaderItem contactHeader = new ContactHeaderItem(mContactsHeaderPosition);
+                contactHeader.setNumberOfItems(contacts.size());
+                mItems.add(contactHeader);
+                Log.d(TAG, "cn header pos: " + mContactsHeaderPosition + " size: " + contacts.size());
                 for (Contact c : contacts) {
-                    mItems.add(new ContactItem(c));
+                    mItems.add(new ContactItem(c, mContactsHeaderPosition));
                 }
 
-                // itemTypeCount += 2;
             }
         }
     }
@@ -211,9 +244,11 @@ public class ContactsFragment extends BaseFragment {
     private class HBFriendItem implements Item {
 
         private Contact mContact;
+        private int mHeaderPosition;
 
-        public HBFriendItem(Contact c) {
+        public HBFriendItem(Contact c, int headerPosition) {
             mContact = c;
+            mHeaderPosition = headerPosition;
         }
 
         @Override
@@ -252,14 +287,21 @@ public class ContactsFragment extends BaseFragment {
             return mContact;
         }
 
+        @Override
+        public int getHeaderPosition() {
+            return this.mHeaderPosition;
+        }
+
     }
 
     private class ContactItem implements Item {
 
         private Contact mContact;
+        private int mHeaderPosition;
 
-        public ContactItem(Contact c) {
+        public ContactItem(Contact c, int headerPosition) {
             mContact = c;
+            mHeaderPosition = headerPosition;
         }
 
         @Override
@@ -301,9 +343,21 @@ public class ContactsFragment extends BaseFragment {
             return mContact;
         }
 
+        @Override
+        public int getHeaderPosition() {
+            return this.mHeaderPosition;
+        }
+
     }
 
-    private class HBHeaderItem implements Item {
+    private class HBHeaderItem implements HeaderItem {
+
+        private int mPosition;
+        private int mNumItems = 0;
+
+        public HBHeaderItem(int position) {
+            mPosition = position;
+        }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -340,9 +394,34 @@ public class ContactsFragment extends BaseFragment {
             return null;
         }
 
+        @Override
+        public int getHeaderPosition() {
+
+            return mPosition;
+        }
+
+        @Override
+        public int getNumberOfItems() {
+
+            return mNumItems;
+        }
+
+        @Override
+        public void setNumberOfItems(int num) {
+            mNumItems = num;
+
+        }
+
     }
 
-    private class ContactHeaderItem implements Item {
+    private class ContactHeaderItem implements HeaderItem {
+
+        private int mPosition;
+        private int mNumItems;
+
+        public ContactHeaderItem(int position) {
+            mPosition = position;
+        }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -378,6 +457,21 @@ public class ContactsFragment extends BaseFragment {
             return null;
         }
 
+        @Override
+        public int getHeaderPosition() {
+            return mPosition;
+        }
+
+        @Override
+        public int getNumberOfItems() {
+            return mNumItems;
+        }
+
+        @Override
+        public void setNumberOfItems(int num) {
+            mNumItems = num;
+        }
+
     }
 
     private interface Item {
@@ -386,7 +480,15 @@ public class ContactsFragment extends BaseFragment {
 
         public int getItemViewType();
 
+        public int getHeaderPosition();
+
         public Contact getContact();
+    }
+
+    private interface HeaderItem extends Item {
+        public int getNumberOfItems();
+
+        public void setNumberOfItems(int num);
     }
 
 }

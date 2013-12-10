@@ -7,14 +7,20 @@
         android:id="@+id/et_search"
         layout="@layout/message_list_item_header" />
 
-    <ListView
-        android:id="@+id/lv_contacts_list"
+    <com.moziy.hollerback.view.StickyHeaderListView
+        android:id="@+id/stick_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/et_search"
-        android:cacheColorHint="#FFFFFF"
-        android:fastScrollAlwaysVisible="false"
-        android:fastScrollEnabled="true" >
-    </ListView>
+        android:layout_below="@id/et_search" >
+
+        <ListView
+            android:id="@+id/lv_contacts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:cacheColorHint="#FFFFFF"
+            android:fastScrollAlwaysVisible="false"
+            android:fastScrollEnabled="true" >
+        </ListView>
+    </com.moziy.hollerback.view.StickyHeaderListView>
 
 </RelativeLayout>

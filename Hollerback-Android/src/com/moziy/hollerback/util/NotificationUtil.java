@@ -29,7 +29,7 @@ public class NotificationUtil {
         Context ctx = HollerbackApplication.getInstance();
         intent.setClass(ctx, HollerbackMainActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
