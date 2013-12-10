@@ -98,6 +98,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         } else if (t instanceof GetHBContactsTask) {
             Log.d(TAG, "got hb contacts");
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
+            // remove all of hb contacts from contacts
+            mContacts.removeAll(mHBContacts);
             mHBContactsLoadState = LOADING_STATE.DONE;
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }

@@ -231,6 +231,7 @@ public class ContactsFragment extends BaseFragment {
         int mContactsHeaderPosition = 0;
 
         public ItemManager(List<Contact> hbFriends, List<Contact> contacts) {
+
             mItems = new ArrayList<ContactsFragment.Item>();
             if (hbFriends != null && !hbFriends.isEmpty()) {
 
