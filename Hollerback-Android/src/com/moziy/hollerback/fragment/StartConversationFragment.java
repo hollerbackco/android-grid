@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -168,9 +169,11 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
                     getActivity().startService(uploadIntent);
 
+                    Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
                     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
-                    ConversationListFragment f = ConversationListFragment.newInstance();
+                    if (f == null)
+                        f = ConversationListFragment.newInstance();
                     getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).commit();
 
                 } else {

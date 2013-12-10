@@ -330,7 +330,6 @@ public class HBRequestManager {
             params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
             params.put(HollerbackAPI.PARAM_CONTACTS, contacts);
 
-            HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONTACTS, params, handler);
         } else {
             params.put(HollerbackAPI.PARAM_CONTACTS, contacts);
         }

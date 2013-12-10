@@ -180,7 +180,7 @@ public class CameraUtil {
         recorder.setAudioEncodingBitRate(AUDIO_ENCODING_BIT_RATE);
         recorder.setVideoEncodingBitRate(VIDEO_ENCODING_RATE);
         recorder.setAudioEncoder(AUDIO_ENCODER);
-        recorder.setVideoFrameRate(VIDEO_FRAME_RATE);
+        // recorder.setVideoFrameRate(VIDEO_FRAME_RATE);
         recorder.setVideoSize(width, height);
     }
 

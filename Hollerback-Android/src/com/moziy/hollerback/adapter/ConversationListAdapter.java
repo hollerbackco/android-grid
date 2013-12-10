@@ -157,8 +157,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 mActivity.getActionBar().hide();
                 // TODO: no need to pass in watched ids
                 RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName(), new ArrayList<String>());
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
             }
         });
 

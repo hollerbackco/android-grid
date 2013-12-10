@@ -124,7 +124,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         super.onDestroyView();
         mTxtSearch.removeTextChangedListener(filterTextWatcher);
         // IABroadcastManager.unregisterLocalReceiver(receiver);
-        Log.d(FRAGMENT_TAG, "onDestroyView");
+        Log.d(TAG, "onDestroyView");
 
     }
 
@@ -205,7 +205,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             if (conversation.getUnreadCount() > 0) {
 
-                Log.d(FRAGMENT_TAG, "watching conversation with id: " + conversation.getConversationId());
+                Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
 
                 startConversationFragment(conversation);
             } else {
@@ -265,7 +265,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     public static ConversationListFragment newInstance() {
 
         ConversationListFragment f = new ConversationListFragment();
-
         // Supply num input as an argument.
         Bundle args = new Bundle();
         f.setArguments(args);
@@ -345,7 +344,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             // initialization block
             {
-                Log.d(FRAGMENT_TAG, "launch sync");
+                Log.d(TAG, "launch sync");
                 mReceiver = new SyncReceiver(this);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
@@ -361,19 +360,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             public void onContentChanged() {
                 mConvos = null; // delete the contents
-                Log.d(FRAGMENT_TAG, "removing convos");
+                Log.d(TAG, "removing convos");
                 super.onContentChanged();
             }
 
             @Override
             protected void onStartLoading() {
                 if (mConvos != null) {
-                    Log.d(FRAGMENT_TAG, "delivering results");
+                    Log.d(TAG, "delivering results");
                     deliverResult(mConvos);
                     return;
                 }
 
-                Log.d(FRAGMENT_TAG, "onstartloading");
+                Log.d(TAG, "onstartloading");
                 forceLoad();
 
             }
@@ -381,7 +380,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             public List<ConversationModel> loadInBackground() {
                 mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
-                Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
+                Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
             }
 
@@ -395,7 +394,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
-        Log.d(FRAGMENT_TAG, "loader finished");
+        Log.d(TAG, "loader finished");
         mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
         mConversationListAdapter.setConversations(data);
         mConversationList.setAdapter(mConversationListAdapter);

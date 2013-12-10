@@ -530,6 +530,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
@@ -799,6 +801,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             public void run() {
                 if (mCamera != null) {
                     mCamera.stopPreview();
+                    mCamera.setPreviewCallback(null);
                     mCamera.release();
                     mCamera = null;
                 }
@@ -848,6 +851,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (mCamera != null) {
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
