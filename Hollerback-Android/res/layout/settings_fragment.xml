@@ -5,7 +5,7 @@
     android:background="@android:color/white"
     android:orientation="vertical" >
 
-    <Button
+    <com.moziy.hollerback.widget.CustomButton
         android:id="@+id/btn_logout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

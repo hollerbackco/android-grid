@@ -3,12 +3,15 @@ package com.moziy.hollerback.fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class WelcomeFragment extends BaseFragment {
@@ -18,6 +21,21 @@ public class WelcomeFragment extends BaseFragment {
 
     private CustomButton mSignInBtn;
     private CustomButton mSignUpBtn;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // check to see whether the user is registered or not
+        if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, null) != null && !PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_VERIFIED, false)) {
+            // load the verification step
+            Log.d(TAG, "user isn't verified");
+            SignUpConfirmFragment f = SignUpConfirmFragment.newInstance();
+            getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+
+            return;
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

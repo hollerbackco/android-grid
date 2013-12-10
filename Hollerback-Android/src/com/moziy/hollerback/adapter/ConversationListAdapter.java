@@ -103,7 +103,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         if (convertView == null) {
 
             viewHolder = new ViewHolder();
-            convertView = inflater.inflate(R.layout.message_list_item, parent, false);
+            convertView = inflater.inflate(R.layout.conversation_list_item, parent, false);
             viewHolder.topLayer = (ViewGroup) convertView.findViewById(R.id.top_layer);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);

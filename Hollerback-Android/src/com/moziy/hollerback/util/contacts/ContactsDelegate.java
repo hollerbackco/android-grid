@@ -280,12 +280,14 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     }
 
                     mHttpDone = true;
+                    mIsSuccess = true;
                 }
 
                 @Override
                 public void onApiFailure(Metadata metaData) {
                     Log.d(TAG, "failure");
                     mHttpDone = true;
+                    mIsSuccess = false;
                 }
 
             });
@@ -294,12 +296,10 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
 
-            mIsSuccess = true;
             mIsFinished = true;
 
         }

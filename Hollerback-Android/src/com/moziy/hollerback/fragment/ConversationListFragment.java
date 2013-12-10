@@ -52,8 +52,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     private static final String TAG = ConversationListFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = ConversationListFragment.class.getSimpleName();
 
-    private int PREFERENCE_PAGE;
-    private ViewGroup mHeader;
     private ViewGroup mFooter;
     private EditText mTxtSearch;
 
@@ -79,15 +77,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mActivity.getSupportActionBar().setHomeButtonEnabled(false);
         mActivity.getSupportActionBar().setIcon(R.drawable.logo);
         mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
-        View fragmentView = inflater.inflate(R.layout.message_list_fragment, null);
+        View fragmentView = inflater.inflate(R.layout.conversation_list_fragment, container, false);
 
         this.startLoading();
 
         mConversationList = (ListView) fragmentView.findViewById(R.id.message_listview);
-        mFooter = (ViewGroup) inflater.inflate(R.layout.message_list_footer, null);
-        mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
+        mFooter = (ViewGroup) inflater.inflate(R.layout.conversation_list_footer, null);
+        mTxtSearch = (EditText) fragmentView.findViewById(R.id.txtSearch);
 
-        initializeView(fragmentView);
+        initListViewAnimation();
+
+        mTxtSearch.addTextChangedListener(filterTextWatcher);
+
+        mConversationList.addFooterView(mFooter, null, true); // respond to touch events
 
         getLoaderManager().initLoader(0, null, this); // the loader will be autostarted
 
@@ -131,13 +133,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     @Override
     protected void initializeView(View view) {
 
-        initListViewAnimation();
-
-        mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
-        mTxtSearch.addTextChangedListener(filterTextWatcher);
-
-        mConversationList.addHeaderView(mHeader, null, false); // add a header
-        mConversationList.addFooterView(mFooter, null, true); // respond to touch events
         // lsvBaseListView = mConversationList.getRefreshableView();
         // lsvBaseListView.addHeaderView(mHeader);
         // mConversationList.setShowIndicator(false);
@@ -237,9 +232,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     private void startSettingsFragment() {
         Intent intent = new Intent(mActivity, SettingPreferenceActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        startActivityForResult(intent, PREFERENCE_PAGE);
+        // if startactivity for result is launched from a fragment, the request code gets altered to indicate that this is for a fragment
+        // and not an activity. If you want to launch an activity and have the activity handle it, then you should go getActivity().start..
+        // startActivityForResult(intent, SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE);
+        getActivity().startActivityForResult(intent, SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE);
     }
 
     private void initListViewAnimation() {
@@ -305,17 +302,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         }
 
     };
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        LogUtil.i("Receiving onActivityResult: " + requestCode);
-        if (requestCode == PREFERENCE_PAGE && resultCode == mActivity.RESULT_OK) {
-            // It wants contact list
-            ContactsInviteFragment fragment = ContactsInviteFragment.newInstance();
-            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                    .commitAllowingStateLoss();
-        }
-    }
 
     @Override
     public void onUpdate(List<ConversationModel> conversations) {

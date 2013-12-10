@@ -2,6 +2,7 @@ package com.moziy.hollerback.activity;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,16 +16,13 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.ConversationListFragment;
-import com.moziy.hollerback.fragment.SignUpConfirmFragment;
 import com.moziy.hollerback.fragment.WelcomeFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAppState;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.contacts.ContactsDelegate;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 
@@ -36,6 +34,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     String convId = null;
     private InternalReceiver mReceiver;
     private ContactsDelegate mContactsDelegate; // handles all operations for retrieving and storing contacts
+    private boolean mLaunchWelcome = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +70,34 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult: " + requestCode);
+        switch (requestCode) {
+            case SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE:
+                Log.d(TAG, "checking result code");
+                Bundle args = data.getExtras();
+                if (resultCode == Activity.RESULT_OK) {
+                    boolean logout = args.getBoolean(SettingPreferenceActivity.Action.LOGOUT, false);
+                    Log.d(TAG, "checking logout");
+                    if (logout) {
+                        Log.d(TAG, "logging out");
+                        mLaunchWelcome = true;
+                    }
+
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        if (mLaunchWelcome) {
+            mLaunchWelcome = false;
+            initWelcomeFragment();
+        }
     }
 
     @Override
@@ -88,37 +113,34 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     }
 
     public void initFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        popBackStack();
 
-        int count = fragmentManager.getBackStackEntryCount();
-
-        for (int i = 0; i < count; i++) {
-            fragmentManager.popBackStackImmediate();
-        }
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         ConversationListFragment fragment = ConversationListFragment.newInstance();
         // fragmentTransaction.add(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commit();
-        fragmentTransaction.add(R.id.fragment_holder, fragment, ConversationListFragment.FRAGMENT_TAG).commit();
+        fragmentTransaction.replace(R.id.fragment_holder, fragment, ConversationListFragment.FRAGMENT_TAG).commit();
 
     }
 
     public void initWelcomeFragment() {
 
-        // check to see whether the user is registered or not
-        if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, null) != null && !PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_VERIFIED, false)) {
-            // load the verification step
-            Log.d(TAG, "user isn't verified");
-            SignUpConfirmFragment f = SignUpConfirmFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_holder, f).commit();
+        popBackStack();
 
-            return;
-        }
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         WelcomeFragment fragment = new WelcomeFragment();
-        fragmentTransaction.add(R.id.fragment_holder, fragment);
+        fragmentTransaction.replace(R.id.fragment_holder, fragment);
         // fragmentTransaction.addToBackStack(WelcomeFragment.class.getSimpleName());
         fragmentTransaction.commit();
+    }
+
+    private void popBackStack() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        int count = fragmentManager.getBackStackEntryCount();
+
+        for (int i = 0; i < count; i++) {
+            fragmentManager.popBackStackImmediate();
+        }
     }
 
     private void registerBroadcasts() {

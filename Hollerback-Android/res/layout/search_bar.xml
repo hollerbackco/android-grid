@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/background_header"
-    android:orientation="vertical" >
+<merge xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <com.moziy.hollerback.widget.CustomEditText
         android:id="@+id/txtSearch"
@@ -14,4 +10,4 @@
         android:inputType="text"
         android:paddingLeft="@dimen/dim_20dp" />
 
-</RelativeLayout>
+</merge>
