@@ -63,6 +63,7 @@ public class AppEnvironment {
     public void setEnvironment() {
         switch (ENV) {
             case ENV_DEVELOPMENT:
+                DBUtil.copyDbToSdcard();
                 LogUtil.d("Setting Development Environment");
                 BASE_URL = "http://lit-sea-1934.herokuapp.com";
                 FORCE_PHONE_NUMBER_CHECK = true;

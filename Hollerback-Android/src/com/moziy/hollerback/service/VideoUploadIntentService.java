@@ -22,6 +22,7 @@ import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
+import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ResourceRecoveryUtil;
@@ -240,11 +241,13 @@ public class VideoUploadIntentService extends IntentService {
 
         public boolean postToExistingConversation(final VideoModel model) {
 
-            // get all watched videos
-            final List<VideoModel> watchedVideos = getWatchedVideos();
+            // // get all watched videos
+            // final List<VideoModel> watchedVideos = getWatchedVideos();
+            //
+            // // mark them as transacting
+            // setVideosAsTransacting(watchedVideos);
 
-            // mark them as transacting
-            setVideosAsTransacting(watchedVideos);
+            final List<VideoModel> watchedVideos = VideoHelper.getVideosForTransaction(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'");
 
             // get all the ids corresponding to the videos
             ArrayList<String> watchedIds = getWatchedIds(watchedVideos);

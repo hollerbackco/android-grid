@@ -19,6 +19,12 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
      */
     private static final long serialVersionUID = 776201028447951350L;
 
+    public static interface ResourceState {
+        public static final String ACTIVE = "active";
+        public static final String TTYL_PENDING_POST = "ttyl_pending_post";
+        public static final String TTYL_POSTED = "ttyl_posted";
+    }
+
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
 
@@ -73,6 +79,9 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
 
     @Column(name = ActiveRecordFields.C_CONV_URL)
     private String url;
+
+    @Column(name = ActiveRecordFields.C_CONV_STATE)
+    private String state;
 
     public long getConversationId() {
         return id;
@@ -137,6 +146,14 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
 
     public String getUrl() {
         return this.url;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     @Override
