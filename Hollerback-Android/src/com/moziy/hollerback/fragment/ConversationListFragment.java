@@ -298,7 +298,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         }
 
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            mConversationListAdapter.getFilter().filter(s);
+            if (mConversationListAdapter != null)
+                mConversationListAdapter.getFilter().filter(s);
         }
 
     };

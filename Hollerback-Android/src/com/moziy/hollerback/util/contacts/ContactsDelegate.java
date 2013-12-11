@@ -259,8 +259,10 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mContactMap = new HashMap<String, Contact>();
 
             MessageDigest md5;
+
             try {
                 md5 = MessageDigest.getInstance("MD5");
+                md5.reset();
             } catch (NoSuchAlgorithmException e1) {
                 throw new IllegalStateException("MD5 Needed!");
 

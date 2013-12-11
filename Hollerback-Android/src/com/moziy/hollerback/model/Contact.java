@@ -38,9 +38,12 @@ public class Contact {
             StringBuffer hexString = new StringBuffer();
 
             for (int i = 0; i < hash.length; i++) {
-                hexString.append(Integer.toHexString(0xFF & hash[i]));
+                String hex = Integer.toHexString(0xFF & hash[i]);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
             }
-
+            Log.d(TAG, "name: " + mName + "hash: " + hexString.toString());
             mPhoneHashes.add(hexString.toString());
         }
 
