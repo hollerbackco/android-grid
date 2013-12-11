@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -13,9 +14,9 @@ import java.util.Queue;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -151,24 +152,36 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
      * @author sajjad
      *
      */
-    private static class GetUserContactsTask extends CursorTask {
+    private static class GetUserContactsTask extends AbsTask {
 
-        private List<Contact> mContacts = new ArrayList<Contact>();
+        private LinkedHashMap<Long, Contact> mContactMap = new LinkedHashMap<Long, Contact>();
+        private ContentResolver mContentResolver;
 
-        public GetUserContactsTask(ContentResolver resolver, Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-            super(resolver, uri, projection, selection, selectionArgs, sortOrder);
-
+        public GetUserContactsTask(Context context) {
+            mContentResolver = context.getContentResolver();
         }
 
         @Override
         public void run() {
-            super.run();
-            mIsFinished = false;
 
-            Cursor c = getCursor();
+            // perform an inner join on the raw contacts to get the unique contact_id the data is associated with
+            CursorTask getContactsTask = new CursorTask(mContentResolver, ContactsContract.Data.CONTENT_URI, new String[] {
+                    ContactsContract.RawContacts.CONTACT_ID, Data._ID, Data.DISPLAY_NAME, PHONE_COLUMN, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
+            }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, ContactsContract.Data.DISPLAY_NAME);
+
+            getContactsTask.run(); // run the contacts task
+
+            if (!getContactsTask.isSuccess()) {
+                Log.w(TAG, "couldn't get contacts!");
+                mIsSuccess = false;
+                mIsFinished = true;
+            }
+            Cursor c = getContactsTask.getCursor(); // get the cursor
+
             if (c.moveToFirst()) {
                 do {
 
+                    long contactId = c.getLong(c.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID));
                     String name = c.getString(c.getColumnIndex(Data.DISPLAY_NAME));
                     String phone = c.getString(c.getColumnIndex(PHONE_COLUMN));
                     String phoneLabel = c.getString(c.getColumnIndex(Phone.LABEL));
@@ -183,8 +196,19 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                         }
                     }
 
-                    if (phone != null) {
-                        mContacts.add(new Contact(name, phone, phoneLabel, photoId));
+                    if (mContactMap.containsKey(contactId)) {
+                        if (phone != null) {
+                            Contact existingContact = mContactMap.get(contactId);
+                            Log.d(TAG, "found another phone for contact: " + existingContact.toString());
+                            existingContact.mPhones.add(phone); // add the phone
+                        }
+
+                    } else { // new contact
+
+                        if (phone != null) {
+                            Contact contact = new Contact(name, phone, phoneLabel, photoId);
+                            mContactMap.put(contactId, contact);
+                        }
                     }
 
                 } while (c.moveToNext());
@@ -197,7 +221,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         }
 
         public List<Contact> getContacts() {
-            return mContacts;
+            List<Contact> l = new ArrayList<Contact>(mContactMap.values());
+            return l;
         }
 
     }
@@ -242,24 +267,23 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             }
 
             // for each item in the list generate the phone hash
-            final ArrayList<Map<String, String>> contacts = new ArrayList<Map<String, String>>();
-            for (Contact c : mListToCheck) {
+            final ArrayList<Map<String, String>> contacts = new ArrayList<Map<String, String>>(); // contacts going to the server
+            for (Contact friend : mListToCheck) {
 
-                c.mPhoneHashed = md5.digest(c.mPhone.getBytes());
-                StringBuffer hexString = new StringBuffer();
-                for (int i = 0; i < c.mPhoneHashed.length; i++) {
-                    hexString.append(Integer.toHexString(0xFF & c.mPhoneHashed[i]));
+                friend.generateHash(md5);
+
+                for (int i = 0; i < friend.mPhoneHashes.size(); i++) {
+
+                    mContactMap.put(friend.mPhoneHashes.get(i), friend); // create a map for each unique hash
+
+                    Map<String, String> contact = new HashMap<String, String>();
+                    contact.put(HollerbackAPI.PARAM_CONTACTS_NAME, friend.mName);
+                    contact.put(HollerbackAPI.PARAM_CONTACTS_PHONE, friend.mPhoneHashes.get(i));
+
+                    contacts.add(contact);
+
                 }
 
-                c.mPhoneHashHexString = hexString.toString();
-
-                mContactMap.put(c.mPhoneHashHexString, c); // create a map while we're calculating
-
-                Map<String, String> contact = new HashMap<String, String>();
-                contact.put(HollerbackAPI.PARAM_CONTACTS_NAME, c.mName);
-                contact.put(HollerbackAPI.PARAM_CONTACTS_PHONE, c.mPhoneHashHexString);
-
-                contacts.add(contact);
             }
 
             // now that we have the hash, lets get the contacts
@@ -317,9 +341,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private static class ContactsTaskGroup extends TaskGroup {
 
         public ContactsTaskGroup(Activity activity) {
-            GetUserContactsTask contactsTask = new GetUserContactsTask(activity.getContentResolver(), ContactsContract.Data.CONTENT_URI, new String[] {
-                    Data._ID, Data.DISPLAY_NAME, PHONE_COLUMN, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
-            }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, ContactsContract.Data.DISPLAY_NAME);
+            GetUserContactsTask contactsTask = new GetUserContactsTask(activity);
 
             addTask(contactsTask);
 
