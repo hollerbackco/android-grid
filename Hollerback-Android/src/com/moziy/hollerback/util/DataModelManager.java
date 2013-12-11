@@ -14,6 +14,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.helper.ActiveRecordHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.util.security.HashUtil;
 
 /**
  * Abstract usage of database, memory store, api calls

@@ -6,6 +6,8 @@ import java.util.Comparator;
 
 import android.util.Log;
 
+import com.moziy.hollerback.util.security.HashUtil;
+
 public class Contact {
     private static final String TAG = Contact.class.getSimpleName();
     public final String mName;
@@ -34,17 +36,7 @@ public class Contact {
     public void generateHash(MessageDigest md5) {
 
         for (String phone : mPhones) {
-
-            byte[] hash = md5.digest(phone.getBytes());
-            StringBuffer hexString = new StringBuffer();
-
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xFF & hash[i]);
-                if (hex.length() == 1)
-                    hexString.append('0');
-                hexString.append(hex);
-            }
-            mPhoneHashes.add(hexString.toString());
+            mPhoneHashes.add(HashUtil.generateHexStringMD5(phone.getBytes()));
         }
 
     }
