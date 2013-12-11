@@ -2,6 +2,7 @@ package com.moziy.hollerback.model;
 
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import android.util.Log;
 
@@ -43,7 +44,6 @@ public class Contact {
                     hexString.append('0');
                 hexString.append(hex);
             }
-            Log.d(TAG, "name: " + mName + "hash: " + hexString.toString());
             mPhoneHashes.add(hexString.toString());
         }
 
@@ -53,5 +53,17 @@ public class Contact {
     public String toString() {
         return "Contact [mName=" + mName + ", mPhone=" + mPhone + ", mPhoneLabel=" + mPhoneLabel + "]";
     }
+
+    /**
+     * Sort based on the name field
+     */
+    public static Comparator<Contact> COMPARATOR = new Comparator<Contact>() {
+
+        @Override
+        public int compare(Contact lhs, Contact rhs) {
+
+            return lhs.mName.compareToIgnoreCase(rhs.mName);
+        }
+    };
 
 }

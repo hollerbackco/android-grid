@@ -3,6 +3,7 @@ package com.moziy.hollerback.util.contacts;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -302,6 +303,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                             hbFriend.mUsername = u.username;
                             mHollerbackFriends.add(hbFriend);
                         }
+
+                        Collections.sort(mHollerbackFriends, Contact.COMPARATOR); // sort the results in alphabetical based on name
 
                     }
 
