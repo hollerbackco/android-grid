@@ -17,6 +17,7 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.network.VolleySingleton;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
@@ -137,7 +138,9 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(AppEnvironment.TERMS_OF_SERVICE_URL));
+                startActivity(intent);
                 return false;
             }
         });
@@ -147,8 +150,10 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
-                return false;
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(AppEnvironment.PRIVACY_POLICY_URL));
+                startActivity(intent);
+                return true;
             }
         });
 
