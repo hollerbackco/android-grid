@@ -22,6 +22,10 @@ public class AppEnvironment {
 
     // public static final String PICTURE_NAME = null;
 
+    // policy links
+    public static final String PRIVACY_POLICY_URL = "http://www.hollerback.co/privacy";
+    public static final String TERMS_OF_SERVICE_URL = "http://www.hollerback.co/terms";
+
     public String UPLOAD_BUCKET;
     public static final String UPLOAD_BUCKET_DEV = "hb-tmp-dev";
     public static final String UPLOAD_BUCKET_PROD = "hb-tmp";
