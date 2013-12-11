@@ -75,8 +75,9 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         switch (requestCode) {
             case SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE:
                 Log.d(TAG, "checking result code");
-                Bundle args = data.getExtras();
+
                 if (resultCode == Activity.RESULT_OK) {
+                    Bundle args = data.getExtras();
                     boolean logout = args.getBoolean(SettingPreferenceActivity.Action.LOGOUT, false);
                     Log.d(TAG, "checking logout");
                     if (logout) {
