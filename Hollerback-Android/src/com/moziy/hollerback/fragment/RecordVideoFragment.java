@@ -63,7 +63,7 @@ import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {

@@ -40,7 +40,7 @@ import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 
 public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, RecordingInfo {
 

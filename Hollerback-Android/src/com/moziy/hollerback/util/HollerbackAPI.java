@@ -69,6 +69,8 @@ public class HollerbackAPI {
 
     public static final String API_CONTACTS = "/contacts/check";
 
+    public static final String API_GOODBYE = "/me/conversations/%1$s/goodbye";
+
     // /////////////
 
     public static final String PARAM_EMAIL = "email";

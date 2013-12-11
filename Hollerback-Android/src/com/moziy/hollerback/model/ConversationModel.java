@@ -9,7 +9,7 @@ import com.activeandroid.annotation.Table;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 
 @Table(name = ActiveRecordFields.T_CONVERSATION)
 public class ConversationModel extends BaseModel implements Serializable, SyncPayload {

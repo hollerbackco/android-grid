@@ -245,7 +245,7 @@ public class HBRequestManager {
         }
     }
 
-    public static void leaveConversation(final String conversationId, JsonHttpResponseHandler handler) {
+    public static void leaveConversation(final String conversationId, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();
 

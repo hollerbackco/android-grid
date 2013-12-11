@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.date;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;

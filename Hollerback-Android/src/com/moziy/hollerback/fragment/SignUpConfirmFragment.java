@@ -27,7 +27,7 @@ import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 
