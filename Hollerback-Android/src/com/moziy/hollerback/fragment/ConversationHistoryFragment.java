@@ -43,7 +43,6 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.JsonModelUtil;
-import com.moziy.hollerback.util.QU;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerback.view.CustomVideoView;
 import com.origamilabs.library.views.StaggeredGridView;
@@ -204,7 +203,7 @@ public class ConversationHistoryFragment extends BaseFragment {
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_URLS);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATION_VIDEOS);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.UPLOAD_VIDEO_UPDATE);
-        QU.getDM().getVideos(false, mConversationId);
+        // QU.getDM().getVideos(false, mConversationId);
 
     }
 
@@ -371,18 +370,18 @@ public class ConversationHistoryFragment extends BaseFragment {
                 mVideoGalleryAdapter.mUploadingHelper.clear();
             } else if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATION_VIDEOS)) {
 
-                ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
+                // ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
 
                 // helper.getS3URLParams(generateUploadParams(hash,
                 // intent.getStringExtra(IABIntent.PARAM_ID)));
 
                 // TODO - Sajjad : Review this!
-                if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
-                    LogUtil.i("Setting: same data set");
-                    return;
-                }
+                // if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
+                // LogUtil.i("Setting: same data set");
+                // return;
+                // }
 
-                mVideos = (ArrayList<VideoModel>) tempVideos.clone();
+                // mVideos = (ArrayList<VideoModel>) tempVideos.clone();
 
                 // TODO: Come back here for review, what is being cached here, and how is it related to Upload.
                 if (UploadCacheUtil.hasVideoCache(mActivity, mConversationId)) {

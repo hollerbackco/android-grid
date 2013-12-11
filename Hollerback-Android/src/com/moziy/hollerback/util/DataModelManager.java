@@ -14,7 +14,6 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.helper.ActiveRecordHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 /**
  * Abstract usage of database, memory store, api calls
@@ -29,36 +28,6 @@ public class DataModelManager {
 
     public DataModelManager() {
         mObjectHash = new HashMap<String, Object>();
-    }
-
-    /**
-     * Assumes that receiver is attached to fragment/activity with correct
-     * intentfilter
-     * 
-     * @param populated
-     * @param conversationId
-     */
-    public void getVideos(boolean populated, long conversationId) {
-        if (!populated) {
-
-            // return in memory or database store solution
-            GetVideoAsyncTask task = new GetVideoAsyncTask();
-            task.execute(conversationId);
-        }
-        HBRequestManager.getConversationVideos(conversationId);
-
-    }
-
-    public void getConversations(boolean populated) {
-        if (!populated) {
-
-            // return in memory or database store solution
-            GetConversationsAsyncTask task = new GetConversationsAsyncTask();
-            task.execute();
-        }
-
-        HBRequestManager.getConversations();
-
     }
 
     private class GetConversationsAsyncTask extends AsyncTask<Void, Void, ArrayList<ConversationModel>> {

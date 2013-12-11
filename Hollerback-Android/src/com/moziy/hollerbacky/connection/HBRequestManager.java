@@ -35,40 +35,6 @@ public class HBRequestManager {
 
     static boolean isS3Upload;
 
-    public static void postVideo(String conversation_id, String filename, final String customMessage) {
-        RequestParams params = new RequestParams();
-
-        LogUtil.i("PostVideo", conversation_id);
-
-        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
-        params.put(HollerbackAPI.PARAM_FILENAME, filename);
-        // TODO - Sajjad: Insert Video model into db, and mark it as pending
-
-        HollerbackAsyncClient.getInstance().post(String.format(HollerbackAPI.API_VIDEO_POST_FORMAT, conversation_id), params, new JsonHttpResponseHandler() {
-
-            @Override
-            public void onFailure(Throwable arg0, JSONObject arg1) {
-                // TODO - Sajjad : Mark video in db as pending_upload and set uploading to false or retry
-                super.onFailure(arg0, arg1);
-            }
-
-            @Override
-            public void onSuccess(int arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onSuccess(arg0, arg1);
-                JSONUtil.processVideoPost(arg1, customMessage);
-            }
-
-            @Override
-            protected Object parseResponse(String arg0) throws JSONException {
-                // TODO Auto-generated method stub
-                LogUtil.i(arg0);
-                return super.parseResponse(arg0);
-            }
-        });
-
-    }
-
     public static void postVideoRead(String videoId) {
         RequestParams params = new RequestParams();
 
@@ -139,90 +105,6 @@ public class HBRequestManager {
         }
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, responseHandler);
-
-        // HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, new HBAsyncHttpResponseHandler<VerifyResponse>(new TypeReference<VerifyResponse>() {
-        // }) {
-        //
-        // @Override
-        // public void onResponseSuccess(int statusCode, VerifyResponse response) {
-        //
-        // Log.d("sajjad", "access token: " + response.access_token);
-        // JSONUtil.processLogin(response);
-        //
-        // }
-        //
-        // @Override
-        // public void onApiFailure(Metadata metaData) {
-        // Log.d(TAG, "error code: " + metaData.code);
-        //
-        // }
-        //
-        // });
-        //
-
-        // HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION,
-        // params, new JsonHttpResponseHandler() {
-        //
-        // @Override
-        // protected Object parseResponse(String arg0)
-        // throws JSONException {
-        // LogUtil.i(arg0);
-        // return super.parseResponse(arg0);
-        //
-        // }
-        //
-        // @Override
-        // public void onFailure(Throwable arg0, JSONObject arg1) {
-        // // TODO Auto-generated method stub
-        // super.onFailure(arg0, arg1);
-        // LogUtil.i("LOGIN FAILURE");
-        // }
-        //
-        // @Override
-        // public void onSuccess(int arg0, JSONObject arg1) {
-        // // TODO Auto-generated method stub
-        // super.onSuccess(arg0, arg1);
-        // JSONUtil.processSignIn(arg1);
-        // }
-        //
-        // });
-
-    }
-
-    public static void getConversations() {
-        if (HollerbackAppState.isValidSession()) {
-            RequestParams params = new RequestParams();
-            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
-
-            LogUtil.i("Sending token: " + HollerbackAppState.getValidToken());
-
-            HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_CONVERSATION, params, new JsonHttpResponseHandler() {
-
-                @Override
-                protected Object parseResponse(String arg0) throws JSONException {
-                    LogUtil.i(arg0);
-                    return super.parseResponse(arg0);
-
-                }
-
-                @Override
-                public void onFailure(Throwable arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
-                    super.onFailure(arg0, arg1);
-                    LogUtil.e(HollerbackAPI.API_CONVERSATION + "FAILURE");
-                }
-
-                @Override
-                public void onSuccess(int arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
-                    super.onSuccess(arg0, arg1);
-                    LogUtil.i("ON SUCCESS API CONVO");
-                    JSONUtil.processGetConversations(arg1);
-                }
-
-            });
-
-        }
 
     }
 
@@ -350,40 +232,6 @@ public class HBRequestManager {
             params.put(HollerbackAPI.PARAM_NUMBERS, HBRequestUtil.generateStringArray(contacts));
 
             HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONTACTS, params, handler);
-        }
-    }
-
-    public static void getConversationVideos(final long conversationId) {
-        if (HollerbackAppState.isValidSession()) {
-            RequestParams params = new RequestParams();
-
-            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
-
-            HollerbackAsyncClient.getInstance().get(String.format(HollerbackAPI.API_CONVERSATION_DETAILS_VIDEOS_FORMAT, conversationId), params, new JsonHttpResponseHandler() {
-
-                @Override
-                protected Object parseResponse(String arg0) throws JSONException {
-                    LogUtil.i("RESPONSE: " + arg0);
-                    return super.parseResponse(arg0);
-
-                }
-
-                @Override
-                public void onFailure(Throwable arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
-                    super.onFailure(arg0, arg1);
-                    LogUtil.e(HollerbackAPI.API_CONTACTS + "FAILURE");
-                }
-
-                @Override
-                public void onSuccess(int arg0, JSONObject arg1) {
-                    // TODO Auto-generated method stub
-                    super.onSuccess(arg0, arg1);
-                    LogUtil.i("ON SUCCESS API CONTACTS");
-                    JSONUtil.processConversationVideos(conversationId, arg1);
-                }
-
-            });
         }
     }
 

@@ -333,7 +333,7 @@ public class OldContactsFragment extends BaseFragment implements TaskClient {
                 // TODO Auto-generated method stub
                 super.onSuccess(statusId, response);
                 LogUtil.i("ON SUCCESS API CONVO");
-                JSONUtil.processPostConversations(response);
+                // JSONUtil.processPostConversations(response);
 
                 // successful, now we upload video
                 try {

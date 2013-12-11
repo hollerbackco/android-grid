@@ -42,7 +42,7 @@ public class UploadTask {
 
     public void execute() {
         showUploadingNotification();
-        mS3RequestHelper.uploadNewVideo(mConversationId, mFileDataName, mImageUploadName, null, mOnS3UploadListener);
+        // mS3RequestHelper.uploadNewVideo(mConversationId, mFileDataName, mImageUploadName, null, mOnS3UploadListener);
     }
 
     /**
