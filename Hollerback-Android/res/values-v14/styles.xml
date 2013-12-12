@@ -31,6 +31,8 @@
         <item name="android:editTextStyle">@style/DefaultEditText</item>
     </style>
 
-    <style name="Hollerback.Settings"></style>
+    <style name="Hollerback.Settings">
+        <item name="android:windowBackground">@color/background_header</item>
+    </style>
 
 </resources>
