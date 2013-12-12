@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -15,7 +16,7 @@ import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
 public class TTYLService extends IntentService {
-
+    private static final String TAG = TTYLService.class.getSimpleName();
     public static final String CONVO_ID_INTENT_ARG_KEY = "CONVO_ID";
     private static String WHERE = ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'";
 
@@ -37,21 +38,29 @@ public class TTYLService extends IntentService {
         };
 
         // lets get all the videos that are pending to be watched
-        List<VideoModel> videos = VideoHelper.getVideosForTransaction(WHERE);
+        final List<VideoModel> videos = VideoHelper.getVideosForTransaction(WHERE);
         HBRequestManager.postTTYL(conversationId, VideoHelper.getWatchedIds(videos), new HBSyncHttpResponseHandler<Envelope<?>>(new TypeReference<Envelope<?>>() {
         }) {
 
             @Override
             public void onResponseSuccess(int statusCode, Envelope<?> response) {
 
-                isDone[0] = true;
+                VideoHelper.markVideosAsWatched(videos);
 
             }
 
             @Override
             public void onApiFailure(Metadata metaData) {
-                isDone[0] = true;
 
+                Log.w(TAG, "ttyl failed");
+            }
+
+            @Override
+            public void onPostResponse() {
+                super.onPostResponse();
+
+                VideoHelper.clearVideoTransacting(videos);
+                isDone[0] = true;
             }
         });
 

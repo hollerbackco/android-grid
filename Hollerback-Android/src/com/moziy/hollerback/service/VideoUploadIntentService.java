@@ -8,7 +8,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,7 +24,7 @@ import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerbacky.connection.HBRequestManager;
 import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
@@ -297,7 +296,7 @@ public class VideoUploadIntentService extends IntentService {
                     model.save();
 
                     // update the videos as watched
-                    markVideosAsWatched(watchedVideos);
+                    VideoHelper.markVideosAsWatched(watchedVideos);
                     VideoHelper.clearVideoTransacting(watchedVideos); // unset transacting flag of watched videos
 
                     isDone[0] = true;
@@ -336,25 +335,6 @@ public class VideoUploadIntentService extends IntentService {
 
             List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
             return watchedVideos;
-        }
-
-        private void markVideosAsWatched(List<VideoModel> watchedVideos) {
-            if (watchedVideos.isEmpty()) {
-                return;
-            }
-
-            // udpate all the watched videos state to watched
-            ActiveAndroid.beginTransaction();
-            try {
-                for (VideoModel v : watchedVideos) {
-                    v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
-                    v.save();
-                }
-
-                ActiveAndroid.setTransactionSuccessful();
-            } finally {
-                ActiveAndroid.endTransaction();
-            }
         }
 
     }

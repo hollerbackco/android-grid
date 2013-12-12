@@ -108,7 +108,7 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".util.ResourceRecoveryUtil" >
+        <receiver android:name="com.moziy.hollerback.util.recovery.ResourceRecoveryUtil" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>

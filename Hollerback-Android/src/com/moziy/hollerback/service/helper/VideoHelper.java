@@ -75,4 +75,23 @@ public class VideoHelper {
         return watchedIds;
     }
 
+    public static void markVideosAsWatched(List<VideoModel> watchedVideos) {
+        if (watchedVideos.isEmpty()) {
+            return;
+        }
+
+        // udpate all the watched videos state to watched
+        ActiveAndroid.beginTransaction();
+        try {
+            for (VideoModel v : watchedVideos) {
+                v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+                v.save();
+            }
+
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
 }

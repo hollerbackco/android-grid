@@ -14,8 +14,8 @@ import android.view.View.MeasureSpec;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.moziy.hollerback.HollerbackConstants;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.HollerbackConstants;
 
 public class ContactSpannableHelper {
 

@@ -11,7 +11,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
-import com.moziy.hollerback.util.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 public class PassiveUploadService extends IntentService {
     private static final String TAG = PassiveUploadService.class.getSimpleName();

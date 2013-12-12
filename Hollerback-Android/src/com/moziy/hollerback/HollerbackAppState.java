@@ -1,6 +1,8 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback;
 
 import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class HollerbackAppState {
 

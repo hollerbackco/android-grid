@@ -11,7 +11,9 @@ import org.json.JSONObject;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.HollerbackConstants;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
@@ -19,8 +21,6 @@ import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
 import com.moziy.hollerback.util.HollerbackAPI;
-import com.moziy.hollerback.util.HollerbackAppState;
-import com.moziy.hollerback.util.HollerbackConstants;
 import com.moziy.hollerback.util.JSONUtil;
 
 /**

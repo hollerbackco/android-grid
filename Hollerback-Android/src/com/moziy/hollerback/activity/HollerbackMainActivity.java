@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import com.crittercism.app.Crittercism;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -22,7 +23,6 @@ import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.HollerbackAppState;
 import com.moziy.hollerback.util.contacts.ContactsDelegate;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 

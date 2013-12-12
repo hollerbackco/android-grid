@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback;
 
 public class HollerbackConstants {
 

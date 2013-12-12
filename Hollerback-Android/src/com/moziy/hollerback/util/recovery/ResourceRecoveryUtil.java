@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.recovery;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,6 +10,8 @@ import android.util.Log;
 
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.service.PassiveUploadService;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 /**
  * This class will get notified when a video upload or post fails
