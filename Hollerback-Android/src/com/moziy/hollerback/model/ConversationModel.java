@@ -160,7 +160,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     public String toString() {
         return "ConversationModel [id=" + id + ", name=" + name + ", unread_count=" + unread_count + ", created_at=" + created_at + ", deleted_at=" + deleted_at + ", last_message_at="
                 + last_message_at + ", most_recent_subtitle=" + most_recent_subtitle + ", most_recent_thumb_url=" + most_recent_thumb_url + ", unseen_count=" + unseen_count + ", user_id=" + user_id
-                + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + "]";
+                + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + ", state=" + state + "]";
     }
 
 }

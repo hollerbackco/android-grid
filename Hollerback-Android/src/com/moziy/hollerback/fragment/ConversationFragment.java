@@ -192,6 +192,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
 
+        Log.d(TAG, "isRemoving() : " + isRemoving());
+
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.moziy.hollerback.service.helper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.activeandroid.ActiveAndroid;
@@ -60,6 +61,18 @@ public class VideoHelper {
         } finally {
             ActiveAndroid.endTransaction();
         }
+    }
+
+    public static ArrayList<String> getWatchedIds(List<VideoModel> watchedVideos) {
+
+        final ArrayList<String> watchedIds = new ArrayList<String>();// (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
+
+        for (VideoModel watchedVideo : watchedVideos) {
+            watchedIds.add(watchedVideo.getGuid());
+        }
+        // lets just query the watched ids
+
+        return watchedIds;
     }
 
 }

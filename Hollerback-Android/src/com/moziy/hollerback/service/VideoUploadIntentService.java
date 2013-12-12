@@ -267,7 +267,7 @@ public class VideoUploadIntentService extends IntentService {
             final List<VideoModel> watchedVideos = VideoHelper.getVideosForTransaction(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'");
 
             // get all the ids corresponding to the videos
-            ArrayList<String> watchedIds = getWatchedIds(watchedVideos);
+            ArrayList<String> watchedIds = VideoHelper.getWatchedIds(watchedVideos);
 
             ArrayList<String> partUrls = new ArrayList<String>();
             for (int i = 0; i < model.getNumParts(); i++) {
@@ -336,18 +336,6 @@ public class VideoUploadIntentService extends IntentService {
 
             List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
             return watchedVideos;
-        }
-
-        private ArrayList<String> getWatchedIds(List<VideoModel> watchedVideos) {
-
-            final ArrayList<String> watchedIds = new ArrayList<String>();// (ArrayList<String>) intent.getStringArrayListExtra(INTENT_ARG_WATCHED_IDS); // TODO: store this in another table?
-
-            for (VideoModel watchedVideo : watchedVideos) {
-                watchedIds.add(watchedVideo.getGuid());
-            }
-            // lets just query the watched ids
-
-            return watchedIds;
         }
 
         private void markVideosAsWatched(List<VideoModel> watchedVideos) {
