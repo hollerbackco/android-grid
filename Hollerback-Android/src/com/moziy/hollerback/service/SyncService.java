@@ -216,29 +216,51 @@ public class SyncService extends IntentService {
 
             }
 
-            if (!existingConvos.isEmpty()) {
+            synchronized (ConversationModel.class) { // important stuff happening, ensure the utmost caution
 
-                for (ConversationModel existingConversation : existingConvos) {
-                    // lookup the new conversation and look at the last message time
-                    ConversationModel newConversation = newConvoMap.get(existingConversation.getConversationId());
-                    if (newConversation.getLastMessageAtInMillis() <= existingConversation.getLastMessageAtInMillis()) {
-                        newConvoMap.remove(newConversation.getConversationId());
-                        Log.d(TAG, "KEEPING:\n" + newConversation.toString());
-                    } else {
-                        Log.d(TAG, "DELETING:\n" + existingConversation.toString());
-                        existingConversation.delete(); // delete it so that it gets updated
+                if (!existingConvos.isEmpty()) {
+
+                    for (ConversationModel existingConversation : existingConvos) {
+
+                        // lookup the new conversation and look at the last message time
+
+                        ConversationModel newConversation = newConvoMap.get(existingConversation.getConversationId());
+                        if (newConversation.getLastMessageAtInMillis() <= existingConversation.getLastMessageAtInMillis()) {
+
+                            newConvoMap.remove(newConversation.getConversationId());
+                            Log.d(TAG, "KEEPING:\n" + newConversation.toString());
+
+                        } else {
+
+                            Log.d(TAG, "DELETING:\n" + existingConversation.toString());
+
+                            // lets see if this existing conversation had any watched videos but pending post that aren't transacting
+                            List<VideoModel> watchedVideos = new Select()
+                                    .from(VideoModel.class)
+                                    .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_WATCHED_STATE + "=? AND " + ActiveRecordFields.C_VID_TRANSACTING + "=?",
+                                            existingConversation.getConversationId(), VideoModel.ResourceState.WATCHED_PENDING_POST, 0).execute();
+
+                            if (watchedVideos != null && !watchedVideos.isEmpty()) {
+                                Log.w(TAG, "old unread: " + newConversation.getUnreadCount());
+                                newConversation.setUnreadCount(newConversation.getUnreadCount() - watchedVideos.size());
+                                Log.w(TAG, "new unread: " + newConversation.getUnreadCount());
+
+                            }
+
+                            existingConversation.delete(); // delete it so that it gets updated
+                        }
                     }
+
                 }
 
-            }
+                if (!newConvoMap.isEmpty()) {
 
-            if (!newConvoMap.isEmpty()) {
+                    for (ConversationModel newConversation : newConvoMap.values()) {
+                        newConversation.save();
+                        Log.d(TAG, "ADDING:\n" + newConversation.toString());
+                    }
 
-                for (ConversationModel newConversation : newConvoMap.values()) {
-                    newConversation.save();
-                    Log.d(TAG, "ADDING:\n" + newConversation.toString());
                 }
-
             }
             ActiveAndroid.setTransactionSuccessful();
         } finally {

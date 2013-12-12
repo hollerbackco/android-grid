@@ -397,18 +397,20 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                     VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
                     Log.d(TAG, "fetching latest from db: " + video.toString());
 
-                    video.setRead(true); // mark the video as watched
-                    video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
-                    video.save();
+                    synchronized (ConversationModel.class) { // very important synchronization with the sync service
 
-                    // TODO - Sajjad: Create a service to go and remove the watched videos
-                    if (mConversation == null) {
-                        mConversation = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                        video.setRead(true); // mark the video as watched
+                        video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
+                        video.save();
+
+                        // TODO - Sajjad: Create a service to go and remove the watched videos
+                        if (mConversation == null) {
+                            mConversation = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                        }
+                        Log.d(TAG, "new unread count: " + (mConversation.getUnreadCount() - 1));
+                        mConversation.setUnreadCount(mConversation.getUnreadCount() - 1);
+                        mConversation.save(); // save that we've unread
                     }
-                    Log.d(TAG, "new unread count: " + (mConversation.getUnreadCount() - 1));
-                    mConversation.setUnreadCount(mConversation.getUnreadCount() - 1);
-                    mConversation.save(); // save that we've unread
-
                     ActiveAndroid.setTransactionSuccessful();
 
                 } finally {
