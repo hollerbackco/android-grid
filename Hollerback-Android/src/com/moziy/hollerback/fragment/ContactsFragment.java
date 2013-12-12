@@ -207,13 +207,13 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public int getHeaderPositionFromItemPosition(int position) {
 
-            return mItemManager.mItems.get(position).getHeaderPosition();
+            return getItem(position).getHeaderPosition();
         }
 
         @Override
         public int getHeaderItemsNumber(int headerPosition) {
 
-            return ((HeaderItem) mItemManager.mItems.get(headerPosition)).getNumberOfItems();
+            return ((HeaderItem) getItem(headerPosition)).getNumberOfItems();
         }
 
     }

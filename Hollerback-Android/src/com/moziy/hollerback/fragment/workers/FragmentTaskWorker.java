@@ -45,7 +45,8 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "myId: " + getTag());
 
-        mTask.setTaskListener(((TaskClient) getTargetFragment())); // update the task listener during a config change
+        mTaskClient = (TaskClient) getTargetFragment();
+        setTaskListeners(mTask, false);
 
         if (mExecuter == null) {
             // start executing the task
@@ -57,7 +58,7 @@ public class FragmentTaskWorker extends AbsTaskWorker {
 
                     Log.d(TAG, "removing self from fragment manager");
                     getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
-
+                    clearTaskListeners(mTask);
                 }
 
             };
@@ -70,5 +71,4 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         }
 
     }
-
 }

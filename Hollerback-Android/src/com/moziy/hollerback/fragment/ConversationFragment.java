@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import android.content.BroadcastReceiver;
@@ -34,6 +35,8 @@ import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
@@ -120,10 +123,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             mTaskQueue = new LinkedList<Task>();// done
 
-            mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
-                    new Select()//
-                            .from(VideoModel.class) //
-                            .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_ISREAD + "=?", mConvoId, 0))); //
+            mTaskQueue.add(new GetVideoModelTask(mConvoId));
 
             // figure out how many tasks we need to create
             worker = new FragmentTaskWorker() {
@@ -228,7 +228,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onTaskComplete(Task t) {
 
-        if (t instanceof ActiveAndroidTask) {
+        if (t instanceof GetVideoModelTask) {
 
             handleModelTaskComplete(t);
 
@@ -257,7 +257,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void handleModelTaskComplete(Task t) {
 
-        mVideos = new ArrayList<VideoModel>(((ActiveAndroidTask<VideoModel>) t).getResults());
+        mVideos = new ArrayList<VideoModel>(((GetVideoModelTask) t).getAllConvoVideos());
         Log.d(TAG, "total unread videos found: " + mVideos.size());
 
         mVideoMap = new HashMap<String, VideoModel>();
@@ -271,14 +271,15 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         }
 
+        // add the workers to download our videos
+        for (VideoModel video : ((GetVideoModelTask) t).getVideosForDownload()) {
+            addDownloadWorkerFor(video);
+        }
+
         for (VideoModel video : mVideos) {
 
             Log.d(TAG, "processing video with state: " + video.toString());
-            if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState()) && !video.isTransacting()) { // create a download task for all non transacting videos
-
-                addDownloadWorkerFor(video);
-
-            } else if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
+            if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 mProgress.setVisibility(View.GONE);
                 // if we've already been downloaded and we're on the first of the playback queue, then begin playback
                 if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
@@ -457,6 +458,40 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
         f.setTargetFragment(this, 0);
         getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+    }
+
+    public static class GetVideoModelTask extends AbsTask {
+
+        private long mConvoId;
+        private List<VideoModel> mAllConvoVideos;
+        private List<VideoModel> mVideosForDownload;
+        private String mWhere;
+
+        public GetVideoModelTask(long convoId) {
+            mConvoId = convoId;
+            mWhere = ActiveRecordFields.C_VID_CONV_ID + "=" + mConvoId + " AND " + ActiveRecordFields.C_VID_ISREAD + "=0";
+        }
+
+        @Override
+        public void run() {
+
+            mAllConvoVideos = new Select()//
+                    .from(VideoModel.class) //
+                    .where(mWhere).execute();
+
+            // get the videos that we wish to download and set them as transacting
+            mVideosForDownload = VideoHelper.getVideosForTransaction(mWhere + " AND " + ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "'");
+
+        }
+
+        public List<VideoModel> getAllConvoVideos() {
+            return mAllConvoVideos;
+        }
+
+        public List<VideoModel> getVideosForDownload() {
+            return mVideosForDownload;
+        }
+
     }
 
     /**

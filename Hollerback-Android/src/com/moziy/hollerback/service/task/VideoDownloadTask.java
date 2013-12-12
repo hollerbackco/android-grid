@@ -14,11 +14,9 @@ public class VideoDownloadTask extends HttpDownloadTask {
     public VideoDownloadTask(VideoModel model) {
         super(model.getFileUrl(), HBFileUtil.getOutputVideoFile(model));
         mVideoId = model.getVideoId(); // don't hold on to the model
-
         // mark video as downloading
         model.setState(VideoModel.ResourceState.DOWNLOADING);
-        model.setTransacting();
-        model.save();
+        model.save(); // the transaction flag should be set prior in our case, it's in the VideoHelper class
 
     }
 

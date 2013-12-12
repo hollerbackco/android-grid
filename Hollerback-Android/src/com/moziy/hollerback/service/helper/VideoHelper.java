@@ -31,4 +31,35 @@ public class VideoHelper {
         return videos;
     }
 
+    public static synchronized VideoModel getVideoForTransaction(String where) {
+        VideoModel v = new Select().from(VideoModel.class).where(where + " AND " + ActiveRecordFields.C_VID_TRANSACTING + "=0").executeSingle();
+        if (v != null) {
+            v.setTransacting();
+            v.save();
+        }
+        return v;
+    }
+
+    public static synchronized void clearVideoTransacting(VideoModel video) {
+        video.clearTransacting();
+        video.save();
+    }
+
+    public static synchronized void clearVideoTransacting(List<VideoModel> videos) {
+        if (videos.isEmpty())
+            return;
+
+        ActiveAndroid.beginTransaction();
+
+        try {
+            for (VideoModel video : videos) {
+                video.clearTransacting();
+                video.save();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
 }

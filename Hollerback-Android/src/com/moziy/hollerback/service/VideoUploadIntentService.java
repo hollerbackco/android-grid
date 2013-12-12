@@ -65,7 +65,7 @@ public class VideoUploadIntentService extends IntentService {
         long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
 
         // lets lookup the id passed in from our intent arguments
-        final VideoModel model = new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
+        final VideoModel model = VideoHelper.getVideoForTransaction("Id = " + resourceId); // new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
 
         UploadUtility uploadUtility = new UploadUtility();
 
@@ -84,8 +84,11 @@ public class VideoUploadIntentService extends IntentService {
 
         } else { // a conversation exists
 
+            if (!model.isTransacting()) {
+                throw new IllegalStateException("Video must be transacting!");
+            }
             // if it's pending upload and not transacting
-            if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState()) && !model.isTransacting()) {
+            if (VideoModel.ResourceState.PENDING_UPLOAD.equals(model.getState())) {
                 // lets get the part info
 
                 // for each part lets upload the resource
@@ -95,11 +98,19 @@ public class VideoUploadIntentService extends IntentService {
             }
 
             // now if the model state is pending post and it's not transacting, then let's go ahead and post
-            if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState()) && !model.isTransacting()) {
+            if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(model.getState())) {
 
                 uploadUtility.postToExistingConversation(model);
 
             }
+
+            if (!model.isTransacting()) {
+                throw new IllegalStateException("Video must be transacting");
+            }
+
+            // clear the model from transacting
+            Log.d(TAG, "clearing transacting");
+            VideoHelper.clearVideoTransacting(model);
         }
     }
 
@@ -116,18 +127,17 @@ public class VideoUploadIntentService extends IntentService {
             mRecoverOnFailure = recover;
         }
 
-        public void uploadResource(VideoModel model) {
-            uploadResource(model, 0, model.getNumParts());
-        }
-
         public void uploadResource(VideoModel model, int partNumber, int totalParts) {
+
+            if (!model.isTransacting()) {
+                throw new IllegalStateException("Model must be transacting!");
+            }
 
             if (partNumber == -1 || totalParts == -1) {
                 throw new IllegalStateException("can't upload without having proper part information! part: " + partNumber + " totalParts: " + totalParts);
             }
 
             // awesome, let's try to upload this resource to s3
-            model.setTransacting();
             model.setNumParts(totalParts); // update the total number of parts for this resource
             model.save();
 
@@ -162,26 +172,22 @@ public class VideoUploadIntentService extends IntentService {
                 }
             }
 
-            model.clearTransacting(); // ok, we're no longer transacting
             model.save(); // ok, let's save the state :-)
         }
 
-        public boolean postToNewConversation(final VideoModel model) {
+        private boolean postToNewConversation(final VideoModel model) {
+
+            if (!model.isTransacting()) {
+                throw new IllegalStateException("Model must be transacting");
+            }
 
             // presumption that all the files have been uploaded
             Log.d(TAG, "recipients: " + model.getRecipients()[0]);
             List<String> contacts = Arrays.asList(model.getRecipients());
-            // mark the model as transacting
-            model.setTransacting();
-            model.save();
 
-            // ArrayList<String> parts = new ArrayList<String>();
-            //
-            // for (int i = 0; i < model.getNumParts(); i++) {
-            // StringBuilder sb = new StringBuilder(128);
-            // sb.append(AppEnvironment.getInstance().UPLOAD_BUCKET).append("/").append(model.getSegmentFileName()).append(".").append(i).append(".").append(model.getSegmentFileExtension());
-            // parts.add(sb.toString());
-            // }
+            final boolean[] isDone = {
+                false
+            };
 
             HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
             }) {
@@ -194,7 +200,6 @@ public class VideoUploadIntentService extends IntentService {
 
                     // nice it succeeded, lets update the model
                     model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-                    model.clearTransacting();
 
                     ConversationModel conversationResp = response.getData();
 
@@ -220,32 +225,44 @@ public class VideoUploadIntentService extends IntentService {
 
                     // lets create a new conversation from the response
                     Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversationId());
+
+                    isDone[0] = true;
                 }
 
                 @Override
                 public void onApiFailure(Metadata metaData) {
                     Log.d(TAG, "onApiFailure");
                     // ok we're no longer transacting so let's clear it, but lets not update the state
-                    model.clearTransacting();
                     model.save();
 
                     Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
                     IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
 
+                    isDone[0] = true;
+
                 }
 
             });
+
+            while (!isDone[0]) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            Log.d(TAG, "done");
 
             return true;
         }
 
         public boolean postToExistingConversation(final VideoModel model) {
 
-            // // get all watched videos
-            // final List<VideoModel> watchedVideos = getWatchedVideos();
-            //
-            // // mark them as transacting
-            // setVideosAsTransacting(watchedVideos);
+            final boolean[] isDone = {
+                false
+            };
 
             final List<VideoModel> watchedVideos = VideoHelper.getVideosForTransaction(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'");
 
@@ -281,25 +298,36 @@ public class VideoUploadIntentService extends IntentService {
 
                     // update the videos as watched
                     markVideosAsWatched(watchedVideos);
+                    VideoHelper.clearVideoTransacting(watchedVideos); // unset transacting flag of watched videos
 
-                    // update model with the post repsonse
-                    clearVideoTransacting(watchedVideos);
+                    isDone[0] = true;
 
                 }
 
                 @Override
                 public void onApiFailure(Metadata metaData) {
                     Log.d(TAG, "post to conversation failed");
-                    // broadcast failure of posting conversation
-                    clearVideoTransacting(watchedVideos);
-                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
+
+                    VideoHelper.clearVideoTransacting(watchedVideos);
+
+                    IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED)); // broadcast failure of posting conversation
 
                     if (mRecoverOnFailure)
                         ResourceRecoveryUtil.schedule();
 
+                    isDone[0] = true;
                 }
             });
 
+            while (!isDone[0]) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            Log.d(TAG, "done");
             return true;
         }
 
@@ -341,40 +369,6 @@ public class VideoUploadIntentService extends IntentService {
             }
         }
 
-        private void setVideosAsTransacting(List<VideoModel> videos) {
-
-            if (videos.isEmpty())
-                return;
-
-            ActiveAndroid.beginTransaction();
-
-            try {
-                for (VideoModel watchedVideo : videos) {
-                    watchedVideo.setTransacting();
-                    watchedVideo.save();
-                }
-                ActiveAndroid.setTransactionSuccessful();
-            } finally {
-                ActiveAndroid.endTransaction();
-            }
-        }
-
-        private void clearVideoTransacting(List<VideoModel> videos) {
-            if (videos.isEmpty())
-                return;
-
-            ActiveAndroid.beginTransaction();
-
-            try {
-                for (VideoModel watchedVideo : videos) {
-                    watchedVideo.clearTransacting();
-                    watchedVideo.save();
-                }
-                ActiveAndroid.setTransactionSuccessful();
-            } finally {
-                ActiveAndroid.endTransaction();
-            }
-        }
     }
 
 }

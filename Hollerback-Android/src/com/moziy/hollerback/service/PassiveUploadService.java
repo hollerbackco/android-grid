@@ -10,6 +10,7 @@ import com.activeandroid.util.Log;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService.UploadUtility;
+import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.ResourceRecoveryUtil;
 
 public class PassiveUploadService extends IntentService {
@@ -39,10 +40,13 @@ public class PassiveUploadService extends IntentService {
                 return;
             }
 
+            // lets start a transaction, the method below ensures that we don't retrieve a list of transacting videos
+            pendingList = VideoHelper.getVideosForTransaction(sb.toString());
+
             Log.d(TAG, "attempting to upload previously pending resources");
             for (VideoModel v : pendingList) {
-                if (v.isTransacting())
-                    continue;
+                if (!v.isTransacting())
+                    throw new IllegalStateException("Video must be transacting!");
 
                 if (VideoModel.ResourceState.PENDING_UPLOAD.equals(v.getState())) {
                     int totalParts = v.getNumParts();
@@ -54,12 +58,17 @@ public class PassiveUploadService extends IntentService {
 
                 // now if the model state is pending post and it's not transacting, then let's go ahead and post
                 if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(v.getState())) {
-
                     util.postToExistingConversation(v);
-
                 }
 
+                if (!v.isTransacting()) {
+                    throw new IllegalStateException("Video must be transacting!");
+                }
+
+                // clear the model from transacting
+                VideoHelper.clearVideoTransacting(v);
             }
+
         } finally {
             ResourceRecoveryUtil.completeWakefulIntent(intent);
         }

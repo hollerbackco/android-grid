@@ -13,6 +13,7 @@ import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
@@ -34,8 +35,12 @@ public class BgDownloadService extends IntentService {
 
         // TODO - sajjad: Add download of thumbs!
         Log.d(TAG, "bg download service launched!");
+
+        String where = ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "' AND " + //
+                ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.UNWATCHED + "'";
+
         // query the videos
-        List<VideoModel> videos = getVideos();
+        List<VideoModel> videos = VideoHelper.getVideosForTransaction(where); // clearing the transacting flag is done within the videodownloadtask
 
         if (videos.isEmpty()) {
             Log.w(TAG, TAG + " was initiated but no videos were found.");

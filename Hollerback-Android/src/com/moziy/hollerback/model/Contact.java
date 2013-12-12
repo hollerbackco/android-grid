@@ -4,8 +4,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import android.util.Log;
-
 import com.moziy.hollerback.util.security.HashUtil;
 
 public class Contact {
@@ -28,7 +26,6 @@ public class Contact {
         this.mPhone = mPhone;
         this.mPhoneLabel = mPhoneLabel;
         this.mPhotoID = mPhotoID;
-        Log.d(TAG, "created contact: " + toString());
 
         mPhones.add(mPhone);
     }
