@@ -163,8 +163,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 break;
             case R.id.action_find_friends:
                 ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment)
+                        .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.rotation_reverse_clockwise, R.anim.slide_out_to_top).addToBackStack(FRAGMENT_TAG)
+                        .commitAllowingStateLoss();
                 break;
             case R.id.action_add:
                 // OldContactsFragment fragment = OldContactsFragment.newInstance();
@@ -243,11 +244,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         AnimationSet set = new AnimationSet(true);
 
         Animation animation = new AlphaAnimation(0.0f, 1.0f);
-        animation.setDuration(50);
+        animation.setDuration(200);
         set.addAnimation(animation);
 
         animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, -1.0f, Animation.RELATIVE_TO_SELF, 0.0f);
-        animation.setDuration(100);
+        animation.setDuration(300);
         set.addAnimation(animation);
 
         LayoutAnimationController controller = new LayoutAnimationController(set, 0.5f);
