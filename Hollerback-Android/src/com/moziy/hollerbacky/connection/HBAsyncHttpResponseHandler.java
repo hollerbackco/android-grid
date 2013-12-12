@@ -43,6 +43,8 @@ public abstract class HBAsyncHttpResponseHandler<T extends ResponseObject> exten
                                 @Override
                                 public void run() {
                                     onApiFailure(((Envelope<?>) response).meta);
+
+                                    onPostResponse();
                                 }
                             });
                             return;
@@ -55,6 +57,8 @@ public abstract class HBAsyncHttpResponseHandler<T extends ResponseObject> exten
                         @Override
                         public void run() {
                             onResponseSuccess(statusCode, response);
+
+                            onPostResponse();
                         }
                     });
 
@@ -67,6 +71,8 @@ public abstract class HBAsyncHttpResponseHandler<T extends ResponseObject> exten
                         @Override
                         public void run() {
                             onApiFailure(meta); // only if there's an api failure notify?
+
+                            onPostResponse();
 
                         }
 
@@ -96,6 +102,8 @@ public abstract class HBAsyncHttpResponseHandler<T extends ResponseObject> exten
                     @Override
                     public void run() {
                         onApiFailure(meta); // only if there's an api failure notify?
+
+                        onPostResponse();
 
                     }
 

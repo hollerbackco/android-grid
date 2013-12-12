@@ -24,6 +24,12 @@ public abstract class HBHttpResponseHandler<T extends ResponseObject> extends As
 
     public abstract void onApiFailure(Envelope.Metadata metaData);
 
+    /**
+     * This method will be invoked after either onResponseSuccess or onApiFailure
+     */
+    public void onPostResponse() {
+    }
+
     public HBHttpResponseHandler(TypeReference<T> typeReference, boolean isSynchronous) {
         mTypeReference = typeReference;
         setUseSynchronousMode(isSynchronous);

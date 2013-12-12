@@ -245,6 +245,17 @@ public class HBRequestManager {
         }
     }
 
+    public static void postTTYL(long conversationId, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {
+        if (HollerbackAppState.isValidSession()) {
+
+            RequestParams params = new RequestParams();
+            params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+            params.put(HollerbackAPI.PARAM_WATCHED_IDS, watchedIds);
+            HollerbackAsyncClient.getInstance().post(String.format(Locale.US, HollerbackAPI.API_GOODBYE, conversationId), params, handler);
+        }
+
+    }
+
     public static void leaveConversation(final String conversationId, AsyncHttpResponseHandler handler) {
         if (HollerbackAppState.isValidSession()) {
             RequestParams params = new RequestParams();

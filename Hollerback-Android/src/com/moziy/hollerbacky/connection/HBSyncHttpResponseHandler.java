@@ -38,6 +38,8 @@ public abstract class HBSyncHttpResponseHandler<T extends ResponseObject> extend
             // if all is good, then just return
             onResponseSuccess(statusCode, response);
 
+            onPostResponse();
+
         } else {
             // ok there was some sort of issue, lets dig in
             onFailure(null, content);
@@ -49,6 +51,8 @@ public abstract class HBSyncHttpResponseHandler<T extends ResponseObject> extend
 
         Metadata meta = extractMetaData(content);
         onApiFailure(meta); // only if there's an api failure notify?
+
+        onPostResponse();
 
     }
 
