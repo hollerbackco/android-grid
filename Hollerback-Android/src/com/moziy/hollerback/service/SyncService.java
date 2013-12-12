@@ -16,6 +16,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
 import com.moziy.hollerback.model.ConversationModel;
@@ -26,8 +28,6 @@ import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
 public class SyncService extends IntentService {
 

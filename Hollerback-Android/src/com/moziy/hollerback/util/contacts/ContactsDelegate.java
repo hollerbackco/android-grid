@@ -32,6 +32,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
@@ -43,8 +45,6 @@ import com.moziy.hollerback.service.task.CursorTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.util.HollerbackAPI;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
 /**
  * This class is a delegate to contact related operations

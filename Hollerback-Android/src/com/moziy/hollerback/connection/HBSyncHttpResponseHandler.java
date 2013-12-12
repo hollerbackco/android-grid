@@ -1,4 +1,4 @@
-package com.moziy.hollerbacky.connection;
+package com.moziy.hollerback.connection;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.model.web.Envelope;

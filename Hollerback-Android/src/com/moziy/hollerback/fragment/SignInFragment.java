@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
@@ -27,8 +29,6 @@ import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerback.widget.CustomEditText;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignInFragment extends BaseFragment {
 

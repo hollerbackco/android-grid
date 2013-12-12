@@ -37,6 +37,7 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.adapter.ContactsListAdapter;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
@@ -52,7 +53,6 @@ import com.moziy.hollerback.util.JSONUtil;
 import com.moziy.hollerback.util.NumberUtil;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class OldContactsFragment extends BaseFragment implements TaskClient {
 

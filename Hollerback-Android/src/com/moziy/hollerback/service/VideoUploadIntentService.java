@@ -13,6 +13,8 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
@@ -25,8 +27,6 @@ import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
 /**
  * This class is responsible for uploading a video resource to S3, and then issuing a post to the appropriate api 

@@ -24,12 +24,12 @@ import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.RequestCallbacks.OnProgressListener;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.video.S3UploadParams;
 import com.moziy.hollerback.view.CustomVideoView;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnProgressListener;
 
 // TODO: Abstract the upload methods, verification and buckets
 

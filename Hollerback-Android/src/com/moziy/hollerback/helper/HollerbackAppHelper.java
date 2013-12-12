@@ -7,8 +7,8 @@ import android.content.Intent;
 
 import com.moziy.hollerback.background.ContactFetchAsyncTask;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.SortedArray;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class HollerbackAppHelper {
 

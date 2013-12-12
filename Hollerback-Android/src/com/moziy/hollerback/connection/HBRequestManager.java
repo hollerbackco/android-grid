@@ -1,4 +1,4 @@
-package com.moziy.hollerbacky.connection;
+package com.moziy.hollerback.connection;
 
 import java.util.ArrayList;
 import java.util.List;

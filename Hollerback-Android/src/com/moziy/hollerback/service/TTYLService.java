@@ -7,13 +7,13 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.service.helper.VideoHelper;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.HBSyncHttpResponseHandler;
 
 public class TTYLService extends IntentService {
     private static final String TAG = TTYLService.class.getSimpleName();
