@@ -140,6 +140,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         return most_recent_thumb_url;
     }
 
+    public String getSubTitle() {
+        return most_recent_subtitle;
+    }
+
     public void setUrl(String value) {
         this.url = value;
     }

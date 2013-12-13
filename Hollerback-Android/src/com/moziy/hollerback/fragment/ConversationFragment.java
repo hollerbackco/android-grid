@@ -192,8 +192,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
 
-        Log.d(TAG, "isRemoving() : " + isRemoving());
-
     }
 
     @Override
@@ -457,11 +455,13 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     }
 
     private void beginRecording() {
-
-        // we're ready to move to the recording fragment
-        RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
-        f.setTargetFragment(this, 0);
-        getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+        if (isResumed()) {
+            // we're ready to move to the recording fragment
+            RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
+            f.setTargetFragment(this, 0);
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
+                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+        }
     }
 
     public static class GetVideoModelTask extends AbsTask {

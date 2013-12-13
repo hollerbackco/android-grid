@@ -200,6 +200,7 @@ public class SyncService extends IntentService {
             if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
                 for (VideoModel existingVideo : existingVideos) { // a video's state should not change on the server once we recieve it on the client
                     Log.d(TAG, "KEEPING:\n" + existingVideo.toString());
+
                     // lets lookup the new video, and make sure that we don't update it unless the update time of the video is different than our update time
                     newVideoMap.remove(existingVideo.getGuid());
                 }
@@ -225,27 +226,33 @@ public class SyncService extends IntentService {
                         // lookup the new conversation and look at the last message time
 
                         ConversationModel newConversation = newConvoMap.get(existingConversation.getConversationId());
+
+                        // lets see if this existing conversation had any watched videos but pending post that aren't transacting
+                        List<VideoModel> watchedVideos = new Select()
+                                .from(VideoModel.class)
+                                .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_WATCHED_STATE + "=? AND " + ActiveRecordFields.C_VID_TRANSACTING + "=?",
+                                        existingConversation.getConversationId(), VideoModel.ResourceState.WATCHED_PENDING_POST, 0).execute();
+
+                        // unread count:
+                        int unreadCount = newConversation.getUnreadCount() - ((watchedVideos != null && !watchedVideos.isEmpty()) ? watchedVideos.size() : 0);
+
                         if (newConversation.getLastMessageAtInMillis() <= existingConversation.getLastMessageAtInMillis()) {
 
+                            Log.d(TAG, "SKIPPING:\n" + newConversation.toString());
+
+                            Log.w(TAG, "old unread: " + existingConversation.getUnreadCount());
+                            existingConversation.setUnreadCount(unreadCount);
+                            existingConversation.save();
+                            Log.w(TAG, "new unread: " + existingConversation.getUnreadCount());
                             newConvoMap.remove(newConversation.getConversationId());
-                            Log.d(TAG, "KEEPING:\n" + newConversation.toString());
 
                         } else {
 
                             Log.d(TAG, "DELETING:\n" + existingConversation.toString());
 
-                            // lets see if this existing conversation had any watched videos but pending post that aren't transacting
-                            List<VideoModel> watchedVideos = new Select()
-                                    .from(VideoModel.class)
-                                    .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_WATCHED_STATE + "=? AND " + ActiveRecordFields.C_VID_TRANSACTING + "=?",
-                                            existingConversation.getConversationId(), VideoModel.ResourceState.WATCHED_PENDING_POST, 0).execute();
-
-                            if (watchedVideos != null && !watchedVideos.isEmpty()) {
-                                Log.w(TAG, "old unread: " + newConversation.getUnreadCount());
-                                newConversation.setUnreadCount(newConversation.getUnreadCount() - watchedVideos.size());
-                                Log.w(TAG, "new unread: " + newConversation.getUnreadCount());
-
-                            }
+                            Log.w(TAG, "old unread: " + newConversation.getUnreadCount());
+                            newConversation.setUnreadCount(unreadCount);
+                            Log.w(TAG, "new unread: " + newConversation.getUnreadCount());
 
                             existingConversation.delete(); // delete it so that it gets updated
                         }

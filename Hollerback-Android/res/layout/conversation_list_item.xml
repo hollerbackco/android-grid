@@ -60,8 +60,7 @@
                 android:text="ttyl"
                 android:textColor="@color/hb_blue"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:textStyle="bold" />
         </LinearLayout>
 
         <ImageView

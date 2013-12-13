@@ -34,7 +34,7 @@ import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.view.RoundImageView;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
-
+    private static final String TAG = ConversationListAdapter.class.getSimpleName();
     protected List<ConversationModel> mConversations;
     protected List<ConversationModel> mFilteredConversations;
 
@@ -107,6 +107,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.topLayer = (ViewGroup) convertView.findViewById(R.id.top_layer);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
+            viewHolder.conversationSubTitle = (TextView) convertView.findViewById(R.id.tv_ttyl);
             viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
             viewHolder.btnRecord = (ImageView) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
@@ -116,6 +117,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         }
 
         final ConversationModel conversationModel = mFilteredConversations.get(position);
+        viewHolder.conversationSubTitle.setText(""); // clear the text
+        Log.d(TAG, "unread count: " + conversationModel.getUnreadCount());
         if (conversationModel.getUnreadCount() > 0) {
             int[] colors;
             if (mConvoColorMap.containsKey(conversationModel)) {
@@ -128,12 +131,17 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.topLayer.setBackgroundColor(colors[1]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
+
         } else {
             convertView.setBackgroundColor(color.white);
             viewHolder.topLayer.setBackgroundColor(Color.WHITE);
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
+
+            if (conversationModel.getSubTitle() != null)
+                viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
+
         }
 
         viewHolder.conversationName.setText(conversationModel.getConversationName().toUpperCase());
@@ -156,7 +164,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             public void onClick(View v) {
                 mActivity.getActionBar().hide();
                 // TODO: no need to pass in watched ids
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName(), new ArrayList<String>());
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName());
                 mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
                         .replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
             }
@@ -237,6 +245,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         public ViewGroup topLayer;
         TextView conversationName;
         TextView conversationTime;
+        TextView conversationSubTitle;
         RoundImageView thumb;
         ImageView btnRecord;
         int foregroundColor = -1;

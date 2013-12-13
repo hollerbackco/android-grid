@@ -17,6 +17,7 @@ import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
+import com.moziy.hollerback.service.task.VideoDownloadTask.POST_TXN_OPS;
 import com.moziy.hollerback.util.NotificationUtil;
 
 public class BgDownloadService extends IntentService {
@@ -81,13 +82,15 @@ public class BgDownloadService extends IntentService {
         TaskGroup downloadTasks = new TaskGroup();
 
         // for each video, lets create a download task and add it to the task group
-        for (VideoModel video : videos) {
+        for (final VideoModel video : videos) {
             VideoDownloadTask t = new VideoDownloadTask(video);
+            t.setPostTxnOps(POST_TXN_OPS.CLEAR_ON_SUCCESS); // clears the transacting flag if the operation was successful
             t.setTaskListener(new Task.Listener() {
 
                 @Override
                 public void onTaskError(Task t) {
                     Log.w(TAG, "video with id: " + ((VideoDownloadTask) t).getVideoId() + " failed to download");
+
                     // notify of failure in case anyone is listening
                     Intent intent = new Intent(IABIntent.VIDEO_DOWNLOAD_FAILED);
                     intent.putExtra(IABIntent.PARAM_ID, ((VideoDownloadTask) t).getVideoId());
@@ -96,10 +99,12 @@ public class BgDownloadService extends IntentService {
 
                 @Override
                 public void onTaskComplete(Task t) {
+
                     Log.d(TAG, "video with id: " + ((VideoDownloadTask) t).getVideoId() + " downloaded.");
                     Intent intent = new Intent(IABIntent.VIDEO_DOWNLOADED);
                     intent.putExtra(IABIntent.PARAM_ID, ((VideoDownloadTask) t).getVideoId());
                     IABroadcastManager.sendLocalBroadcast(intent);
+
                 }
             });
             downloadTasks.addTask(t);
@@ -121,6 +126,19 @@ public class BgDownloadService extends IntentService {
                 taskGroupStatus = downloadTasks.isSuccess();
                 ++retrycount;
             } while (retrycount < DEFAULT_RETRY_COUNT && !taskGroupStatus);
+
+        }
+
+        // for all the failed tasks, clear the transacting flag
+        for (Task t : downloadTasks.getFailedTasks()) {
+            for (VideoModel v : videos) {
+                if (v.getVideoId().equals(((VideoDownloadTask) t).getVideoId())) {
+                    if (!v.isTransacting()) {
+                        throw new IllegalStateException("Video must be transacting!");
+                    }
+                    VideoHelper.clearVideoTransacting(v);
+                }
+            }
 
         }
 

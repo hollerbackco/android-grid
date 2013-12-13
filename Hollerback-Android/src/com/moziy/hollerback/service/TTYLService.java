@@ -29,16 +29,33 @@ public class TTYLService extends IntentService {
 
         long conversationId = intent.getLongExtra(CONVO_ID_INTENT_ARG_KEY, -1);
 
-        if (conversationId == -1) {
-            throw new IllegalStateException("Conversation Id not set!");
+        // lets get all the videos that are pending to be watched
+        final List<VideoModel> videos = VideoHelper.getVideosForTransaction(WHERE);
+
+        if (videos == null || videos.isEmpty()) { // no videos to post watched, foget abou it
+            Log.d(TAG, "no videos pending");
+            return;
+        }
+
+        // if one of the videos belongs to this conversation then post ttyl, otherwise, refrain
+        boolean proceed = false;
+        for (VideoModel v : videos) {
+            if (v.getConversationId() == conversationId) {
+                proceed = true;
+                break;
+            }
+
+        }
+
+        if (!proceed) {
+            VideoHelper.clearVideoTransacting(videos);
+            return;
         }
 
         final boolean[] isDone = {
             false
         };
 
-        // lets get all the videos that are pending to be watched
-        final List<VideoModel> videos = VideoHelper.getVideosForTransaction(WHERE);
         HBRequestManager.postTTYL(conversationId, VideoHelper.getWatchedIds(videos), new HBSyncHttpResponseHandler<Envelope<?>>(new TypeReference<Envelope<?>>() {
         }) {
 
@@ -58,7 +75,7 @@ public class TTYLService extends IntentService {
             @Override
             public void onPostResponse() {
                 super.onPostResponse();
-
+                Log.d(TAG, "clearing pending transacting videos");
                 VideoHelper.clearVideoTransacting(videos);
                 isDone[0] = true;
             }

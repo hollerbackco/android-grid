@@ -138,7 +138,10 @@
             android:name=".service.PassiveUploadService"
             android:exported="false" >
         </service>
-"
+        <service
+            android:name=".service.TTYLService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

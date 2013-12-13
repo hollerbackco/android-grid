@@ -126,9 +126,9 @@ public class VideoUploadIntentService extends IntentService {
             mRecoverOnFailure = recover;
         }
 
-        public void uploadResource(VideoModel model, int partNumber, int totalParts) {
+        public void uploadResource(VideoModel videoModel, int partNumber, int totalParts) {
 
-            if (!model.isTransacting()) {
+            if (!videoModel.isTransacting()) {
                 throw new IllegalStateException("Model must be transacting!");
             }
 
@@ -137,11 +137,11 @@ public class VideoUploadIntentService extends IntentService {
             }
 
             // awesome, let's try to upload this resource to s3
-            model.setNumParts(totalParts); // update the total number of parts for this resource
-            model.save();
+            videoModel.setNumParts(totalParts); // update the total number of parts for this resource
+            videoModel.save();
 
             // should we broadcast that we're uploading?
-            StringBuilder sb = new StringBuilder(128).append(model.getSegmentFileName()).append(".").append(partNumber).append(".").append(model.getSegmentFileExtension());
+            StringBuilder sb = new StringBuilder(128).append(videoModel.getSegmentFileName()).append(".").append(partNumber).append(".").append(videoModel.getSegmentFileExtension());
             String resourceName = sb.toString();
             Log.d(TAG, "attempting to upload: " + resourceName);
 
@@ -150,18 +150,18 @@ public class VideoUploadIntentService extends IntentService {
 
             if (result != null) { // => Yay, we uploaded the file to s3, lets see if all parts have been uploaded
 
-                model.setPartUploadState(partNumber, true); // successfully uploaded
+                videoModel.setPartUploadState(partNumber, true); // successfully uploaded
 
-                if (model.isUploadSuccessfull()) { // uploading resource was successfull
+                if (videoModel.isUploadSuccessfull()) { // uploading resource was successfull
                     Log.d(TAG, "resource parts were successfully uploaded");
 
                     // check to see if all parts have been uploaded successfully
-                    model.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
+                    videoModel.setState(VideoModel.ResourceState.UPLOADED_PENDING_POST);
                 }
             } else {
                 // broadcast failure
-                model.setPartUploadState(partNumber, false); // couldn't upload
-                if (model.getConversationId() < 0) {
+                videoModel.setPartUploadState(partNumber, false); // couldn't upload
+                if (videoModel.getConversationId() < 0) {
                     Log.w(TAG, "upload failed");
                     // broadcast conversation create failure
                     IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
@@ -171,18 +171,18 @@ public class VideoUploadIntentService extends IntentService {
                 }
             }
 
-            model.save(); // ok, let's save the state :-)
+            videoModel.save(); // ok, let's save the state :-)
         }
 
-        private boolean postToNewConversation(final VideoModel model) {
+        private boolean postToNewConversation(final VideoModel videoModel) {
 
-            if (!model.isTransacting()) {
+            if (!videoModel.isTransacting()) {
                 throw new IllegalStateException("Model must be transacting");
             }
 
             // presumption that all the files have been uploaded
-            Log.d(TAG, "recipients: " + model.getRecipients()[0]);
-            List<String> contacts = Arrays.asList(model.getRecipients());
+            Log.d(TAG, "recipients: " + videoModel.getRecipients()[0]);
+            List<String> contacts = Arrays.asList(videoModel.getRecipients());
 
             final boolean[] isDone = {
                 false
@@ -198,13 +198,13 @@ public class VideoUploadIntentService extends IntentService {
                     Log.d(TAG, "thread id: " + Thread.currentThread().getId());
 
                     // nice it succeeded, lets update the model
-                    model.setState(VideoModel.ResourceState.PENDING_UPLOAD);
+                    videoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
 
                     ConversationModel conversationResp = response.getData();
 
                     // lets bind the video to the conversation
-                    model.setConversationId(conversationResp.getConversationId());
-                    model.save();
+                    videoModel.setConversationId(conversationResp.getConversationId());
+                    videoModel.save();
 
                     // if the conversation we created, is actually found in our db, then update it
                     ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
@@ -225,20 +225,24 @@ public class VideoUploadIntentService extends IntentService {
                     // lets create a new conversation from the response
                     Log.d(TAG, "creating new conversation succeeded: " + conversationResp.getConversationId());
 
-                    isDone[0] = true;
                 }
 
                 @Override
                 public void onApiFailure(Metadata metaData) {
                     Log.d(TAG, "onApiFailure");
                     // ok we're no longer transacting so let's clear it, but lets not update the state
-                    model.save();
+                    videoModel.save();
 
                     Log.d(TAG, "creating new conversation failed: " + ((metaData != null) ? ("status code: " + metaData.code) : ""));
                     IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATE_FAILURE));
 
-                    isDone[0] = true;
+                }
 
+                @Override
+                public void onPostResponse() {
+                    super.onPostResponse();
+                    VideoHelper.clearVideoTransacting(videoModel);
+                    isDone[0] = true;
                 }
 
             });
@@ -257,7 +261,7 @@ public class VideoUploadIntentService extends IntentService {
             return true;
         }
 
-        public boolean postToExistingConversation(final VideoModel model) {
+        public boolean postToExistingConversation(final VideoModel videoModel) {
 
             final boolean[] isDone = {
                 false
@@ -269,20 +273,20 @@ public class VideoUploadIntentService extends IntentService {
             ArrayList<String> watchedIds = VideoHelper.getWatchedIds(watchedVideos);
 
             ArrayList<String> partUrls = new ArrayList<String>();
-            for (int i = 0; i < model.getNumParts(); i++) {
+            for (int i = 0; i < videoModel.getNumParts(); i++) {
                 partUrls.add(new StringBuilder(128).append(AppEnvironment.getInstance().UPLOAD_BUCKET) // tmp-bucket
                         .append("/") //
-                        .append(model.getSegmentFileName()) // CD/afejkd-gmmjdueh-qqeermvj
+                        .append(videoModel.getSegmentFileName()) // CD/afejkd-gmmjdueh-qqeermvj
                         .append(".") //
                         .append(i) // 0
                         .append(".") //
-                        .append(model.getSegmentFileExtension()) // mp4
+                        .append(videoModel.getSegmentFileExtension()) // mp4
                         .toString()); //
 
             }
 
-            int convoId = (int) model.getConversationId();
-            HBRequestManager.postToConversation(convoId, model.getGuid(), partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(
+            int convoId = (int) videoModel.getConversationId();
+            HBRequestManager.postToConversation(convoId, videoModel.getGuid(), partUrls, watchedIds, new HBSyncHttpResponseHandler<Envelope<PostToConvoResponse>>(
                     new TypeReference<Envelope<PostToConvoResponse>>() {
                     }) {
 
@@ -292,8 +296,8 @@ public class VideoUploadIntentService extends IntentService {
                     Log.d(TAG, "posted to conversation: " + postResponse.conversation_id);
 
                     // update the video such that it's state is uploaded
-                    model.setState(ResourceState.UPLOADED);
-                    model.save();
+                    videoModel.setState(ResourceState.UPLOADED);
+                    videoModel.save();
 
                     // update the videos as watched
                     VideoHelper.markVideosAsWatched(watchedVideos);

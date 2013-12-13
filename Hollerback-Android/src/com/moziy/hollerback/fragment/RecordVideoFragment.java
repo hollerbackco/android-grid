@@ -58,6 +58,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.TTYLService;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
@@ -68,7 +69,6 @@ import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
     public static final String FRAGMENT_TAG = RecordVideoFragment.class.getSimpleName();
-    public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
     public static final String FRAGMENT_ARG_GOTO_CONVO = "to_conversation";
@@ -114,8 +114,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private int mPartNum;
     private int mTotalParts;
 
-    private ArrayList<String> mWatchedIds;
-
     int timer = 20;
 
     public static String TAG = "VideoApp";
@@ -135,23 +133,21 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private TextureView mTexturePreview;
 
-    public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
+    public static RecordVideoFragment newInstance(long conversationId, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(IABIntent.PARAM_ID, conversationId);
         bundle.putString(FRAGMENT_ARG_TITLE, title);
-        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static RecordVideoFragment newInstance(long conversationId, boolean toConversation, String title, ArrayList<String> watchedIds) {
+    public static RecordVideoFragment newInstance(long conversationId, boolean toConversation, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(IABIntent.PARAM_ID, conversationId);
         bundle.putString(FRAGMENT_ARG_TITLE, title);
         bundle.putBoolean(FRAGMENT_ARG_GOTO_CONVO, toConversation);
-        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -220,7 +216,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         mPhones = args.getStringArray(FRAGMENT_ARG_PHONES);
-        mWatchedIds = args.getStringArrayList(FRAGMENT_ARG_WATCHED_IDS);
         args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false); // TODO, CLEANUP
 
         mPartNum = 0;
@@ -279,7 +274,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     inviteAndRecordVideo();
                 } else {
                     Log.d(TAG, "attempt to post to existing conversation");
-                    postToConversation(mConversationId, mWatchedIds);
+                    postToConversation(mConversationId);
                 }
             }
 
@@ -309,11 +304,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void initializeView(View view) {
-        // TODO: write up this portion in cleanup
-    }
-
     // this can be used later if we go to a complete texture view solution
     public TextureView getTextureBasedView() {
         mTexturePreview = new PreviewTextureView(getActivity());
@@ -332,7 +322,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                         inviteAndRecordVideo();
                     } else {
                         Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
+                        postToConversation(mConversationId);
                     }
                 }
 
@@ -343,11 +333,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     private void createNewConversation(ArrayList<String> contacts) {
-        sendVideo(-1, contacts, null);
+        sendVideo(-1, contacts);
     }
 
-    private void postToConversation(long conversationId, ArrayList<String> watchedIds) {
-        sendVideo(conversationId, null, watchedIds);
+    private void postToConversation(long conversationId) {
+        sendVideo(conversationId, null);
     }
 
     /**
@@ -355,7 +345,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
      * @param fileName
      * @param contacts
      */
-    private void sendVideo(long conversationId, ArrayList<String> recipients, ArrayList<String> watchedIds) {
+    private void sendVideo(long conversationId, ArrayList<String> recipients) {
 
         // Prepare the model for sending the video
         if (mVideoModel == null) {
@@ -477,7 +467,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                         inviteAndRecordVideo();
                     } else {
                         Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
+                        postToConversation(mConversationId);
                     }
                 }
             } else {
@@ -526,6 +516,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
 
             getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
+
+            // fire off a ttyl
+            Intent intent = new Intent();
+            intent.setClass(getActivity(), TTYLService.class);
+            intent.putExtra(TTYLService.CONVO_ID_INTENT_ARG_KEY, mConversationId);
+            getActivity().startService(intent);
 
         }
 

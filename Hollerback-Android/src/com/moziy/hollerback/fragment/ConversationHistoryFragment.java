@@ -273,7 +273,7 @@ public class ConversationHistoryFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 // XXX: pass in the watched ids here
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, mConversation.getConversationName(), new ArrayList<String>());
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, mConversation.getConversationName());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(null)
                         .commitAllowingStateLoss();
 
