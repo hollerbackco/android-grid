@@ -160,6 +160,7 @@ public class SignUpConfirmFragment extends BaseFragment {
                             String access_token = response.access_token;
 
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
+                            PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, true);
 
                             // user is officially logged in and registered, pop everything
                             getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
