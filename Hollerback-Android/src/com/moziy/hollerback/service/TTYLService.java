@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -29,6 +30,21 @@ public class TTYLService extends IntentService {
 
         long conversationId = intent.getLongExtra(CONVO_ID_INTENT_ARG_KEY, -1);
 
+        try {
+            HollerbackAppState.sSyncSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+
+        }
+
+        sendTTYL(conversationId);
+
+        HollerbackAppState.sSyncSemaphore.release();
+
+    }
+
+    private void sendTTYL(long conversationId) {
         // lets get all the videos that are pending to be watched
         final List<VideoModel> videos = VideoHelper.getVideosForTransaction(WHERE);
 
@@ -89,6 +105,5 @@ public class TTYLService extends IntentService {
                 e.printStackTrace();
             }
         }
-
     }
 }

@@ -13,6 +13,7 @@ import android.util.Log;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -52,12 +53,26 @@ public class SyncService extends IntentService {
         // TODO: add logic for retrying
         int retryCount = intent.getIntExtra(INTENT_ARG_RETRY_COUNT, 0);
 
+        try {
+            HollerbackAppState.sSyncSemaphore.acquire(); // make sure that we can progress
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // TODO: reschedule?
+            return;
+        }
+
         sync(intent, fromGcm);
+
+        HollerbackAppState.sSyncSemaphore.release();
 
     }
 
     private void sync(final Intent intent, final boolean fromGCM) {
         final String lastSynctime = PreferenceManagerUtil.getPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, null);
+
+        final boolean[] isDone = {
+            false
+        };
 
         final long start = System.currentTimeMillis();
         HBRequestManager.sync(lastSynctime, new HBSyncHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {
@@ -119,7 +134,22 @@ public class SyncService extends IntentService {
                 }
             }
 
+            @Override
+            public void onPostResponse() {
+                super.onPostResponse();
+                isDone[0] = true;
+            }
+
         });
+
+        while (!isDone[0]) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 
     }
 

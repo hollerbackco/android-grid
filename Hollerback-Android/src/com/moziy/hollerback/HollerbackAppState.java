@@ -1,10 +1,14 @@
 package com.moziy.hollerback;
 
+import java.util.concurrent.Semaphore;
+
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class HollerbackAppState {
+
+    public static Semaphore sSyncSemaphore = new Semaphore(1); // only a single client can run
 
     private static HollerbackAppState sInstance;
 

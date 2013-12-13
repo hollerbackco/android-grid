@@ -11,6 +11,7 @@ import android.util.Log;
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -263,6 +264,17 @@ public class VideoUploadIntentService extends IntentService {
 
         public boolean postToExistingConversation(final VideoModel videoModel) {
 
+            try {
+                HollerbackAppState.sSyncSemaphore.acquire();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+                Log.w(TAG, "Interrupted and need to reschedule");
+                if (mRecoverOnFailure)
+                    ResourceRecoveryUtil.schedule();
+                return false;
+
+            }
+
             final boolean[] isDone = {
                 false
             };
@@ -303,8 +315,6 @@ public class VideoUploadIntentService extends IntentService {
                     VideoHelper.markVideosAsWatched(watchedVideos);
                     VideoHelper.clearVideoTransacting(watchedVideos); // unset transacting flag of watched videos
 
-                    isDone[0] = true;
-
                 }
 
                 @Override
@@ -318,6 +328,11 @@ public class VideoUploadIntentService extends IntentService {
                     if (mRecoverOnFailure)
                         ResourceRecoveryUtil.schedule();
 
+                }
+
+                @Override
+                public void onPostResponse() {
+                    super.onPostResponse();
                     isDone[0] = true;
                 }
             });
@@ -330,6 +345,9 @@ public class VideoUploadIntentService extends IntentService {
                     e.printStackTrace();
                 }
             }
+
+            HollerbackAppState.sSyncSemaphore.release(); // release the semaphore
+
             Log.d(TAG, "done");
             return true;
         }

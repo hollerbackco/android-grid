@@ -47,6 +47,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.camera.util.CameraUtil;
 import com.moziy.hollerback.camera.view.Preview;
@@ -1004,7 +1005,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 shutterSoundDisabled = mCamera.enableShutterSound(false);
 
         if (!shutterSoundDisabled) {
-            AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+            AudioManager am = (AudioManager) HollerbackApplication.getInstance().getSystemService(Context.AUDIO_SERVICE);
             mVolumeBeforeShutoff = am.getStreamVolume(AudioManager.STREAM_SYSTEM);
             am.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         }
@@ -1020,7 +1021,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         if (mVolumeBeforeShutoff > 0) {
-            AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+            AudioManager am = (AudioManager) HollerbackApplication.getInstance().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(AudioManager.STREAM_SYSTEM, mVolumeBeforeShutoff, 0);
         }
 
