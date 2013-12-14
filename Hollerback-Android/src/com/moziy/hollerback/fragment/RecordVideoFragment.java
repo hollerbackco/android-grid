@@ -33,6 +33,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.TextureView;
 import android.view.View;
@@ -348,6 +349,35 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
      */
     private void sendVideo(long conversationId, ArrayList<String> recipients) {
 
+        prepareVideoModel(conversationId, recipients);
+
+        long resourceRowId = mVideoModel.getId();
+
+        notifyTargetFragment(resourceRowId);
+
+        launchVideoService(resourceRowId);
+
+        // we're going back to the start conversation fragment
+        if (conversationId > 0) {
+            mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        } else {
+            getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
+        }
+
+    }
+
+    private void launchVideoService(long resourceRowId) {
+        Intent intent = new Intent();
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
+        // NOTE: the part and total parts will change once that multi part chunks can be uploaded
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
+        intent.setClass(getActivity(), VideoUploadIntentService.class);
+        getActivity().startService(intent);
+    }
+
+    private void prepareVideoModel(long conversationId, ArrayList<String> recipients) {
+
         // Prepare the model for sending the video
         if (mVideoModel == null) {
 
@@ -379,32 +409,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         }
 
-        // TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
-        long resourceRowId = mVideoModel.getId();
+    }
+
+    private void notifyTargetFragment(long rowId) {
         Bundle info = new Bundle();
-        info.putLong(RecordingInfo.RESOURCE_ROW_ID, resourceRowId);
+        info.putLong(RecordingInfo.RESOURCE_ROW_ID, rowId);
         info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
         info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
         }
-
-        Intent intent = new Intent();
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
-
-        // NOTE: the part and total parts will change once that multi part chunks can be uploaded
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
-        intent.setClass(getActivity(), VideoUploadIntentService.class);
-        getActivity().startService(intent);
-
-        // we're going back to the start conversation fragment
-        if (conversationId > 0) {
-            mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        } else {
-            getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
-        }
-
     }
 
     private void updateConversationTime(long conversationId) {
@@ -588,7 +602,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                                     }, 500);
 
                                 }
-
                             }
                         });
                     }
@@ -773,14 +786,17 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        mSurfaceCreated = true;
-        mProgressDialog = new ProgressDialog(getActivity());
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setMessage("Loading Camera...");
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.show();
 
-        initCamera();
+        if (getActivity().getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_0 || getActivity().getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_180) {
+            mSurfaceCreated = true;
+            mProgressDialog = new ProgressDialog(getActivity());
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setMessage("Loading Camera...");
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.show();
+
+            initCamera();
+        }
 
     }
 

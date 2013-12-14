@@ -36,7 +36,9 @@ import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.activity.SettingPreferenceActivity;
 import com.moziy.hollerback.adapter.ConversationListAdapter;
 import com.moziy.hollerback.communication.IABIntent;
@@ -69,10 +71,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!HollerbackAppState.isValidSession()) {
+            ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (!HollerbackAppState.isValidSession()) {
+            return null;
+        }
+
         mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         mActivity.getSupportActionBar().setHomeButtonEnabled(false);
         mActivity.getSupportActionBar().setIcon(R.drawable.logo);

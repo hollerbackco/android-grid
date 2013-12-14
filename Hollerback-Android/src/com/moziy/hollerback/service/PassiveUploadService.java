@@ -9,7 +9,7 @@ import com.activeandroid.query.Select;
 import com.activeandroid.util.Log;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.service.VideoUploadIntentService.UploadUtility;
+import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 

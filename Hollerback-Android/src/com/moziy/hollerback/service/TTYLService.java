@@ -85,7 +85,7 @@ public class TTYLService extends IntentService {
             @Override
             public void onApiFailure(Metadata metaData) {
 
-                Log.w(TAG, "ttyl failed");
+                Log.w(TAG, "ttyl failed, oh well");
             }
 
             @Override
@@ -105,5 +105,6 @@ public class TTYLService extends IntentService {
                 e.printStackTrace();
             }
         }
+
     }
 }

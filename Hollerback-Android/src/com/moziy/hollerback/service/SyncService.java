@@ -74,15 +74,11 @@ public class SyncService extends IntentService {
             false
         };
 
-        final long start = System.currentTimeMillis();
         HBRequestManager.sync(lastSynctime, new HBSyncHttpResponseHandler<Envelope<ArrayList<SyncResponse>>>(new TypeReference<Envelope<ArrayList<SyncResponse>>>() {
         }) {
 
             @Override
             public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
-
-                Log.d("performance", "time to execute and deserialize: " + (System.currentTimeMillis() - start));
-                Log.d(TAG, "sync response succeeded: " + response.meta.last_sync_at);
 
                 // update the model with the response
                 boolean modelUpdated = updateModel(response.data);
@@ -94,16 +90,20 @@ public class SyncService extends IntentService {
                 boolean launchedBgLoader = false;
 
                 if (fromGCM && modelUpdated) { // launch only if model was udpated
+
                     launchedBgLoader = launchDownloadService(intent); // the download service will manage completing the wakeful intent
+
                     if (!launchedBgLoader) {
                         GCMBroadcastReceiver.completeWakefulIntent(intent);
                     }
+
                 } else if (fromGCM) {
+
                     GCMBroadcastReceiver.completeWakefulIntent(intent);
+
                 }
 
-                // launch a notification that there was a successful sync
-                if (modelUpdated && !launchedBgLoader) {
+                if (modelUpdated && !launchedBgLoader) { // launch a notification that there was a successful sync
                     // launch a notification
                     Log.d(TAG, "launching notification");
 
@@ -121,12 +121,17 @@ public class SyncService extends IntentService {
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, lastSynctime);
 
                 Log.w(TAG, "connection failure during sync");
+
                 if (metaData != null) {
+
                     Log.w(TAG, "metaData code: " + metaData.code);
+
                     if (metaData.code == HollerbackAPI.ErrorCodes.ERROR_403) {
                         IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.AUTH_EXCEPTION));
                     }
+
                 }
+
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.SYNC_FAILED));
 
                 if (fromGCM) { // clear the wakeful intent since there was a failure
@@ -146,7 +151,6 @@ public class SyncService extends IntentService {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
