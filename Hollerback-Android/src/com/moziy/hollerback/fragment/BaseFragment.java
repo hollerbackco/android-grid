@@ -44,6 +44,8 @@ public abstract class BaseFragment extends SherlockFragment {
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
             mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        } else {
+            mActivity.getSupportActionBar().hide();
         }
     }
 

@@ -15,6 +15,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -97,6 +98,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private Button mSwitchCameraButton;
 
     private volatile boolean mSurfaceCreated = false;
+    private boolean mSpecialOrientationRequest;
 
     private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 14 ? true : false);
 
@@ -120,7 +122,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     public static String TAG = "VideoApp";
 
-    private volatile boolean isRecording = false;
+    private volatile boolean mIsRecording = false;
 
     static MediaRecorder recorder;
 
@@ -178,7 +180,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     new Thread() {
                         public void run() {
                             if (startPreview(mCurrentCameraId)) {
-                                if (!isRecording) {
+                                if (!isRecording()) {
                                     startRecording();
                                 }
                             }
@@ -197,7 +199,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            mSpecialOrientationRequest = true;
+        }
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         getActivity().getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         getActivity().getWindow().addFlags(LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
@@ -224,6 +230,36 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mTotalParts = 0;
         mFileDataName = null;
 
+    }
+
+    private boolean mScreenOrientationLocked = false;
+
+    private void lockScreenOrientation() {
+        if (!mScreenOrientationLocked) {
+            final int orientation = getResources().getConfiguration().orientation;
+            final int rotation = getActivity().getWindowManager().getDefaultDisplay().getOrientation();
+
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+            } else if (rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_270) {
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                }
+            }
+
+            mScreenOrientationLocked = true;
+        }
+    }
+
+    private void unlockScreenOrientation() {
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        mScreenOrientationLocked = false;
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -267,7 +303,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         @Override
         public void onClick(View v) {
-            if (isRecording) { // send the video once recording has stopped
+            if (isRecording()) { // send the video once recording has stopped
 
                 stopRecording();
 
@@ -315,7 +351,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void onClick(View v) {
-                if (isRecording) { // send the video once recording has stopped
+                if (isRecording()) { // send the video once recording has stopped
 
                     stopRecording();
 
@@ -472,7 +508,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             String seconds = String.valueOf(timer - secondsPassed) + "s";
             mTimer.setText(seconds);
             if (secondsPassed >= timer) {
-                if (isRecording) { // send the video once recording has stopped
+                if (isRecording()) { // send the video once recording has stopped
 
                     mHandler.removeCallbacks(timeTask); // remove
                     stopRecording();
@@ -495,7 +531,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onResume() {
         super.onResume();
-
         if (this.isVisible()) {
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
@@ -510,10 +545,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mProgressDialog.dismiss();
         }
 
-        if (isRecording) {
+        if (isRecording()) {
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
-            isRecording = false;
+            clearRecordingFlag();
 
             // cleanup
             deleteRecording();
@@ -556,6 +591,18 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
+    private boolean isRecording() {
+        return mIsRecording;
+    }
+
+    private void setRecordingFlag() {
+        mIsRecording = true;
+    }
+
+    private void clearRecordingFlag() {
+        mIsRecording = false;
+    }
+
     // TODO: Clean this up!!!!!
     private void initCamera() {
 
@@ -582,7 +629,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                                 if (previewStarted) {
 
-                                    if (!isRecording) {
+                                    if (!isRecording()) {
                                         startRecording();
                                     }
                                 }
@@ -620,7 +667,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                 // inform the user that recording has started
                 // mRecordButton.setImageResource(R.drawable.stop_button);
-                isRecording = true;
+                setRecordingFlag();
                 // mHandler.postDelayed(timeTask, 1000);
             } else {
                 // prepare didn't work, release the camera
@@ -651,7 +698,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             return false;
 
         } finally {
-            isRecording = false;
+            clearRecordingFlag();
             recorder.reset();
             recorder.release();
         }
@@ -738,7 +785,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onStop() {
         super.onStop();
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        if (!mSpecialOrientationRequest)
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_FULLSCREEN);
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         mActivity.getActionBar().show();
@@ -786,17 +834,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        mSurfaceCreated = true;
 
-        if (getActivity().getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_0 || getActivity().getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_180) {
-            mSurfaceCreated = true;
-            mProgressDialog = new ProgressDialog(getActivity());
-            mProgressDialog.setIndeterminate(true);
-            mProgressDialog.setMessage("Loading Camera...");
-            mProgressDialog.setCancelable(false);
-            mProgressDialog.show();
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading Camera...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
 
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
             initCamera();
-        }
 
     }
 
@@ -843,12 +890,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 public void run() {
                     if (startPreview(mCurrentCameraId)) {
 
-                        if (!isRecording) {
+                        if (!isRecording()) {
                             startRecording();
                         }
                     }
 
-                };
+                }
+
             }.start();
         }
 
@@ -986,7 +1034,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void run() {
-                if (isRecording) {
+                if (isRecording()) {
 
                     if (!stopRecording()) {
                         Log.w(TAG, "attempting to stop recording failed");
