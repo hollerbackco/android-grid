@@ -16,6 +16,7 @@ import android.support.v4.app.NotificationCompat;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.model.Sender;
 import com.moziy.hollerback.model.VideoModel;
 
 public class NotificationUtil {
@@ -76,6 +77,13 @@ public class NotificationUtil {
                 message = format;
                 break;
         }
+
+        return message;
+    }
+
+    public static String generateNewVideoMessage(Context ctx, Sender sender) {
+        String format = ctx.getResources().getQuantityString(R.plurals.notif_new_message, 1);
+        String message = String.format(format, sender.getSenderName());
 
         return message;
     }

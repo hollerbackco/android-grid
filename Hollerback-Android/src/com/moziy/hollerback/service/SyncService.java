@@ -2,8 +2,10 @@ package com.moziy.hollerback.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -15,6 +17,7 @@ import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -22,12 +25,14 @@ import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.Sender;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAPI;
+import com.moziy.hollerback.util.NotificationUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class SyncService extends IntentService {
@@ -80,8 +85,10 @@ public class SyncService extends IntentService {
             @Override
             public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
 
+                Set<Sender> sendersInfo = new HashSet<Sender>();
+
                 // update the model with the response
-                boolean modelUpdated = updateModel(response.data);
+                boolean modelUpdated = updateModel(response.data, sendersInfo);
 
                 // lets save the sync time
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_SERVICE_SYNC_TIME, response.meta.last_sync_at);
@@ -106,10 +113,11 @@ public class SyncService extends IntentService {
                 if (modelUpdated && !launchedBgLoader) { // launch a notification that there was a successful sync
                     // launch a notification
                     Log.d(TAG, "launching notification");
+                    for (Sender sender : sendersInfo) {
+                        String message = NotificationUtil.generateNewVideoMessage(getApplicationContext(), sender);
+                        NotificationUtil.launchNotification(getApplicationContext(), NotificationUtil.generateNotification(getString(R.string.app_name), message), (int) sender.getConversationId());
+                    }
 
-                    // String message = NotificationUtil.generateNewVideoMessage(this, videos);
-                    // NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(SyncService.this, getString(R.string.app_name), message),
-                    // NotificationUtil.Ids.SYNC_NOTIFICATION);
                 }
 
             }
@@ -159,10 +167,12 @@ public class SyncService extends IntentService {
 
     // XXX: handle the case where server.last_msg_at < client.last_msg_at, but a video has been sent down that doesn't exist in the client db
     /**
-     *
+     * 
      * @param data
+     * @param senders - out parameter, gives the unique set of senders
+     * @return
      */
-    private boolean updateModel(ArrayList<SyncResponse> data) {
+    private boolean updateModel(ArrayList<SyncResponse> data, Set<Sender> senders) {
 
         if (data == null || data.isEmpty()) {
             Intent intent = new Intent(IABIntent.NOTIFY_SYNC);
@@ -246,6 +256,7 @@ public class SyncService extends IntentService {
                     newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
                     newVideo.setWatchedState(VideoModel.ResourceState.UNWATCHED);
                     newVideo.save();
+                    senders.add(new Sender(newVideo)); // get a set of all senders
                     Log.d(TAG, "ADDING:\n " + newVideo.toString());
                 }
 
@@ -314,6 +325,10 @@ public class SyncService extends IntentService {
         Log.d("performance", "time to insert to db: " + (System.currentTimeMillis() - start));
 
         return true;
+    }
+
+    private void updateVideoModel() {
+
     }
 
     /**
