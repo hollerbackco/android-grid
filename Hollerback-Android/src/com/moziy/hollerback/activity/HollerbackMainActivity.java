@@ -11,7 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-import com.crittercism.app.Crittercism;
+import com.crashlytics.android.Crashlytics;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
@@ -41,6 +41,8 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         setTheme(R.style.Hollerback);
         mContactsDelegate = new ContactsDelegate(this);
         super.onCreate(savedInstanceState);
+        if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION)
+            Crashlytics.start(this);
         mContactsDelegate.initWorkers();
 
         setContentView(R.layout.hollerback_main);
@@ -53,9 +55,9 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         // getSupportFragmentManager().beginTransaction().add(worker, ConversationWorkerFragment.FRAGMENT_TAG).commit();
         // }
 
-        if (AppEnvironment.getInstance().LOG_CRASHES) {
-            Crittercism.init(getApplicationContext(), AppEnvironment.getInstance().CRITTERCISM_ID);
-        }
+        // if (AppEnvironment.getInstance().LOG_CRASHES) {
+        // Crittercism.init(getApplicationContext(), AppEnvironment.getInstance().CRITTERCISM_ID);
+        // }
 
         if (savedInstanceState == null) {
             if (!HollerbackAppState.isValidSession()) {

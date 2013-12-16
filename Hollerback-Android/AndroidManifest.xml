@@ -142,6 +142,7 @@
             android:name=".service.TTYLService"
             android:exported="false" >
         </service>
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="1ed19e0f6100e773f794bf928ee1ef0b85ed4d6e"/>
     </application>
 
 </manifest>
