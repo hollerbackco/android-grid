@@ -67,7 +67,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(AppEnvironment.getInstance().ACCESS_KEY_ID, AppEnvironment.getInstance().SECRET_KEY));
 
-    private List<ConversationModel> mConversations;
+    // private List<ConversationModel> mConversations;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -342,63 +342,12 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public Loader<List<ConversationModel>> onCreateLoader(final int id, final Bundle args) {
-        return new AsyncTaskLoader<List<ConversationModel>>(getActivity()) {
-
-            private List<ConversationModel> mConvos;
-            private SyncReceiver mReceiver;
-
-            // initialization block
-            {
-                Log.d(TAG, "launch sync");
-                mReceiver = new SyncReceiver(this);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_UPDATED); // if a conversation got updated, lets repopulate
-
-                // start the sync intent service
-                Intent intent = new Intent();
-                intent.setClass(getActivity(), SyncService.class);
-                getActivity().startService(intent);
-            }
-
-            @Override
-            public void onContentChanged() {
-                mConvos = null; // delete the contents
-                Log.d(TAG, "removing convos");
-                super.onContentChanged();
-            }
-
-            @Override
-            protected void onStartLoading() {
-                if (mConvos != null) {
-                    Log.d(TAG, "delivering results");
-                    deliverResult(mConvos);
-                    return;
-                }
-
-                Log.d(TAG, "onstartloading");
-                forceLoad();
-
-            }
-
-            @Override
-            public List<ConversationModel> loadInBackground() {
-                mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
-                Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
-                return mConvos;
-            }
-
-            @Override
-            protected void onReset() {
-                IABroadcastManager.unregisterLocalReceiver(mReceiver);
-                super.onReset();
-            }
-        };
+        return new ConvoLoader(getActivity());
     }
 
     @Override
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
+
         Log.d(TAG, "loader finished");
         mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
         mConversationListAdapter.setConversations(data);
@@ -420,9 +369,73 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     }
 
-    public static class SyncReceiver extends BroadcastReceiver {
+    public static class ConvoLoader extends AsyncTaskLoader<List<ConversationModel>> {
+
+        private List<ConversationModel> mConvos;
+        private SyncReceiver mReceiver;
+
+        // initialization block
+        {
+            Log.d(TAG, "launch sync");
+            mReceiver = new SyncReceiver(this);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_UPDATED); // if a conversation got updated, lets repopulate
+
+            // start the sync intent service
+            Intent intent = new Intent();
+            intent.setClass(getContext(), SyncService.class);
+            getContext().startService(intent);
+        }
+
+        public ConvoLoader(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onContentChanged() {
+            mConvos = null; // delete the contents
+            Log.d(TAG, "removing convos");
+            super.onContentChanged();
+        }
+
+        @Override
+        protected void onStartLoading() {
+            if (mConvos != null) {
+                Log.d(TAG, "delivering results");
+                deliverResult(mConvos);
+                return;
+            }
+
+            Log.d(TAG, "onstartloading");
+            forceLoad();
+
+        }
+
+        @Override
+        public List<ConversationModel> loadInBackground() {
+            mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
+            Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
+            return mConvos;
+        }
+
+        @Override
+        protected void onReset() {
+            IABroadcastManager.unregisterLocalReceiver(mReceiver);
+            super.onReset();
+        }
+
+        public boolean hasSynched() {
+            return mReceiver.mHasReceived;
+        }
+
+    }
+
+    public static class SyncReceiver extends BroadcastReceiver { // receives intents from the syncservice
 
         private Loader<List<ConversationModel>> mLoader;
+        private boolean mHasReceived;
 
         public SyncReceiver(AsyncTaskLoader<List<ConversationModel>> loader) {
             mLoader = loader;
@@ -431,8 +444,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("SyncReceiver", "onReceive - " + "isStarted: " + mLoader.isStarted());
-
+            mHasReceived = true;
             mLoader.onContentChanged();
         }
+
     }
 }

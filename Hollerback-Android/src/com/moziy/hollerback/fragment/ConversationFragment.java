@@ -451,7 +451,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
             }
         });
-        new TaskExecuter().executeTask(t);
+
+        // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
+        // new TaskExecuter().executeTask(t);
     }
 
     private void beginRecording() {

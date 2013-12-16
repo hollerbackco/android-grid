@@ -44,6 +44,7 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -400,6 +401,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
         }
 
+        Context c = HollerbackApplication.getInstance();
+        Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
+
     }
 
     private void launchVideoService(long resourceRowId) {
@@ -473,6 +477,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void onTaskComplete(Task t) {
+                Log.d(TAG, "updated the conversation");
                 // broadcast that the conversations have been updated
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
 
