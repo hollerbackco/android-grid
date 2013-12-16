@@ -2,7 +2,14 @@ package com.moziy.hollerback;
 
 import java.util.concurrent.Semaphore;
 
+import android.content.Context;
+
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Delete;
+import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.UserModel;
+import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
@@ -39,10 +46,15 @@ public class HollerbackAppState {
         return PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, null);
     }
 
-    public static void logOut() {
-        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, null);
-        // Delete other preferences
-        // Delete databases
+    public static void logOut(Context ctx) {
+        PreferenceManagerUtil.clearPreferences();
+        ActiveAndroid.beginTransaction();
+        new Delete().from(ConversationModel.class).execute();
+        new Delete().from(VideoModel.class).execute();
+        new Delete().from(UserModel.class).execute();
+        VolleySingleton.getInstance(ctx).getRequestQueue().getCache().clear(); // clear everything
+        ActiveAndroid.setTransactionSuccessful();
+        ActiveAndroid.endTransaction();
     }
 
 }

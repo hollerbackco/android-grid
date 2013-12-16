@@ -1,17 +1,20 @@
 package com.moziy.hollerback.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.activeandroid.query.Select;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
+import com.moziy.hollerback.model.Sender;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.service.task.Task;
@@ -53,8 +56,15 @@ public class BgDownloadService extends IntentService {
 
         if (success) { // lets notify the user that new videos have been downloaded
 
-            String message = NotificationUtil.generateNewVideoMessage(this, videos);
-            NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(getString(R.string.app_name), message), NotificationUtil.Ids.SYNC_NOTIFICATION);
+            Set<Sender> senders = new HashSet<Sender>();
+            for (VideoModel v : videos) {
+                senders.add(new Sender(v));
+            }
+
+            for (Sender s : senders) {
+                String message = NotificationUtil.generateNewVideoMessage(HollerbackApplication.getInstance(), s);
+                NotificationUtil.launchNotification(getApplicationContext(), NotificationUtil.generateNotification(getString(R.string.app_name), message), (int) s.getConversationId());
+            }
 
         }
 
@@ -65,16 +75,6 @@ public class BgDownloadService extends IntentService {
 
     private void releaseWakeLock(Intent intent) {
         GCMBroadcastReceiver.completeWakefulIntent(intent);
-    }
-
-    public List<VideoModel> getVideos() {
-        // search for all model whose videos are pending download
-        List<VideoModel> videos = new Select().from(VideoModel.class) //
-                .where(ActiveRecordFields.C_VID_STATE + "=? AND " + //
-                        ActiveRecordFields.C_VID_WATCHED_STATE + "=? AND " + //
-                        ActiveRecordFields.C_VID_TRANSACTING + "=?", //
-                        VideoModel.ResourceState.PENDING_DOWNLOAD, VideoModel.ResourceState.UNWATCHED, 0).execute(); //
-        return videos;
     }
 
     public boolean downloadVideos(List<VideoModel> videos) {

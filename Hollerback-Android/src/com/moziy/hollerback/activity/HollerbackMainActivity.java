@@ -171,6 +171,10 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(IABIntent.AUTH_EXCEPTION)) {
                 Log.w(TAG, "auth failure! ask user to re-login");
+
+                // clear preferences/logout
+                HollerbackAppState.logOut(HollerbackMainActivity.this);
+
                 // pop the backstack and launch the initwelcomefragment
                 getSupportFragmentManager().popBackStack(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 initWelcomeFragment();

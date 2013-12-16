@@ -10,13 +10,8 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.activeandroid.ActiveAndroid;
-import com.activeandroid.query.Delete;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.model.UserModel;
-import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
@@ -90,14 +85,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                PreferenceManagerUtil.clearPreferences();
-                ActiveAndroid.beginTransaction();
-                new Delete().from(ConversationModel.class).execute();
-                new Delete().from(VideoModel.class).execute();
-                new Delete().from(UserModel.class).execute();
-                VolleySingleton.getInstance(SettingPreferenceActivity.this).getRequestQueue().getCache().clear(); // clear everything
-                ActiveAndroid.setTransactionSuccessful();
-                ActiveAndroid.endTransaction();
+
+                HollerbackAppState.logOut(SettingPreferenceActivity.this);
 
                 Bundle args = new Bundle();
                 args.putBoolean(Action.LOGOUT, true);
