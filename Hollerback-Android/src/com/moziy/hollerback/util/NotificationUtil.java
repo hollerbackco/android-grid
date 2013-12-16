@@ -11,6 +11,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import com.moziy.hollerback.HollerbackApplication;
@@ -35,7 +37,7 @@ public class NotificationUtil {
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx);
-        builder.setDefaults(0);
+        // builder.setDefaults(0);
         builder.setSmallIcon(R.drawable.icon);
         builder.setContentIntent(pendingIntent);
         builder.setContentTitle(title);
@@ -45,6 +47,8 @@ public class NotificationUtil {
         builder.setVibrate(new long[] { // in millis
             300
         });
+
+        builder.setSound(Uri.parse(AppEnvironment.NOTIF_SOUND_URI), AudioManager.STREAM_NOTIFICATION);
         builder.setOnlyAlertOnce(true);
 
         // TODO - sajjad: play around with the style and big content

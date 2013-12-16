@@ -1,5 +1,7 @@
 package com.moziy.hollerback.util;
 
+import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
 
 public class AppEnvironment {
@@ -19,6 +21,10 @@ public class AppEnvironment {
 
     public String ACCESS_KEY_ID = "AKIAJX65IZWDWNJQVNIA";
     public String SECRET_KEY = "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";
+
+    public static final String ASSETS_DIRECTORY = "file:///android_asset/";
+    public static final String ANDROID_RESOURCE_PATH = "android.resource://" + HollerbackApplication.getInstance().getPackageName() + "/";
+    public static final String NOTIF_SOUND_URI = ANDROID_RESOURCE_PATH + R.raw.default_notification;
 
     // public static final String PICTURE_NAME = null;
 

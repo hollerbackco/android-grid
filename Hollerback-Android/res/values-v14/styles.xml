@@ -32,7 +32,7 @@
     </style>
 
     <style name="Hollerback.Settings">
-        <item name="android:windowBackground">@color/background_header</item>
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
 
 </resources>
