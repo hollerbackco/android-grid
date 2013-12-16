@@ -459,7 +459,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
             f.setTargetFragment(this, 0);
-            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.slide_out_to_bottom, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
                     .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
         }
     }
