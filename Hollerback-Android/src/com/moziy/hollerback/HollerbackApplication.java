@@ -17,6 +17,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.BgDownloadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
     private static HollerbackApplication sInstance = null;
@@ -35,6 +36,8 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         mLifecycle.registerIdleListener(mIdleListener);
 
         clearAllTransactingModel();
+
+        ResourceRecoveryUtil.init();
 
         BackgroundHelper.getInstance(); // create the looper for the camera manager
 

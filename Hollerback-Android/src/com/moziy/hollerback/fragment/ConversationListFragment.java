@@ -112,7 +112,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         mActivity.getSupportActionBar().show();

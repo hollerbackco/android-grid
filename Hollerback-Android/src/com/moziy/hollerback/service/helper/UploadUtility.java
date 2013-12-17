@@ -23,11 +23,13 @@ import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
+import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
-public class UploadUtility {
+public class UploadUtility implements RecoveryClient {
 
     private static final String TAG = UploadUtility.class.getSimpleName();
     private boolean mRecoverOnFailure;
@@ -80,8 +82,7 @@ public class UploadUtility {
                 // broadcast conversation create failure
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
 
-                if (mRecoverOnFailure)
-                    ResourceRecoveryUtil.schedule(); // schedule for the failed video to get uploaded
+                startRecovery(); // schedule for the failed video to get uploaded
             }
         }
 
@@ -182,8 +183,9 @@ public class UploadUtility {
         } catch (InterruptedException e1) {
             e1.printStackTrace();
             Log.w(TAG, "Interrupted and need to reschedule");
-            if (mRecoverOnFailure)
-                ResourceRecoveryUtil.schedule();
+
+            startRecovery();
+
             return false;
 
         }
@@ -227,6 +229,9 @@ public class UploadUtility {
                 // update the videos as watched
                 VideoHelper.markVideosAsWatched(watchedVideos);
 
+                // now that we've been successful lets clear any recovery request
+                ResourceRecoveryUtil.removeRecoveryRequest(UploadUtility.this);
+
             }
 
             @Override
@@ -235,8 +240,7 @@ public class UploadUtility {
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED)); // broadcast failure of posting conversation
 
-                if (mRecoverOnFailure)
-                    ResourceRecoveryUtil.schedule();
+                startRecovery();
 
             }
 
@@ -263,11 +267,20 @@ public class UploadUtility {
         return true;
     }
 
+    private void startRecovery() {
+        ResourceRecoveryUtil.requestRecovery(this);
+    }
+
     // TODO - Food for thought..move these methods into a utility class?
     public List<VideoModel> getWatchedVideos() {
 
         List<VideoModel> watchedVideos = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.WATCHED_PENDING_POST + "'").execute();
         return watchedVideos;
+    }
+
+    @Override
+    public String getFullyQualifiedClassName() {
+        return PassiveUploadService.class.getName();
     }
 
 }

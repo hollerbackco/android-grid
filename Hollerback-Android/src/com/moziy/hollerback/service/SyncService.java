@@ -34,8 +34,10 @@ import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.NotificationUtil;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
-public class SyncService extends IntentService {
+public class SyncService extends IntentService implements RecoveryClient {
 
     public static final String INTENT_ARG_REQUEST_TIME = "request_time"; // the request time for a sync: System.currentTimeMillis() (now)
     public static final String INTENT_ARG_RETRY_COUNT = "retry_count"; // TODO: put that retry logic in
@@ -84,6 +86,8 @@ public class SyncService extends IntentService {
 
             @Override
             public void onResponseSuccess(int statusCode, Envelope<ArrayList<SyncResponse>> response) {
+
+                ResourceRecoveryUtil.removeRecoveryRequest(SyncService.this);
 
                 Set<Sender> sendersInfo = new HashSet<Sender>();
 
@@ -136,8 +140,15 @@ public class SyncService extends IntentService {
 
                     if (metaData.code == HollerbackAPI.ErrorCodes.ERROR_403) {
                         IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.AUTH_EXCEPTION));
+                        ResourceRecoveryUtil.removeRecoveryRequest(SyncService.this);
+                    } else {
+                        // request recovery, if we're not in recovery mode
+                        ResourceRecoveryUtil.requestRecovery(SyncService.this);
                     }
 
+                } else {
+                    // request recovery, if we're not in recovery mode
+                    ResourceRecoveryUtil.requestRecovery(SyncService.this);
                 }
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.SYNC_FAILED));
@@ -351,5 +362,10 @@ public class SyncService extends IntentService {
 
         Log.d(TAG, "app is not idle");
         return false;
+    }
+
+    @Override
+    public String getFullyQualifiedClassName() {
+        return SyncService.class.getName();
     }
 }

@@ -36,7 +36,7 @@ public class PassiveUploadService extends IntentService {
             if (pendingList == null || pendingList.isEmpty()) {
                 Log.d(TAG, "no pending videos/messages to upload, yay");
                 // cancel any recurring alarm
-                ResourceRecoveryUtil.cancel();
+                // ResourceRecoveryUtil.cancel();
                 return;
             }
 

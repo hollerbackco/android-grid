@@ -1,5 +1,8 @@
 package com.moziy.hollerback.util.recovery;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,7 +12,6 @@ import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
 import com.moziy.hollerback.HollerbackApplication;
-import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
@@ -23,16 +25,33 @@ import com.moziy.hollerback.util.PreferenceManagerUtil;
  */
 public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
     private static final String TAG = ResourceRecoveryUtil.class.getSimpleName();
-    private static final long ONE_MINUTE = 60 * 1000;
+    private static final long ONE_MINUTE = 10 * 1000;
+    public static final String RECOVERY_PREF_FORMAT = "%s_PENDING_RECOVERY";
 
-    /**
-     * This method will schedule a pending intent to be delivered
-     * by the alarm manager to upload failed resources
-     */
-    public static void schedule() {
+    public interface RecoveryClient {
+        public String getFullyQualifiedClassName();
+    }
 
+    public static void init() {
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE);
         schedule(ONE_MINUTE);
+    }
 
+    public static synchronized void requestRecovery(RecoveryClient client) {
+
+        if (!PreferenceManagerUtil.getPreferenceValue(String.format(RECOVERY_PREF_FORMAT, client.getFullyQualifiedClassName()), false)) { // not in recovery then, lets register and kick off
+            Log.d(TAG, "initiating recovery");
+            register(client); // register the client
+
+            if ((PreferenceManagerUtil.getPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE) - System.currentTimeMillis()) > ONE_MINUTE) // if it's less than a minute
+                schedule(ONE_MINUTE);
+        }
+
+    }
+
+    public static synchronized void removeRecoveryRequest(RecoveryClient client) {
+        Log.d(TAG, "unregister " + client.getFullyQualifiedClassName());
+        unregister(client);
     }
 
     private static void schedule(long timeInMillis) {
@@ -42,18 +61,34 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
 
         AlarmManager am = (AlarmManager) HollerbackApplication.getInstance().getSystemService(Context.ALARM_SERVICE);
         am.cancel(pendingIntent); // cancel any alarm with this pending intent
-        am.set(AlarmManager.RTC, System.currentTimeMillis() + timeInMillis, pendingIntent);
+        long now = System.currentTimeMillis();
+        am.set(AlarmManager.RTC, now + timeInMillis, pendingIntent);
         PreferenceManagerUtil.setPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, timeInMillis);
+        PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, now + timeInMillis);
     }
 
     /**
-     * This method will unschedule the alarm
+     * For now, the client must be a class that extends Service!
+     * @param client
      */
-    public static void cancel() {
+    private static void register(RecoveryClient client) {
 
-        PendingIntent pendingIntent = getPendingIntent();
-        AlarmManager am = (AlarmManager) HollerbackApplication.getInstance().getSystemService(Context.ALARM_SERVICE);
-        am.cancel(pendingIntent); // cancel any alarm with this pending intent
+        Set<String> clients = new HashSet<String>(PreferenceManagerUtil.getPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, new HashSet<String>()));
+        clients.add(client.getFullyQualifiedClassName());
+        PreferenceManagerUtil.setPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, clients); // register the clients
+        PreferenceManagerUtil.setPreferenceValue(String.format(RECOVERY_PREF_FORMAT, client.getFullyQualifiedClassName()), true);
+
+        Log.d(TAG, "registering: " + client.getFullyQualifiedClassName());
+        Log.d(TAG, "clients: " + clients.toString());
+    }
+
+    private static void unregister(RecoveryClient client) {
+        Set<String> clients = new HashSet<String>(PreferenceManagerUtil.getPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, new HashSet<String>()));
+        clients.remove(client.getFullyQualifiedClassName());
+        PreferenceManagerUtil.setPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, clients); // unregister the client
+        PreferenceManagerUtil.setPreferenceValue(String.format(RECOVERY_PREF_FORMAT, client.getFullyQualifiedClassName()), false); // clear the flag
+
+        Log.d(TAG, "unregistering: " + client.getFullyQualifiedClassName());
     }
 
     private static PendingIntent getPendingIntent() {
@@ -95,15 +130,64 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
 
         }
 
+        initiateRecovery(context);
+    }
+
+    private void initiateRecovery(Context context) {
+
         PreferenceManagerUtil.setPreferenceValue(HBPreferences.PENDING_RECOVERY_ALARM, false); // clear the flag
 
-        Log.d(TAG, "launching resource recovery service");
-        Intent serviceIntent = new Intent();
-        serviceIntent.setClass(context, PassiveUploadService.class);
+        boolean recoveryInitiated = false;
 
-        startWakefulService(context, serviceIntent);
+        // get the set of all classes
+        Set<String> clients = PreferenceManagerUtil.getPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, new HashSet<String>());
 
-        // schedule the next one
-        schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, ONE_MINUTE) * 2);
+        for (final String clientClassName : clients) {
+
+            final boolean startRecoveryForClient = PreferenceManagerUtil.getPreferenceValue(String.format(RECOVERY_PREF_FORMAT, clientClassName), false);
+            if (startRecoveryForClient) {
+
+                // PreferenceManagerUtil.setPreferenceValue(String.format(RECOVERY_PREF_FORMAT, clientClassName), false); // clear the recovery flag
+
+                try {
+
+                    Intent serviceIntent = new Intent();
+                    serviceIntent.setClass(context, Class.forName(clientClassName));
+                    startWakefulService(context, serviceIntent); // begin recovery for this client
+
+                    Log.d(TAG, "launching recovery for: " + clientClassName);
+
+                } catch (ClassNotFoundException e) {
+
+                    e.printStackTrace();
+                    throw new IllegalStateException("invalid class name");
+                }
+            }
+
+            recoveryInitiated |= startRecoveryForClient;
+
+        }
+
+        if (recoveryInitiated) {
+            Log.d(TAG, "reschedule recovery ");
+
+            // schedule the next one only if needed
+            schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, ONE_MINUTE) * 2);
+
+        } else {
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE);
+            Log.d(TAG, "no recovery needed");
+        }
+
     }
+
+    /**
+     * 
+     * @param client the client wishing to know if it is in recovery mode
+     * @return whether the client is in recovery mode or not
+     */
+    public boolean isInRecovery(RecoveryClient client) {
+        return PreferenceManagerUtil.getPreferenceValue(String.format(RECOVERY_PREF_FORMAT, client.getFullyQualifiedClassName()), false);
+    }
+
 }

@@ -21,6 +21,9 @@ public class HBPreferences {
     // type: string : last sync time
     public static final String LAST_SERVICE_SYNC_TIME = "last_service_sync_time";
 
+    // type: long wallclock time for recovery alarm in millis
+    public static final String RECOVERY_ALARM_TIME = "recovery_alarm_time";
+
     // type: long: millis in current alarm schedule
     public static final String RESOURCE_RECOVERY_BACKOFF_TIME = "resource_recovery_backoff_time";
 
@@ -29,5 +32,8 @@ public class HBPreferences {
 
     // type: boolean - to display start recording dialog or not
     public static final String SHOWN_START_RECORDING_DIALOG = "start_recording_dialog_shown";
+
+    // type: Set<String> - Set of recovery client class names
+    public static final String RECOVERY_CLIENTS = "recovery_client_set";
 
 }
