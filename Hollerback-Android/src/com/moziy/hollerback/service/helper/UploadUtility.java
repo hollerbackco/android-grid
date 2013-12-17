@@ -18,6 +18,7 @@ import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.ConversationModel.TimeStamp;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
@@ -103,6 +104,8 @@ public class UploadUtility implements RecoveryClient {
             false
         };
 
+        final TimeStamp convoUpdateTime = ConversationModel.getConvoTimeStamp();
+
         HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
         }) {
 
@@ -124,6 +127,7 @@ public class UploadUtility implements RecoveryClient {
                 // if the conversation we created, is actually found in our db, then update it
                 ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
                 if (dbConvo != null) {
+                    conversationResp.setLastMessageAt(convoUpdateTime);
                     Log.d(TAG, "deleting record: " + dbConvo.toString());
                     // delete record
                     dbConvo.delete();

@@ -124,6 +124,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         last_message_at = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
     }
 
+    public void setLastMessageAt(TimeStamp timeStamp) {
+        last_message_at = timeStamp.mTimeStamp;
+    }
+
     public long getLastMessageAtInMillis() {
         try {
             Date d = TimeUtil.SERVER_TIME_FORMAT.parse(last_message_at);
@@ -165,6 +169,20 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         return "ConversationModel [id=" + id + ", name=" + name + ", unread_count=" + unread_count + ", created_at=" + created_at + ", deleted_at=" + deleted_at + ", last_message_at="
                 + last_message_at + ", most_recent_subtitle=" + most_recent_subtitle + ", most_recent_thumb_url=" + most_recent_thumb_url + ", unseen_count=" + unseen_count + ", user_id=" + user_id
                 + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + ", state=" + state + "]";
+    }
+
+    public static TimeStamp getConvoTimeStamp() {
+        return new TimeStamp();
+    }
+
+    public static class TimeStamp {
+
+        String mTimeStamp;
+
+        TimeStamp() {
+            mTimeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        }
+
     }
 
 }
