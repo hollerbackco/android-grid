@@ -30,6 +30,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -175,10 +176,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 this.startSettingsFragment();
                 break;
             case R.id.action_find_friends:
-                ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment)
-                        .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.rotation_reverse_clockwise, R.anim.slide_out_to_top).addToBackStack(FRAGMENT_TAG)
-                        .commitAllowingStateLoss();
+                // ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
+                // mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment)
+                // .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.rotation_reverse_clockwise, R.anim.slide_out_to_top).addToBackStack(FRAGMENT_TAG)
+                // .commitAllowingStateLoss();
+                Toast.makeText(mActivity, "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.action_add:
                 // OldContactsFragment fragment = OldContactsFragment.newInstance();

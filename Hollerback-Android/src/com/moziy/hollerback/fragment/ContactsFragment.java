@@ -127,7 +127,8 @@ public class ContactsFragment extends BaseFragment {
                     c.mPhone
                 }, getString(R.string.start_conversation));
 
-                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
             }
         }
     };

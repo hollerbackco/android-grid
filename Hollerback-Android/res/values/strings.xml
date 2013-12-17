@@ -43,6 +43,9 @@
     <string name="record_message">Record a Message</string>
     <string name="record_recording">Recording</string>
     <string name="record_review">Review</string>
+    <string name="start_recording_dialog_title">Reply with Recording</string>
+    <string name="start_recording_dialog_message">After watching your messages, we give you a chance to reply.\n\nDon\'t worry if you aren\'t ready, you can always hit the back button during the recording.</string>
+    <string name="start_recording_dialog_button">Reply Now</string>
 
     <!-- Sign In/Sign Up -->
     <string name="name">Username</string>

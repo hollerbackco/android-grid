@@ -27,4 +27,7 @@ public class HBPreferences {
     // type: boolean pending alarm for recovery
     public static final String PENDING_RECOVERY_ALARM = "pending_recovery_alarm";
 
+    // type: boolean - to display start recording dialog or not
+    public static final String SHOWN_START_RECORDING_DIALOG = "start_recording_dialog_shown";
+
 }

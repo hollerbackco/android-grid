@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -97,7 +98,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 f.setTargetFragment(StartConversationFragment.this, 0);
 
                 // go to the video fragment
-                getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).addToBackStack(null)
+                        .replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
         });
 
@@ -174,14 +176,17 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
                     if (f == null)
                         f = ConversationListFragment.newInstance();
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).commit();
+                    getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+
+                    Context c = HollerbackApplication.getInstance();
+                    Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
                     mIsWaiting = false;
                     mProgressSpinner.setVisibility(View.INVISIBLE);
                     // go back to contacts or back to the conversation list?
-                    Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "couldn't send message, try again", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
 
                     if (mRecordingInfo != null) {

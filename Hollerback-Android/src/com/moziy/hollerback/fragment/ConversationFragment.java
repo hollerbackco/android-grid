@@ -7,8 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -26,6 +28,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.activeandroid.query.Update;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -43,6 +46,8 @@ import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 
 public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, RecordingInfo {
@@ -355,8 +360,27 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         } else {
 
-            // also broadcast that the conversation has been updated
-            beginRecording();
+            boolean isShown = PreferenceManagerUtil.getPreferenceValue(HBPreferences.SHOWN_START_RECORDING_DIALOG, false);
+            if (!isShown && isAdded()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getString(R.string.start_recording_dialog_title));
+                builder.setMessage(getString(R.string.start_recording_dialog_message));
+                builder.setCancelable(false);
+                builder.setPositiveButton(getString(R.string.start_recording_dialog_button), new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PreferenceManagerUtil.setPreferenceValue(HBPreferences.SHOWN_START_RECORDING_DIALOG, true);
+
+                        // also broadcast that the conversation has been updated
+                        beginRecording();
+
+                    }
+                });
+                builder.show();
+            } else {
+                beginRecording();
+            }
 
         }
 
@@ -451,6 +475,9 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
             }
         });
+
+        Context c = HollerbackApplication.getInstance();
+        Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);

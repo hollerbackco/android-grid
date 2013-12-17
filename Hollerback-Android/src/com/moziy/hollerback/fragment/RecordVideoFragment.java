@@ -16,7 +16,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.GradientDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.AudioManager;
@@ -43,6 +45,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -119,7 +122,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private int mPartNum;
     private int mTotalParts;
 
-    int timer = 20;
+    int timer = 30;
 
     public static String TAG = "VideoApp";
 
@@ -266,6 +269,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup v = (ViewGroup) inflater.inflate(R.layout.recording_layout, container, false);
 
+        mTimer = (TextView) v.findViewById(R.id.tv_timer);
+        GradientDrawable d = (GradientDrawable) mTimer.getBackground();
+        d.mutate();
+        d.setColor(Color.WHITE);
+
+        mBlinker = (ImageView) v.findViewById(R.id.iv_blinker);
+
         ViewGroup previewHolder = (FrameLayout) v.findViewById(R.id.preview);
         mPreviewDelegate = new PreviewTouchDelegate();
         if (USE_SURFACE_VIEW) {
@@ -401,9 +411,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
         }
 
-        Context c = HollerbackApplication.getInstance();
-        Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
-
     }
 
     private void launchVideoService(long resourceRowId) {
@@ -458,6 +465,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
+        } else { // XXX: Create a unified place for launching toasts, like in a toast receiver
+            Context c = HollerbackApplication.getInstance();
+            Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -512,6 +522,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             secondsPassed += 1;
             String seconds = String.valueOf(timer - secondsPassed) + "s";
             mTimer.setText(seconds);
+            mHandler.removeCallbacks(timeTask);
             if (secondsPassed >= timer) {
                 if (isRecording()) { // send the video once recording has stopped
 
@@ -532,6 +543,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
     };
     private ProgressDialog mProgressDialog;
+    private ImageView mBlinker;
 
     @Override
     public void onResume() {
@@ -570,7 +582,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
 
-            getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
+            // getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
 
             // fire off a ttyl
             Intent intent = new Intent();
@@ -673,7 +685,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 // inform the user that recording has started
                 // mRecordButton.setImageResource(R.drawable.stop_button);
                 setRecordingFlag();
-                // mHandler.postDelayed(timeTask, 1000);
+                mHandler.post(timeTask); // enable the time task
+                // mBlinker.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.blink));
             } else {
                 // prepare didn't work, release the camera
                 releaseMediaRecorder();
