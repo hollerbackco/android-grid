@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dim_126dp" >
+    android:layout_height="@dimen/dim_126dp"
+    android:descendantFocusability="blocksDescendants" >
 
     <RelativeLayout
         android:id="@+id/top_layer"
