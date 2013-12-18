@@ -153,6 +153,12 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse("mailto:" + getString(R.string.feedback_email)));
+                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject));
+                intent.putExtra(Intent.EXTRA_TEXT, "");
+
+                startActivity(Intent.createChooser(intent, getString(R.string.select_email)));
 
                 return false;
             }

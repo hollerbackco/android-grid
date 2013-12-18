@@ -26,6 +26,11 @@
     <string name="action_submit">Submit</string>
     <string name="ok">OK</string>
 
+    <!-- Feedback -->
+    <string name="feedback_email">feeback@hollerback.co</string>
+    <string name="feedback_subject">Feedback</string>
+    <string name="select_email">Send feedback to Hollerback</string>
+
     <!-- Welcome Text -->
     <string name="talk_to_friends">talk to your friends</string>
     <string name="anytime_anywhere">anytime, anywhere</string>
