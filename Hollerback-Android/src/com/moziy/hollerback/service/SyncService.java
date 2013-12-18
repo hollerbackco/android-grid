@@ -253,10 +253,26 @@ public class SyncService extends IntentService implements RecoveryClient {
 
             // if updating fails for any reason, then clear the preference that saves the last sync time
             if (!existingVideos.isEmpty()) { // TODO - look into updating vs removing for performance improvement
-                for (VideoModel existingVideo : existingVideos) { // a video's state should not change on the server once we recieve it on the client
-                    Log.d(TAG, "KEEPING:\n" + existingVideo.toString());
+                for (VideoModel existingVideo : existingVideos) { // a video's state should not change on the server once we recieve it on the client : WRONG: you can watch it from another device
 
                     // lets lookup the new video, and make sure that we don't update it unless the update time of the video is different than our update time
+                    VideoModel newVideo = newVideoMap.get(existingVideo.getGuid());
+                    if (newVideo != null && newVideo.isRead()) {
+
+                        Log.d(TAG, "UPDATING EXISTING:\n" + existingVideo.toString());
+
+                        existingVideo.setRead(true);
+                        existingVideo.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+
+                    } else {
+                        Log.d(TAG, "KEEPING EXISTING AS IS:\n" + existingVideo.toString());
+                    }
+
+                    // update the file and thumb
+                    existingVideo.setFileUrl(newVideo.getFileUrl());
+                    existingVideo.setThumbUrl(newVideo.getThumbUrl());
+                    existingVideo.save();
+
                     newVideoMap.remove(existingVideo.getGuid());
                 }
             }
@@ -264,11 +280,21 @@ public class SyncService extends IntentService implements RecoveryClient {
             if (!newVideoMap.isEmpty()) {
                 // insert the remaining videos into the database
                 for (VideoModel newVideo : newVideoMap.values()) {
-                    newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
-                    newVideo.setWatchedState(VideoModel.ResourceState.UNWATCHED);
-                    newVideo.save();
-                    senders.add(new Sender(newVideo)); // get a set of all senders
-                    Log.d(TAG, "ADDING:\n " + newVideo.toString());
+                    if (!newVideo.isRead()) { // if the new video hasn't been read
+                        Log.d(TAG, "ADDING NEW UNREAD:\n " + newVideo.toString());
+                        newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD);
+                        newVideo.setWatchedState(VideoModel.ResourceState.UNWATCHED);
+                        newVideo.save();
+                        senders.add(new Sender(newVideo)); // get a set of all senders
+
+                    } else { // otherwise, this video has been read
+                        Log.d(TAG, "ADDING NEW READ:\n" + newVideo.toString());
+                        newVideo.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+                        newVideo.setState(VideoModel.ResourceState.PENDING_DOWNLOAD); // we haven't downloaded it
+                        newVideo.save();
+
+                    }
+
                 }
 
             }
@@ -303,7 +329,7 @@ public class SyncService extends IntentService implements RecoveryClient {
                             newConvoMap.remove(newConversation.getConversationId());
 
                         } else {
-
+                            // NOTE: save happens later for new convos
                             Log.d(TAG, "DELETING:\n" + existingConversation.toString());
 
                             Log.w(TAG, "old unread: " + newConversation.getUnreadCount());
