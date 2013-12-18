@@ -18,10 +18,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
@@ -68,6 +70,17 @@ public class SignUpConfirmFragment extends BaseFragment {
 
         mPhoneUtil = PhoneNumberUtil.getInstance();
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+                return true;
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

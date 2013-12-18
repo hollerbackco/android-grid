@@ -28,6 +28,8 @@ public class SignupUserFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
+        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
         getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.signup));
 

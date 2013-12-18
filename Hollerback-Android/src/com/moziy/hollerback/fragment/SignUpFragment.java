@@ -101,6 +101,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
+        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
+
         Bundle args = getArguments();
         mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);
         mPassword = args.getString(PASSWORD_BUNDLE_ARG_KEY);

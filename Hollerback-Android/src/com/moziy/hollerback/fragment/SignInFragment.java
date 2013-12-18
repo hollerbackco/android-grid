@@ -15,6 +15,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -63,6 +64,16 @@ public class SignInFragment extends BaseFragment {
         this.getSherlockActivity().getSupportActionBar().show();
         this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
         this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

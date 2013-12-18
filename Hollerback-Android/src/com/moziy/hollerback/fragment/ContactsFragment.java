@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -125,7 +126,11 @@ public class ContactsFragment extends BaseFragment {
                 Contact c = item.getContact();
                 StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
                     c.mPhone
-                }, getString(R.string.start_conversation));
+                }, c.mName);
+
+                // if keyboard is showing hide it
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
 
                 getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
                         .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();

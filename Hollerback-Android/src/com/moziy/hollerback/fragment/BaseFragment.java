@@ -11,6 +11,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 
 public abstract class BaseFragment extends SherlockFragment {
@@ -21,7 +22,7 @@ public abstract class BaseFragment extends SherlockFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                this.getFragmentManager().popBackStack();
+                ((HollerbackMainActivity) getActivity()).initFragment();
                 break;
         }
 
@@ -39,7 +40,7 @@ public abstract class BaseFragment extends SherlockFragment {
             mLoading = new LoadingFragmentUtil(mActivity);
 
             mActivity.getSupportActionBar().show();
-            mActivity.getSupportActionBar().setIcon(R.drawable.icon_banana);
+            mActivity.getSupportActionBar().setIcon(R.drawable.banana_medium);
             mActivity.getSupportActionBar().setHomeButtonEnabled(true);
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
