@@ -25,7 +25,7 @@ import com.moziy.hollerback.util.PreferenceManagerUtil;
  */
 public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
     private static final String TAG = ResourceRecoveryUtil.class.getSimpleName();
-    private static final long ONE_MINUTE = 10 * 1000;
+    private static final long INITIAL_TIME = 30 * 1000;
     public static final String RECOVERY_PREF_FORMAT = "%s_PENDING_RECOVERY";
 
     public interface RecoveryClient {
@@ -34,7 +34,7 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
 
     public static void init() {
         PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE);
-        schedule(ONE_MINUTE);
+        schedule(INITIAL_TIME);
     }
 
     public static synchronized void requestRecovery(RecoveryClient client) {
@@ -43,8 +43,8 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
             Log.d(TAG, "initiating recovery");
             register(client); // register the client
 
-            if ((PreferenceManagerUtil.getPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE) - System.currentTimeMillis()) > ONE_MINUTE) // if it's less than a minute
-                schedule(ONE_MINUTE);
+            if ((PreferenceManagerUtil.getPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE) - System.currentTimeMillis()) > INITIAL_TIME) // if it's less than a minute
+                schedule(INITIAL_TIME);
         }
 
     }
@@ -172,7 +172,7 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
             Log.d(TAG, "reschedule recovery ");
 
             // schedule the next one only if needed
-            schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, ONE_MINUTE) * 2);
+            schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, INITIAL_TIME) * 2);
 
         } else {
             PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE);
