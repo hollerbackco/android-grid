@@ -7,10 +7,12 @@ import android.preference.Preference;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.HollerbackAppState;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBPreferences;
@@ -74,7 +76,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                SettingPreferenceActivity.this.setResult(RESULT_OK);
+                Toast.makeText(HollerbackApplication.getInstance(), "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 SettingPreferenceActivity.this.finish();
                 return false;
             }
