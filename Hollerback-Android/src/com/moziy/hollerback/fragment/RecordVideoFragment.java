@@ -562,6 +562,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mProgressDialog.dismiss();
         }
 
+        mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
+
         if (isRecording()) {
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
@@ -570,7 +572,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             // cleanup
             deleteRecording();
 
-            mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
 
             if (getTargetFragment() != null) {
@@ -685,6 +686,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 // inform the user that recording has started
                 // mRecordButton.setImageResource(R.drawable.stop_button);
                 setRecordingFlag();
+                mHandler.removeCallbacks(timeTask);
                 mHandler.post(timeTask); // enable the time task
                 // mBlinker.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.blink));
             } else {
@@ -729,7 +731,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         mHandler.removeCallbacks(timeTask);
-        secondsPassed = 0;
 
         // Precondition: User decides to send video (no ttyl without video, etc)
         return true;
@@ -803,8 +804,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onStop() {
         super.onStop();
-        if (!mSpecialOrientationRequest)
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        if (!mSpecialOrientationRequest) {
+            // mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        }
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_FULLSCREEN);
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         mActivity.getActionBar().show();
