@@ -144,7 +144,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         }
 
-        viewHolder.conversationName.setText(conversationModel.getConversationName().toUpperCase());
+        viewHolder.conversationName.setText(conversationModel.getConversationName());
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
         try {
