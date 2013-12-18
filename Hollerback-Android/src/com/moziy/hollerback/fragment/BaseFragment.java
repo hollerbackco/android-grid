@@ -69,7 +69,7 @@ public abstract class BaseFragment extends SherlockFragment {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
             View customView = inflater.inflate(R.layout.header_title, null);
             TextView txtTitle = (TextView) customView.findViewById(R.id.title);
-            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString().toUpperCase());
+            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString());
 
             mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
             mActivity.getSupportActionBar().setCustomView(customView);

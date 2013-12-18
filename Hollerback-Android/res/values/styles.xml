@@ -88,23 +88,24 @@
     </style>
 
     <style name="DefaultTextView" parent="@android:style/Widget.TextView">
-        <item name="typeface">Gotham-Medium</item>
-        <item name="android:shadowColor">#000000</item>
-        <item name="android:shadowDx">1.0</item>
-        <item name="android:shadowDy">1.0</item>
-        <item name="android:shadowRadius">0.5</item>
+        <item name="typeface">GothamRnd-Medium</item>
+        <!-- <item name="android:shadowColor">#000000</item> -->
+        <!-- <item name="android:shadowDx">1.0</item> -->
+        <!-- <item name="android:shadowDy">1.0</item> -->
+        <!-- <item name="android:shadowRadius">0.5</item> -->
+
     </style>
 
     <style name="DefaultButton" parent="@android:style/Widget.Holo.Button">
-        <item name="typeface">Gotham-Medium</item>
+        <item name="typeface">GothamRnd-Medium</item>
     </style>
 
     <style name="DefaultButton.Small" parent="@android:style/Widget.Holo.Button.Small">
-        <item name="typeface">Gotham-Medium</item>
+        <item name="typeface">GothamRnd-Medium</item>
     </style>
 
     <style name="DefaultEditText" parent="@android:style/Widget.EditText">
-        <item name="typeface">Gotham-Medium</item>
+        <item name="typeface">GothamRnd-Medium</item>
         <item name="android:paddingBottom">@dimen/dim_10dp</item>
         <item name="android:paddingTop">@dimen/dim_10dp</item>
         <item name="borderWidth">@dimen/dim_1dp</item>
