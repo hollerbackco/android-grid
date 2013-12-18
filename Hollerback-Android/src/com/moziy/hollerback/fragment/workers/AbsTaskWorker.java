@@ -20,6 +20,9 @@ public class AbsTaskWorker extends Fragment {
 
     protected void clearTaskListeners(Task t) {
 
+        if (t == null)
+            return;
+
         // clear task listener for all tasks,
         Queue<Task> queue = new LinkedList<Task>();
         queue.add(t);
