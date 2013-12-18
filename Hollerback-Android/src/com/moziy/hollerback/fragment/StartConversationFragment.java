@@ -3,6 +3,7 @@ package com.moziy.hollerback.fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,18 +32,22 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
     private static final String TITLE_BUNDLE_ARG_KEY = "title";
+    private static final String IS_HB_USERS_BUNDLE_ARG_KEY = "IS_HB_USERS";
 
-    public static StartConversationFragment newInstance(String[] phones, String title) {
+    public static StartConversationFragment newInstance(String[] phones, String title, boolean[] isHbUser) {
         StartConversationFragment f = new StartConversationFragment();
         Bundle params = new Bundle();
         params.putStringArray(PHONES_BUNDLE_ARG_KEY, phones);
         params.putString(TITLE_BUNDLE_ARG_KEY, title);
+        params.putBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY, isHbUser);
+
         f.setArguments(params);
         return f;
     }
 
     private ProgressBar mProgressSpinner;
     private String[] mPhones;
+    private boolean[] mIsHBUsers; // one to one matching with mPhones
     private String mTitle;
     private Bundle mRecordingInfo = null;
 
@@ -56,6 +61,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
         Bundle args = getArguments();
         mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
         mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
+        mIsHBUsers = args.getBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY);
         Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
@@ -181,6 +187,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
+                    sendSMSInvite();
+
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
                     mIsWaiting = false;
@@ -202,6 +210,30 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 Log.w(TAG, "received broadcast when not added");
             }
 
+        }
+
+        private void sendSMSInvite() {
+
+            boolean sendSms = false;
+            // build the uri
+            StringBuilder sb = new StringBuilder();
+            sb.append("smsto:");
+            for (int i = 0; i < mPhones.length; i++) {
+
+                if (!mIsHBUsers[i]) {
+                    sendSms = true;
+                    sb.append(mPhones[i]).append(";");
+                }
+            }
+            sb.deleteCharAt(sb.length() - 1);
+
+            if (sendSms) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse(sb.toString()));
+                intent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+                Intent.createChooser(intent, HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
+                startActivity(intent);
+            }
         }
     }
 

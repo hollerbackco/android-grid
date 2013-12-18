@@ -293,7 +293,9 @@ public class OldContactsFragment extends BaseFragment implements TaskClient {
 
         mActivity.getSupportFragmentManager().popBackStack();
 
-        StartConversationFragment startConvoFragment = StartConversationFragment.newInstance(phones, mConversationTitle);
+        StartConversationFragment startConvoFragment = StartConversationFragment.newInstance(phones, mConversationTitle, new boolean[] {
+            false
+        });
         // RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
 
         // add to backstack?

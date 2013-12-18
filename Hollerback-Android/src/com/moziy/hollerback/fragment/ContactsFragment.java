@@ -123,10 +123,13 @@ public class ContactsFragment extends BaseFragment {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Item item = (Item) parent.getItemAtPosition(position);
             if (item.getContact() != null) {
+
                 Contact c = item.getContact();
                 StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
                     c.mPhone
-                }, c.mName);
+                }, c.mName, new boolean[] {
+                    c.mIsOnHollerback
+                });
 
                 // if keyboard is showing hide it
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);

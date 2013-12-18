@@ -126,18 +126,23 @@ public class UploadUtility implements RecoveryClient {
 
                 // if the conversation we created, is actually found in our db, then update it
                 ConversationModel dbConvo = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", conversationResp.getConversationId()).executeSingle();
+                boolean isNew = true;
                 if (dbConvo != null) {
                     conversationResp.setLastMessageAt(convoUpdateTime);
                     Log.d(TAG, "deleting record: " + dbConvo.toString());
                     // delete record
                     dbConvo.delete();
+                    isNew = false;
                 }
 
                 // inserting
                 Log.d(TAG, "inserting: " + conversationResp.toString());
                 conversationResp.save();
 
-                IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_CREATED));
+                // fire off conversation intent
+                Intent intent = new Intent(IABIntent.CONVERSATION_CREATED);
+                intent.putExtra(IABIntent.PARAM_IS_NEW_CONVERSATION, isNew);
+                IABroadcastManager.sendLocalBroadcast(intent);
 
                 // launch the
 
