@@ -63,15 +63,15 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <ImageView
+        <com.moziy.hollerback.widget.CustomButton
             android:id="@+id/btnRecord"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/dim_50dp"
+            android:layout_height="@dimen/dim_50dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dim_16dp"
             android:layout_marginRight="@dimen/dim_16dp"
-            android:background="@drawable/btn_record"
+            android:background="@drawable/record_btn"
             android:clickable="true"
             android:contentDescription="@string/app_name" />
     </RelativeLayout>

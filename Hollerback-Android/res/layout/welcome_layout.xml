@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#AAAAAA"
@@ -64,7 +65,8 @@
         android:layout_weight="18"
         android:background="@color/slightly_desaturated_yellow"
         android:text="@string/signup"
-        android:textSize="32sp" />
+        android:textSize="32sp"
+        app:tintColor="#80000000" />
 
     <View
         android:layout_width="match_parent"
@@ -78,6 +80,7 @@
         android:layout_weight="18"
         android:background="@color/slightly_desaturated_blue"
         android:text="@string/signin"
-        android:textSize="32sp" />
+        android:textSize="32sp"
+        app:tintColor="#80000000" />
 
 </LinearLayout>

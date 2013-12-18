@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -32,6 +31,7 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.view.RoundImageView;
+import com.moziy.hollerback.widget.CustomButton;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
     private static final String TAG = ConversationListAdapter.class.getSimpleName();
@@ -109,7 +109,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
             viewHolder.conversationSubTitle = (TextView) convertView.findViewById(R.id.tv_ttyl);
             viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
-            viewHolder.btnRecord = (ImageView) convertView.findViewById(R.id.btnRecord);
+            viewHolder.btnRecord = (CustomButton) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
 
         } else {
@@ -131,6 +131,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.topLayer.setBackgroundColor(colors[1]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
+            viewHolder.btnRecord.setEmphasized(true);
 
         } else {
             convertView.setBackgroundColor(color.white);
@@ -138,6 +139,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
+            viewHolder.btnRecord.setEmphasized(false);
 
             if (conversationModel.getSubTitle() != null)
                 viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
@@ -247,7 +249,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationTime;
         TextView conversationSubTitle;
         RoundImageView thumb;
-        ImageView btnRecord;
+        CustomButton btnRecord;
         int foregroundColor = -1;
         int backgroundColor = -1;
     }

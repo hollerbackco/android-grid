@@ -2,7 +2,6 @@ package com.moziy.hollerback.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -16,6 +15,10 @@ import com.moziy.hollerback.view.FontManager;
 // TODO - Sajjad: Figure out if we can create a tint on a background resource that's a drawable
 // I know that ColorDrawable's don't take a color filter
 public class CustomButton extends Button {
+    private static final int[] STATE_ACTIVE_MODE = {
+        R.attr.emphasized
+    };
+    private boolean mIsEmphasized = false;
 
     private Drawable mTint;
     private Drawable mBg;
@@ -37,9 +40,16 @@ public class CustomButton extends Button {
             TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont, defStyle, R.style.DefaultButton);
             setTypefaceFromAttrs(array);
             array.recycle();
+
+            array = context.obtainStyledAttributes(attrs, R.styleable.CustomButton, defStyle, R.style.DefaultButton);
+            int color = array.getColor(R.styleable.CustomButton_tintColor, -1);
+            if (color > -1) {
+                mTint = new ColorDrawable(color);
+            }
+            array.recycle();
+
         }
 
-        mTint = new ColorDrawable(Color.parseColor("#80000000"));
     }
 
     private void setTypefaceFromAttrs(TypedArray array) {
@@ -50,18 +60,38 @@ public class CustomButton extends Button {
     }
 
     @Override
+    public int[] onCreateDrawableState(int extraSpace) {
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
+        if (mIsEmphasized)
+            mergeDrawableStates(drawableState, STATE_ACTIVE_MODE);
+
+        return drawableState;
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            mBg = getBackground();
-            setBackgroundDrawable(mTint);
-        }
+        if (mTint != null) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                mBg = getBackground();
+                setBackgroundDrawable(mTint);
+            }
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            Log.d("cb", "clear color filter");
-            setBackgroundDrawable(mBg);
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Log.d("cb", "clear color filter");
+                setBackgroundDrawable(mBg);
+            }
         }
 
         return super.onTouchEvent(event);
+    }
+
+    public void setEmphasized(boolean emphasized) {
+
+        if (mIsEmphasized != emphasized) {
+            mIsEmphasized = emphasized;
+            refreshDrawableState();
+        }
+
     }
 }

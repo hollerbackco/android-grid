@@ -25,6 +25,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="@dimen/dim_20dp"
         android:layout_marginRight="@dimen/dim_20dp"
-        android:text="@string/signin" />
+        android:text="@string/signin"
+        app:tintColor="#80000000" />
 
 </RelativeLayout>
