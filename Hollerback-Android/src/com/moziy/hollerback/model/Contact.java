@@ -4,8 +4,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import android.util.Log;
-
 import com.moziy.hollerback.util.security.HashUtil;
 
 public class Contact {
@@ -31,7 +29,7 @@ public class Contact {
 
         mPhones.add(mPhone);
 
-        Log.d(TAG, "creating contact: " + toString());
+        // Log.d(TAG, "creating contact: " + toString());
     }
 
     public void generateHash(MessageDigest md5) {

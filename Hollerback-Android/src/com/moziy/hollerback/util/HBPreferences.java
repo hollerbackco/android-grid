@@ -17,6 +17,7 @@ public class HBPreferences {
     public static final String SAVED_EMAIL = "SavedEmail";
 
     public static final String GCM_ID = "GCM_ID";
+    public static final String IS_GCM_REGISTERED = "is_gcm_registered";
 
     // type: string : last sync time
     public static final String LAST_SERVICE_SYNC_TIME = "last_service_sync_time";

@@ -67,6 +67,16 @@ public class HBRequestManager {
 
     }
 
+    public static void postMe(String accessToken, String deviceToken, AsyncHttpResponseHandler responseHandler) {
+        RequestParams params = new RequestParams();
+
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, accessToken);
+        params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, deviceToken);
+
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_ME, params, responseHandler);
+
+    }
+
     public static void postRegistration(String email, String password, String userName, String phone, HBHttpResponseHandler<RegisterResponse> responseHandler) {
         RequestParams params = new RequestParams();
 

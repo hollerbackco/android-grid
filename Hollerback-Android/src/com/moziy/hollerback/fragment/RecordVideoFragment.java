@@ -21,7 +21,6 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.ErrorCallback;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OutputFormat;
@@ -778,10 +777,15 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT)
-                recorder.setOrientationHint(270);
-            else
+            if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT) {
+                if (Build.MANUFACTURER.equals("HTC")) {
+                    recorder.setOrientationHint(90);
+                } else {
+                    recorder.setOrientationHint(270);
+                }
+            } else {
                 recorder.setOrientationHint(90);
+            }
         }
 
         // Step 4: Set output file

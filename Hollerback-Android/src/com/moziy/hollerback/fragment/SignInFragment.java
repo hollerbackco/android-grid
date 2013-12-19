@@ -28,7 +28,6 @@ import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 
 public class SignInFragment extends BaseFragment {
@@ -209,7 +208,7 @@ public class SignInFragment extends BaseFragment {
     private boolean verifyFields() {
 
         boolean status = true;
-        status &= ValidatorUtil.isValidEmail(mEmailEditText.getText());
+        // status &= ValidatorUtil.isValidEmail(mEmailEditText.getText());
 
         if (!status) {
             getErrorDialog(getString(R.string.error_oops), getString(R.string.error_email), getString(R.string.ok)).show();

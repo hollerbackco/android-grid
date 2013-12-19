@@ -26,6 +26,7 @@ import com.moziy.hollerback.util.PreferenceManagerUtil;
 public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
     private static final String TAG = ResourceRecoveryUtil.class.getSimpleName();
     private static final long INITIAL_TIME = 30 * 1000;
+    private static final long MAX_BACKOFF_TIME = 30 * 60 * 1000; // 30 minutes
     public static final String RECOVERY_PREF_FORMAT = "%s_PENDING_RECOVERY";
 
     public interface RecoveryClient {
@@ -170,9 +171,10 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
 
         if (recoveryInitiated) {
             Log.d(TAG, "reschedule recovery ");
+            long recoveryTime = Math.min(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, INITIAL_TIME) * 2, MAX_BACKOFF_TIME);
 
             // schedule the next one only if needed
-            schedule(PreferenceManagerUtil.getPreferenceValue(HBPreferences.RESOURCE_RECOVERY_BACKOFF_TIME, INITIAL_TIME) * 2);
+            schedule(recoveryTime);
 
         } else {
             PreferenceManagerUtil.setPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE);
