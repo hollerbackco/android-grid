@@ -21,6 +21,7 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.ErrorCallback;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OutputFormat;
@@ -104,7 +105,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private volatile boolean mSurfaceCreated = false;
     private boolean mSpecialOrientationRequest;
 
-    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 14 ? true : false);
+    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 16 ? true : false);
 
     TextView mTimer;
     private final Handler mHandler = new Handler();
@@ -767,10 +768,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-        // CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
+        CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
         // Step 3: Configure Camera
         CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
+        // recorder.setProfile(CamcorderProfile.get(mCurrentCameraId, CamcorderProfile.QUALITY_LOW));
 
         // recorder.setvideoextension
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
@@ -784,6 +786,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         // Step 4: Set output file
         recorder.setOutputFile(getNewFileName());
+
+        // Step 5: Set Preview Display
+        if (USE_SURFACE_VIEW)
+            recorder.setPreviewDisplay(((PreviewSurfaceView) mCameraPreview).getHolder().getSurface());
 
         // Step 6: Prepare configured MediaRecorder
         try {
@@ -904,22 +910,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void surfaceCreated(SurfaceHolder holder) {
         mSurfaceCreated = true;
 
-        if (mCamera != null && !mOpenCameraThread.isAlive()) {
-            mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+        mSurfaceCreated = true;
 
-            new Thread() {
-                public void run() {
-                    if (startPreview(mCurrentCameraId)) {
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading Camera...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
 
-                        if (!isRecording()) {
-                            startRecording();
-                        }
-                    }
-
-                }
-
-            }.start();
-        }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            initCamera();
 
     }
 
