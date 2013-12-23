@@ -27,7 +27,6 @@ import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
 public class UploadUtility implements RecoveryClient {
@@ -83,7 +82,6 @@ public class UploadUtility implements RecoveryClient {
                 // broadcast conversation create failure
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED));
 
-                startRecovery(); // schedule for the failed video to get uploaded
             }
         }
 
@@ -193,8 +191,6 @@ public class UploadUtility implements RecoveryClient {
             e1.printStackTrace();
             Log.w(TAG, "Interrupted and need to reschedule");
 
-            startRecovery();
-
             return false;
 
         }
@@ -238,9 +234,6 @@ public class UploadUtility implements RecoveryClient {
                 // update the videos as watched
                 VideoHelper.markVideosAsWatched(watchedVideos);
 
-                // now that we've been successful lets clear any recovery request
-                ResourceRecoveryUtil.removeRecoveryRequest(UploadUtility.this);
-
             }
 
             @Override
@@ -248,8 +241,6 @@ public class UploadUtility implements RecoveryClient {
                 Log.d(TAG, "post to conversation failed");
 
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.VIDEO_UPLOAD_FAILED)); // broadcast failure of posting conversation
-
-                startRecovery();
 
             }
 
@@ -274,10 +265,6 @@ public class UploadUtility implements RecoveryClient {
 
         Log.d(TAG, "done");
         return true;
-    }
-
-    private void startRecovery() {
-        ResourceRecoveryUtil.requestRecovery(this);
     }
 
     // TODO - Food for thought..move these methods into a utility class?

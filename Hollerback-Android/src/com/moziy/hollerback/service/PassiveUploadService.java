@@ -12,9 +12,19 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
 public class PassiveUploadService extends IntentService {
     private static final String TAG = PassiveUploadService.class.getSimpleName();
+
+    private static RecoveryClient sRecoveryClient = new RecoveryClient() {
+
+        @Override
+        public String getFullyQualifiedClassName() {
+
+            return PassiveUploadService.class.getName();
+        }
+    };
 
     public PassiveUploadService() {
         super(PassiveUploadService.class.getSimpleName());
@@ -37,9 +47,11 @@ public class PassiveUploadService extends IntentService {
                 Log.d(TAG, "no pending videos/messages to upload, yay");
                 // cancel any recurring alarm
                 // ResourceRecoveryUtil.cancel();
+                ResourceRecoveryUtil.removeRecoveryRequest(sRecoveryClient);
                 return;
             }
 
+            boolean requestRecovery = false;
             // lets start a transaction, the method below ensures that we don't retrieve a list of transacting videos
             pendingList = VideoHelper.getVideosForTransaction(sb.toString());
 
@@ -67,6 +79,17 @@ public class PassiveUploadService extends IntentService {
 
                 // clear the model from transacting
                 VideoHelper.clearVideoTransacting(v);
+
+                if (!requestRecovery) {
+                    if (!VideoModel.ResourceState.UPLOADED.equals(v.getState())) {
+                        requestRecovery = true;
+                    }
+                }
+
+            }
+
+            if (requestRecovery) {
+                startRecovery();
             }
 
         } finally {
@@ -74,4 +97,13 @@ public class PassiveUploadService extends IntentService {
         }
 
     }
+
+    public static RecoveryClient getRecoveryClient() {
+        return sRecoveryClient;
+    }
+
+    private void startRecovery() {
+        ResourceRecoveryUtil.requestRecovery(sRecoveryClient);
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.moziy.hollerback.service;
 
-
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
@@ -8,6 +7,7 @@ import android.util.Log;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 /**
  * This class is responsible for uploading a video resource to S3, and then issuing a post to the appropriate api 
@@ -91,6 +91,11 @@ public class VideoUploadIntentService extends IntentService {
             // clear the model from transacting
             Log.d(TAG, "clearing transacting");
             VideoHelper.clearVideoTransacting(model);
+
+            if (!VideoModel.ResourceState.UPLOADED.equals(model.getState())) { // if we're not in the uploading state, then request recovery
+                Log.d(TAG, "requesting recovery");
+                ResourceRecoveryUtil.requestRecovery(PassiveUploadService.getRecoveryClient());
+            }
         }
     }
 
