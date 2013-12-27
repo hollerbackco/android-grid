@@ -36,8 +36,18 @@ public class HBFileUtil {
                 return null;
             }
 
+            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/" + DIRECTORY_NAME + "/.nomedia");
+            if (!nomedia.exists()) {
+                try {
+                    nomedia.createNewFile();
+                } catch (IOException e) {
+                    Log.w(TAG, "couldn't create global no media file");
+                    e.printStackTrace();
+                }
+            }
+
             // create a no media file and place it
-            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/.nomedia");
+            nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/.nomedia");
             try {
                 nomedia.createNewFile();
             } catch (IOException e) {
@@ -86,8 +96,18 @@ public class HBFileUtil {
                 return null;
             }
 
+            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/" + DIRECTORY_NAME + "/.nomedia");
+            if (!nomedia.exists()) {
+                try {
+                    nomedia.createNewFile();
+                } catch (IOException e) {
+                    Log.w(TAG, "couldn't create global no media file");
+                    e.printStackTrace();
+                }
+            }
+
             // create a no media file and place it
-            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0] + "/.nomedia");
+            nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0] + "/.nomedia");
             try {
                 nomedia.createNewFile();
             } catch (IOException e) {
