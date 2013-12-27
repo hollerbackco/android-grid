@@ -124,6 +124,7 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
         } else { // this is an alarm manager
             if (!isConnected(cm)) {
 
+                Log.d(TAG, "no connectivity, setting pending alarm on connectivity");
                 // we're not connected, so let's just mark it as pending
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.PENDING_RECOVERY_ALARM, true);
                 return;
