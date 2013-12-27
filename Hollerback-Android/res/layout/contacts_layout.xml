@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_header" >
+
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/search_bar" />
+
+    <com.moziy.hollerback.view.StickyHeaderListView
+        android:id="@+id/stick_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/txtSearch" >
+
+        <ListView
+            android:id="@+id/lv_contacts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:cacheColorHint="#FFFFFF"
+            android:fastScrollAlwaysVisible="false"
+            android:fastScrollEnabled="true" >
+        </ListView>
+    </com.moziy.hollerback.view.StickyHeaderListView>
+
+</RelativeLayout>

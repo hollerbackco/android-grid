@@ -17,12 +17,11 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.BgDownloadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
-import com.moziy.hollerback.util.DataModelManager;
+import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
     private static HollerbackApplication sInstance = null;
     private static final String TAG = HollerbackApplication.class.getSimpleName();
-    private static DataModelManager sDataModelManager = null;
     private ObjectMapper mObjectMapper;
     private AppLifecycle mLifecycle;
 
@@ -33,11 +32,12 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
         ActiveAndroid.setLoggingEnabled(true);
         initObjectMapper();
 
-        sDataModelManager = new DataModelManager();
         mLifecycle = new AppLifecycle();
         mLifecycle.registerIdleListener(mIdleListener);
 
         clearAllTransactingModel();
+
+        ResourceRecoveryUtil.init();
 
         BackgroundHelper.getInstance(); // create the looper for the camera manager
 
@@ -54,10 +54,6 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
     public ObjectMapper getObjectMapper() {
         return mObjectMapper;
-    }
-
-    public DataModelManager getDM() {
-        return sDataModelManager;
     }
 
     @Override

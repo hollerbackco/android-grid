@@ -64,7 +64,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dim_10dp"
             android:text="@string/action_verify"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:tintColor="#80000000" />
 
         <com.moziy.hollerback.widget.CustomTextView
             android:id="@+id/tv_not_received"

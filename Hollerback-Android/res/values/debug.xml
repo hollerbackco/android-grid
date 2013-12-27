@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- <string name="PROXY_URL">10.0.1.49</string> -->
+
     <string name="PROXY_URL">10.0.1.49</string>
 
     <integer name="PROXY_PORT">8888</integer>
 
-    <bool name="ENABLE_PROXY">true</bool>
+    <bool name="ENABLE_PROXY">false</bool>
 
 </resources>

@@ -20,6 +20,14 @@ public class WelcomeFragment extends BaseFragment {
     private CustomButton mSignUpBtn;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // check to see whether the user is registered or not
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = (SherlockFragmentActivity) this.getActivity();
         mActivity.getSupportActionBar().hide();
@@ -46,8 +54,18 @@ public class WelcomeFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
+
+                // if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.PHONE, null) != null && !PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_VERIFIED, false)) {
+                // // load the verification step
+                // Log.d(TAG, "user isn't verified");
+                // SignUpConfirmFragment f = SignUpConfirmFragment.newInstance();
+                // getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+                //
+                // return;
+                // } else {
                 SignupUserFragment f = new SignupUserFragment();
                 getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+                // }
             }
         });
 

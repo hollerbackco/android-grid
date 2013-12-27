@@ -54,7 +54,7 @@ public class TaskGroup extends AbsTask {
 
     }
 
-    private void postResult(final Task t) {
+    protected void postResult(final Task t) {
         if (t.getTaskListener() != null) {
             if (!t.isSuccess()) {
                 Log.d(TAG, "posting error");

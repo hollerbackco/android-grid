@@ -9,7 +9,7 @@ import com.activeandroid.annotation.Table;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.web.response.SyncPayload;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 
 @Table(name = ActiveRecordFields.T_CONVERSATION)
 public class ConversationModel extends BaseModel implements Serializable, SyncPayload {
@@ -18,6 +18,12 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
      * 
      */
     private static final long serialVersionUID = 776201028447951350L;
+
+    public static interface ResourceState {
+        public static final String ACTIVE = "active";
+        public static final String TTYL_PENDING_POST = "ttyl_pending_post";
+        public static final String TTYL_POSTED = "ttyl_posted";
+    }
 
     @Column(name = ActiveRecordFields.C_CONV_ID)
     private long id;
@@ -74,6 +80,9 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     @Column(name = ActiveRecordFields.C_CONV_URL)
     private String url;
 
+    @Column(name = ActiveRecordFields.C_CONV_STATE)
+    private String state;
+
     public long getConversationId() {
         return id;
     }
@@ -115,6 +124,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         last_message_at = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
     }
 
+    public void setLastMessageAt(TimeStamp timeStamp) {
+        last_message_at = timeStamp.mTimeStamp;
+    }
+
     public long getLastMessageAtInMillis() {
         try {
             Date d = TimeUtil.SERVER_TIME_FORMAT.parse(last_message_at);
@@ -131,6 +144,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         return most_recent_thumb_url;
     }
 
+    public String getSubTitle() {
+        return most_recent_subtitle;
+    }
+
     public void setUrl(String value) {
         this.url = value;
     }
@@ -139,11 +156,33 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         return this.url;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
         return "ConversationModel [id=" + id + ", name=" + name + ", unread_count=" + unread_count + ", created_at=" + created_at + ", deleted_at=" + deleted_at + ", last_message_at="
                 + last_message_at + ", most_recent_subtitle=" + most_recent_subtitle + ", most_recent_thumb_url=" + most_recent_thumb_url + ", unseen_count=" + unseen_count + ", user_id=" + user_id
-                + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + "]";
+                + ", is_deleted=" + is_deleted + ", updated_at=" + updated_at + ", recentThumbUrl=" + recentThumbUrl + ", recentVideoUrl=" + recentVideoUrl + ", url=" + url + ", state=" + state + "]";
+    }
+
+    public static TimeStamp getConvoTimeStamp() {
+        return new TimeStamp();
+    }
+
+    public static class TimeStamp {
+
+        String mTimeStamp;
+
+        TimeStamp() {
+            mTimeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        }
+
     }
 
 }

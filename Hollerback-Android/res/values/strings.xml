@@ -26,6 +26,11 @@
     <string name="action_submit">Submit</string>
     <string name="ok">OK</string>
 
+    <!-- Feedback -->
+    <string name="feedback_email">feeback@hollerback.co</string>
+    <string name="feedback_subject">Feedback</string>
+    <string name="select_email">Send feedback to Hollerback</string>
+
     <!-- Welcome Text -->
     <string name="talk_to_friends">talk to your friends</string>
     <string name="anytime_anywhere">anytime, anywhere</string>
@@ -43,6 +48,9 @@
     <string name="record_message">Record a Message</string>
     <string name="record_recording">Recording</string>
     <string name="record_review">Review</string>
+    <string name="start_recording_dialog_title">Reply with Recording</string>
+    <string name="start_recording_dialog_message">After watching your messages, we give you a chance to reply.\n\nDon\'t worry if you aren\'t ready, you can always hit the back button during the recording.</string>
+    <string name="start_recording_dialog_button">Reply Now</string>
 
     <!-- Sign In/Sign Up -->
     <string name="name">Username</string>
@@ -107,8 +115,15 @@
     <string name="invite_successful">Your friends has successfully been invited.</string>
     <string name="record_error">There was an error recording.</string>
 
+    <!-- Contacts -->
+    <string name="send_to_hb_friend">Send to Hollerback Friend</string>
+    <string name="send_to_contact">Send to Friend from Contacts</string>
+
     <!-- Start Conversation -->
     <string name="tap_to_start">Tap banana to start video</string>
+    <string name="start_conversation">Start Conversation</string>
+    <string name="start_convo_sms_body">hey i just sent you a video message on the app hollerback. it\'s like video texting. here\'s your invite to download it: www.hollerback.co/invite</string>
+    <string name="invite_activity_chooser">Invite</string>
 
     <!-- Notifications -->
     <plurals name="notif_new_message">

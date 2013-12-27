@@ -1,12 +1,11 @@
 package com.moziy.hollerback.helper;
 
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.FontUtil;
-
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.moziy.hollerback.R;
 
 public class CustomActionBarHelper {
 

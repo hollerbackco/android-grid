@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dim_126dp"
+    android:descendantFocusability="blocksDescendants" >
+
+    <RelativeLayout
+        android:id="@+id/top_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF" >
+
+        <com.moziy.hollerback.view.RoundImageView
+            android:id="@+id/iv_thumb"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            app:radius="35dp" >
+        </com.moziy.hollerback.view.RoundImageView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dim_18dp"
+            android:layout_marginRight="@dimen/dim_neg_10dp"
+            android:layout_toLeftOf="@+id/btnRecord"
+            android:layout_toRightOf="@+id/iv_thumb"
+            android:orientation="vertical" >
+
+            <com.moziy.hollerback.widget.CustomTextView
+                android:id="@+id/tv_convoname"
+                style="@style/DefaultTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="ORTHOARASH"
+                android:textColor="@color/hb_blue"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.moziy.hollerback.widget.TimeStampTextView
+                android:id="@+id/tv_time"
+                style="@style/DefaultTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Now"
+                android:textColor="@color/hb_blue"
+                android:textSize="18sp" />
+
+            <com.moziy.hollerback.widget.CustomTextView
+                android:id="@+id/tv_ttyl"
+                style="@style/DefaultTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="ttyl"
+                android:textColor="@color/hb_blue"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.moziy.hollerback.widget.CustomButton
+            android:id="@+id/btnRecord"
+            android:layout_width="@dimen/dim_50dp"
+            android:layout_height="@dimen/dim_50dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dim_16dp"
+            android:layout_marginRight="@dimen/dim_16dp"
+            android:background="@drawable/record_btn"
+            android:clickable="true"
+            android:contentDescription="@string/app_name" />
+    </RelativeLayout>
+
+</RelativeLayout>

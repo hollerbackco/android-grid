@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -32,9 +31,10 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.view.RoundImageView;
+import com.moziy.hollerback.widget.CustomButton;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
-
+    private static final String TAG = ConversationListAdapter.class.getSimpleName();
     protected List<ConversationModel> mConversations;
     protected List<ConversationModel> mFilteredConversations;
 
@@ -103,12 +103,13 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         if (convertView == null) {
 
             viewHolder = new ViewHolder();
-            convertView = inflater.inflate(R.layout.message_list_item, parent, false);
+            convertView = inflater.inflate(R.layout.conversation_list_item, parent, false);
             viewHolder.topLayer = (ViewGroup) convertView.findViewById(R.id.top_layer);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
+            viewHolder.conversationSubTitle = (TextView) convertView.findViewById(R.id.tv_ttyl);
             viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
-            viewHolder.btnRecord = (ImageView) convertView.findViewById(R.id.btnRecord);
+            viewHolder.btnRecord = (CustomButton) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
 
         } else {
@@ -116,6 +117,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         }
 
         final ConversationModel conversationModel = mFilteredConversations.get(position);
+        viewHolder.conversationSubTitle.setText(""); // clear the text
+        Log.d(TAG, "unread count: " + conversationModel.getUnreadCount());
         if (conversationModel.getUnreadCount() > 0) {
             int[] colors;
             if (mConvoColorMap.containsKey(conversationModel)) {
@@ -128,15 +131,22 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.topLayer.setBackgroundColor(colors[1]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
+            viewHolder.btnRecord.setEmphasized(true);
+
         } else {
             convertView.setBackgroundColor(color.white);
             viewHolder.topLayer.setBackgroundColor(Color.WHITE);
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
+            viewHolder.btnRecord.setEmphasized(false);
+
+            if (conversationModel.getSubTitle() != null)
+                viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
+
         }
 
-        viewHolder.conversationName.setText(conversationModel.getConversationName().toUpperCase());
+        viewHolder.conversationName.setText(conversationModel.getConversationName());
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
         try {
@@ -156,9 +166,9 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             public void onClick(View v) {
                 mActivity.getActionBar().hide();
                 // TODO: no need to pass in watched ids
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName(), new ArrayList<String>());
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName());
+                mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
+                        .replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
             }
         });
 
@@ -237,8 +247,9 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         public ViewGroup topLayer;
         TextView conversationName;
         TextView conversationTime;
+        TextView conversationSubTitle;
         RoundImageView thumb;
-        ImageView btnRecord;
+        CustomButton btnRecord;
         int foregroundColor = -1;
         int backgroundColor = -1;
     }

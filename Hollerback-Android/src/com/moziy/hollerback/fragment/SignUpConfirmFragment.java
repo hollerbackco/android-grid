@@ -18,18 +18,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.TimeUtil;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
+import com.moziy.hollerback.util.date.TimeUtil;
 
 /**
  * This is a fragment that's going to use the new architecture, loader based rather than braodcast based
@@ -68,6 +70,17 @@ public class SignUpConfirmFragment extends BaseFragment {
 
         mPhoneUtil = PhoneNumberUtil.getInstance();
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+                return true;
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -160,11 +173,14 @@ public class SignUpConfirmFragment extends BaseFragment {
                             String access_token = response.access_token;
 
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
+                            PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, true);
 
                             // user is officially logged in and registered, pop everything
                             getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
 
-                            ContactsFragment fragment = ContactsFragment.newInstance(true, null);
+                            // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
+                            // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
+                            ContactsFragment fragment = ContactsFragment.newInstance();
                             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                                     .commitAllowingStateLoss();
                         } else {

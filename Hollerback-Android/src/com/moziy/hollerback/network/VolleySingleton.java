@@ -16,7 +16,7 @@ public class VolleySingleton {
     private VolleySingleton(Context context) {
         mRequestQueue = Volley.newRequestQueue(context);
         mImageLoader = new ImageLoader(this.mRequestQueue, new ImageLoader.ImageCache() {
-            private final LruCache<String, Bitmap> mCache = new LruCache<String, Bitmap>(10);
+            private final LruCache<String, Bitmap> mCache = new LruCache<String, Bitmap>(20);
 
             public void putBitmap(String url, Bitmap bitmap) {
                 mCache.put(url, bitmap);

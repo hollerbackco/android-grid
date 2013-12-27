@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -25,22 +28,27 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.activeandroid.query.Update;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 
 public class ConversationFragment extends SherlockFragment implements TaskClient, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, RecordingInfo {
 
@@ -120,13 +128,10 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
             mTaskQueue = new LinkedList<Task>();// done
 
-            mTaskQueue.add(new ActiveAndroidTask<VideoModel>( //
-                    new Select()//
-                            .from(VideoModel.class) //
-                            .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_ISREAD + "=?", mConvoId, 0))); //
+            mTaskQueue.add(new GetVideoModelTask(mConvoId));
 
             // figure out how many tasks we need to create
-            worker = new AbsTaskWorker() {
+            worker = new FragmentTaskWorker() {
             };
             worker.setTargetFragment(this, 0);
             getFragmentManager().beginTransaction().add(worker, TAG + "model_worker").commit();
@@ -228,7 +233,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onTaskComplete(Task t) {
 
-        if (t instanceof ActiveAndroidTask) {
+        if (t instanceof GetVideoModelTask) {
 
             handleModelTaskComplete(t);
 
@@ -257,7 +262,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void handleModelTaskComplete(Task t) {
 
-        mVideos = new ArrayList<VideoModel>(((ActiveAndroidTask<VideoModel>) t).getResults());
+        mVideos = new ArrayList<VideoModel>(((GetVideoModelTask) t).getAllConvoVideos());
         Log.d(TAG, "total unread videos found: " + mVideos.size());
 
         mVideoMap = new HashMap<String, VideoModel>();
@@ -271,14 +276,15 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         }
 
+        // add the workers to download our videos
+        for (VideoModel video : ((GetVideoModelTask) t).getVideosForDownload()) {
+            addDownloadWorkerFor(video);
+        }
+
         for (VideoModel video : mVideos) {
 
             Log.d(TAG, "processing video with state: " + video.toString());
-            if (VideoModel.ResourceState.PENDING_DOWNLOAD.equals(video.getState()) && !video.isTransacting()) { // create a download task for all non transacting videos
-
-                addDownloadWorkerFor(video);
-
-            } else if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
+            if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 mProgress.setVisibility(View.GONE);
                 // if we've already been downloaded and we're on the first of the playback queue, then begin playback
                 if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
@@ -313,7 +319,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void addDownloadWorkerFor(VideoModel video) {
         // for the number of videos, lets create two workers, to download video alternately
-        AbsTaskWorker worker = AbsTaskWorker.newInstance(true); // all videos will be downloaded sequentially
+        FragmentTaskWorker worker = FragmentTaskWorker.newInstance(true); // all videos will be downloaded sequentially
 
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
         mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment
@@ -354,8 +360,27 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         } else {
 
-            // also broadcast that the conversation has been updated
-            beginRecording();
+            boolean isShown = PreferenceManagerUtil.getPreferenceValue(HBPreferences.SHOWN_START_RECORDING_DIALOG, false);
+            if (!isShown && isAdded()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getString(R.string.start_recording_dialog_title));
+                builder.setMessage(getString(R.string.start_recording_dialog_message));
+                builder.setCancelable(false);
+                builder.setPositiveButton(getString(R.string.start_recording_dialog_button), new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PreferenceManagerUtil.setPreferenceValue(HBPreferences.SHOWN_START_RECORDING_DIALOG, true);
+
+                        // also broadcast that the conversation has been updated
+                        beginRecording();
+
+                    }
+                });
+                builder.show();
+            } else {
+                beginRecording();
+            }
 
         }
 
@@ -396,18 +421,20 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                     VideoModel video = ((ActiveAndroidTask<VideoModel>) t).getResults().get(0); // must be valid!
                     Log.d(TAG, "fetching latest from db: " + video.toString());
 
-                    video.setRead(true); // mark the video as watched
-                    video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
-                    video.save();
+                    synchronized (ConversationModel.class) { // very important synchronization with the sync service
 
-                    // TODO - Sajjad: Create a service to go and remove the watched videos
-                    if (mConversation == null) {
-                        mConversation = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                        video.setRead(true); // mark the video as watched
+                        video.setWatchedState(VideoModel.ResourceState.WATCHED_PENDING_POST);
+                        video.save();
+
+                        // TODO - Sajjad: Create a service to go and remove the watched videos
+                        if (mConversation == null) {
+                            mConversation = new Select().from(ConversationModel.class).where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId).executeSingle();
+                        }
+                        Log.d(TAG, "new unread count: " + (mConversation.getUnreadCount() - 1));
+                        mConversation.setUnreadCount(mConversation.getUnreadCount() - 1);
+                        mConversation.save(); // save that we've unread
                     }
-                    Log.d(TAG, "new unread count: " + (mConversation.getUnreadCount() - 1));
-                    mConversation.setUnreadCount(mConversation.getUnreadCount() - 1);
-                    mConversation.save(); // save that we've unread
-
                     ActiveAndroid.setTransactionSuccessful();
 
                 } finally {
@@ -448,15 +475,56 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
             }
         });
-        new TaskExecuter().executeTask(t);
+
+        Context c = HollerbackApplication.getInstance();
+        Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
+
+        // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
+        // new TaskExecuter().executeTask(t);
     }
 
     private void beginRecording() {
+        if (isResumed()) {
+            // we're ready to move to the recording fragment
+            RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
+            f.setTargetFragment(this, 0);
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
+                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+        }
+    }
 
-        // we're ready to move to the recording fragment
-        RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha", new ArrayList<String>());
-        f.setTargetFragment(this, 0);
-        getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+    public static class GetVideoModelTask extends AbsTask {
+
+        private long mConvoId;
+        private List<VideoModel> mAllConvoVideos;
+        private List<VideoModel> mVideosForDownload;
+        private String mWhere;
+
+        public GetVideoModelTask(long convoId) {
+            mConvoId = convoId;
+            mWhere = ActiveRecordFields.C_VID_CONV_ID + "=" + mConvoId + " AND " + ActiveRecordFields.C_VID_ISREAD + "=0";
+        }
+
+        @Override
+        public void run() {
+
+            mAllConvoVideos = new Select()//
+                    .from(VideoModel.class) //
+                    .where(mWhere).execute();
+
+            // get the videos that we wish to download and set them as transacting
+            mVideosForDownload = VideoHelper.getVideosForTransaction(mWhere + " AND " + ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "'");
+
+        }
+
+        public List<VideoModel> getAllConvoVideos() {
+            return mAllConvoVideos;
+        }
+
+        public List<VideoModel> getVideosForDownload() {
+            return mVideosForDownload;
+        }
+
     }
 
     /**

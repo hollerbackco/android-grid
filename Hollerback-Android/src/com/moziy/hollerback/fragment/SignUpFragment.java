@@ -29,6 +29,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
@@ -39,8 +41,6 @@ import com.moziy.hollerback.util.LoadingFragmentUtil;
 import com.moziy.hollerback.util.PhoneTextWatcher;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
     private static final String TAG = SignUpFragment.class.getSimpleName();
@@ -100,6 +100,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
+        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
         Bundle args = getArguments();
         mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);

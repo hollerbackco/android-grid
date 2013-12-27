@@ -17,8 +17,7 @@
         android:gravity="center"
         android:text="..."
         android:textColor="#555555"
-        android:textSize="20sp"
-        app:typeface="Gotham-Medium" >
+        android:textSize="20sp" >
     </com.moziy.hollerback.widget.CustomTextView>
 
     <ImageButton
@@ -53,8 +52,7 @@
         android:layout_marginBottom="60dp"
         android:text="@string/tap_to_start"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        app:typeface="Gotham-Medium" >
+        android:textSize="20sp" >
     </com.moziy.hollerback.widget.CustomTextView>
 
 </RelativeLayout>

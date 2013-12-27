@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback">
+
+    <item android:drawable="@drawable/playback_icon_gray" android:state_pressed="true" app:emphasized="true"></item>
+    <item android:drawable="@drawable/playback_icon_gray" android:state_pressed="true" app:emphasized="false"></item>
+    <item android:drawable="@drawable/playback_icon_white" android:state_pressed="false" app:emphasized="true"></item>
+    <item android:drawable="@drawable/playback_icon_blue"></item> <!-- default -->
+
+</selector>
