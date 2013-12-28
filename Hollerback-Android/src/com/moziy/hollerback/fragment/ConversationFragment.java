@@ -125,6 +125,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
         mReceiver = new BgDownloadReceiver();
 
+        mPlaybackIndex = -1;
+
         if (savedInstanceState != null) { // TODO: we probably don't need to worry about this because setRetainInstance is set to true
             Log.d(TAG, "restoring instance");
 
@@ -342,6 +344,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void handleModelTaskComplete(Task t) {
 
+        Log.d(TAG, "" + this);
+
         mVideos = new ArrayList<VideoModel>(((GetVideoModelTask) t).getAllConvoVideos());
         Log.d(TAG, "total unread videos found: " + mVideos.size());
 
@@ -354,6 +358,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             mPlayBackQueue.add(video);
 
         }
+        ++mPlaybackIndex;
+        Log.d(TAG, "Playback index: " + mPlaybackIndex);
 
         // add the workers to download our videos
         for (VideoModel video : ((GetVideoModelTask) t).getVideosForDownload()) {
