@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -34,6 +36,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
@@ -61,6 +64,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
     public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
     public static final String RECORDING_INFO_INSTANCE_STATE = "RECORDING_INFO_INSTANCE_STATE";
+    public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
 
     public static ConversationFragment newInstance(long conversationId) {
         ConversationFragment c = new ConversationFragment();
@@ -70,11 +74,14 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         return c;
     }
 
+    private static final int HISTORY_LIMIT = 5;
+
     private long mConvoId;
     private ConversationModel mConversation;
     private ArrayList<VideoModel> mVideos;
     private Map<String, VideoModel> mVideoMap;
     private LinkedList<VideoModel> mPlayBackQueue; // the queue used for playback
+    private int mPlaybackIndex;
     private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
     private VideoView mVideoView; // the video view
 
@@ -85,6 +92,32 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     private ProgressBar mProgress;
 
     private BgDownloadReceiver mReceiver;
+    private ConvoHistoryDelegate mHistoryDelegate;
+    private boolean mHasNew;
+
+    // navigation buttons
+    private ImageButton mSkipForwardBt;
+    private ImageButton mSkipBackwardBt;
+
+    @Override
+    public void onAttach(Activity activity) {
+
+        if (mPlayBackQueue == null) {
+            mPlayBackQueue = new LinkedList<VideoModel>();
+        }
+
+        if (mHistoryDelegate == null) {
+            mHistoryDelegate = new ConvoHistoryDelegate();
+            mHistoryDelegate.onAttach(this);
+        }
+        super.onAttach(activity);
+    }
+
+    @Override
+    public void onDetach() {
+        mHistoryDelegate.onDetach();
+        super.onDetach();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -120,21 +153,35 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                 mRecordingInfo = savedInstanceState.getBundle(RECORDING_INFO_INSTANCE_STATE);
             }
 
+            if (savedInstanceState.containsKey(PLAYBACK_INDEX_INSTANCE_STATE)) {
+                mPlaybackIndex = savedInstanceState.getInt(PLAYBACK_INDEX_INSTANCE_STATE);
+            }
+
         }
 
         // Start work on getting the list of unseen videos for this conversation
         Fragment worker;
         if (mVideos == null && (worker = getFragmentManager().findFragmentByTag(TAG + "model_worker")) == null) { // we check the model and the worker because the worker removes itself once work is
 
+            // get all the tasks
             mTaskQueue = new LinkedList<Task>();// done
 
             mTaskQueue.add(new GetVideoModelTask(mConvoId));
+
+            mTaskQueue.add(new ConvoHistoryDelegate.GetHistoryModelTask(mConvoId));
 
             // figure out how many tasks we need to create
             worker = new FragmentTaskWorker() {
             };
             worker.setTargetFragment(this, 0);
             getFragmentManager().beginTransaction().add(worker, TAG + "model_worker").commit();
+
+            // create the history worker
+            worker = new FragmentTaskWorker() {
+            };
+            worker.setTargetFragment(this, 0);
+            getFragmentManager().beginTransaction().add(worker, TAG + "history_worker").commit();
+
         }
 
     }
@@ -146,6 +193,30 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mProgress = (ProgressBar) v.findViewById(R.id.progress);
         mProgress.setVisibility(View.VISIBLE);
         Log.d(TAG, "onCreateView");
+
+        mSkipBackwardBt = (ImageButton) v.findViewById(R.id.ib_skip_backward);
+        // mSkipBackwardBt.setVisibility(View.GONE);
+        mSkipBackwardBt.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (mPlaybackIndex > 0)
+                    playLastVideo();
+
+            }
+        });
+
+        mSkipForwardBt = (ImageButton) v.findViewById(R.id.ib_skip_forward);
+        // mSkipForwardBt.setVisibility(View.GONE);
+        mSkipForwardBt.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (mPlaybackIndex < mPlayBackQueue.size() - 1)
+                    playNextVideo();
+
+            }
+        });
 
         return v;
     }
@@ -159,7 +230,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             // if we were in the middle of playing, then adjust the playback elements such as seek position
             mPlayingDuringConfigChange = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
             if (mPlayingDuringConfigChange) {
-                playVideo(mPlayBackQueue.peek());
+                playVideo(mPlayBackQueue.get(mPlaybackIndex));
             }
         }
 
@@ -178,7 +249,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOAD_FAILED);
 
         if (mPausedDuringPlayback) { // reset the flag
-            playVideo(mPlayBackQueue.peek());
+            playVideo(mPlayBackQueue.get(mPlaybackIndex));
         }
     }
 
@@ -224,6 +295,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             outState.putBundle(RECORDING_INFO_INSTANCE_STATE, mRecordingInfo);
         }
 
+        outState.putInt(PLAYBACK_INDEX_INSTANCE_STATE, mPlaybackIndex);
+
         outState.putBoolean(PLAYING_INSTANCE_STATE, mPlayingDuringConfigChange);
 
         super.onSaveInstanceState(outState);
@@ -242,6 +315,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             handleVideoDownload((VideoDownloadTask) t);
         }
 
+        mHistoryDelegate.onTaskComplete(t);
+
     }
 
     @Override
@@ -252,6 +327,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         if (isAdded())
             Toast.makeText(getActivity(), "Couldn't download video..", Toast.LENGTH_SHORT).show();
         // retry the task
+        mHistoryDelegate.onTaskError(t);
 
     }
 
@@ -260,13 +336,16 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         return mTaskQueue.poll();
     }
 
+    public LinkedList<Task> getTaskQueue() {
+        return mTaskQueue;
+    }
+
     private void handleModelTaskComplete(Task t) {
 
         mVideos = new ArrayList<VideoModel>(((GetVideoModelTask) t).getAllConvoVideos());
         Log.d(TAG, "total unread videos found: " + mVideos.size());
 
         mVideoMap = new HashMap<String, VideoModel>();
-        mPlayBackQueue = new LinkedList<VideoModel>();
 
         for (VideoModel video : mVideos) {
 
@@ -287,7 +366,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 mProgress.setVisibility(View.GONE);
                 // if we've already been downloaded and we're on the first of the playback queue, then begin playback
-                if (mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
+                if (mPlayBackQueue.get(mPlaybackIndex).getGuid().equals(video.getGuid())) {
                     playVideo(video);
                 }
             }
@@ -306,7 +385,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         video.setState(VideoModel.ResourceState.ON_DISK); // even though the download task sets it, but this copy doesn't have the state set
 
         // check to see if this is the next video that must be played
-        VideoModel queuedVideo = mPlayBackQueue.peek();
+        VideoModel queuedVideo = mPlayBackQueue.get(mPlaybackIndex);
 
         if (queuedVideo.getGuid().equals(video.getGuid())) { // if the queued is the one that just got downloaded then just play
             mProgress.setVisibility(View.GONE);
@@ -315,6 +394,11 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         }
 
+    }
+
+    public void addHistoryVideo(VideoModel video) {
+        mPlayBackQueue.add(0, video);
+        ++mPlaybackIndex; // update the playback index
     }
 
     private void addDownloadWorkerFor(VideoModel video) {
@@ -335,6 +419,36 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mVideoView.setOnCompletionListener(this);
     }
 
+    private void playLastVideo() {
+        --mPlaybackIndex;
+        if (mVideoView.isPlaying()) {
+            mVideoView.stopPlayback();
+        }
+
+        playVideo(mPlayBackQueue.get(mPlaybackIndex));
+
+    }
+
+    private void playNextVideo() {
+        ++mPlaybackIndex;
+        if (mVideoView.isPlaying()) {
+            mVideoView.stopPlayback();
+        }
+
+        playVideo(mPlayBackQueue.get(mPlaybackIndex));
+
+    }
+
+    public void startHistoryPlayback() {
+        mPlaybackIndex = mPlayBackQueue.size() - 1;
+        mProgress.setVisibility(View.INVISIBLE);
+        playVideo(mPlayBackQueue.get(mPlaybackIndex)); // get the last element
+    }
+
+    public boolean hasNewVideos() {
+        return mHasNew;
+    }
+
     @Override
     public void onCompletion(MediaPlayer mp) {
 
@@ -342,16 +456,17 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mp.reset();
 
         // once the playback is complete, lets see if the next one is ready
-        VideoModel video = mPlayBackQueue.poll(); // remove the one that just finished
+        VideoModel video = mPlayBackQueue.get(mPlaybackIndex); // remove the one that just finished
+        ++mPlaybackIndex; // increate the playback index;
 
         setVideoSeen(video);
 
         // delete the video from the sdcard?
 
-        if (!mPlayBackQueue.isEmpty()) {
+        if (mPlaybackIndex < mPlayBackQueue.size()) {
 
             Log.d(TAG, "playback after completion and queue is not empty");
-            video = mPlayBackQueue.peek();
+            video = mPlayBackQueue.get(mPlaybackIndex);
 
             if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 Log.d(TAG, "starting to play video after completion");
@@ -528,6 +643,19 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     }
 
     /**
+     * A class used to differentiate a video download and a history video download
+     * @author sajjad
+     *
+     */
+    public static class HistoryVideoDownloadTask extends VideoDownloadTask {
+
+        public HistoryVideoDownloadTask(VideoModel model) {
+            super(model);
+        }
+
+    }
+
+    /**
      * This class listens to the background download service for updates on
      * downloads or failures of video
      * @author sajjad
@@ -550,7 +678,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                     Log.d(TAG, "video: " + video.getGuid() + " state: " + video.getState());
 
                     // if this happens to be the video that we should be playing next, then lets play it
-                    if (mPlayBackQueue.peek() != null && mPlayBackQueue.peek().getGuid().equals(video.getGuid())) {
+                    if (mPlayBackQueue.get(mPlaybackIndex) != null && mPlayBackQueue.get(mPlaybackIndex).getGuid().equals(video.getGuid())) {
                         playVideo(video);
                     }
 

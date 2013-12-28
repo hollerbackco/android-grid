@@ -18,4 +18,26 @@
         android:indeterminate="true"
         android:visibility="visible" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:background="@android:color/transparent" >
+
+        <ImageButton
+            android:id="@+id/ib_skip_backward"
+            android:layout_width="@dimen/dim_46dp"
+            android:layout_height="@dimen/dim_46dp"
+            android:layout_marginRight="@dimen/dim_10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_media_skip_backward" />
+
+        <ImageButton
+            android:id="@+id/ib_skip_forward"
+            android:layout_width="@dimen/dim_46dp"
+            android:layout_height="@dimen/dim_46dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_media_skip_forward" />
+    </LinearLayout>
+
 </FrameLayout>

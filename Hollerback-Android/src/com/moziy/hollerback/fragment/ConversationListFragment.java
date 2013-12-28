@@ -213,7 +213,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 return;
             }
 
-            if (conversation.getUnreadCount() > 0) {
+            // if (conversation.getUnreadCount() > 0) {
+            if (true) {
 
                 Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
 
