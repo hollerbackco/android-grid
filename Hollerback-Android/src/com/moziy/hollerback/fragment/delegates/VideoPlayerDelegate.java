@@ -25,6 +25,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
 import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
+import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate.OnHistoryVideoDownloaded;
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate.OnVideoModelLoaded;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -35,7 +36,7 @@ import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
-public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideoModelLoaded, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryVideoDownloaded, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
     private static final String TAG = VideoPlayerDelegate.class.getSimpleName();
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
@@ -48,6 +49,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     private ProgressBar mProgress;
     private ImageButton mSkipForwardBtn;
     private ImageButton mSkipBackwardBtn;
+    private boolean mHasHistoryVideo = false;
 
     private ConversationFragment mConvoFragment;
     private ConversationModel mConversation;
@@ -190,6 +192,17 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
             playVideo(video);
 
         }
+    }
+
+    @Override
+    public void onHistoryVideoDownloaded(VideoModel video) {
+        // TODO: insert video at proper location
+        mPlaybackQueue.add(0, video);
+
+        if (mHasHistoryVideo) // only increase the playback index if there's already a history video
+            ++mPlaybackIndex;
+
+        mHasHistoryVideo = true;
     }
 
     private void playVideo(VideoModel v) {

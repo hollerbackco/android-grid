@@ -22,6 +22,7 @@ import com.moziy.hollerback.service.task.Task;
 
 /**
  * This class acts as a delegate to the conversation fragment and manages many history related operations
+ * 
  * @author sajjad
  *
  */
@@ -32,8 +33,10 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     private ArrayList<VideoModel> mLocalHistory;
     private ArrayList<VideoModel> mRemoteHistory;
     private long mConvoId;
+    private OnHistoryVideoDownloaded mOnHistoryVideoDownloaded;
 
     private interface Worker {
+        public static final String LOCAL_HISTORY = "local_history";
         public static final String REMOTE_HISTORY = "remote_history";
     }
 
@@ -54,7 +57,12 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     @Override
     public void init(Bundle savedInstance) {
 
+        mConvoFragment.addTaskToQueue(new GetLocalHistoryTask(mConvoId), Worker.LOCAL_HISTORY);
         mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
+    }
+
+    public void setOnHistoryVideoDownloadListener(OnHistoryVideoDownloaded listener) {
+        mOnHistoryVideoDownloaded = listener;
     }
 
     @Override
@@ -64,17 +72,20 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
             Log.d(TAG, "history dl complete - thread id: " + Thread.currentThread().getId());
             for (VideoModel v : ((GetLocalHistoryTask) t).getAllConvoVideos()) {
                 Log.d(TAG, v.toString());
-                // mConvoFragment.addHistoryVideo(v);
-            }
-
-            if (!mConvoFragment.hasNewVideos()) {
-                // mConvoFragment.startHistoryPlayback();
+                if (mOnHistoryVideoDownloaded != null) {
+                    mOnHistoryVideoDownloaded.onHistoryVideoDownloaded(v);
+                } else {
+                    throw new IllegalStateException("must set listener for history");
+                }
             }
 
         }
 
         if (t instanceof GetRemoteHistoryTask) {
-            Log.d(TAG, "got remote history complete");
+            Log.d(TAG, "got remote history complete: " + ((GetRemoteHistoryTask) t).getRemoteVideos().size());
+            mRemoteHistory = ((GetRemoteHistoryTask) t).getRemoteVideos();
+            mRemoteHistory.removeAll(mLocalHistory); // remove duplicates
+            Log.d(TAG, "new remote history: ");
         }
 
     }
@@ -108,9 +119,6 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
             return mAllConvoVideos;
         }
 
-        // public List<VideoModel> getVideosForDownload() {
-        // return mVideosForDownload;
-        // }
     }
 
     public static class GetRemoteHistoryTask extends AbsTask {
@@ -123,6 +131,10 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
             mConvoId = convoId;
         }
 
+        public ArrayList<VideoModel> getRemoteVideos() {
+            return mRemoteVideos;
+        }
+
         @Override
         public void run() {
             // get the last 5 videos
@@ -133,8 +145,8 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                 @Override
                 public void onResponseSuccess(int statusCode, Envelope<ArrayList<VideoModel>> response) {
                     Log.d(TAG, "got remote history");
-                    mIsSuccess = true;
                     mRemoteVideos = response.data;
+                    mIsSuccess = true;
                 }
 
                 @Override
@@ -161,6 +173,10 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
         }
 
+    }
+
+    public static interface OnHistoryVideoDownloaded {
+        public void onHistoryVideoDownloaded(VideoModel video);
     }
 
 }
