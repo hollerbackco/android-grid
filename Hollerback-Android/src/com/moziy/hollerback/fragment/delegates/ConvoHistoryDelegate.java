@@ -3,6 +3,8 @@ package com.moziy.hollerback.fragment.delegates;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.activeandroid.query.Select;
@@ -10,9 +12,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
+import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
 import com.moziy.hollerback.fragment.ConversationFragment;
-import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
-import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
@@ -24,32 +25,37 @@ import com.moziy.hollerback.service.task.Task;
  * @author sajjad
  *
  */
-public class ConvoHistoryDelegate implements TaskClient {
+public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.Listener {
     private static final String TAG = ConvoHistoryDelegate.class.getSimpleName();
     private static final int HISTORY_LIMIT = 5;
     private ConversationFragment mConvoFragment;
     private ArrayList<VideoModel> mLocalHistory;
     private ArrayList<VideoModel> mRemoteHistory;
+    private long mConvoId;
 
-    public void onAttach(ConversationFragment fragment) {
-        mConvoFragment = fragment;
+    private interface Worker {
+        public static final String REMOTE_HISTORY = "remote_history";
     }
 
-    public void onDetach() {
+    public ConvoHistoryDelegate(long convoId) {
+        mConvoId = convoId;
+    }
+
+    @Override
+    public void onPreSuperAttach(Fragment fragment) {
+        mConvoFragment = (ConversationFragment) fragment;
+    }
+
+    @Override
+    public void onPreSuperDetach(Fragment fragment) {
         mConvoFragment = null;
     }
 
-    public void init() {
+    @Override
+    public void init(Bundle savedInstance) {
 
-        if (mConvoFragment.getFragmentManager().findFragmentByTag("remote_history") == null) {
-            FragmentTaskWorker f = FragmentTaskWorker.newInstance(true);
-            mConvoFragment.getFragmentManager().beginTransaction().add(f, "remote_history").commit();
-            f.setTargetFragment(mConvoFragment, 0);
-        }
-
+        mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
     }
-
-    //
 
     @Override
     public void onTaskComplete(Task t) {
@@ -76,12 +82,6 @@ public class ConvoHistoryDelegate implements TaskClient {
     @Override
     public void onTaskError(Task t) {
 
-    }
-
-    @Override
-    public Task getTask() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     public static class GetLocalHistoryTask extends AbsTask {

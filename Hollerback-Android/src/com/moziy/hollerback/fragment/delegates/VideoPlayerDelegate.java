@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
 
@@ -41,8 +42,13 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
     private LinkedList<VideoModel> mPlaybackQueue;
     private int mPlaybackIndex = 0;
+
+    // views
     private VideoView mVideoView;
     private ProgressBar mProgress;
+    private ImageButton mSkipForwardBtn;
+    private ImageButton mSkipBackwardBtn;
+
     private ConversationFragment mConvoFragment;
     private ConversationModel mConversation;
     private long mConvoId;
@@ -89,10 +95,42 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         }
     }
 
+    public void onViewCreated(View parentView) {
+        mVideoView = (VideoView) parentView.findViewById(R.id.vv_preview);
+        mProgress = (ProgressBar) parentView.findViewById(R.id.progress);
+        mProgress.setVisibility(View.VISIBLE);
+        Log.d(TAG, "onCreateView");
+
+        mSkipBackwardBtn = (ImageButton) parentView.findViewById(R.id.ib_skip_backward);
+        // mSkipBackwardBt.setVisibility(View.GONE);
+        mSkipBackwardBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (mPlaybackIndex > 0)
+                    playLastVideo();
+
+            }
+        });
+
+        mSkipForwardBtn = (ImageButton) parentView.findViewById(R.id.ib_skip_forward);
+        // mSkipForwardBt.setVisibility(View.GONE);
+        mSkipForwardBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (mPlaybackIndex < mPlaybackQueue.size() - 1)
+                    playNextVideo();
+
+            }
+        });
+    }
+
     @Override
     public void onPostSuperResume(Fragment fragment) {
 
         if (mPausedDuringPlayback) { // reset the flag
+            mProgress.setVisibility(View.INVISIBLE);
             playVideo(mPlaybackQueue.get(mPlaybackIndex));
         }
     }
@@ -154,14 +192,6 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         }
     }
 
-    public void setVideoView(VideoView videoView) {
-        mVideoView = videoView;
-    }
-
-    public void setProgressView(ProgressBar progress) {
-        mProgress = progress;
-    }
-
     private void playVideo(VideoModel v) {
         Log.d(TAG, "starting playback of: " + v.getGuid());
         mVideoView.setOnPreparedListener(this);
@@ -169,12 +199,34 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         mVideoView.setOnCompletionListener(this);
     }
 
+    private void playNextVideo() {
+        mProgress.setVisibility(View.VISIBLE);
+        ++mPlaybackIndex;
+        if (mVideoView.isPlaying()) {
+            mVideoView.stopPlayback();
+        }
+        playVideo(mPlaybackQueue.get(mPlaybackIndex));
+
+    }
+
+    private void playLastVideo() {
+        mProgress.setVisibility(View.VISIBLE);
+        --mPlaybackIndex;
+        if (mVideoView.isPlaying()) {
+            mVideoView.stopPlayback();
+        }
+
+        playVideo(mPlaybackQueue.get(mPlaybackIndex));
+
+    }
+
     @Override
     public void onPrepared(MediaPlayer mp) {
         // only play if we're in the resumed state
         Log.d(TAG, "onPrepared()");
-
+        mProgress.setVisibility(View.INVISIBLE);
         if (mConvoFragment.isResumed()) {
+
             mVideoView.start();
         } else {
             Log.d(TAG, "not playing because not in resumed state");
@@ -191,7 +243,9 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         VideoModel video = mPlaybackQueue.get(mPlaybackIndex); // remove the one that just finished
         ++mPlaybackIndex; // increate the playback index;
 
-        setVideoSeen(video);
+        if (!video.isRead()) { // mark as read only if it isn't read already
+            setVideoSeen(video);
+        }
 
         // delete the video from the sdcard?
 

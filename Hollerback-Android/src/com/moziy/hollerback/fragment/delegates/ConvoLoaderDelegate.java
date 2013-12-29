@@ -2,6 +2,7 @@ package com.moziy.hollerback.fragment.delegates;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.content.BroadcastReceiver;
@@ -11,12 +12,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
+import com.activeandroid.query.Select;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
 import com.moziy.hollerback.fragment.ConversationFragment;
-import com.moziy.hollerback.fragment.ConversationFragment.GetVideoModelTask;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
 
@@ -190,11 +194,6 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
                     mOnModelLoadedListener.onVideoDownloaded(video);
 
-                    // // if this happens to be the video that we should be playing next, then lets play it
-                    // if (mPlayBackQueue.get(mPlaybackIndex) != null && mPlayBackQueue.get(mPlaybackIndex).getGuid().equals(video.getGuid())) {
-                    // playVideo(video);
-                    // }
-
                 }
 
             } else if (intent.getAction().equals(IABIntent.VIDEO_DOWNLOAD_FAILED)) {
@@ -217,6 +216,41 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
             }
 
         }
+
+    }
+
+    public static class GetVideoModelTask extends AbsTask {
+
+        private long mConvoId;
+        private List<VideoModel> mAllConvoVideos;
+        private List<VideoModel> mVideosForDownload;
+        private String mWhere;
+
+        public GetVideoModelTask(long convoId) {
+            mConvoId = convoId;
+            mWhere = ActiveRecordFields.C_VID_CONV_ID + "=" + mConvoId + " AND " + ActiveRecordFields.C_VID_ISREAD + "=0";
+        }
+
+        @Override
+        public void run() {
+
+            mAllConvoVideos = new Select()//
+                    .from(VideoModel.class) //
+                    .where(mWhere).execute();
+
+            // get the videos that we wish to download and set them as transacting
+            mVideosForDownload = VideoHelper.getVideosForTransaction(mWhere + " AND " + ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "'");
+
+        }
+
+        public List<VideoModel> getAllConvoVideos() {
+            return mAllConvoVideos;
+        }
+
+        public List<VideoModel> getVideosForDownload() {
+            return mVideosForDownload;
+        }
+
     }
 
 }
