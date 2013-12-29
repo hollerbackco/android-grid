@@ -195,6 +195,23 @@ public class HBRequestManager {
 
     }
 
+    public static void getHistory(long conversationId, AsyncHttpResponseHandler handler) {
+        getHistory(conversationId, -1, -1, handler);
+    }
+
+    public static void getHistory(long conversationId, int pageNum, int perPage, AsyncHttpResponseHandler handler) {
+        RequestParams params = new RequestParams();
+
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+
+        if (pageNum > 0 && perPage > 0) {
+            params.put(HollerbackAPI.PARAM_PAGE, pageNum);
+            params.put(HollerbackAPI.PARAM_PER_PAGE, perPage);
+        }
+
+        HollerbackAsyncClient.getInstance().get(String.format(HollerbackAPI.API_HISTORY, conversationId), params, handler);
+    }
+
     public static void postTTYL(long conversationId, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {
 
         RequestParams params = new RequestParams();
