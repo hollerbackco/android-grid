@@ -1,5 +1,7 @@
 package com.moziy.hollerback.fragment;
 
+import java.io.File;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +25,8 @@ import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
+import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.ImageUtil;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
@@ -169,6 +173,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                     long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
                     int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
+                    String guid = mRecordingInfo.getString(RecordingInfo.RESOURCE_GUID);
 
                     Intent uploadIntent = new Intent();
                     uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
@@ -187,7 +192,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
-                    sendSMSInvite();
+                    sendSMSInvite(guid);
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
@@ -212,12 +217,12 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         }
 
-        private void sendSMSInvite() {
+        private void sendSMSInvite(String guid) {
 
             boolean sendSms = false;
             // build the uri
             StringBuilder sb = new StringBuilder();
-            sb.append("smsto:");
+            // sb.append("mmsto:");
             for (int i = 0; i < mPhones.length; i++) {
 
                 if (!mIsHBUsers[i]) {
@@ -227,11 +232,16 @@ public class StartConversationFragment extends BaseFragment implements Recording
             }
             sb.deleteCharAt(sb.length() - 1);
 
+            ImageUtil.generateThumbnailFromVideo(0, guid);
+
             if (sendSms) {
-                Intent intent = new Intent(Intent.ACTION_SENDTO);
-                intent.setData(Uri.parse(sb.toString()));
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                // intent.setData(Uri.parse(sb.toString()));
+                intent.setType("vnd.android-dir/mms-sms");
                 intent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-                Intent.createChooser(intent, HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
+                intent.putExtra("address", sb.toString());
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
+                intent = Intent.createChooser(intent, HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
                 startActivity(intent);
             }
         }
