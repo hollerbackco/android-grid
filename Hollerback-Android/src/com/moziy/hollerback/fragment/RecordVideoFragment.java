@@ -2,12 +2,9 @@ package com.moziy.hollerback.fragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import android.annotation.TargetApi;
@@ -84,6 +81,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         public static final String RECORDED_PARTS = "recorded_parts";
         public static final String RESOURCE_ROW_ID = "resource_row_id";
         public static final String STATUS_BUNDLE_ARG_KEY = "record_status";
+        public static final String RESOURCE_GUID = "resource_guid";
 
         public void onRecordingFinished(Bundle info);
     }
@@ -116,6 +114,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private String mFileDataPath;
     protected String mFileDataName;
     private String mFileExt; // the file extension
+    private String mGuid;
 
     private VideoModel mVideoModel; // the model that represents the resource that will get uploaded
 
@@ -400,7 +399,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         long resourceRowId = mVideoModel.getId();
 
-        notifyTargetFragment(resourceRowId);
+        notifyTargetFragment(resourceRowId, mVideoModel.getGuid());
 
         launchVideoService(resourceRowId);
 
@@ -428,18 +427,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // Prepare the model for sending the video
         if (mVideoModel == null) {
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-            df.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
             mVideoModel = new VideoModel();
             mVideoModel.setSegmented(true);
             mVideoModel.setSegmentFileName(mFileDataName);
             mVideoModel.setSegmentFileExtension(mFileExt); // the file extenstion or container
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-            mVideoModel.setCreateDate(df.format(new Date()));
+            mVideoModel.setCreateDate(TimeUtil.SERVER_TIME_FORMAT.format(new Date()));
             mVideoModel.setSenderName("me");
             mVideoModel.setNumParts(mTotalParts);
             mVideoModel.setRead(true); // since we recorded this, we've actually seen it too
-            mVideoModel.setGuid(UUID.randomUUID().toString());
+            mVideoModel.setGuid(mGuid);
             if (recipients != null) {
                 mVideoModel.setRecipients(recipients.toArray(new String[] {}));
 
@@ -458,11 +455,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
-    private void notifyTargetFragment(long rowId) {
+    private void notifyTargetFragment(long rowId, String guid) {
         Bundle info = new Bundle();
         info.putLong(RecordingInfo.RESOURCE_ROW_ID, rowId);
         info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
         info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
+        info.putString(RecordingInfo.RESOURCE_GUID, guid);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
         } else { // XXX: Create a unified place for launching toasts, like in a toast receiver
@@ -738,8 +736,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private String getNewFileName() {
 
-        if (mFileDataName == null) {
-            mFileDataName = HBFileUtil.generateRandomFileName();
+        if (mGuid == null) {
+            mGuid = UUID.randomUUID().toString();
+            mFileDataName = HBFileUtil.generateFileNameFromGUID(mGuid);
         }
 
         mFileExt = "mp4"; // although get this info from the output format type
