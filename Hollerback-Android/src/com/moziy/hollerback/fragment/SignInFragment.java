@@ -117,7 +117,7 @@ public class SignInFragment extends BaseFragment {
 
     private void processLogin() {
         if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
-            Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            Toast.makeText(HollerbackApplication.getInstance(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }
 
