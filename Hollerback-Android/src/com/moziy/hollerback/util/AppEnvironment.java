@@ -78,7 +78,7 @@ public class AppEnvironment {
                 UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
                 break;
             case ENV_PRODUCTION:
-                DBUtil.copyDbToSdcard();
+                // DBUtil.copyDbToSdcard();
                 LogUtil.d("Setting Production Environment");
                 BASE_URL = "https://calm-peak-4397.herokuapp.com";
                 FORCE_PHONE_NUMBER_CHECK = true;

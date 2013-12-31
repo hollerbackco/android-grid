@@ -27,8 +27,9 @@ import com.moziy.hollerback.service.task.VideoDownloadTask;
 public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Listener {
     private static final String TAG = ConvoLoaderDelegate.class.getSimpleName();
     public static final String VIDEO_MODEL_INSTANCE_STATE = "VIDEO_MODEL_INSTANCE_STATE";
-    private ArrayList<VideoModel> mVideos;
-    private Map<String, VideoModel> mVideoMap;
+    public static final String CONVO_VIDEOS_INSTANCE_STATE = "CONVO_VIDEOS_INSTANCE_STATE";
+    private ArrayList<VideoModel> mUnwatchedVideos; // contains all new videos (ONLY NEW VIDEOS - NO HISTORY)
+    private Map<String, VideoModel> mConvoVideoMap; // contains all new videos plus any video that was requested to be downloaded (NEW + HISTORY)
     private ConversationFragment mConvoFragment;
     private OnVideoModelLoaded mOnModelLoadedListener;
     private BgDownloadReceiver mReceiver;
@@ -59,19 +60,17 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(VIDEO_MODEL_INSTANCE_STATE)) {
 
-                mVideos = (ArrayList<VideoModel>) savedInstanceState.getSerializable(VIDEO_MODEL_INSTANCE_STATE);
+                mUnwatchedVideos = (ArrayList<VideoModel>) savedInstanceState.getSerializable(VIDEO_MODEL_INSTANCE_STATE);
 
-                // check to see if any of the videos have or been downloaded
-                mVideoMap = new HashMap<String, VideoModel>();
-                for (VideoModel video : mVideos) {
-                    mVideoMap.put(video.getGuid(), video);
+            }
 
-                }
+            if (savedInstanceState.containsKey(CONVO_VIDEOS_INSTANCE_STATE)) {
+                mConvoVideoMap = (HashMap<String, VideoModel>) savedInstanceState.getSerializable(CONVO_VIDEOS_INSTANCE_STATE);
             }
         }
 
-        if (mVideos == null) {
-            mConvoFragment.addTaskToQueue(new GetVideoModelTask(mConvoId), Worker.MODEL);
+        if (mUnwatchedVideos == null) {
+            mConvoFragment.addTaskToQueue(new GetUnwatchedVideoModelTask(mConvoId), Worker.MODEL);
         }
 
     }
@@ -90,8 +89,12 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mVideos != null) {
-            outState.putSerializable(VIDEO_MODEL_INSTANCE_STATE, mVideos);
+        if (mUnwatchedVideos != null) {
+            outState.putSerializable(VIDEO_MODEL_INSTANCE_STATE, mUnwatchedVideos);
+        }
+
+        if (mConvoVideoMap != null) {
+            outState.putSerializable(CONVO_VIDEOS_INSTANCE_STATE, new HashMap<String, VideoModel>(mConvoVideoMap));
         }
     }
 
@@ -102,7 +105,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     @Override
     public void onTaskComplete(Task t) {
 
-        if (t instanceof GetVideoModelTask) {
+        if (t instanceof GetUnwatchedVideoModelTask) {
             handleModelTaskComplete(t);
         }
 
@@ -116,13 +119,13 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     @Override
     public void onTaskError(Task t) {
 
-        if (t instanceof GetVideoModelTask) {
+        if (t instanceof GetUnwatchedVideoModelTask) {
             mOnModelLoadedListener.onVideoModelLoaded(new ArrayList<VideoModel>()); // add an empty array list
         }
 
         if (t instanceof VideoDownloadTask) {
             Log.w(TAG, "there was an error downloading the video");
-            mOnModelLoadedListener.onVideoDownloadFailed(mVideoMap.get(((VideoDownloadTask) t).getVideoId()));
+            mOnModelLoadedListener.onVideoDownloadFailed(mConvoVideoMap.get(((VideoDownloadTask) t).getVideoId()));
         }
     }
 
@@ -130,21 +133,21 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
         Log.d(TAG, "" + this);
 
-        mVideos = new ArrayList<VideoModel>(((GetVideoModelTask) t).getAllConvoVideos());
-        Log.d(TAG, "total unread videos found: " + mVideos.size());
+        mUnwatchedVideos = new ArrayList<VideoModel>(((GetUnwatchedVideoModelTask) t).getAllConvoVideos());
+        Log.d(TAG, "total unread videos found: " + mUnwatchedVideos.size());
 
-        mVideoMap = new HashMap<String, VideoModel>();
+        mConvoVideoMap = new HashMap<String, VideoModel>();
 
-        for (VideoModel video : mVideos) {
+        for (VideoModel video : mUnwatchedVideos) {
 
-            mVideoMap.put(video.getGuid(), video);
+            mConvoVideoMap.put(video.getGuid(), video);
 
         }
 
-        mOnModelLoadedListener.onVideoModelLoaded(mVideos); // notify
+        mOnModelLoadedListener.onVideoModelLoaded(mUnwatchedVideos); // notify
 
         // add the workers to download our videos
-        for (VideoModel video : ((GetVideoModelTask) t).getVideosForDownload()) {
+        for (VideoModel video : ((GetUnwatchedVideoModelTask) t).getVideosForDownload()) {
             addDownloadWorkerFor(video);
         }
 
@@ -163,7 +166,8 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     }
 
     public void requestDownload(VideoModel video) {
-        mVideoMap.put(video.getGuid(), video);
+        // add the video to the list of videos
+        mConvoVideoMap.put(video.getGuid(), video);
         addDownloadWorkerFor(video);
     }
 
@@ -171,7 +175,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
         Log.d(TAG, "video download task completed");
 
-        VideoModel video = mVideoMap.get(((VideoDownloadTask) t).getVideoId());
+        VideoModel video = mConvoVideoMap.get(((VideoDownloadTask) t).getVideoId());
         Log.d(TAG, "downloaded video with id: " + video.getGuid());
 
         video.setState(VideoModel.ResourceState.ON_DISK); // even though the download task sets it, but this copy doesn't have the state set
@@ -206,9 +210,9 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
                 Log.d(TAG, "we got a video download broadcast while watching");
 
                 // if the video was downloaded, lets update the videomap
-                if (mVideoMap.containsKey(guid)) {
+                if (mConvoVideoMap.containsKey(guid)) {
 
-                    VideoModel video = mVideoMap.get(guid);
+                    VideoModel video = mConvoVideoMap.get(guid);
                     Log.d(TAG, "video: " + video.getGuid() + " state: " + video.getState());
 
                     mOnModelLoadedListener.onVideoDownloaded(video);
@@ -220,9 +224,9 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
                 Log.d(TAG, "we got a video download failed broadcast while watching");
 
                 // lets attempt to recover by creating an on demand downloader
-                if (mVideoMap.containsKey(guid)) {
+                if (mConvoVideoMap.containsKey(guid)) {
 
-                    VideoModel video = mVideoMap.get(guid);
+                    VideoModel video = mConvoVideoMap.get(guid);
 
                     // lets see if there's already a worker assigned to download this video
                     Fragment f = mConvoFragment.getFragmentManager().findFragmentByTag(guid);
@@ -238,14 +242,14 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
     }
 
-    public static class GetVideoModelTask extends AbsTask {
+    public static class GetUnwatchedVideoModelTask extends AbsTask {
 
         private long mConvoId;
         private List<VideoModel> mAllConvoVideos;
         private List<VideoModel> mVideosForDownload;
         private String mWhere;
 
-        public GetVideoModelTask(long convoId) {
+        public GetUnwatchedVideoModelTask(long convoId) {
             mConvoId = convoId;
             mWhere = ActiveRecordFields.C_VID_CONV_ID + "=" + mConvoId + " AND " + ActiveRecordFields.C_VID_ISREAD + "=0";
         }

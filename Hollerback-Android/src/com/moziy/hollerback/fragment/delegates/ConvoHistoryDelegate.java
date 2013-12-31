@@ -31,6 +31,9 @@ import com.moziy.hollerback.service.task.Task;
 public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.Listener {
     private static final String TAG = ConvoHistoryDelegate.class.getSimpleName();
     private static final int HISTORY_LIMIT = 5;
+    private static final String LOCAL_HISTORY_INSTANCE_STATE = "local_history_instance_state";
+    private static final String REMOTE_HISTORY_INSTANCE_STATE = "remote_history_instance_state";
+
     private ConversationFragment mConvoFragment;
     private List<VideoModel> mLocalHistory;
     private ArrayList<VideoModel> mRemoteHistory;
@@ -61,8 +64,34 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     @Override
     public void init(Bundle savedInstance) {
 
-        mConvoFragment.addTaskToQueue(new GetLocalHistoryTask(mConvoId), Worker.LOCAL_HISTORY);
-        mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
+        if (savedInstance != null) {
+
+            if (savedInstance.containsKey(LOCAL_HISTORY_INSTANCE_STATE)) {
+                mLocalHistory = (ArrayList<VideoModel>) savedInstance.getSerializable(LOCAL_HISTORY_INSTANCE_STATE);
+            } else {
+                mConvoFragment.addTaskToQueue(new GetLocalHistoryTask(mConvoId), Worker.LOCAL_HISTORY);
+            }
+
+            if (savedInstance.containsKey(REMOTE_HISTORY_INSTANCE_STATE)) {
+                mRemoteHistory = (ArrayList<VideoModel>) savedInstance.getSerializable(REMOTE_HISTORY_INSTANCE_STATE);
+            } else {
+                mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
+            }
+
+        } else {
+            mConvoFragment.addTaskToQueue(new GetLocalHistoryTask(mConvoId), Worker.LOCAL_HISTORY);
+            mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        if (mLocalHistory != null)
+            outState.putSerializable(LOCAL_HISTORY_INSTANCE_STATE, new ArrayList<VideoModel>(mLocalHistory));
+
+        if (mRemoteHistory != null)
+            outState.putSerializable(REMOTE_HISTORY_INSTANCE_STATE, mRemoteHistory);
     }
 
     public void setOnHistoryVideoDownloadListener(OnHistoryUpdateListener listener) {

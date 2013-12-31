@@ -1,5 +1,6 @@
 package com.moziy.hollerback.fragment;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -111,7 +112,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             Log.d(TAG, "restoring instance");
 
             if (savedInstanceState.containsKey(TASK_QUEUE_INSTANCE_STATE)) {
-                mTaskQueue = (LinkedList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE);
+                mTaskQueue = new LinkedList<Task>((ArrayList<Task>) savedInstanceState.getSerializable(TASK_QUEUE_INSTANCE_STATE));
             }
 
             if (savedInstanceState.containsKey(RECORDING_INFO_INSTANCE_STATE)) {
@@ -206,7 +207,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         outState.putLong(CONVO_ID_INSTANCE_STATE, mConvoId);
 
         if (mTaskQueue != null) {
-            outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, mTaskQueue);
+            outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, new ArrayList<Task>(mTaskQueue));
         }
 
         if (mRecordingInfo != null) {

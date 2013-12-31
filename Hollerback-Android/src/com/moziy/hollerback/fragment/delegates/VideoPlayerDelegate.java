@@ -34,6 +34,7 @@ import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate.OnHistoryUpd
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate.OnVideoModelLoaded;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
@@ -87,7 +88,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     public void init(Bundle savedInstance) {
         if (savedInstance != null) {
             if (savedInstance.containsKey(PLAYBACK_QUEUE_INSTANCE_STATE)) {
-                mPlaybackQueue = (LinkedList<VideoModel>) savedInstance.getSerializable(PLAYBACK_QUEUE_INSTANCE_STATE);
+                mPlaybackQueue = new LinkedList<VideoModel>((ArrayList<VideoModel>) savedInstance.getSerializable(PLAYBACK_QUEUE_INSTANCE_STATE));
             }
 
             if (savedInstance.containsKey(PLAYBACK_INDEX_INSTANCE_STATE)) {
@@ -171,7 +172,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     public void onSaveInstanceState(Bundle outState) {
         // TODO: Save the video seek position, the video file that is being played so that once restored we can begin playing
         if (mPlaybackQueue != null) {
-            outState.putSerializable(PLAYBACK_QUEUE_INSTANCE_STATE, mPlaybackQueue);
+            outState.putSerializable(PLAYBACK_QUEUE_INSTANCE_STATE, new ArrayList<VideoModel>(mPlaybackQueue));
         }
 
         if (mPlayingDuringConfigChange || mPausedDuringPlayback) {
@@ -343,7 +344,12 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         if (mVideoView.isPlaying()) {
             mVideoView.stopPlayback();
         }
-        playVideo(mPlaybackQueue.get(mPlaybackIndex));
+
+        VideoModel videoToPlay = mPlaybackQueue.get(mPlaybackIndex);
+        // making the assumption that video is on the device when it's segmented since it's a video the user has sent
+        if (ResourceState.ON_DISK.equals(videoToPlay.getState()) || videoToPlay.isSegmented()) {
+            playVideo(videoToPlay);
+        }
 
     }
 
@@ -354,8 +360,10 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
             mVideoView.stopPlayback();
         }
 
-        playVideo(mPlaybackQueue.get(mPlaybackIndex));
-
+        VideoModel videoToPlay = mPlaybackQueue.get(mPlaybackIndex);
+        if (ResourceState.ON_DISK.equals(videoToPlay.getState()) || videoToPlay.isSegmented()) {
+            playVideo(videoToPlay);
+        }
     }
 
     @Override
