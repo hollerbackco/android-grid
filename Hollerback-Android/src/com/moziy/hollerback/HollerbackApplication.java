@@ -17,6 +17,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.BgDownloadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
@@ -91,10 +92,20 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     public void clearAllTransactingModel() {
         // TODO - sajjad: needs to be tested
         Log.d(TAG, "clearing all transacting model.");
+        TaskGroup group = new TaskGroup();
+
         Set updateStatement = new Update(VideoModel.class).set(ActiveRecordFields.C_VID_TRANSACTING + "=?", 0);
         ActiveAndroidUpdateTask updateTask = new ActiveAndroidUpdateTask(updateStatement);
+        group.addTask(updateTask);
+
+        // if we got killed while downloading, then mark all downloading fields as pending download
+        updateStatement = new Update(VideoModel.class).set(ActiveRecordFields.C_VID_STATE + "=?", VideoModel.ResourceState.PENDING_DOWNLOAD).where(ActiveRecordFields.C_VID_STATE + "=?",
+                VideoModel.ResourceState.DOWNLOADING);
+        updateTask = new ActiveAndroidUpdateTask(updateStatement);
+        group.addTask(updateTask);
+
         TaskExecuter exeucter = new TaskExecuter();
-        exeucter.executeTask(updateTask);
+        exeucter.executeTask(group);
 
     }
 
