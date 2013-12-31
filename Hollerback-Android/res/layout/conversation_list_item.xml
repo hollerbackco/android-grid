@@ -17,7 +17,8 @@
             android:layout_height="70dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dim_20dp"
-            app:radius="35dp" >
+            android:padding="@dimen/dim_2dp"
+            app:radius="@dimen/dim_35dp" >
         </com.moziy.hollerback.view.RoundImageView>
 
         <LinearLayout
