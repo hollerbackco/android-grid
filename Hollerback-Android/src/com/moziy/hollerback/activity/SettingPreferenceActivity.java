@@ -67,7 +67,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
         this.getSupportActionBar().setDisplayShowCustomEnabled(true);
         this.getSupportActionBar().setCustomView(customView);
-        this.getSupportActionBar().setIcon(R.drawable.icon_banana);
+        this.getSupportActionBar().setIcon(R.drawable.banana_medium);
 
         addPreferencesFromResource(R.xml.app_preferences);
 
