@@ -1,6 +1,7 @@
 package com.moziy.hollerback.fragment.delegates;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
 import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.service.task.AbsTask;
@@ -30,18 +32,20 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     private static final String TAG = ConvoHistoryDelegate.class.getSimpleName();
     private static final int HISTORY_LIMIT = 5;
     private ConversationFragment mConvoFragment;
-    private ArrayList<VideoModel> mLocalHistory;
+    private List<VideoModel> mLocalHistory;
     private ArrayList<VideoModel> mRemoteHistory;
     private long mConvoId;
-    private OnHistoryVideoDownloaded mOnHistoryVideoDownloaded;
+    private OnHistoryUpdateListener mOnHistoryModelLoaded;
+    private ConvoLoaderDelegate mLoaderDelegate;
 
     private interface Worker {
         public static final String LOCAL_HISTORY = "local_history";
         public static final String REMOTE_HISTORY = "remote_history";
     }
 
-    public ConvoHistoryDelegate(long convoId) {
+    public ConvoHistoryDelegate(long convoId, ConvoLoaderDelegate loaderDelegate) {
         mConvoId = convoId;
+        mLoaderDelegate = loaderDelegate;
     }
 
     @Override
@@ -61,41 +65,79 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
         mConvoFragment.addTaskToQueue(new GetRemoteHistoryTask(mConvoId), Worker.REMOTE_HISTORY);
     }
 
-    public void setOnHistoryVideoDownloadListener(OnHistoryVideoDownloaded listener) {
-        mOnHistoryVideoDownloaded = listener;
+    public void setOnHistoryVideoDownloadListener(OnHistoryUpdateListener listener) {
+        mOnHistoryModelLoaded = listener;
     }
 
     @Override
     public void onTaskComplete(Task t) {
         if (t instanceof GetLocalHistoryTask) {
             // create a download worker if necessary
-            Log.d(TAG, "history dl complete - thread id: " + Thread.currentThread().getId());
-            for (VideoModel v : ((GetLocalHistoryTask) t).getAllConvoVideos()) {
-                Log.d(TAG, v.toString());
-                if (mOnHistoryVideoDownloaded != null) {
-                    mOnHistoryVideoDownloaded.onHistoryVideoDownloaded(v);
+            Log.d(TAG, "local history load complete - thread id: " + Thread.currentThread().getId());
+            mLocalHistory = ((GetLocalHistoryTask) t).getAllConvoVideos();
+            for (VideoModel v : mLocalHistory) {
+                if (v.getVideoId() == null) {
+                    v.setVideoId(v.getGuid());
+                }
+                Log.d(TAG, "Local video: " + v.toString());
+                if (mOnHistoryModelLoaded != null) {
+                    mOnHistoryModelLoaded.onHistoryModelLoaded(v);
                 } else {
                     throw new IllegalStateException("must set listener for history");
                 }
             }
+
+            mOnHistoryModelLoaded.onLocalHistoryLoaded(mLocalHistory);
 
         }
 
         if (t instanceof GetRemoteHistoryTask) {
             Log.d(TAG, "got remote history complete: " + ((GetRemoteHistoryTask) t).getRemoteVideos().size());
             mRemoteHistory = ((GetRemoteHistoryTask) t).getRemoteVideos();
-            mRemoteHistory.removeAll(mLocalHistory); // remove duplicates
-            Log.d(TAG, "new remote history: ");
+            // mRemoteHistory.removeAll(mLocalHistory); // remove duplicates
+
+            for (VideoModel localVideo : mLocalHistory) {
+                Iterator<VideoModel> itr = mRemoteHistory.iterator();
+                while (itr.hasNext()) {
+                    if (localVideo.getVideoId().equals(itr.next().getVideoId())) {
+                        itr.remove();
+                        break;
+                    }
+                }
+            }
+            Log.d(TAG, "new remote history: " + mRemoteHistory.size());
+
+            // now for all the remote history that is not on disk download them
+            for (VideoModel v : mRemoteHistory) {
+                if (v.getGuid() == null)
+                    v.setGuid(v.getVideoId());
+                v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
+                v.setState(ResourceState.PENDING_DOWNLOAD);
+                v.setTransacting(); // set transacting because we are about to request a download
+                v.save();
+                Log.d(TAG, "remote video: " + v.toString());
+                if (mOnHistoryModelLoaded != null)
+                    mOnHistoryModelLoaded.onHistoryModelLoaded(v);
+                mLoaderDelegate.requestDownload(v);
+            }
+
+            mOnHistoryModelLoaded.onRemoteHistoryLoaded(mRemoteHistory);
         }
 
     }
 
     @Override
     public void onTaskError(Task t) {
+        if (t instanceof GetLocalHistoryTask) {
+            mOnHistoryModelLoaded.onLocalHistoryFailed();
+        }
+        if (t instanceof GetRemoteHistoryTask) {
+            mOnHistoryModelLoaded.onRemoteHistoryFailed();
+        }
 
     }
 
-    public static class GetLocalHistoryTask extends AbsTask {
+    private static class GetLocalHistoryTask extends AbsTask {
 
         private long mConvoId;
         private List<VideoModel> mAllConvoVideos;
@@ -121,7 +163,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
     }
 
-    public static class GetRemoteHistoryTask extends AbsTask {
+    private static class GetRemoteHistoryTask extends AbsTask {
         private static final String TAG = ConvoHistoryDelegate.GetRemoteHistoryTask.class.getSimpleName();
         private long mConvoId;
         boolean isDone = false;
@@ -169,14 +211,40 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                 }
             }
 
+            // we have remote videos:
+
+            // now see if we have the remote videos in our database
+            if (mIsSuccess && mRemoteVideos != null) {
+                Iterator<VideoModel> itr = mRemoteVideos.iterator();
+                while (itr.hasNext()) {
+                    VideoModel remote = itr.next();
+                    VideoModel local = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_GUID + "=?", remote.getVideoId()).executeSingle();
+                    if (local != null) {
+                        Log.d(TAG, "removing video already in local db: " + remote.toString());
+                        itr.remove();
+                    }
+                }
+
+            }
+
             mIsFinished = true;
 
         }
-
     }
 
-    public static interface OnHistoryVideoDownloaded {
-        public void onHistoryVideoDownloaded(VideoModel video);
+    public static interface OnHistoryUpdateListener {
+        // TODO: put no local history and no remote history listenrs
+        // public void
+
+        public void onHistoryModelLoaded(VideoModel video);
+
+        public void onLocalHistoryLoaded(List<VideoModel> videos);
+
+        public void onLocalHistoryFailed();
+
+        public void onRemoteHistoryLoaded(List<VideoModel> videos);
+
+        public void onRemoteHistoryFailed();
     }
 
 }

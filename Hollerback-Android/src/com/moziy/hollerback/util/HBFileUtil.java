@@ -25,6 +25,9 @@ public class HBFileUtil {
 
     public static File getOutputVideoFile(VideoModel video) {
         String filename = video.getGuid();
+        if (filename == null) {
+            filename = video.getVideoId();
+        }
 
         String subDir = filename.substring(0, 2); // this is the hex portion to use
 
@@ -139,6 +142,34 @@ public class HBFileUtil {
         return path;
     }
 
+    /**
+     * Assumes that the file is on disk
+     * @param segmentNum
+     * @param guid
+     * @param extension
+     * @return
+     */
+    public static File getSegmentedFile(int segmentNum, String guid, String extension) {
+        String fileName = getLocalFile(segmentNum, guid, extension);
+        File f = new File(fileName);
+
+        return f;
+    }
+
+    /**
+     * 
+     * @param partNum
+     * @param guid
+     * @return The full path of the local file given a part number and a guid
+     */
+    public static String getLocalFile(int partNum, String guid, String extension) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getFilePath()).append("/").append(guid.substring(0, 2)).append("/").append(guid).append(".").append(partNum).append(".").append(extension);
+
+        return sb.toString();
+    }
+
     public static long getFileSize(String fileKey) {
         File file = new File(getLocalFile(fileKey));
         return file.length();
@@ -160,6 +191,10 @@ public class HBFileUtil {
     public static String generateRandomFileName() {
         String name = UUID.randomUUID().toString();
         return name.substring(0, 2) + "/" + name;
+    }
+
+    public static String generateFileNameFromGUID(String guid) {
+        return guid.substring(0, 2) + "/" + guid;
     }
 
     public static String getFileFormat(int fileFormat) {

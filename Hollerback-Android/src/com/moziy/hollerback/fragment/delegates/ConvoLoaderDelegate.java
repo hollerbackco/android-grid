@@ -115,8 +115,15 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
     @Override
     public void onTaskError(Task t) {
-        // TODO Auto-generated method stub
 
+        if (t instanceof GetVideoModelTask) {
+            mOnModelLoadedListener.onVideoModelLoaded(new ArrayList<VideoModel>()); // add an empty array list
+        }
+
+        if (t instanceof VideoDownloadTask) {
+            Log.w(TAG, "there was an error downloading the video");
+            mOnModelLoadedListener.onVideoDownloadFailed(mVideoMap.get(((VideoDownloadTask) t).getVideoId()));
+        }
     }
 
     private void handleModelTaskComplete(Task t) {
@@ -147,7 +154,17 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     private void addDownloadWorkerFor(VideoModel video) {
 
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
-        mConvoFragment.addTaskToQueue(downloadTask, video.getGuid());
+        boolean added = mConvoFragment.addTaskToQueue(downloadTask, video.getGuid());
+        if (!added) { // couldn't create the download worker, so lets clear the state
+            Log.d(TAG, "not adding download worker for: " + video.toString());
+
+        }
+
+    }
+
+    public void requestDownload(VideoModel video) {
+        mVideoMap.put(video.getGuid(), video);
+        addDownloadWorkerFor(video);
     }
 
     private void handleVideoDownload(VideoDownloadTask t) {
@@ -168,6 +185,8 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         public void onVideoModelLoaded(ArrayList<VideoModel> videos);
 
         public void onVideoDownloaded(VideoModel video);
+
+        public void onVideoDownloadFailed(VideoModel video);
     }
 
     /**

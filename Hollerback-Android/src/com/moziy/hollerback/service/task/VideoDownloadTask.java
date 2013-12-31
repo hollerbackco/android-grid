@@ -21,7 +21,7 @@ public class VideoDownloadTask extends HttpDownloadTask {
         mVideoId = model.getVideoId(); // don't hold on to the model
         // mark video as downloading
         model.setState(VideoModel.ResourceState.DOWNLOADING);
-        model.save(); // the transaction flag should be set prior in our case, it's in the VideoHelper class
+        model.save(); // the transaction flag should be set prior in our case, it's in the VideoHelper class; in case of history it's in the convohistorydelegate
     }
 
     @Override

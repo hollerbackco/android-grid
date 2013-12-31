@@ -1,7 +1,9 @@
 package com.moziy.hollerback.fragment.delegates;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedList;
+import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -11,13 +13,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
@@ -25,7 +30,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
 import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
-import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate.OnHistoryVideoDownloaded;
+import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate.OnHistoryUpdateListener;
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate.OnVideoModelLoaded;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
@@ -36,7 +41,7 @@ import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
-public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryVideoDownloaded, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
     private static final String TAG = VideoPlayerDelegate.class.getSimpleName();
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
@@ -50,6 +55,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     private ImageButton mSkipForwardBtn;
     private ImageButton mSkipBackwardBtn;
     private boolean mHasHistoryVideo = false;
+    private boolean mHasNewVideo = false;
 
     private ConversationFragment mConvoFragment;
     private ConversationModel mConversation;
@@ -57,6 +63,15 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
     private boolean mPlayingDuringConfigChange;
     private boolean mPausedDuringPlayback; // not saved
+
+    private boolean mIsPlayingSegmented; // flag for playing a segmented video
+    private int mSegmentPart; // the segment part that is being played
+
+    public enum VIDEO_MODEL_ENUM {
+        LOCAL_HISTORY_LOADED, REMOTE_HISTORY_LOADED, NEW_VIDEO_MODEL_LOADED
+    };
+
+    private EnumSet<VIDEO_MODEL_ENUM> mHistoryFlag = EnumSet.noneOf(VIDEO_MODEL_ENUM.class);
 
     @Override
     public void onPreSuperAttach(Fragment fragment) {
@@ -79,6 +94,12 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
                 mPlaybackIndex = savedInstance.getInt(PLAYBACK_INDEX_INSTANCE_STATE);
             }
         }
+
+        mIsPlayingSegmented = false;
+        mSegmentPart = 0;
+        mHasNewVideo = false;
+        mHasHistoryVideo = false;
+
     }
 
     public VideoPlayerDelegate(long convoId) {
@@ -165,6 +186,16 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     @Override
     public void onVideoModelLoaded(ArrayList<VideoModel> videos) {
 
+        mHistoryFlag.add(VIDEO_MODEL_ENUM.NEW_VIDEO_MODEL_LOADED);
+
+        if (videos != null && !videos.isEmpty()) {
+            mHasNewVideo = true;
+        } else { // there's nothing
+
+            checkPlayerStatus();
+            return;
+        }
+
         mPlaybackQueue.addAll(videos);
 
         for (VideoModel video : videos) {
@@ -183,8 +214,16 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
     @Override
     public void onVideoDownloaded(VideoModel video) {
+        Log.d(TAG, "onVideoDownloaded - playback index: " + mPlaybackIndex);
         // check to see if this is the next video that must be played
+        if (mPlaybackIndex >= mPlaybackQueue.size()) {
+            Log.w(TAG, "downloaded a file right after we left the fragmetn");
+            return;
+        }
+
         VideoModel queuedVideo = mPlaybackQueue.get(mPlaybackIndex);
+        Log.d(TAG, queuedVideo.toString());
+        Log.d(TAG, video.toString());
 
         if (queuedVideo.getGuid().equals(video.getGuid())) { // if the queued is the one that just got downloaded then just play
             mProgress.setVisibility(View.INVISIBLE);
@@ -195,20 +234,106 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     }
 
     @Override
-    public void onHistoryVideoDownloaded(VideoModel video) {
+    public void onVideoDownloadFailed(VideoModel video) {
+        // since it failed, lets remove it from the playback queue
+        for (int i = 0; i < mPlaybackQueue.size(); i++) {
+            if (video.getGuid().equals(mPlaybackQueue.get(i).getGuid())) {
+
+                mPlaybackQueue.remove(i); // remove the element
+                if (i <= mPlaybackIndex) { // if necessary, update the playback index
+                    --mPlaybackIndex;
+                }
+            }
+        }
+
+        if (mPlaybackQueue.isEmpty()) {
+            checkPlayerStatus();
+            Log.w(TAG, "can't play history, no network connection");
+        }
+    }
+
+    @Override
+    public void onHistoryModelLoaded(VideoModel video) {
         // TODO: insert video at proper location
         mPlaybackQueue.add(0, video);
 
-        if (mHasHistoryVideo) // only increase the playback index if there's already a history video
+        if (mHasHistoryVideo || mHasNewVideo) { // only increase the playback index if there's already a history video
+            Log.d(TAG, "onHistoryModel- has History: " + mHasHistoryVideo + " has new video: " + mHasNewVideo);
             ++mPlaybackIndex;
+        }
+
+        // if we're just watching history, then start immediate playback, if it's on disk
+        if (!mHasNewVideo && (VideoModel.ResourceState.ON_DISK.equals(video.getState()) || (video.isSegmented() /* && VideoModel.ResourceState.UPLOADED.equals(video.getState()) */))) {
+            if (mPlaybackQueue.get(mPlaybackIndex).getGuid() == video.getGuid()) {
+                mProgress.setVisibility(View.INVISIBLE);
+                playVideo(video);
+            }
+        }
 
         mHasHistoryVideo = true;
     }
 
+    @Override
+    public void onLocalHistoryLoaded(List<VideoModel> videos) {
+        mHistoryFlag.add(VIDEO_MODEL_ENUM.LOCAL_HISTORY_LOADED);
+        checkPlayerStatus();
+    }
+
+    @Override
+    public void onRemoteHistoryLoaded(List<VideoModel> videos) {
+        mHistoryFlag.add(VIDEO_MODEL_ENUM.REMOTE_HISTORY_LOADED);
+        checkPlayerStatus();
+    }
+
+    @Override
+    public void onLocalHistoryFailed() {
+        mHistoryFlag.add(VIDEO_MODEL_ENUM.LOCAL_HISTORY_LOADED);
+        checkPlayerStatus();
+    }
+
+    @Override
+    public void onRemoteHistoryFailed() {
+        mHistoryFlag.add(VIDEO_MODEL_ENUM.REMOTE_HISTORY_LOADED);
+        checkPlayerStatus();
+    }
+
+    private void checkPlayerStatus() {
+        if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
+            Log.d(TAG, "all local and remote history has been loaded");
+            if (mPlaybackQueue.isEmpty()) {
+                Log.w(TAG, "there's nothing in the playback queue");
+                mProgress.setVisibility(View.INVISIBLE);
+                Toast t = Toast.makeText(HollerbackApplication.getInstance(), "No videos to play at this time", Toast.LENGTH_LONG);
+                t.setGravity(Gravity.CENTER, 0, 0);
+                t.show();
+            }
+        } else {
+            for (Enum e : mHistoryFlag) {
+                Log.d(TAG, "enum: " + e);
+            }
+        }
+
+    }
+
     private void playVideo(VideoModel v) {
         Log.d(TAG, "starting playback of: " + v.getGuid());
+
+        Uri videoUri;
+        if (v.isSegmented()) {
+            if (mIsPlayingSegmented == false) { // first time processing this videomodel
+                mIsPlayingSegmented = true;
+                mSegmentPart = 0; // start from 0
+            }
+
+            videoUri = Uri.fromFile(HBFileUtil.getSegmentedFile(mSegmentPart, v.getGuid(), "mp4"));
+
+        } else {
+            videoUri = Uri.fromFile(HBFileUtil.getOutputVideoFile(v));
+
+        }
+
         mVideoView.setOnPreparedListener(this);
-        mVideoView.setVideoURI(Uri.fromFile(HBFileUtil.getOutputVideoFile(v)));
+        mVideoView.setVideoURI(videoUri);
         mVideoView.setOnCompletionListener(this);
     }
 
@@ -254,13 +379,22 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
         // once the playback is complete, lets see if the next one is ready
         VideoModel video = mPlaybackQueue.get(mPlaybackIndex); // remove the one that just finished
+        if (video.isSegmented() && mIsPlayingSegmented) {
+            ++mSegmentPart; // we're playing a segmented file, so instead of going to the next video, just play the next part
+            if (mSegmentPart < video.getNumParts()) {
+                playVideo(video); // move to the next part
+                return;
+            } else {
+                mIsPlayingSegmented = false;
+                mSegmentPart = 0;
+            }
+        }
+
         ++mPlaybackIndex; // increate the playback index;
 
         if (!video.isRead()) { // mark as read only if it isn't read already
             setVideoSeen(video);
         }
-
-        // delete the video from the sdcard?
 
         if (mPlaybackIndex < mPlaybackQueue.size()) {
 
@@ -269,6 +403,8 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
             if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 Log.d(TAG, "starting to play video after completion");
+                playVideo(video);
+            } else if (video.isSegmented() /* && VideoModel.ResourceState.UPLOADED.equals(video.getState()) */) {
                 playVideo(video);
             }
 

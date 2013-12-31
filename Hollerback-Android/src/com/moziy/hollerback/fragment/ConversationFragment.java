@@ -70,7 +70,8 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
             mConvoDelegate = new ConvoLoaderDelegate(mConvoId);
             mVideoPlayerDelegate = new VideoPlayerDelegate(mConvoId);
             mConvoDelegate.setOnModelLoadedListener(mVideoPlayerDelegate);
-            mHistoryDelegate = new ConvoHistoryDelegate(mConvoId);
+            mHistoryDelegate = new ConvoHistoryDelegate(mConvoId, mConvoDelegate);
+            mHistoryDelegate.setOnHistoryVideoDownloadListener(mVideoPlayerDelegate);
         }
 
         mVideoPlayerDelegate.onPreSuperAttach(this);
@@ -232,9 +233,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         Log.d(TAG, "there was a problem with a task");
         mConvoDelegate.onTaskError(t);
-        // TODO: handle this later
-        if (isAdded())
-            Toast.makeText(getActivity(), "Couldn't download video..", Toast.LENGTH_SHORT).show();
         // retry the task
         mHistoryDelegate.onTaskError(t);
 

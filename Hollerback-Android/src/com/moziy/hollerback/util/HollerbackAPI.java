@@ -75,7 +75,8 @@ public class HollerbackAPI {
      * History
      */
 
-    public static final String API_HISTORY = "/me/conversations/%1$s/history";
+    // public static final String API_HISTORY = "/me/conversations/%1$s/history";
+    public static final String API_HISTORY = "/me/conversations/%1$s/videos";
 
     // /////////////
 
