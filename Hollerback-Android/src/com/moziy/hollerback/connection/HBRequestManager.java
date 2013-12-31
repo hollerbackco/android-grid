@@ -8,6 +8,8 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -205,8 +207,9 @@ public class HBRequestManager {
         params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
 
         if (pageNum > 0 && perPage > 0) {
-            params.put(HollerbackAPI.PARAM_PAGE, pageNum);
-            params.put(HollerbackAPI.PARAM_PER_PAGE, perPage);
+            Log.d(TAG, "setting page params");
+            params.put(HollerbackAPI.PARAM_PAGE, String.valueOf(pageNum));
+            params.put(HollerbackAPI.PARAM_PER_PAGE, String.valueOf(perPage));
         }
 
         HollerbackAsyncClient.getInstance().get(String.format(HollerbackAPI.API_HISTORY, conversationId), params, handler);
