@@ -18,8 +18,8 @@ import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class GCMUtils {
     private static final String TAG = GCMUtils.class.getSimpleName();

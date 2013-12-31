@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.sharedpreference;
 
 public class HBPreferences {
 

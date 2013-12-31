@@ -9,8 +9,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.gcm.GCMUtils;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class BaseActivity extends SherlockFragmentActivity {
 

@@ -15,8 +15,8 @@ import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 

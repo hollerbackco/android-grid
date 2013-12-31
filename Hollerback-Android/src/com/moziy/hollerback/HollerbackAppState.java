@@ -10,8 +10,8 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.network.VolleySingleton;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class HollerbackAppState {
 

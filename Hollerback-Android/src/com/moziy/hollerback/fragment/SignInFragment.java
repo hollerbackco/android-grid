@@ -26,8 +26,8 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 
 public class SignInFragment extends BaseFragment {

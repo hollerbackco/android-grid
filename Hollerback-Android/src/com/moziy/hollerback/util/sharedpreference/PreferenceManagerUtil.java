@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.sharedpreference;
 
 import java.util.Set;
 
@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.util.AppEnvironment;
 
 public class PreferenceManagerUtil {
 

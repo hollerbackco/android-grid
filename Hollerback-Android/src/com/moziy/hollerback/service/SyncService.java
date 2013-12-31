@@ -30,12 +30,12 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
-import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.NotificationUtil;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class SyncService extends IntentService implements RecoveryClient {
 

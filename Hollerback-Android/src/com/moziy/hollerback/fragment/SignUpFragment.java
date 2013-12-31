@@ -35,11 +35,11 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
-import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 import com.moziy.hollerback.util.PhoneTextWatcher;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {

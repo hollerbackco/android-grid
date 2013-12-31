@@ -1,4 +1,4 @@
-package com.moziy.hollerback.util;
+package com.moziy.hollerback.util.sharedpreference;
 
 import android.content.Context;
 import android.content.SharedPreferences;

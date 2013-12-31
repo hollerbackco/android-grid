@@ -29,9 +29,9 @@ import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 /**
  * This is a fragment that's going to use the new architecture, loader based rather than braodcast based
