@@ -1,385 +1,536 @@
 package com.moziy.hollerback.fragment;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.Data;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.moziy.hollerback.HollerbackInterfaces.OnContactSelectedListener;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.adapter.ContactsListAdapter;
-import com.moziy.hollerback.cache.memory.TempMemoryStore;
-import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.model.SortedArray;
-import com.moziy.hollerback.model.UserModel;
-import com.moziy.hollerback.service.VideoUploadService;
-import com.moziy.hollerback.util.CollectionOpUtils;
-import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.HollerbackAPI;
-import com.moziy.hollerback.util.JSONUtil;
-import com.moziy.hollerback.util.NumberUtil;
-import com.moziy.hollerback.util.UploadCacheUtil;
-import com.moziy.hollerbacky.connection.HBRequestManager;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.communication.IABIntent;
+import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.contacts.ContactsInterface;
+import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
+import com.moziy.hollerback.view.StickyHeaderListView;
+import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
+import com.moziy.hollerback.widget.CustomEditText;
+import com.moziy.hollerback.widget.CustomTextView;
 
 public class ContactsFragment extends BaseFragment {
+    private static final String TAG = ContactsFragment.class.getSimpleName();
+    public static final String FRAGMENT_TAG = TAG;
 
-    public static final String FRAGMENT_TAG = ContactsFragment.class.getSimpleName();
-    private String NEXT = "NEXT";
+    private ContactsInterface mContactsInterface;
+    private LayoutInflater mInflater;
+    private StickyHeaderListView mStickyListView;
+    private ListView mContactsList;
+    private ContactsAdapter mAdapter;
+    private InternalReceiver mReceiver;
+    private CustomEditText mSearchBar;
 
-    private ViewGroup mRootView;
-    protected ExpandableListView mSMSList;
-
-    // private SMSAdapter mContactSMSAdapter;
-    protected ContactsListAdapter mAdapter;
-    protected HashMap<String, String> mSelectedSMSContactsAdapterData = new HashMap<String, String>();
-    protected OnContactSelectedListener mListener;
-
-    private String mConversationTitle;
-    private String mFileDataName;
-    private boolean isWelcomeScreen;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+    }
 
     public static ContactsFragment newInstance() {
         ContactsFragment f = new ContactsFragment();
+
         return f;
     }
 
-    public static ContactsFragment newInstance(boolean isWelcomeScreen, String fileDataName) {
-        ContactsFragment f = new ContactsFragment();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("isWelcomeScreen", isWelcomeScreen);
-        bundle.putString("fileDataName", fileDataName);
-        f.setArguments(bundle);
-        return f;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+        mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
+        mInflater = LayoutInflater.from(getActivity());
+
+        mReceiver = new InternalReceiver();
+        IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONTACTS_UPDATED);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity.getSupportActionBar().setTitle(this.getResources().getString(R.string.preference_new_group));
-        mRootView = (ViewGroup) inflater.inflate(R.layout.contact_fragment, null);
+        View v = inflater.inflate(R.layout.contacts_layout, container, false);
 
-        if (this.getArguments() != null && this.getArguments().getBoolean("isWelcomeScreen")) {
-            isWelcomeScreen = this.getArguments().getBoolean("isWelcomeScreen");
-            mFileDataName = this.getArguments().getString("fileDataName");
-        }
-        initializeView(mRootView);
+        mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
+        mContactsList.setOnItemClickListener(mOnContactClick);
+        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
+        mContactsList.setAdapter(mAdapter);
 
-        bindData();
+        mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
+        mStickyListView.setIndexer(mAdapter);
 
-        return mRootView;
+        mSearchBar = (CustomEditText) v.findViewById(R.id.txtSearch);
+        mSearchBar.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    mStickyListView.disableStickyHeader();
+                } else {
+                    mStickyListView.enableStickyHeader();
+                }
+                mAdapter.getFilter().filter(s.toString());
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        initializeView(v);
+
+        return v;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    private AdapterView.OnItemClickListener mOnContactClick = new AdapterView.OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Item item = (Item) parent.getItemAtPosition(position);
+            if (item.getContact() != null) {
+
+                Contact c = item.getContact();
+                StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
+                    c.mPhone
+                }, c.mName, new boolean[] {
+                    c.mIsOnHollerback
+                });
+
+                // if keyboard is showing hide it
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
+
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            }
+        }
+    };
 
     @Override
     protected void initializeView(View view) {
-        mAdapter = new ContactsListAdapter(mActivity);
-        mSMSList = (ExpandableListView) mRootView.findViewById(R.id.smsList);
-        mSMSList.setOnGroupClickListener(null);
-        mSMSList.setOnGroupCollapseListener(null);
-        mSMSList.setOnGroupExpandListener(null);
-        mSMSList.setClickable(false);
 
-        // when item is clicked
-        mListener = new OnContactSelectedListener() {
-
-            @Override
-            public void onItemClicked(int position) {
-                String[] names = mSelectedSMSContactsAdapterData.values().toArray(new String[mSelectedSMSContactsAdapterData.size()]);
-                if (names.length > 0) {
-                    mConversationTitle = "";
-                    for (int i = 0; i < names.length; i++) {
-                        mConversationTitle += names[i];
-                        if (i < names.length - 1) {
-                            mConversationTitle += ",";
-                        }
-                    }
-                    ContactsFragment.this.getSherlockActivity().getSupportActionBar().setTitle(mConversationTitle);
-
-                } else {
-                    ContactsFragment.this.getSherlockActivity().getSupportActionBar().setTitle(mActivity.getResources().getString(R.string.preference_friends));
-                }
-            }
-
-        };
-
-        TempMemoryStore.users = getSortedUserArray();
-
-        if (isWelcomeScreen) {
-            TextView txtHeader = (TextView) mRootView.findViewById(R.id.txtHeader);
-            txtHeader.setVisibility(View.VISIBLE);
+        if (mContactsInterface.getDeviceContactsLoadState() == LOADING_STATE.LOADING || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.LOADING) {
+            // startLoading();
         }
-
-        mSMSList.setOnChildClickListener(new OnChildClickListener() {
-
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Toast.makeText(mActivity, "test", Toast.LENGTH_LONG).show();
-                return false;
-            }
-        });
-
-        mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, TempMemoryStore.users.sortedKeys.size(), 0);
-
-        mSMSList.setAdapter(mAdapter);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        menu.add(NEXT).setActionView(R.layout.button_next).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
-        for (int i = 0; i < menu.size(); i++) {
-            if (menu.getItem(i).getTitle().toString().equalsIgnoreCase(NEXT)) { // Finding the button from custom View
-                menu.getItem(i).getActionView().findViewById(R.id.btnSignUp).setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        if (mSelectedSMSContactsAdapterData.isEmpty()) {
-                            Toast.makeText(mActivity, R.string.contacts_minimum_required, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        if (isWelcomeScreen) {
-                            inviteAndsendVideo();
-                        } else {
-                            inviteAndRecordVideo();
-                        }
-                    }
-                });
-                break;
-            }
-        }
-    }
-
-    protected void bindData() {
-        this.startLoading();
-        // Now runs to get data
-        HBRequestManager.getContacts(TempMemoryStore.users.array, new JsonHttpResponseHandler() {
-
-            @Override
-            protected Object parseResponse(String arg0) throws JSONException {
-                LogUtil.i("RESPONSE: " + arg0);
-                return super.parseResponse(arg0);
-
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onFailure(arg0, arg1);
-                LogUtil.e(HollerbackAPI.API_CONTACTS + "FAILURE");
-            }
-
-            @Override
-            public void onSuccess(int statusId, JSONObject response) {
-                // TODO Auto-generated method stub
-                super.onSuccess(statusId, response);
-                LogUtil.i("ON SUCCESS API CONTACTS");
-                SortedArray data = JSONUtil.processGetContacts(response, true);
-                if (data != null) {
-                    int hollerback = 0;
-                    int phone = 0;
-
-                    for (int i = 0; i < TempMemoryStore.users.sortedKeys.size(); i++) {
-                        UserModel user = TempMemoryStore.users.mUserModelHash.get(TempMemoryStore.users.sortedKeys.get(i));
-                        if (user.isHollerbackUser) {
-                            hollerback++;
-                        } else
-                            phone++;
-                    }
-
-                    mAdapter.setContacts(TempMemoryStore.users.sortedKeys, mSelectedSMSContactsAdapterData, mListener, hollerback, phone);
-                    mAdapter.notifyDataSetChanged();
-
-                    for (int i = 0; i < mAdapter.getGroupCount(); i++) {
-                        mSMSList.expandGroup(i);
-                    }
-                }
-                ContactsFragment.this.stopLoading();
-
-            }
-
-        });
-
-    }
-
-    protected SortedArray getSortedUserArray() {
-        Cursor c = this.getActivity().getContentResolver().query(Data.CONTENT_URI, new String[] {
-                Data._ID, Data.DISPLAY_NAME, Phone.NUMBER, Data.CONTACT_ID, Phone.TYPE, Phone.LABEL, Data.PHOTO_ID
-        }, Data.MIMETYPE + "='" + Phone.CONTENT_ITEM_TYPE + "'", null, Data.DISPLAY_NAME);
-
-        int count = c.getCount();
-        boolean b = c.moveToFirst();
-        String[] columnNames = c.getColumnNames();
-        int displayNameColIndex = c.getColumnIndex("display_name");
-        int idColIndex = c.getColumnIndex("_id");
-        // int contactIdColIndex = c.getColumnIndex("contact_id");
-        int col2Index = c.getColumnIndex(columnNames[2]);
-        int col3Index = c.getColumnIndex(columnNames[3]);
-        int col4Index = c.getColumnIndex(columnNames[4]);
-        int col6Index = c.getColumnIndex(columnNames[6]);
-
-        ArrayList<UserModel> contactItemList = new ArrayList<UserModel>();
-
-        for (int i = 0; i < count; i++) {
-
-            String displayName = c.getString(displayNameColIndex);
-            String phoneNumber = c.getString(col2Index);
-            int contactId = c.getInt(col3Index);
-            String phoneType = c.getString(col4Index);
-            String photourl = c.getString(col6Index);
-
-            long _id = c.getLong(idColIndex);
-            UserModel contactItem = new UserModel();
-            // contactItem.userId = _id;
-            contactItem.contactId = contactId;
-            contactItem.name = displayName;
-            contactItem.photourl = photourl;
-
-            contactItem.phone = NumberUtil.getE164Number(phoneNumber);
-            if (contactItem.phone != null) {
-                contactItemList.add(contactItem);
-            }
-
-            contactItem.save();
-            boolean b2 = c.moveToNext();
-        }
-
-        c.close();
-
-        return CollectionOpUtils.sortContacts(contactItemList);
-
     }
 
     /**
-     * These 2 functions can use some clean up, I did it extremely fast but you can play with logic a little bit.
+     * Listens to CONTACTS_UPDATED
+     * @author sajjad
+     *
      */
-    private void inviteAndRecordVideo() {
-        String[] phones = mSelectedSMSContactsAdapterData.keySet().toArray(new String[mSelectedSMSContactsAdapterData.size()]);
+    private class InternalReceiver extends BroadcastReceiver {
 
-        mActivity.getSupportFragmentManager().popBackStack();
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mContactsList != null) { // the view has been initialized
 
-        StartConversationFragment startConvoFragment = StartConversationFragment.newInstance(phones, mConversationTitle);
-        // RecordVideoFragment recordfragment = RecordVideoFragment.newInstance(phones, mConversationTitle);
-
-        // add to backstack?
-        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, startConvoFragment).addToBackStack(FRAGMENT_TAG)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commitAllowingStateLoss();
-    }
-
-    /**
-     * just like the function name, this is suppose to be in loader, but his HBManager structure is weird so I can't create 
-     * a loader.  But all the callbacks should be able to interact with the fragment rather than coming in from Broadcast
-     * change all the arg1 crap, makes it unreadable
-     */
-    private void inviteAndsendVideo() {
-        String[] phones = mSelectedSMSContactsAdapterData.keySet().toArray(new String[mSelectedSMSContactsAdapterData.size()]);
-
-        ArrayList<String> contacts = new ArrayList<String>();
-        contacts.addAll(Arrays.asList(phones));
-
-        HBRequestManager.createNewConversation(contacts, new JsonHttpResponseHandler() {
-
-            @Override
-            protected Object parseResponse(String arg0) throws JSONException {
-                LogUtil.i(arg0);
-                return super.parseResponse(arg0);
-
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, JSONObject arg1) {
-                // TODO Auto-generated method stub
-                super.onFailure(arg0, arg1);
-                LogUtil.e(HollerbackAPI.API_CONVERSATION + "FAILURE");
-            }
-
-            @Override
-            public void onSuccess(int statusId, JSONObject response) {
-                // TODO Auto-generated method stub
-                super.onSuccess(statusId, response);
-                LogUtil.i("ON SUCCESS API CONVO");
-                JSONUtil.processPostConversations(response);
-
-                // successful, now we upload video
-                try {
-
-                    JSONObject conversation = response.getJSONObject("data");
-
-                    if (!conversation.has("id")) {
-                        return;
+                // if we were able to load both contacts list, then just set the adapter
+                if (mContactsInterface.getDeviceContactsLoadState() == LOADING_STATE.DONE) {
+                    // if getting the hb contacts failed or its done already then just display the contacts - displaying something is better than nothing
+                    if (mContactsInterface.getHbContactsLoadState() == LOADING_STATE.DONE || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.FAILED) {
+                        // stopLoading();
+                        mAdapter.setContacts(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
+                        mAdapter.notifyDataSetChanged();
                     }
 
-                    String conversationId = String.valueOf(conversation.getInt("id"));
-
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-
-                    JSONObject cacheData = new JSONObject();
-                    try {
-                        File tmp = new File(HBFileUtil.getLocalFile(HBFileUtil.getImageUploadName(mFileDataName)));
-                        String fileurl = Uri.fromFile(tmp).toString();
-
-                        cacheData.put("filename", mFileDataName);
-                        cacheData.put("id", 0);
-                        cacheData.put("conversation_id", conversationId);
-                        cacheData.put("isRead", true);
-                        cacheData.put("url", fileurl);
-                        cacheData.put("thumb_url", fileurl);
-                        cacheData.put("created_at", df.format(new Date()));
-                        cacheData.put("username", "me");
-                    } catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-
-                    Intent serviceIntent = new Intent(mActivity, VideoUploadService.class);
-                    serviceIntent.putExtra("ConversationId", conversationId);
-                    serviceIntent.putExtra("FileDataName", mFileDataName);
-                    serviceIntent.putExtra("ImageUploadName", HBFileUtil.getImageUploadName(mFileDataName));
-
-                    if (cacheData != new JSONObject()) {
-                        serviceIntent.putExtra("JSONCache", cacheData.toString());
-                        UploadCacheUtil.setUploadCacheFlag(mActivity, conversationId, cacheData);
-                    }
-
-                    mActivity.startService(serviceIntent);
-
-                    mActivity.getSupportFragmentManager().popBackStack(WelcomeFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    mActivity.getSupportFragmentManager().popBackStack(WelcomeFinishFragment.class.getSimpleName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-                    WelcomeFinishFragment fragment = WelcomeFinishFragment.newInstance();
-                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            .addToBackStack(WelcomeFinishFragment.class.getSimpleName()).commitAllowingStateLoss();
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-                // just posted, now upload the video
+
             }
-        });
+
+        }
     }
+
+    private class ContactsAdapter extends ArrayAdapter<Item> implements HeaderIndexer {
+
+        private ItemManager mItemManager;
+
+        public ContactsAdapter(List<Contact> hbContacts, List<Contact> others) {
+            super(mActivity, R.layout.contact_list_item, R.id.tv_contact_name);
+            mItemManager = new ItemManager(hbContacts, others);
+            addAll(mItemManager.mItems);
+        }
+
+        public void setContacts(List<Contact> hbContacts, List<Contact> others) {
+            clear();
+
+            mItemManager = new ItemManager(hbContacts, others);
+            addAll(mItemManager.mItems);
+        }
+
+        // @Override
+        // public Item getItem(int position) {
+        // return mItemManager.mItems.get(position);
+        // }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            return getItem(position).getView(position, convertView, parent);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return getItem(position).getItemViewType();
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return mItemManager.itemTypeCount;
+        }
+
+        @Override
+        public int getHeaderPositionFromItemPosition(int position) {
+
+            return getItem(position).getHeaderPosition();
+        }
+
+        @Override
+        public int getHeaderItemsNumber(int headerPosition) {
+
+            return ((HeaderItem) getItem(headerPosition)).getNumberOfItems();
+        }
+
+    }
+
+    private class ItemManager {
+
+        public static final int HB_HEADER = 0;
+        public static final int HB_CONTACT = 1;
+        public static final int CONTACT_HEADER = 2;
+        public static final int CONTACT = 3;
+
+        List<Item> mItems;
+        final int itemTypeCount = 4;
+        int mHbHeaderPosition = 0;
+        int mContactsHeaderPosition = 0;
+
+        public ItemManager(List<Contact> hbFriends, List<Contact> contacts) {
+
+            mItems = new ArrayList<ContactsFragment.Item>();
+            if (hbFriends != null && !hbFriends.isEmpty()) {
+
+                mHbHeaderPosition = mItems.size();
+                HBHeaderItem hbHeader = new HBHeaderItem(mHbHeaderPosition);
+
+                hbHeader.setNumberOfItems(hbFriends.size());
+                mItems.add(hbHeader);
+                Log.d(TAG, "hb header pos: " + mHbHeaderPosition + " size: " + hbFriends.size());
+                for (Contact c : hbFriends) {
+                    mItems.add(new HBFriendItem(c, mHbHeaderPosition));
+
+                }
+
+            }
+
+            if (contacts != null && !contacts.isEmpty()) {
+
+                mContactsHeaderPosition = mItems.size();
+                ContactHeaderItem contactHeader = new ContactHeaderItem(mContactsHeaderPosition);
+                contactHeader.setNumberOfItems(contacts.size());
+                mItems.add(contactHeader);
+                Log.d(TAG, "cn header pos: " + mContactsHeaderPosition + " size: " + contacts.size());
+                for (Contact c : contacts) {
+                    mItems.add(new ContactItem(c, mContactsHeaderPosition));
+                }
+
+            }
+        }
+    }
+
+    private class HBFriendItem implements Item {
+
+        private Contact mContact;
+        private int mHeaderPosition;
+
+        public HBFriendItem(Contact c, int headerPosition) {
+            mContact = c;
+            mHeaderPosition = headerPosition;
+
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                holder = new ViewHolder();
+
+                convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
+                holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
+                holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.name.setText(mContact.mName);
+            holder.username.setText(mContact.mUsername);
+
+            return convertView;
+        }
+
+        @Override
+        public int getItemViewType() {
+            return ItemManager.HB_CONTACT;
+        }
+
+        private class ViewHolder {
+            public CustomTextView name;
+            public CustomTextView username;
+
+        }
+
+        @Override
+        public Contact getContact() {
+            return mContact;
+        }
+
+        @Override
+        public int getHeaderPosition() {
+            return this.mHeaderPosition;
+        }
+
+        @Override
+        public String toString() {
+            return mContact.mName.toLowerCase();
+        }
+
+    }
+
+    private class ContactItem implements Item {
+
+        private Contact mContact;
+        private int mHeaderPosition;
+
+        public ContactItem(Contact c, int headerPosition) {
+            mContact = c;
+            mHeaderPosition = headerPosition;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                holder = new ViewHolder();
+
+                convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
+                holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
+                holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
+                holder.icon = (ImageView) convertView.findViewById(R.id.iv_contact_type);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.name.setText(mContact.mName);
+            holder.username.setVisibility(View.GONE);
+            holder.icon.setVisibility(View.INVISIBLE);
+
+            return convertView;
+        }
+
+        @Override
+        public int getItemViewType() {
+            return ItemManager.CONTACT;
+        }
+
+        @Override
+        public String toString() {
+            return mContact.mName.toLowerCase();
+        }
+
+        private class ViewHolder {
+            public CustomTextView name;
+            public CustomTextView username;
+            public ImageView icon;
+
+        }
+
+        @Override
+        public Contact getContact() {
+            return mContact;
+        }
+
+        @Override
+        public int getHeaderPosition() {
+            return this.mHeaderPosition;
+        }
+
+    }
+
+    private class HBHeaderItem implements HeaderItem {
+
+        private int mPosition;
+        private int mNumItems = 0;
+
+        public HBHeaderItem(int position) {
+            mPosition = position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+
+                convertView = mInflater.inflate(R.layout.contact_header_item, parent, false);
+
+                holder = new ViewHolder();
+                holder.mHeader = (CustomTextView) convertView.findViewById(R.id.tv_header);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.mHeader.setText(getString(R.string.send_to_hb_friend));
+
+            return convertView;
+        }
+
+        @Override
+        public int getItemViewType() {
+
+            return ItemManager.HB_HEADER;
+        }
+
+        private class ViewHolder {
+            public CustomTextView mHeader;
+        }
+
+        @Override
+        public Contact getContact() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public int getHeaderPosition() {
+
+            return mPosition;
+        }
+
+        @Override
+        public int getNumberOfItems() {
+
+            return mNumItems;
+        }
+
+        @Override
+        public void setNumberOfItems(int num) {
+            mNumItems = num;
+
+        }
+
+    }
+
+    private class ContactHeaderItem implements HeaderItem {
+
+        private int mPosition;
+        private int mNumItems;
+
+        public ContactHeaderItem(int position) {
+            mPosition = position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+
+                convertView = mInflater.inflate(R.layout.contact_header_item, parent, false);
+
+                holder = new ViewHolder();
+                holder.mHeader = (CustomTextView) convertView.findViewById(R.id.tv_header);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.mHeader.setText(getString(R.string.send_to_contact));
+
+            return convertView;
+        }
+
+        private class ViewHolder {
+            public CustomTextView mHeader;
+        }
+
+        @Override
+        public int getItemViewType() {
+            // TODO Auto-generated method stub
+            return ItemManager.CONTACT_HEADER;
+        }
+
+        @Override
+        public Contact getContact() {
+            return null;
+        }
+
+        @Override
+        public int getHeaderPosition() {
+            return mPosition;
+        }
+
+        @Override
+        public int getNumberOfItems() {
+            return mNumItems;
+        }
+
+        @Override
+        public void setNumberOfItems(int num) {
+            mNumItems = num;
+        }
+
+    }
+
+    private interface Item {
+
+        public View getView(int position, View convertView, ViewGroup parent);
+
+        public int getItemViewType();
+
+        public int getHeaderPosition();
+
+        public Contact getContact();
+    }
+
+    private interface HeaderItem extends Item {
+        public int getNumberOfItems();
+
+        public void setNumberOfItems(int num);
+    }
+
 }

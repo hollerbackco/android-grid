@@ -1,26 +1,33 @@
 package com.moziy.hollerback.activity;
 
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-import com.actionbarsherlock.view.MenuItem;
-import com.activeandroid.ActiveAndroid;
-import com.activeandroid.query.Delete;
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.SwitchPreference;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.actionbarsherlock.app.SherlockPreferenceActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.moziy.hollerback.HollerbackAppState;
+import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity {
+
+    public interface Action {
+        public static final String LOGOUT = "logout";
+        public static final String FIND_FRIENDS = "find_friends";
+    }
+
     private final String TWITTERURL = "https://twitter.com/hollerback";
     private final String FACEBOOKURL = "https://www.facebook.com/HollerbackApp";
+    public static final int PREFERENCE_PAGE_REQUEST_CODE = 200;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -47,7 +54,6 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.Theme_Example);
         super.onCreate(savedInstanceState);
         this.setTitle(R.string.action_settings);
         this.setResult(RESULT_CANCELED);
@@ -61,7 +67,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
         this.getSupportActionBar().setDisplayShowCustomEnabled(true);
         this.getSupportActionBar().setCustomView(customView);
-        this.getSupportActionBar().setIcon(R.drawable.icon_banana);
+        this.getSupportActionBar().setIcon(R.drawable.banana_medium);
 
         addPreferencesFromResource(R.xml.app_preferences);
 
@@ -70,7 +76,7 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                SettingPreferenceActivity.this.setResult(RESULT_OK);
+                Toast.makeText(HollerbackApplication.getInstance(), "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 SettingPreferenceActivity.this.finish();
                 return false;
             }
@@ -81,14 +87,18 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                PreferenceManagerUtil.clearPreferences();
-                ActiveAndroid.beginTransaction();
-                new Delete().from(ConversationModel.class).execute();
-                ActiveAndroid.setTransactionSuccessful();
-                ActiveAndroid.endTransaction();
+
+                HollerbackAppState.logOut(SettingPreferenceActivity.this);
+
+                Bundle args = new Bundle();
+                args.putBoolean(Action.LOGOUT, true);
+
+                Intent intent = new Intent();
+                intent.putExtras(args);
+                setResult(RESULT_OK, intent);
                 SettingPreferenceActivity.this.finish();
 
-                return false;
+                return true;
             }
         });
 
@@ -119,7 +129,9 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(AppEnvironment.TERMS_OF_SERVICE_URL));
+                startActivity(intent);
                 return false;
             }
         });
@@ -129,8 +141,10 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
-                return false;
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(AppEnvironment.PRIVACY_POLICY_URL));
+                startActivity(intent);
+                return true;
             }
         });
 
@@ -139,6 +153,12 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse("mailto:" + getString(R.string.feedback_email)));
+                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject));
+                intent.putExtra(Intent.EXTRA_TEXT, "");
+
+                startActivity(Intent.createChooser(intent, getString(R.string.select_email)));
 
                 return false;
             }

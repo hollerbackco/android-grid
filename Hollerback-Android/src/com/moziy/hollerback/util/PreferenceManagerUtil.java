@@ -1,5 +1,7 @@
 package com.moziy.hollerback.util;
 
+import java.util.Set;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -36,7 +38,7 @@ public class PreferenceManagerUtil {
     }
 
     // all float, long, String, integer, boolean setter methods
-    public static void setPreferenceLongValue(String key, long value) {
+    public static void setPreferenceValue(String key, long value) {
 
         SharedPreferences.Editor editor = getEditor();
 
@@ -86,8 +88,17 @@ public class PreferenceManagerUtil {
 
     }
 
+    public static void setPreferenceValueSet(String key, Set<String> values) {
+
+        SharedPreferences.Editor editor = getEditor();
+
+        editor.putStringSet(key, values);
+
+        commitPreferences(editor);
+    }
+
     // all long, int, flaot, String , boolean getter methods
-    public static long getPreferenceLongValue(String key, long defValue) {
+    public static long getPreferenceValue(String key, long defValue) {
         initPreferences();
         return mPreferences.getLong(key, defValue);
     }
@@ -110,6 +121,11 @@ public class PreferenceManagerUtil {
     public static String getPreferenceValue(String key, String defValue) {
         initPreferences();
         return mPreferences.getString(key, defValue);
+    }
+
+    public static Set<String> getPreferenceValueSet(String key, Set<String> defValues) {
+        initPreferences();
+        return mPreferences.getStringSet(key, defValues);
     }
 
     public static void clearPreferences() {

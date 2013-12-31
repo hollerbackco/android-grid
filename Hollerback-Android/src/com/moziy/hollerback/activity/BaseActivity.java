@@ -9,6 +9,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.gcm.GCMUtils;
+import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class BaseActivity extends SherlockFragmentActivity {
 
@@ -39,7 +41,11 @@ public class BaseActivity extends SherlockFragmentActivity {
     protected void onResume() {
         super.onResume();
         HollerbackApplication.getInstance().getAppLifecycle().setActive();
-        checkPlayServices();
+        if (checkPlayServices()) {
+            if (!PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_GCM_REGISTERED, true)) { // assume we're registered
+                GCMUtils.notifyServer(GCMUtils.getRegistrationId(this));
+            }
+        }
     }
 
     @Override

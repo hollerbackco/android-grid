@@ -69,6 +69,15 @@ public class HollerbackAPI {
 
     public static final String API_CONTACTS = "/contacts/check";
 
+    public static final String API_GOODBYE = "/me/conversations/%1$s/goodbye";
+
+    /**
+     * History
+     */
+
+    // public static final String API_HISTORY = "/me/conversations/%1$s/history";
+    public static final String API_HISTORY = "/me/conversations/%1$s/videos";
+
     // /////////////
 
     public static final String PARAM_EMAIL = "email";
@@ -104,6 +113,16 @@ public class HollerbackAPI {
     public static final String PARAM_UPDATED_AT = "updated_at";
 
     public static final String PARAM_GUID = "guid";
+
+    public static final String PARAM_CONTACTS = "c";
+
+    public static final String PARAM_CONTACTS_NAME = "n";
+
+    public static final String PARAM_CONTACTS_PHONE = "p";
+
+    public static final String PARAM_PAGE = "page";
+
+    public static final String PARAM_PER_PAGE = "perPage";
 
     public static interface ErrorCodes {
         public static final int ERROR_403 = 403;

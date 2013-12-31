@@ -15,14 +15,14 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.cache.memory.TempMemoryStore;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.SortedArray;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.util.HollerbackAPI;
 import com.moziy.hollerback.util.JSONUtil;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
-public class ContactsInviteFragment extends ContactsFragment {
+public class ContactsInviteFragment extends OldContactsFragment {
     private String INVITE = "INVITE";
 
     @Override

@@ -1,87 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_welcome"
+    android:background="@color/background_header"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/tv_header_counter_phone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/header_country_code_phone"
-        android:textColor="#fff"
-        android:textSize="15sp" />
-
-    <RelativeLayout
-        android:id="@+id/rl_bx_2"
+    <include
+        android:id="@+id/username_password_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_header_counter_phone"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:background="#adadad"
-        android:padding="1dp" >
+        android:layout_marginLeft="@dimen/dim_20dp"
+        android:layout_marginRight="@dimen/dim_20dp"
+        android:layout_marginTop="@dimen/dim_20dp"
+        layout="@layout/email_password_box" />
 
-        <RelativeLayout
-            android:id="@+id/rl_country_selector"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/tv_phone_number_code_height"
-            android:background="#fff"
-            android:clickable="true" >
-
-            <TextView
-                android:id="@+id/tv_country_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="10dp"
-                android:textSize="17sp" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/rl_phone_number_container"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/tv_phone_number_code_height"
-            android:layout_below="@+id/rl_country_selector"
-            android:layout_marginTop="1dp" >
-
-            <TextView
-                android:id="@+id/tv_phone_number_code"
-                android:layout_width="@dimen/tv_phone_number_code_width"
-                android:layout_height="match_parent"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:background="#fff"
-                android:gravity="center"
-                android:textColor="#000"
-                android:textSize="17sp" />
-
-            <EditText
-                android:id="@+id/textfield_phonenumber"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="1dp"
-                android:layout_toRightOf="@+id/tv_phone_number_code"
-                android:background="#fff"
-                android:hint="@string/number"
-                android:inputType="number"
-                android:padding="10dp"
-                android:textSize="17sp" />
-        </RelativeLayout>
-    </RelativeLayout>
-
-    <Button
+    <com.moziy.hollerback.widget.CustomButton
         android:id="@+id/submit_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/rl_bx_2"
+        android:layout_alignLeft="@id/username_password_box"
+        android:layout_alignRight="@id/username_password_box"
+        android:layout_below="@+id/username_password_box"
         android:layout_centerHorizontal="true"
-        android:layout_margin="10dp"
-        android:text="@string/signin" />
+        android:layout_marginLeft="@dimen/dim_20dp"
+        android:layout_marginRight="@dimen/dim_20dp"
+        android:text="@string/signin"
+        app:tintColor="#80000000" />
 
 </RelativeLayout>

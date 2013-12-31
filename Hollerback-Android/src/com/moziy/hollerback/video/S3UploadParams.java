@@ -2,9 +2,9 @@ package com.moziy.hollerback.video;
 
 import android.content.Context;
 
+import com.moziy.hollerback.connection.RequestCallbacks.OnS3UploadListener;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 
 public class S3UploadParams {
 

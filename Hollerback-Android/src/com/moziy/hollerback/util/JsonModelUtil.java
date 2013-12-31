@@ -3,7 +3,6 @@ package com.moziy.hollerback.util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 
 public class JsonModelUtil {
@@ -31,18 +30,6 @@ public class JsonModelUtil {
             e.printStackTrace();
         }
 
-        return null;
-    }
-
-    public static ConversationModel createConverstion(JSONObject conversation) {
-        try {
-            ConversationModel model = new ConversationModel();
-            model.setConversation_id(conversation.getInt("id"));
-            model.setConversation_name(conversation.getString("name"));
-            model.setUnreadCount(conversation.getInt("unread_count"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         return null;
     }
 

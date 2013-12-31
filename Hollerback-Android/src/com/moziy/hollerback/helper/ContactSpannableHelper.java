@@ -1,9 +1,5 @@
 package com.moziy.hollerback.helper;
 
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.FontUtil;
-import com.moziy.hollerback.util.HollerbackConstants;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -17,6 +13,9 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.moziy.hollerback.HollerbackConstants;
+import com.moziy.hollerback.R;
 
 public class ContactSpannableHelper {
 

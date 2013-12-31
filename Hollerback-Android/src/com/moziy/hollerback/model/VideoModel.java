@@ -351,10 +351,10 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
     @Override
     public String toString() {
         return "VideoModel [created_at=" + created_at + ", needs_reply=" + needs_reply + ", sender_name=" + sender_name + ", sent_at=" + sent_at + ", guid=" + guid + ", url=" + url + ", local_url="
-                + local_url + ", thumb_url=" + thumb_url + ", conversation_id=" + conversation_id + ", is_deleted=" + is_deleted + ", subtitle=" + subtitle + ", isRead=" + isRead
-                + ", local_filename=" + local_filename + ", is_segmented=" + is_segmented + ", segment_filename=" + segment_filename + ", segment_file_extension=" + segment_file_extension + ", id="
-                + id + ", state=" + state + ", transacting=" + transacting + ", num_parts=" + num_parts + ", part_upload_state=" + Arrays.toString(part_upload_state) + ", recipients=" + recipients
-                + ", isUploading=" + isUploading + ", isSent=" + isSent + "]";
+                + local_url + ", thumb_url=" + thumb_url + ", conversation_id=" + conversation_id + ", is_deleted=" + is_deleted + ", subtitle=" + subtitle + ", isRead=" + isRead + ", watched_state="
+                + watched_state + ", local_filename=" + local_filename + ", is_segmented=" + is_segmented + ", segment_filename=" + segment_filename + ", segment_file_extension="
+                + segment_file_extension + ", id=" + id + ", state=" + state + ", transacting=" + transacting + ", num_parts=" + num_parts + ", part_upload_state="
+                + Arrays.toString(part_upload_state) + ", recipients=" + Arrays.toString(recipients) + "]";
     }
 
 }

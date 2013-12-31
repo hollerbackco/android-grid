@@ -3,11 +3,12 @@ package com.moziy.hollerback.util;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import com.moziy.hollerback.debug.LogUtil;
-
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore.Video.Thumbnails;
+import android.util.Log;
+
+import com.moziy.hollerback.debug.LogUtil;
 
 public class ImageUtil {
 
@@ -20,7 +21,9 @@ public class ImageUtil {
     }
 
     public static String writeBitmapToExternal(String name, Bitmap bitmap) {
-        File file = HBFileUtil.getOutputVideoFile(name);
+        // File file = HBFileUtil.getOutputVideoFile(name);
+        Log.d("imageutil", name);
+        File file = new File(name);
         if (file.exists())
             file.delete();
         try {
@@ -34,6 +37,14 @@ public class ImageUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Bitmap generateThumbnailFromVideo(int partNum, String videoGuid) {
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
+        LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
+        writeBitmapToExternal(HBFileUtil.getLocalFile(partNum, videoGuid, "png"), bitmap);
+
+        return bitmap;
     }
 
 }

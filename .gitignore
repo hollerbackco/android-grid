@@ -43,6 +43,9 @@ local.properties
 # PDT-specific
 .buildpath
 
+#
+ant.properties
+
 #Jar source/docs properties files
 */libs/*.properties
 */libs/src

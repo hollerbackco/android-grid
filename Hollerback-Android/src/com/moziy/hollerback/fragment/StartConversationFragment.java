@@ -1,9 +1,13 @@
 package com.moziy.hollerback.fragment;
 
+import java.io.File;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,12 +18,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
+import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.ImageUtil;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
@@ -29,18 +36,22 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
     private static final String TITLE_BUNDLE_ARG_KEY = "title";
+    private static final String IS_HB_USERS_BUNDLE_ARG_KEY = "IS_HB_USERS";
 
-    public static StartConversationFragment newInstance(String[] phones, String title) {
+    public static StartConversationFragment newInstance(String[] phones, String title, boolean[] isHbUser) {
         StartConversationFragment f = new StartConversationFragment();
         Bundle params = new Bundle();
         params.putStringArray(PHONES_BUNDLE_ARG_KEY, phones);
         params.putString(TITLE_BUNDLE_ARG_KEY, title);
+        params.putBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY, isHbUser);
+
         f.setArguments(params);
         return f;
     }
 
     private ProgressBar mProgressSpinner;
     private String[] mPhones;
+    private boolean[] mIsHBUsers; // one to one matching with mPhones
     private String mTitle;
     private Bundle mRecordingInfo = null;
 
@@ -54,6 +65,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
         Bundle args = getArguments();
         mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
         mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
+        mIsHBUsers = args.getBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY);
         Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
@@ -96,7 +108,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 f.setTargetFragment(StartConversationFragment.this, 0);
 
                 // go to the video fragment
-                getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.fragment_holder, f).commitAllowingStateLoss();
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).addToBackStack(null)
+                        .replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
         });
 
@@ -120,11 +133,6 @@ public class StartConversationFragment extends BaseFragment implements Recording
         outState.putBoolean(ON_SAVE_ARG_WAITING, mIsWaiting);
         outState.putBundle(ON_SAVE_ARG_RECORDING_INFO, mRecordingInfo);
         // save the state we were in
-    }
-
-    @Override
-    protected void initializeView(View view) {
-
     }
 
     @Override
@@ -165,24 +173,33 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                     long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
                     int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
-                    for (int i = 0; i < totalParts; i++) {
-                        Intent uploadIntent = new Intent();
-                        uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, i);
-                        getActivity().startService(uploadIntent);
-                    }
+                    String guid = mRecordingInfo.getString(RecordingInfo.RESOURCE_GUID);
 
+                    Intent uploadIntent = new Intent();
+                    uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
+                    getActivity().startService(uploadIntent);
+
+                    Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    getFragmentManager().popBackStack(ContactsFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    if (f == null)
+                        f = ConversationListFragment.newInstance();
+                    getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+
+                    Context c = HollerbackApplication.getInstance();
+                    Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
+
+                    sendSMSInvite(guid);
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
                     mIsWaiting = false;
                     mProgressSpinner.setVisibility(View.INVISIBLE);
                     // go back to contacts or back to the conversation list?
-                    Toast.makeText(getActivity(), "couldn't create conversation", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "couldn't send message, try again", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "conversation failed");
 
                     if (mRecordingInfo != null) {
@@ -199,6 +216,35 @@ public class StartConversationFragment extends BaseFragment implements Recording
             }
 
         }
+
+        private void sendSMSInvite(String guid) {
+
+            boolean sendSms = false;
+            // build the uri
+            StringBuilder sb = new StringBuilder();
+            // sb.append("mmsto:");
+            for (int i = 0; i < mPhones.length; i++) {
+
+                if (!mIsHBUsers[i]) {
+                    sendSms = true;
+                    sb.append(mPhones[i]).append(";");
+                }
+            }
+            sb.deleteCharAt(sb.length() - 1);
+
+            ImageUtil.generateThumbnailFromVideo(0, guid);
+
+            if (sendSms) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                // intent.setData(Uri.parse(sb.toString()));
+                intent.setType("vnd.android-dir/mms-sms");
+                intent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+                intent.putExtra("address", sb.toString());
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
+                intent = Intent.createChooser(intent, HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
+                startActivity(intent);
+            }
+        }
     }
 
     @Override
@@ -211,7 +257,6 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onRecordingFinished(Bundle info) {
         mRecordingInfo = info;
-
     }
 
 }

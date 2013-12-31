@@ -11,10 +11,10 @@ import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.connection.RequestCallbacks.OnS3UploadListener;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.util.UploadCacheUtil;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 
 public class UploadTask {
     private NotificationManager mNM;
@@ -42,7 +42,7 @@ public class UploadTask {
 
     public void execute() {
         showUploadingNotification();
-        mS3RequestHelper.uploadNewVideo(mConversationId, mFileDataName, mImageUploadName, null, mOnS3UploadListener);
+        // mS3RequestHelper.uploadNewVideo(mConversationId, mFileDataName, mImageUploadName, null, mOnS3UploadListener);
     }
 
     /**

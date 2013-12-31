@@ -1,81 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_welcome" >
+    android:background="#FFFFFF"
+    android:fillViewport="true" >
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:padding="@dimen/dim_20dp" >
 
-        <TextView
+        <com.moziy.hollerback.widget.CustomTextView
             android:id="@+id/tv_header_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
             android:gravity="center_horizontal"
             android:text="@string/verify_phone_display"
-            android:textColor="#fff"
+            android:textColor="@color/gray_font"
             android:textSize="15sp" />
 
-        <TextView
+        <com.moziy.hollerback.widget.CustomTextView
             android:id="@+id/tv_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_header_account"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginBottom="@dimen/dim_10dp"
+            android:layout_marginTop="@dimen/dim_10dp"
             android:gravity="center_horizontal"
-            android:textColor="#fff"
+            android:padding="@dimen/dim_10dp"
+            android:textColor="@color/gray_font"
             android:textSize="@dimen/large_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:borderColor="#000000"
+            app:borderWidth="@dimen/dim_1dp" />
 
-        <RelativeLayout
-            android:id="@+id/rl_phone_number_container"
+        <com.moziy.hollerback.widget.CustomEditText
+            android:id="@+id/txtfield_verify"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/tv_phone_number_code_height"
             android:layout_below="@+id/tv_phone"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:background="#adadad"
-            android:padding="1dp" >
+            android:hint="@string/verify_pin"
+            android:inputType="number"
+            android:textColor="@color/gray_font"
+            android:textColorHint="@color/hb_blue"
+            android:textSize="17sp" />
 
-            <EditText
-                android:id="@+id/txtfield_verify"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/tv_phone_number_code_height"
-                android:background="#fff"
-                android:hint="@string/verify_pin"
-                android:inputType="number"
-                android:padding="10dp"
-                android:textSize="17sp" />
-        </RelativeLayout>
+        <ImageView
+            android:layout_width="@dimen/dim_38dp"
+            android:layout_height="@dimen/dim_38dp"
+            android:layout_alignBottom="@id/txtfield_verify"
+            android:layout_alignLeft="@id/txtfield_verify"
+            android:layout_alignTop="@id/txtfield_verify"
+            android:layout_marginLeft="@dimen/dim_10dp"
+            android:src="@drawable/ic_action_phone" />
 
-        <Button
+        <com.moziy.hollerback.widget.CustomButton
             android:id="@+id/btnSubmit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/rl_phone_number_container"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="10dp"
-            android:text="@string/action_verify" />
-
-        <TextView
-            android:id="@+id/tv_signup_agreement"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@+id/btnSubmit"
-            android:layout_margin="20dp"
-            android:gravity="center"
+            android:layout_below="@+id/txtfield_verify"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dim_10dp"
+            android:text="@string/action_verify"
+            android:visibility="gone"
+            app:tintColor="#80000000" />
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_not_received"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btnSubmit"
+            android:layout_marginTop="@dimen/dim_10dp"
             android:text="@string/verify_text"
-            android:textColor="#fff" />
+            android:textColor="@color/gray_font" />
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_click_to_resend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_not_received"
+            android:layout_marginTop="@dimen/dim_5dp"
+            android:text="@string/click_to_resend"
+            android:textColor="@drawable/grey_font" />
     </RelativeLayout>
 
 </ScrollView>

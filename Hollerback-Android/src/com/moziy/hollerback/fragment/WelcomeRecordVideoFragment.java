@@ -1,8 +1,6 @@
 package com.moziy.hollerback.fragment;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +9,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.util.HollerbackAppState;
 
 public class WelcomeRecordVideoFragment extends RecordVideoFragment {
     private String NEXT = "NEXT";
@@ -70,20 +67,20 @@ public class WelcomeRecordVideoFragment extends RecordVideoFragment {
     }
 
     public void startSignUpFragment() {
-        this.getFragmentManager().popBackStack();
-        if (!HollerbackAppState.isValidSession()) {
-            // this part is that when it's not signed in through;
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            SignUpFragment fragment = SignUpFragment.newInstance(mFileDataName);
-            fragmentTransaction.replace(R.id.fragment_holder, fragment);
-            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            fragmentTransaction.addToBackStack(SignUpFragment.class.getSimpleName());
-            fragmentTransaction.commit();
-        } else {
-            ContactsFragment fragment = ContactsFragment.newInstance(true, mFileDataName);
-            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                    .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
-        }
+        // this.getFragmentManager().popBackStack();
+        // if (!HollerbackAppState.isValidSession()) {
+        // // this part is that when it's not signed in through;
+        // FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        // FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // SignUpFragment fragment = SignUpFragment.newInstance(mFileDataName);
+        // fragmentTransaction.replace(R.id.fragment_holder, fragment);
+        // fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        // fragmentTransaction.addToBackStack(SignUpFragment.class.getSimpleName());
+        // fragmentTransaction.commit();
+        // } else {
+        // ContactsFragment fragment = ContactsFragment.newInstance(true, mFileDataName);
+        // mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+        // .addToBackStack(ContactsFragment.class.getSimpleName()).commitAllowingStateLoss();
+        // }
     }
 }
