@@ -16,7 +16,6 @@ import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.util.AppEnvironment;
-import com.moziy.hollerback.util.HollerbackAPI;
 
 public class HollerbackAsyncClient {
 

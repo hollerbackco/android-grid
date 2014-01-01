@@ -22,7 +22,6 @@ import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.util.HBRequestUtil;
-import com.moziy.hollerback.util.HollerbackAPI;
 
 /**
  * Manage all Requests here so other classes can make request agnostically

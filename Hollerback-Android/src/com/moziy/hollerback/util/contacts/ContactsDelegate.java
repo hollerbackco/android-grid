@@ -34,6 +34,7 @@ import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HollerbackAPI;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
@@ -44,7 +45,6 @@ import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.CursorTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
-import com.moziy.hollerback.util.HollerbackAPI;
 
 /**
  * This class is a delegate to contact related operations
