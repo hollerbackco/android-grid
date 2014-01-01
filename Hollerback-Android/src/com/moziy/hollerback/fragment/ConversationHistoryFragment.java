@@ -41,7 +41,6 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerback.view.CustomVideoView;
@@ -433,9 +432,9 @@ public class ConversationHistoryFragment extends BaseFragment {
     public boolean isUploadRunning() {
         ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
-                return true;
-            }
+            // if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
+            // return true;
+            // }
         }
         return false;
     }
