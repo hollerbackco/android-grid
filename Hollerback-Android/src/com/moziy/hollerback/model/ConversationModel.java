@@ -99,6 +99,10 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         this.name = name;
     }
 
+    public void setMostRecentThumbUrl(String url) {
+        most_recent_thumb_url = url;
+    }
+
     public int getUnreadCount() {
         return Integer.valueOf(unread_count);
     }

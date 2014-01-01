@@ -31,7 +31,7 @@ public class HBFileUtil {
 
         String subDir = filename.substring(0, 2); // this is the hex portion to use
 
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir);
+        File mediaStorageDir = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir);
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
@@ -39,7 +39,7 @@ public class HBFileUtil {
                 return null;
             }
 
-            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/" + DIRECTORY_NAME + "/.nomedia");
+            File nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/.nomedia");
             if (!nomedia.exists()) {
                 try {
                     nomedia.createNewFile();
@@ -50,17 +50,17 @@ public class HBFileUtil {
             }
 
             // create a no media file and place it
-            nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/.nomedia");
+            nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/.nomedia");
             try {
                 nomedia.createNewFile();
             } catch (IOException e) {
-                Log.w(TAG, "couldn't create .nomedia file in dir: " + Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir);
+                Log.w(TAG, "couldn't create .nomedia file in dir: " + AppEnvironment.HB_SDCARD_PATH + "/" + subDir);
                 e.printStackTrace();
             }
         }
 
         // XXX: parse the filename rather than assuming it's mp4
-        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/" + filename + ".mp4");
+        File media = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/" + filename + ".mp4");
         return media;
     }
 
@@ -91,7 +91,7 @@ public class HBFileUtil {
         LogUtil.i("File: " + fileParts[0]);
         LogUtil.i("File: " + fileParts[1]);
 
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0]);
+        File mediaStorageDir = new File(AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0]);
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
@@ -110,11 +110,11 @@ public class HBFileUtil {
             }
 
             // create a no media file and place it
-            nomedia = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0] + "/.nomedia");
+            nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0] + "/.nomedia");
             try {
                 nomedia.createNewFile();
             } catch (IOException e) {
-                Log.w(TAG, "couldn't create .nomedia file in dir: " + Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0]);
+                Log.w(TAG, "couldn't create .nomedia file in dir: " + AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0]);
                 e.printStackTrace();
             }
         }
@@ -129,7 +129,7 @@ public class HBFileUtil {
 
     public static String getFilePath() {
 
-        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME;
+        String filePath = AppEnvironment.HB_SDCARD_PATH;
 
         // LogUtil.i("DIR: " + filePath);
 

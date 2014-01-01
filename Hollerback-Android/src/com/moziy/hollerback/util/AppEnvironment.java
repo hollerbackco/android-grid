@@ -1,5 +1,7 @@
 package com.moziy.hollerback.util;
 
+import android.os.Environment;
+
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
@@ -11,6 +13,10 @@ public class AppEnvironment {
     public static final String APP_PREF = "HollerbackAppPrefs";
 
     public static final String DB_NAME = "hollerback.db";
+
+    private static String SDCARD_DIRECTORY_NAME = "Hollerback";
+
+    public static final String HB_SDCARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + SDCARD_DIRECTORY_NAME;
 
     // DEV
     // http://lit-sea-1934.herokuapp.com/

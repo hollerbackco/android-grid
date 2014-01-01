@@ -449,6 +449,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 updateConversationTime(conversationId);
             }
 
+            Log.d(TAG, "saving model");
             mVideoModel.save();
 
         }

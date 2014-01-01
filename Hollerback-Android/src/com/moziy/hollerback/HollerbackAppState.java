@@ -31,10 +31,6 @@ public class HollerbackAppState {
         return sInstance;
     }
 
-    public static UserModel isUserLoggedIn() {
-        return null;
-    }
-
     public static boolean isValidSession() {
         if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, null) != null) {
             return true;
