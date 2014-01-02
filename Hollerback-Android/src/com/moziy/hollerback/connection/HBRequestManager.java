@@ -21,6 +21,7 @@ import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.web.response.LoginResponse;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBRequestUtil;
 
 /**
@@ -73,6 +74,7 @@ public class HBRequestManager {
 
         params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, accessToken);
         params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, deviceToken);
+        params.put(HollerbackAPI.PARAM_DEVICE_ID, AppEnvironment.ANDROID_ID);
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_ME, params, responseHandler);
 
@@ -98,6 +100,7 @@ public class HBRequestManager {
         params.put(HollerbackAPI.PARAM_PHONE, phone);
         params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
         params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, GCMUtils.getRegistrationId(HollerbackApplication.getInstance()));
+        params.put(HollerbackAPI.PARAM_DEVICE_ID, AppEnvironment.ANDROID_ID);
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_VERIFY, params, handler);
 
@@ -113,6 +116,8 @@ public class HBRequestManager {
             params.put(HollerbackAPI.PARAM_PASSWORD, password);
             params.put(HollerbackAPI.PARAM_PLATFORM, HollerbackConstants.PLATFORM);
             params.put(HollerbackAPI.PARAM_DEVICE_TOKEN, token);
+            params.put(HollerbackAPI.PARAM_DEVICE_ID, AppEnvironment.ANDROID_ID);
+
         }
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_SESSION, params, responseHandler);

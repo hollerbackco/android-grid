@@ -98,6 +98,8 @@ public class HollerbackAPI {
 
     public static final String PARAM_PLATFORM = "platform";
 
+    public static final String PARAM_DEVICE_ID = "device_id";
+
     public static final String PARAM_DEVICE_TOKEN = "device_token";
 
     public static final String PARAM_USERNAME = "username";
