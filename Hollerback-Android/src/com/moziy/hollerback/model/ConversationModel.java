@@ -1,7 +1,6 @@
 package com.moziy.hollerback.model;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.Date;
 
 import com.activeandroid.annotation.Column;
@@ -125,7 +124,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     }
 
     public void setLastMessageAt() {
-        last_message_at = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        last_message_at = TimeUtil.FORMAT_ISO8601(new Date());
     }
 
     public void setLastMessageAt(TimeStamp timeStamp) {
@@ -133,15 +132,8 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
     }
 
     public long getLastMessageAtInMillis() {
-        try {
-            Date d = TimeUtil.SERVER_TIME_FORMAT.parse(last_message_at);
-            return d.getTime();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return 0;
+        Date d = TimeUtil.PARSE(last_message_at);
+        return d.getTime();
     }
 
     public String getMostRecentThumbUrl() {
@@ -184,7 +176,7 @@ public class ConversationModel extends BaseModel implements Serializable, SyncPa
         String mTimeStamp;
 
         TimeStamp() {
-            mTimeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+            mTimeStamp = TimeUtil.FORMAT_ISO8601(new Date());
         }
 
     }

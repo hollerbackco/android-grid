@@ -432,7 +432,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mVideoModel.setSegmentFileName(mFileDataName);
             mVideoModel.setSegmentFileExtension(mFileExt); // the file extenstion or container
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-            mVideoModel.setCreateDate(TimeUtil.SERVER_TIME_FORMAT.format(new Date()));
+            mVideoModel.setCreateDate(TimeUtil.FORMAT_ISO8601(new Date()));
             mVideoModel.setSenderName("me");
             mVideoModel.setNumParts(mTotalParts);
             mVideoModel.setRead(true); // since we recorded this, we've actually seen it too
@@ -471,7 +471,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     private void updateConversationTime(long conversationId) {
-        String timeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        String timeStamp = TimeUtil.FORMAT_ISO8601(new Date());
 
         Log.d(TAG, "new convo timestamp: " + timeStamp);
         ActiveAndroidUpdateTask updateTimeTask = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //

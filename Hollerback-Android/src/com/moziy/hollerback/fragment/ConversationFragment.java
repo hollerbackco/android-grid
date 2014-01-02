@@ -273,7 +273,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         // if the recording was successfull, then update the conversation, and set the last message time
         Task t = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //
-                .set(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + "='" + TimeUtil.SERVER_TIME_FORMAT.format(new Date()) + "'") //
+                .set(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + "='" + TimeUtil.FORMAT_ISO8601(new Date()) + "'") //
                 .where(ActiveRecordFields.C_CONV_ID + "=?", mConvoId));
         t.setTaskListener(new Task.Listener() {
 
