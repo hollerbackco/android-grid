@@ -340,10 +340,16 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
     private void playNextVideo() {
         mProgress.setVisibility(View.VISIBLE);
-        ++mPlaybackIndex;
+
+        // mark the video as seen
         if (mVideoView.isPlaying()) {
             mVideoView.stopPlayback();
+            VideoModel playingVideo = mPlaybackQueue.get(mPlaybackIndex);
+            if (!playingVideo.isRead())
+                setVideoSeen(playingVideo);
         }
+
+        ++mPlaybackIndex;
 
         VideoModel videoToPlay = mPlaybackQueue.get(mPlaybackIndex);
         // making the assumption that video is on the device when it's segmented since it's a video the user has sent
