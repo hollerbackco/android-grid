@@ -1,6 +1,7 @@
 package com.moziy.hollerback.fragment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import android.app.Activity;
@@ -20,6 +21,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
@@ -43,7 +47,7 @@ public class ContactsFragment extends BaseFragment {
     private ContactsAdapter mAdapter;
     private InternalReceiver mReceiver;
     private CustomEditText mSearchBar;
-    private List<Contact> mSelected;
+    private HashSet<Contact> mSelected;
 
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -57,6 +61,7 @@ public class ContactsFragment extends BaseFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
         getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
         mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
@@ -65,7 +70,7 @@ public class ContactsFragment extends BaseFragment {
         mReceiver = new InternalReceiver();
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONTACTS_UPDATED);
 
-        mSelected = new ArrayList<Contact>();
+        mSelected = new HashSet<Contact>();
 
     }
 
@@ -114,6 +119,30 @@ public class ContactsFragment extends BaseFragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if (!mSelected.isEmpty()) {
+            Log.d(TAG, "inflating menu");
+            inflater.inflate(R.menu.send_to_contacts, menu);
+        }
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.mi_next) {
+
+            StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
@@ -126,26 +155,35 @@ public class ContactsFragment extends BaseFragment {
             Item item = (Item) parent.getItemAtPosition(position);
             if (item.getContact() != null) {
 
-                if (item instanceof AbsContactItem) {
-                    ((AbsContactItem) item).setSelected(!((AbsContactItem) item).getSelected());
-                    ContactViewHolder holder = (ContactViewHolder) view.getTag();
-                    holder.checkbox.setVisibility(((AbsContactItem) item).getSelected() ? View.VISIBLE : View.INVISIBLE);
-                }
-
                 Contact c = item.getContact();
 
-                StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
-                    c.mPhone
-                }, c.mName, new boolean[] {
-                    c.mIsOnHollerback
-                });
+                if (item instanceof AbsContactItem) {
+                    boolean selected = !((AbsContactItem) item).getSelected();
+                    ((AbsContactItem) item).setSelected(selected);
+                    ContactViewHolder holder = (ContactViewHolder) view.getTag();
+                    holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
+
+                    if (selected) {
+                        mSelected.add(c);
+                    } else {
+                        mSelected.remove(c);
+                    }
+                }
+
+                if (mSelected.size() == 1 || mSelected.size() == 0) {
+                    getSherlockActivity().invalidateOptionsMenu();
+                }
+
+                // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
+                // c.mPhone
+                // }, c.mName, new boolean[] {
+                // c.mIsOnHollerback
+                // });
 
                 // if keyboard is showing hide it
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
 
-                // getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                // .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
             }
         }
     };

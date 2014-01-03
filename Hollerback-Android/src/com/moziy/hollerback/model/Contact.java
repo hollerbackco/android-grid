@@ -1,12 +1,17 @@
 package com.moziy.hollerback.model;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 
 import com.moziy.hollerback.util.security.HashUtil;
 
-public class Contact {
+public class Contact implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private static final String TAG = Contact.class.getSimpleName();
     public final String mName;
     public final String mPhone;

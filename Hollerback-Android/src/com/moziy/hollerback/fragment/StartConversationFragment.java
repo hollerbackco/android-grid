@@ -2,6 +2,7 @@ package com.moziy.hollerback.fragment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -28,6 +29,7 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.util.HBFileUtil;
@@ -42,6 +44,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
     private static final String TITLE_BUNDLE_ARG_KEY = "title";
     private static final String IS_HB_USERS_BUNDLE_ARG_KEY = "IS_HB_USERS";
+    public static final String CONTACTS_BUNDLE_ARG_KEY = "CONTACTS";
 
     public static StartConversationFragment newInstance(String[] phones, String title, boolean[] isHbUser) {
         StartConversationFragment f = new StartConversationFragment();
@@ -54,13 +57,23 @@ public class StartConversationFragment extends BaseFragment implements Recording
         return f;
     }
 
+    public static StartConversationFragment newInstance(HashSet<Contact> contacts) {
+        Bundle b = new Bundle();
+        b.putSerializable(CONTACTS_BUNDLE_ARG_KEY, contacts);
+        StartConversationFragment f = new StartConversationFragment();
+        f.setArguments(b);
+        return f;
+
+    }
+
     private ProgressBar mProgressSpinner;
     private String[] mPhones;
-    private boolean[] mIsHBUsers; // one to one matching with mPhones
     private String mTitle;
     private Bundle mRecordingInfo = null;
 
     private boolean mIsWaiting = false; // whether we're waiting on an event
+    private HashSet<Contact> mRecipients;
+    private ArrayList<Contact> mNonHBContacts;
 
     private InternalReceiver mReceiver;
 
@@ -68,9 +81,34 @@ public class StartConversationFragment extends BaseFragment implements Recording
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
-        mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
-        mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
-        mIsHBUsers = args.getBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY);
+
+        mRecipients = (HashSet<Contact>) args.getSerializable(CONTACTS_BUNDLE_ARG_KEY);
+
+        // create the title string and get all the phones
+        StringBuilder sb = new StringBuilder();
+        List<String> allPhones = new ArrayList<String>();
+        mNonHBContacts = new ArrayList<Contact>();
+        for (Contact c : mRecipients) {
+            sb.append(c.mName).append(", ");
+
+            for (String phone : c.mPhones) {
+                allPhones.add(phone);
+            }
+
+            if (!c.mIsOnHollerback) {
+                mNonHBContacts.add(c);
+            }
+
+        }
+        sb.delete(sb.length() - 2, sb.length() - 1); // there should always be a recipient
+        mTitle = sb.toString();
+        mPhones = allPhones.toArray(new String[allPhones.size()]);
+        Log.d(TAG, "title: " + mTitle);
+
+        // mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
+        // mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
+
+        // mIsHBUsers = args.getBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY);
         Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
@@ -197,7 +235,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
-                    sendSMSInvite(guid);
+                    if (!mNonHBContacts.isEmpty())
+                        sendSMSInvite(guid);
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
@@ -224,70 +263,62 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         private void sendSMSInvite(String guid) {
 
-            boolean sendSms = false;
             // build the uri
             StringBuilder sb = new StringBuilder();
-            // sb.append("mmsto:");
-            for (int i = 0; i < mPhones.length; i++) {
+            for (Contact c : mNonHBContacts) {
 
-                if (!mIsHBUsers[i]) {
-                    sendSms = true;
-                    sb.append(mPhones[i]).append(";");
-                }
+                for (String phone : c.mPhones)
+                    sb.append(phone).append(";");
             }
-            sb.deleteCharAt(sb.length() - 1);
 
             ImageUtil.generateThumbnailFromVideo(0, guid);
 
-            if (sendSms) {
+            PackageManager pm = HollerbackApplication.getInstance().getPackageManager();
 
-                PackageManager pm = HollerbackApplication.getInstance().getPackageManager();
-
-                // HTC SENSE SPECIFIC
-                Intent htcMsgIntent = new Intent("android.intent.action.SEND_MSG");
-                htcMsgIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-                htcMsgIntent.putExtra("address", sb.toString());
-                htcMsgIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
-                htcMsgIntent.setType("image/png");
-                List<ResolveInfo> resolves = pm.queryIntentActivities(htcMsgIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                if (resolves.size() > 0) {
-                    // This branch is followed only for HTC
-                    startActivity(htcMsgIntent);
-                    return;
-                }
-
-                // GENERAL DEVICES
-                Intent resolveSmsIntent = new Intent(Intent.ACTION_SENDTO);
-                resolveSmsIntent.setData(Uri.parse("mmsto:"));
-
-                // lets resolve all sms apps
-
-                List<ResolveInfo> mmsResolveInfo = pm.queryIntentActivities(resolveSmsIntent, 0);
-
-                List<Intent> resolvingIntents = new ArrayList<Intent>();
-
-                if (!mmsResolveInfo.isEmpty()) {
-                    for (ResolveInfo ri : mmsResolveInfo) {
-
-                        Log.d(TAG, "whitelisted: " + ri.activityInfo.packageName + " targetActivity: " + ri.activityInfo.targetActivity);
-
-                        Intent targetIntent = new Intent();
-                        targetIntent.setAction(Intent.ACTION_SEND);
-                        targetIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-                        targetIntent.putExtra("address", sb.toString());
-                        targetIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
-                        targetIntent.setType("image/png");
-
-                        targetIntent.setPackage(ri.activityInfo.packageName);
-                        resolvingIntents.add(targetIntent);
-                    }
-
-                    Intent chooserIntent = Intent.createChooser(resolvingIntents.remove(0), HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
-                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, resolvingIntents.toArray(new Parcelable[] {}));
-                    startActivity(chooserIntent);
-                }
-
+            // HTC SENSE SPECIFIC
+            Intent htcMsgIntent = new Intent("android.intent.action.SEND_MSG");
+            htcMsgIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+            htcMsgIntent.putExtra("address", sb.toString());
+            htcMsgIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
+            htcMsgIntent.setType("image/png");
+            List<ResolveInfo> resolves = pm.queryIntentActivities(htcMsgIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (resolves.size() > 0) {
+                // This branch is followed only for HTC
+                startActivity(htcMsgIntent);
+                return;
             }
+
+            // GENERAL DEVICES
+            Intent resolveSmsIntent = new Intent(Intent.ACTION_SENDTO);
+            resolveSmsIntent.setData(Uri.parse("mmsto:"));
+
+            // lets resolve all sms apps
+
+            List<ResolveInfo> mmsResolveInfo = pm.queryIntentActivities(resolveSmsIntent, 0);
+
+            List<Intent> resolvingIntents = new ArrayList<Intent>();
+
+            if (!mmsResolveInfo.isEmpty()) {
+                for (ResolveInfo ri : mmsResolveInfo) {
+
+                    Log.d(TAG, "whitelisted: " + ri.activityInfo.packageName + " targetActivity: " + ri.activityInfo.targetActivity);
+
+                    Intent targetIntent = new Intent();
+                    targetIntent.setAction(Intent.ACTION_SEND);
+                    targetIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+                    targetIntent.putExtra("address", sb.toString());
+                    targetIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
+                    targetIntent.setType("image/png");
+
+                    targetIntent.setPackage(ri.activityInfo.packageName);
+                    resolvingIntents.add(targetIntent);
+                }
+
+                Intent chooserIntent = Intent.createChooser(resolvingIntents.remove(0), HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, resolvingIntents.toArray(new Parcelable[] {}));
+                startActivity(chooserIntent);
+            }
+
         }
     }
 

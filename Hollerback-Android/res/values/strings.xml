@@ -19,6 +19,7 @@
     <string name="action_person">Person</string>
     <string name="action_record">Record</string>
     <string name="action_next">Next</string>
+    <string name="action_next_lc">next</string>
     <string name="action_verify">Verify</string>
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
