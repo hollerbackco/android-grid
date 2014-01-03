@@ -88,7 +88,7 @@ public class UploadUtility implements RecoveryClient {
         videoModel.save(); // ok, let's save the state :-)
     }
 
-    public boolean postToNewConversation(final VideoModel videoModel) {
+    public boolean postToNewConversation(final VideoModel videoModel, String title) {
 
         if (!videoModel.isTransacting()) {
             throw new IllegalStateException("Model must be transacting");
@@ -104,7 +104,7 @@ public class UploadUtility implements RecoveryClient {
 
         final TimeStamp convoUpdateTime = ConversationModel.getConvoTimeStamp();
 
-        HBRequestManager.createNewConversation(contacts, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
+        HBRequestManager.createNewConversation(contacts, title, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
         }) {
 
             @Override

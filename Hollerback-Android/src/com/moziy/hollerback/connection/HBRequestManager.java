@@ -136,12 +136,19 @@ public class HBRequestManager {
     }
 
     public static void createNewConversation(List<String> contacts, AsyncHttpResponseHandler handler) {
+        createNewConversation(contacts, null, handler);
+    }
+
+    public static void createNewConversation(List<String> contacts, String title, AsyncHttpResponseHandler handler) {
         RequestParams params = new RequestParams();
         params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
         params.put(HollerbackAPI.PARAM_INVITES, contacts);
-        // params.put(HollerbackAPI.PARAM_PART_URLS, partUrls);
+        if (title != null && !"".equals(title)) {
+            params.put(HollerbackAPI.PARAM_NAME, title);
+        }
 
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_CONVERSATION, params, handler);
+
     }
 
     public static void postToConversation(int convoId, String guid, ArrayList<String> partUrls, ArrayList<String> watchedIds, AsyncHttpResponseHandler handler) {

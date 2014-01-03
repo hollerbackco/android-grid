@@ -418,6 +418,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         // NOTE: the part and total parts will change once that multi part chunks can be uploaded
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
         intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
+        if (getArguments().containsKey(FRAGMENT_ARG_TITLE)) {
+            intent.putExtra(VideoUploadIntentService.TITLE_INTENT_ARG_KEY, getArguments().getString(FRAGMENT_ARG_TITLE));
+        }
         intent.setClass(getActivity(), VideoUploadIntentService.class);
         getActivity().startService(intent);
     }

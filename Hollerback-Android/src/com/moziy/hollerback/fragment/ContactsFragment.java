@@ -71,16 +71,16 @@ public class ContactsFragment extends BaseFragment {
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONTACTS_UPDATED);
 
         mSelected = new HashSet<Contact>();
-
+        Log.d(TAG, "oncreate");
+        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.contacts_layout, container, false);
-
+        Log.d(TAG, "onCreateView");
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
         mContactsList.setOnItemClickListener(mOnContactClick);
-        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
         mContactsList.setAdapter(mAdapter);
 
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
@@ -121,7 +121,7 @@ public class ContactsFragment extends BaseFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if (!mSelected.isEmpty()) {
+        if (mSelected != null && !mSelected.isEmpty()) {
             Log.d(TAG, "inflating menu");
             inflater.inflate(R.menu.send_to_contacts, menu);
         }

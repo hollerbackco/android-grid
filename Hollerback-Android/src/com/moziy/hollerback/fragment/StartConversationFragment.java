@@ -20,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
@@ -34,6 +33,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
+import com.moziy.hollerback.widget.CustomEditText;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
 
@@ -70,6 +70,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private String[] mPhones;
     private String mTitle;
     private Bundle mRecordingInfo = null;
+    private CustomEditText mTitleEt;
 
     private boolean mIsWaiting = false; // whether we're waiting on an event
     private HashSet<Contact> mRecipients;
@@ -131,7 +132,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         View v = inflater.inflate(R.layout.start_conversation_layout, container, false);
 
-        ((TextView) v.findViewById(R.id.tv_title)).setText(mTitle);
+        mTitleEt = ((CustomEditText) v.findViewById(R.id.tv_title));
+        mTitleEt.setHint(mTitle);
+        mTitleEt.setSelection(0);
 
         mProgressSpinner = (ProgressBar) v.findViewById(R.id.pb_spinner);
 
@@ -147,6 +150,11 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_FAILED);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
 
+                if (mTitleEt.getText().length() > 0) {
+                    mTitle = mTitleEt.getText().toString();
+                }
+
+                Log.d(TAG, "sending message with title: " + mTitle);
                 RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
                 f.setTargetFragment(StartConversationFragment.this, 0);
 

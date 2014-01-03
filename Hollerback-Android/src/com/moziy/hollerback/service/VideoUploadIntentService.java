@@ -30,6 +30,8 @@ public class VideoUploadIntentService extends IntentService {
     public static final String INTENT_ARG_TOTAL_PARTS = "total_parts";
     // type: long
     public static final String INTENT_ARG_TIMESTAMP = "timestamp";
+    // type: string
+    public static final String TITLE_INTENT_ARG_KEY = "title_arg";
 
     public interface Type {
         public static final String NEW_CONVERSATION = "new_conversation";
@@ -59,7 +61,8 @@ public class VideoUploadIntentService extends IntentService {
 
         if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
 
-            uploadUtility.postToNewConversation(model);
+            String title = intent.getStringExtra(TITLE_INTENT_ARG_KEY);
+            uploadUtility.postToNewConversation(model, title);
             Log.d(TAG, "returning..");
 
         } else { // a conversation exists
