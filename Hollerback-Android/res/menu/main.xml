@@ -8,17 +8,17 @@
         android:title="@string/action_person">
         <menu>
             <item
-                android:id="@+id/action_settings"
-                android:icon="@drawable/icon_settings"
-                android:orderInCategory="100"
-                android:showAsAction="always"
-                android:title="@string/action_settings"/>
-            <item
                 android:id="@+id/action_find_friends"
                 android:icon="@drawable/icon_group"
                 android:orderInCategory="100"
                 android:showAsAction="always"
                 android:title="@string/action_find_friends"/>
+            <item
+                android:id="@+id/action_settings"
+                android:icon="@drawable/icon_settings"
+                android:orderInCategory="100"
+                android:showAsAction="always"
+                android:title="@string/action_settings"/>
         </menu>
     </item>
     <item

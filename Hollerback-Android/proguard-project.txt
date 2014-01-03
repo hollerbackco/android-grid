@@ -44,6 +44,9 @@
     public static final ** CREATOR;
 }
 
+#Google Analytics
+-keep public class com.google.** {*;}
+
 #AWS, Commons io
 -keep class org.apache.commons.logging.**               { *; }
 -keep class com.amazonaws.services.sqs.QueueUrlHandler  { *; }

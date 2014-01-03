@@ -114,6 +114,10 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                 } else {
                     throw new IllegalStateException("must set listener for history");
                 }
+
+                // if the video is not on disk, then download it
+                if (!v.isSegmented() && !VideoModel.ResourceState.ON_DISK.equals(v.getState()))
+                    mLoaderDelegate.requestDownload(v);
             }
 
             mOnHistoryModelLoaded.onLocalHistoryLoaded(mLocalHistory);

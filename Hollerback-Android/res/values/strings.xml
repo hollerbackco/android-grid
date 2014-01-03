@@ -6,7 +6,7 @@
     <string name="all">All</string>
     <string name="loading_message">Hollerback is loading, please wait.</string>
     <string name="action_settings">My Account</string>
-    <string name="action_find_friends">Find Friends</string>
+    <string name="action_find_friends">Add Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>
     <string name="action_switch">Switch Camera</string>
@@ -91,7 +91,7 @@
     <string name="preference_category_library">Save to Library</string>
     <string name="preference_category_terms">Terms</string>
     <string name="preference_category_team">Hollerback Team</string>
-    <string name="preference_friends">Find Friends</string>
+    <string name="preference_friends">Add Friends</string>
     <string name="preference_logout">Log Out</string>
     <string name="preference_username">Username</string>
     <string name="preference_phone">Phone Number</string>

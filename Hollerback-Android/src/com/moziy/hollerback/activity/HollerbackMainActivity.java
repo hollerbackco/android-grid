@@ -16,6 +16,8 @@ import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.fragment.ContactsFragment;
+import com.moziy.hollerback.fragment.ContactsFragment.NextAction;
 import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.WelcomeFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
@@ -34,7 +36,9 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     String convId = null;
     private InternalReceiver mReceiver;
     private ContactsDelegate mContactsDelegate; // handles all operations for retrieving and storing contacts
+
     private boolean mLaunchWelcome = false;
+    private boolean mLaunchInviteFriends = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,13 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
                         mLaunchWelcome = true;
                     }
 
+                    boolean findFriends = args.getBoolean(SettingPreferenceActivity.Action.FIND_FRIENDS, false);
+                    if (findFriends) {
+                        Log.d(TAG, "settings - add friends");
+                        mLaunchInviteFriends = true;
+
+                    }
+
                 }
                 break;
             default:
@@ -100,6 +111,12 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         if (mLaunchWelcome) {
             mLaunchWelcome = false;
             initWelcomeFragment();
+        }
+
+        if (mLaunchInviteFriends) {
+            mLaunchInviteFriends = false;
+            inviteFriends();
+
         }
     }
 
@@ -135,6 +152,12 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         fragmentTransaction.replace(R.id.fragment_holder, fragment);
         // fragmentTransaction.addToBackStack(WelcomeFragment.class.getSimpleName());
         fragmentTransaction.commit();
+    }
+
+    private void inviteFriends() {
+        ContactsFragment f = ContactsFragment.newInstance(NextAction.INVITE_FRIENDS);
+        getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                .replace(R.id.fragment_holder, f).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commit();
     }
 
     private void popBackStack() {

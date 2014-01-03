@@ -118,7 +118,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         final ConversationModel conversationModel = mFilteredConversations.get(position);
         viewHolder.conversationSubTitle.setText(""); // clear the text
-        Log.d(TAG, "unread count: " + conversationModel.getUnreadCount());
+        // Log.d(TAG, "unread count: " + conversationModel.getUnreadCount());
         if (conversationModel.getUnreadCount() > 0) {
             int[] colors;
             if (mConvoColorMap.containsKey(conversationModel)) {

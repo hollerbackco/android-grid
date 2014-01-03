@@ -98,6 +98,10 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         }
     }
 
+    private boolean isAdded() {
+        return (mConvoFragment == null ? false : true);
+    }
+
     public void setOnModelLoadedListener(OnVideoModelLoaded onModelLoadedListener) {
         this.mOnModelLoadedListener = onModelLoadedListener;
     }
@@ -154,21 +158,27 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         Log.d(TAG, "active android task completed");
     }
 
-    private void addDownloadWorkerFor(VideoModel video) {
+    private boolean addDownloadWorkerFor(VideoModel video) {
 
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
         boolean added = mConvoFragment.addTaskToQueue(downloadTask, video.getGuid());
         if (!added) { // couldn't create the download worker, so lets clear the state
             Log.d(TAG, "not adding download worker for: " + video.toString());
-
+            return false;
+        } else {
+            return true;
         }
 
     }
 
-    public void requestDownload(VideoModel video) {
-        // add the video to the list of videos
-        mConvoVideoMap.put(video.getGuid(), video);
-        addDownloadWorkerFor(video);
+    public boolean requestDownload(VideoModel video) {
+        if (isAdded()) {
+            // add the video to the list of videos
+            mConvoVideoMap.put(video.getGuid(), video);
+            return addDownloadWorkerFor(video);
+        }
+
+        return false;
     }
 
     private void handleVideoDownload(VideoDownloadTask t) {
