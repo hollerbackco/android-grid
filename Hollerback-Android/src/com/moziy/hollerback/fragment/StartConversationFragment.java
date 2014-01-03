@@ -8,11 +8,8 @@ import java.util.List;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -33,6 +30,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
+import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
@@ -271,62 +269,10 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         private void sendSMSInvite(String guid) {
 
-            // build the uri
-            StringBuilder sb = new StringBuilder();
-            for (Contact c : mNonHBContacts) {
+            ImageUtil.generatePngThumbnailFromVideo(0, guid);
+            Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png")));
 
-                for (String phone : c.mPhones)
-                    sb.append(phone).append(";");
-            }
-
-            ImageUtil.generateThumbnailFromVideo(0, guid);
-
-            PackageManager pm = HollerbackApplication.getInstance().getPackageManager();
-
-            // HTC SENSE SPECIFIC
-            Intent htcMsgIntent = new Intent("android.intent.action.SEND_MSG");
-            htcMsgIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-            htcMsgIntent.putExtra("address", sb.toString());
-            htcMsgIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
-            htcMsgIntent.setType("image/png");
-            List<ResolveInfo> resolves = pm.queryIntentActivities(htcMsgIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            if (resolves.size() > 0) {
-                // This branch is followed only for HTC
-                startActivity(htcMsgIntent);
-                return;
-            }
-
-            // GENERAL DEVICES
-            Intent resolveSmsIntent = new Intent(Intent.ACTION_SENDTO);
-            resolveSmsIntent.setData(Uri.parse("mmsto:"));
-
-            // lets resolve all sms apps
-
-            List<ResolveInfo> mmsResolveInfo = pm.queryIntentActivities(resolveSmsIntent, 0);
-
-            List<Intent> resolvingIntents = new ArrayList<Intent>();
-
-            if (!mmsResolveInfo.isEmpty()) {
-                for (ResolveInfo ri : mmsResolveInfo) {
-
-                    Log.d(TAG, "whitelisted: " + ri.activityInfo.packageName + " targetActivity: " + ri.activityInfo.targetActivity);
-
-                    Intent targetIntent = new Intent();
-                    targetIntent.setAction(Intent.ACTION_SEND);
-                    targetIntent.putExtra("sms_body", HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-                    targetIntent.putExtra("address", sb.toString());
-                    targetIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png"))));
-                    targetIntent.setType("image/png");
-
-                    targetIntent.setPackage(ri.activityInfo.packageName);
-                    resolvingIntents.add(targetIntent);
-                }
-
-                Intent chooserIntent = Intent.createChooser(resolvingIntents.remove(0), HollerbackApplication.getInstance().getString(R.string.invite_activity_chooser));
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, resolvingIntents.toArray(new Parcelable[] {}));
-                startActivity(chooserIntent);
-            }
-
+            SmsUtil.invite(mActivity, mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
     }
 

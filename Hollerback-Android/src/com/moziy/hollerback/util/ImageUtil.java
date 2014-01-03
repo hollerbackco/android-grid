@@ -39,7 +39,7 @@ public class ImageUtil {
         }
     }
 
-    public static Bitmap generateThumbnailFromVideo(int partNum, String videoGuid) {
+    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid) {
         Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
         writeBitmapToExternal(HBFileUtil.getLocalFile(partNum, videoGuid, "png"), bitmap);

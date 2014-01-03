@@ -119,6 +119,8 @@
     <!-- Contacts -->
     <string name="send_to_hb_friend">Send to Hollerback Friend</string>
     <string name="send_to_contact">Send to Friend from Contacts</string>
+    <string name="sms_invite_friends">hey. download hollerback and send me a video message. www.hollerback.co/download</string>
+    <string name="invite_friends_title">Invite Friends</string>
 
     <!-- Start Conversation -->
     <string name="tap_to_start">Tap the Camera to Holler</string>

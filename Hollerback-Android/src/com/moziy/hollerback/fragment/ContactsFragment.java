@@ -24,11 +24,13 @@ import android.widget.ListView;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
 import com.moziy.hollerback.view.StickyHeaderListView;
@@ -39,6 +41,12 @@ import com.moziy.hollerback.widget.CustomTextView;
 public class ContactsFragment extends BaseFragment {
     private static final String TAG = ContactsFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
+    // type - serializable/enum
+    public static final String NEXT_ACTION_BUNDLE_ARG_KEY = "NEXT_ACTION";
+
+    public enum NextAction {
+        START_CONVERSATION, INVITE_FRIENDS
+    };
 
     private ContactsInterface mContactsInterface;
     private LayoutInflater mInflater;
@@ -48,13 +56,21 @@ public class ContactsFragment extends BaseFragment {
     private InternalReceiver mReceiver;
     private CustomEditText mSearchBar;
     private HashSet<Contact> mSelected;
+    private NextAction mAction;
 
     public void onAttach(Activity activity) {
         super.onAttach(activity);
     }
 
     public static ContactsFragment newInstance() {
+        return newInstance(NextAction.START_CONVERSATION);
+    }
+
+    public static ContactsFragment newInstance(NextAction action) {
         ContactsFragment f = new ContactsFragment();
+        Bundle arg = new Bundle();
+        arg.putSerializable(NEXT_ACTION_BUNDLE_ARG_KEY, action);
+        f.setArguments(arg);
 
         return f;
     }
@@ -63,7 +79,18 @@ public class ContactsFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+
+        mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
+
+        switch (mAction) {
+            case START_CONVERSATION:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+                break;
+            case INVITE_FRIENDS:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
+                break;
+        }
+
         mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
         mInflater = LayoutInflater.from(getActivity());
 
@@ -132,9 +159,15 @@ public class ContactsFragment extends BaseFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.mi_next) {
 
-            StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
-            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            if (mAction == NextAction.START_CONVERSATION) {
+                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            } else {
+                // send an sms and then pop the backstack
+                SmsUtil.invite(mActivity, new ArrayList<Contact>(mSelected), HollerbackApplication.getInstance().getString(R.string.sms_invite_friends), null, null);
+                getFragmentManager().popBackStack();
+            }
 
             return true;
         }
