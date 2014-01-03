@@ -49,6 +49,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
     private LinkedList<VideoModel> mPlaybackQueue;
     private int mPlaybackIndex = 0;
+    private boolean mStartedRecording;
 
     // views
     private VideoView mVideoView;
@@ -100,6 +101,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         mSegmentPart = 0;
         mHasNewVideo = false;
         mHasHistoryVideo = false;
+        mStartedRecording = false;
 
     }
 
@@ -143,8 +145,8 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
             @Override
             public void onClick(View v) {
-                if (mPlaybackIndex < mPlaybackQueue.size() - 1)
-                    playNextVideo();
+
+                playNextVideo();
 
             }
         });
@@ -339,14 +341,27 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     }
 
     private void playNextVideo() {
+
+        if (mPlaybackIndex < mPlaybackQueue.size()) {
+            VideoModel playingVideo = mPlaybackQueue.get(mPlaybackIndex);
+            if (!playingVideo.isRead())
+                setVideoSeen(playingVideo);
+
+        }
+
+        if (mPlaybackIndex >= mPlaybackQueue.size() - 1) {
+
+            if (!mStartedRecording)
+                beginRecording();
+
+            return;
+        }
+
         mProgress.setVisibility(View.VISIBLE);
 
         // mark the video as seen
         if (mVideoView.isPlaying()) {
             mVideoView.stopPlayback();
-            VideoModel playingVideo = mPlaybackQueue.get(mPlaybackIndex);
-            if (!playingVideo.isRead())
-                setVideoSeen(playingVideo);
         }
 
         ++mPlaybackIndex;
@@ -452,6 +467,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
     private void beginRecording() {
         if (mConvoFragment.isResumed()) {
+            mStartedRecording = true;
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
             f.setTargetFragment(mConvoFragment, 0);
