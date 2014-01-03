@@ -43,8 +43,8 @@ public class ContactsFragment extends BaseFragment {
     private ContactsAdapter mAdapter;
     private InternalReceiver mReceiver;
     private CustomEditText mSearchBar;
+    private List<Contact> mSelected;
 
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
     }
@@ -64,6 +64,8 @@ public class ContactsFragment extends BaseFragment {
 
         mReceiver = new InternalReceiver();
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONTACTS_UPDATED);
+
+        mSelected = new ArrayList<Contact>();
 
     }
 
@@ -124,7 +126,14 @@ public class ContactsFragment extends BaseFragment {
             Item item = (Item) parent.getItemAtPosition(position);
             if (item.getContact() != null) {
 
+                if (item instanceof AbsContactItem) {
+                    ((AbsContactItem) item).setSelected(!((AbsContactItem) item).getSelected());
+                    ContactViewHolder holder = (ContactViewHolder) view.getTag();
+                    holder.checkbox.setVisibility(((AbsContactItem) item).getSelected() ? View.VISIBLE : View.INVISIBLE);
+                }
+
                 Contact c = item.getContact();
+
                 StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
                     c.mPhone
                 }, c.mName, new boolean[] {
@@ -135,8 +144,8 @@ public class ContactsFragment extends BaseFragment {
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
 
-                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+                // getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                // .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
             }
         }
     };
@@ -270,9 +279,17 @@ public class ContactsFragment extends BaseFragment {
 
             }
         }
+
     }
 
-    private class HBFriendItem implements Item {
+    private static class ContactViewHolder {
+        public CustomTextView name;
+        public CustomTextView username;
+        public ImageView icon;
+        public ImageView checkbox;
+    }
+
+    private class HBFriendItem extends AbsContactItem {
 
         private Contact mContact;
         private int mHeaderPosition;
@@ -280,25 +297,32 @@ public class ContactsFragment extends BaseFragment {
         public HBFriendItem(Contact c, int headerPosition) {
             mContact = c;
             mHeaderPosition = headerPosition;
+            mIsSelected = false;
 
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
+            ContactViewHolder holder;
             if (convertView == null) {
-                holder = new ViewHolder();
+                holder = new ContactViewHolder();
 
                 convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
                 holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
                 holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
+                holder.checkbox = (ImageView) convertView.findViewById(R.id.iv_contact_selected);
                 convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                holder = (ContactViewHolder) convertView.getTag();
             }
 
             holder.name.setText(mContact.mName);
             holder.username.setText(mContact.mUsername);
+            if (mIsSelected) {
+                holder.checkbox.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkbox.setVisibility(View.INVISIBLE);
+            }
 
             return convertView;
         }
@@ -306,12 +330,6 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public int getItemViewType() {
             return ItemManager.HB_CONTACT;
-        }
-
-        private class ViewHolder {
-            public CustomTextView name;
-            public CustomTextView username;
-
         }
 
         @Override
@@ -331,7 +349,7 @@ public class ContactsFragment extends BaseFragment {
 
     }
 
-    private class ContactItem implements Item {
+    private class ContactItem extends AbsContactItem {
 
         private Contact mContact;
         private int mHeaderPosition;
@@ -343,22 +361,29 @@ public class ContactsFragment extends BaseFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
+            ContactViewHolder holder;
             if (convertView == null) {
-                holder = new ViewHolder();
+                holder = new ContactViewHolder();
 
                 convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
                 holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
                 holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
                 holder.icon = (ImageView) convertView.findViewById(R.id.iv_contact_type);
+                holder.checkbox = (ImageView) convertView.findViewById(R.id.iv_contact_selected);
                 convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                holder = (ContactViewHolder) convertView.getTag();
             }
 
             holder.name.setText(mContact.mName);
             holder.username.setVisibility(View.GONE);
             holder.icon.setVisibility(View.INVISIBLE);
+
+            if (mIsSelected) {
+                holder.checkbox.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkbox.setVisibility(View.INVISIBLE);
+            }
 
             return convertView;
         }
@@ -371,13 +396,6 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public String toString() {
             return mContact.mName.toLowerCase();
-        }
-
-        private class ViewHolder {
-            public CustomTextView name;
-            public CustomTextView username;
-            public ImageView icon;
-
         }
 
         @Override
@@ -525,6 +543,19 @@ public class ContactsFragment extends BaseFragment {
         public int getHeaderPosition();
 
         public Contact getContact();
+
+    }
+
+    private abstract class AbsContactItem implements Item {
+        protected boolean mIsSelected = false;
+
+        public void setSelected(boolean selected) {
+            mIsSelected = selected;
+        }
+
+        public boolean getSelected() {
+            return mIsSelected;
+        }
     }
 
     private interface HeaderItem extends Item {
