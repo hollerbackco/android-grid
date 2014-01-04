@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -79,6 +80,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Bundle args = getArguments();
 
         mRecipients = (HashSet<Contact>) args.getSerializable(CONTACTS_BUNDLE_ARG_KEY);
@@ -141,24 +143,26 @@ public class StartConversationFragment extends BaseFragment implements Recording
             @Override
             public void onClick(View v) {
 
-                mIsWaiting = true; // mark this fragment as waiting for broadcasts
-                // register for inapp events
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATE_FAILURE);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_FAILED);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
+                if (isResumed()) { // only if resumed
+                    mIsWaiting = true; // mark this fragment as waiting for broadcasts
+                    // register for inapp events
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED);
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATE_FAILURE);
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_FAILED);
+                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
 
-                if (mTitleEt.getText().length() > 0) {
-                    mTitle = mTitleEt.getText().toString();
+                    if (mTitleEt.getText().length() > 0) {
+                        mTitle = mTitleEt.getText().toString();
+                    }
+
+                    Log.d(TAG, "sending message with title: " + mTitle);
+                    RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
+                    f.setTargetFragment(StartConversationFragment.this, 0);
+
+                    // go to the video fragment
+                    getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).addToBackStack(null)
+                            .replace(R.id.fragment_holder, f).commit();
                 }
-
-                Log.d(TAG, "sending message with title: " + mTitle);
-                RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
-                f.setTargetFragment(StartConversationFragment.this, 0);
-
-                // go to the video fragment
-                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).addToBackStack(null)
-                        .replace(R.id.fragment_holder, f).commitAllowingStateLoss();
             }
         });
 
@@ -231,12 +235,26 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
                     getActivity().startService(uploadIntent);
 
+                    // Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
+                    // // TODO - Sajjad: Delay the popping until after we've shown the sent icon
+                    // getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    // if (f == null)
+                    // f = ConversationListFragment.newInstance();
+                    // getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+
                     Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
-                    // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
-                    if (f == null)
+
+                    if (f == null) {
+                        Log.d(TAG, "ConversationListFragment not found");
+                        // TODO - Sajjad: Delay the popping until after we've shown the sent icon
+                        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+
                         f = ConversationListFragment.newInstance();
-                    getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+                        getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+                    } else {
+                        Log.d(TAG, "ConversationListFragment found!");
+                        getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    }
 
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
@@ -279,6 +297,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onDestroy() {
         super.onDestroy();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mReceiver.unregister();
         Log.d(TAG, "onDestroy()");
     }
