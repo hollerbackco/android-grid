@@ -86,6 +86,8 @@
     <string name="verify_text">If you don\'t receive it in 60 seconds,</string>
     <!-- <string name="click_to_resend">&lt;a href=""&gt;tap here to resend.&lt;/a&gt;</string> -->
     <string name="click_to_resend"><u>tap here to resend.</u></string>
+
+    <!-- Preference Screen -->
     <string name="preference_category_friends">Friends</string>
     <string name="preference_category_account">Account</string>
     <string name="preference_category_library">Save to Library</string>
@@ -127,6 +129,8 @@
     <string name="start_conversation">Start Conversation</string>
     <string name="start_convo_sms_body">hey i just sent you a video message on the app hollerback. it\'s like video texting. here\'s your invite to download it: www.hollerback.co/invite</string>
     <string name="invite_activity_chooser">Invite</string>
+    <string name="start_convo_intro_title">How this works</string>
+    <string name="start_convo_intro_body">1. Send a video of yourself saying “Hello!”\n\n2. We\'ll ask you to send them a text (if they\'re not on the app) \n\n3. Once they watch it,\n you get their response!</string>
 
     <!-- Notifications -->
     <plurals name="notif_new_message">

@@ -37,4 +37,10 @@ public class HBPreferences {
     // type: Set<String> - Set of recovery client class names
     public static final String RECOVERY_CLIENTS = "recovery_client_set";
 
+    /**
+     * Start Conversation Preferences
+     */
+    // type: boolean - whether user has seen the start conversation dialog
+    public static final String SEEN_START_CONVO_DIALOG = "seen_start_convo_dialog";
+
 }

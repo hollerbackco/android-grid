@@ -180,7 +180,8 @@ public class SignUpConfirmFragment extends BaseFragment {
 
                             // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
                             // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
-                            ContactsFragment fragment = ContactsFragment.newInstance();
+                            // ContactsFragment fragment = ContactsFragment.newInstance();
+                            ConversationListFragment fragment = ConversationListFragment.newInstance();
                             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                                     .commitAllowingStateLoss();
                         } else {

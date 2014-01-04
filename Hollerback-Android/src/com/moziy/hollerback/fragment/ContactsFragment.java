@@ -5,8 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -33,6 +37,8 @@ import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
 import com.moziy.hollerback.widget.CustomEditText;
@@ -85,6 +91,7 @@ public class ContactsFragment extends BaseFragment {
         switch (mAction) {
             case START_CONVERSATION:
                 getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+                showIntroDialog();
                 break;
             case INVITE_FRIENDS:
                 getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
@@ -179,6 +186,29 @@ public class ContactsFragment extends BaseFragment {
     public void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    private void showIntroDialog() {
+        boolean seenIntroDialog = PreferenceManagerUtil.getPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, false);
+        if (!seenIntroDialog) {
+            AlertDialog.Builder builder = new Builder(getActivity());
+            builder.setTitle(getString(R.string.start_convo_intro_title));
+            builder.setMessage(getString(R.string.start_convo_intro_body));
+            builder.setPositiveButton(getString(R.string.ok), new OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, true);
+                    if (isAdded()) {
+                        dialog.dismiss();
+                    }
+
+                }
+            });
+            builder.setCancelable(false);
+            builder.create().show();
+        }
+
     }
 
     private AdapterView.OnItemClickListener mOnContactClick = new AdapterView.OnItemClickListener() {
