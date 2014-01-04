@@ -16,6 +16,7 @@ public class Envelope<T> implements ResponseObject {
         public long code;
         public String last_sync_at; // sync time in
         public String message;
+        public String msg;
         public ArrayList<String> errors;
     }
 }

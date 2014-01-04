@@ -1,52 +1,51 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/preference_category_friends" >
-        <Preference
+    <com.moziy.hollerback.view.preference.CustomPreferenceCategory android:title="@string/preference_category_friends" >
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_friends"
             android:title="@string/preference_friends" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preference_category_account" >
-        <Preference
-            android:key="preference_logout"
-            android:title="@string/preference_logout" />
-        <Preference
+    </com.moziy.hollerback.view.preference.CustomPreferenceCategory>
+    <com.moziy.hollerback.view.preference.CustomPreferenceCategory android:title="@string/preference_category_account" >
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:enabled="false"
             android:key="preference_username"
-            android:summary="@string/preference_username"
             android:title="@string/preference_username" />
-        <Preference
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:enabled="false"
             android:key="preference_phone"
-            android:summary="@string/preference_phone"
             android:title="@string/preference_phone" />
-    </PreferenceCategory>
+    </com.moziy.hollerback.view.preference.CustomPreferenceCategory>
 
-    <!-- <PreferenceCategory -->
+    <!-- <CustomPreferenceCategory -->
     <!-- android:title="@string/preference_category_library"> -->
     <!-- <SwitchPreference -->
     <!-- android:key="preference_save" -->
     <!-- android:title="@string/preference_save" -->
     <!-- /> -->
-    <!-- </PreferenceCategory> -->
+    <!-- </CustomPreferenceCategory> -->
 
-    <PreferenceCategory android:title="@string/preference_category_terms" >
-        <Preference
+    <com.moziy.hollerback.view.preference.CustomPreferenceCategory android:title="@string/preference_category_terms" >
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_terms"
             android:title="@string/preference_terms" />
-        <Preference
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_privacy"
             android:title="@string/preference_privacy" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preference_category_team" >
-        <Preference
+    </com.moziy.hollerback.view.preference.CustomPreferenceCategory>
+    <com.moziy.hollerback.view.preference.CustomPreferenceCategory android:title="@string/preference_category_team" >
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_feedback"
             android:title="@string/preference_feedback" />
-        <Preference
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_twitter"
             android:title="@string/preference_twitter" />
-        <Preference
+        <com.moziy.hollerback.view.preference.CustomPreference
             android:key="preference_facebook"
             android:title="@string/preference_facebook" />
-    </PreferenceCategory>
+    </com.moziy.hollerback.view.preference.CustomPreferenceCategory>
+
+    <com.moziy.hollerback.view.preference.CustomPreference
+        android:key="preference_logout"
+        android:title="@string/preference_logout" />
 
 </PreferenceScreen>

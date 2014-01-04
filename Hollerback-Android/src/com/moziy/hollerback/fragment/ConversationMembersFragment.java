@@ -21,9 +21,9 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HollerbackAPI;
 import com.moziy.hollerback.debug.LogUtil;
-import com.moziy.hollerback.util.HollerbackAPI;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 /**
  * this is the one of the only fragment I've written from start to end.

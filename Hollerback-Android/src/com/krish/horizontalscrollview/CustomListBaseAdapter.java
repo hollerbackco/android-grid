@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.moziy.hollerback.HollerbackInterfaces.OnCustomItemClickListener;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.bitmap.ImageFetcher;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.ProgressHelper;
 import com.moziy.hollerback.helper.S3RequestHelper;
@@ -33,7 +34,6 @@ import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.DipUtil;
 import com.moziy.hollerback.view.CustomVideoView;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class CustomListBaseAdapter extends BaseAdapter {
     Context context;

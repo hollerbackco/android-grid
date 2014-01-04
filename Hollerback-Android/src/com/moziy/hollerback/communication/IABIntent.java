@@ -22,6 +22,9 @@ public class IABIntent {
 
     public static final String GCM_MESSAGE = "gcmmsg";
 
+    // Contact Intents
+    public static final String CONTACTS_UPDATED = "ContactsUpdated";
+
     // Session & Auth Intents
     public static final String AUTH_EXCEPTION = "AuthException";
 
@@ -33,6 +36,7 @@ public class IABIntent {
     public static final String CONVERSATION_CREATED = "ConvoCreated";
     public static final String CONVERSATION_CREATE_FAILURE = "ConvoCreateFailure";
     public static final String CONVERSATION_UPDATED = "CovoUpdated";
+    public static final String PARAM_IS_NEW_CONVERSATION = "IsNewConvo";
 
     // Sync Intent
     public static final String NOTIFY_SYNC = "NotifySync";

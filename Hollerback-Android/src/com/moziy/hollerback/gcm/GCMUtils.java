@@ -9,9 +9,17 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.model.web.Envelope;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class GCMUtils {
     private static final String TAG = GCMUtils.class.getSimpleName();
@@ -75,10 +83,10 @@ public class GCMUtils {
      * shared preferences.
      */
     public static void registerInBackground() {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void, Void, String>() {
             @Override
-            protected Void doInBackground(Void... params) {
-                String regid;
+            protected String doInBackground(Void... params) {
+                String regid = null;
                 Context context = HollerbackApplication.getInstance();
                 GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
                 try {
@@ -88,13 +96,18 @@ public class GCMUtils {
                     regid = gcm.register(AppEnvironment.GOOGLE_PROJECT_NUMBER);
                     // Persist the regID - no need to register again.
                     storeRegistrationId(context, regid);
+
                 } catch (IOException ex) {
                     // If there is an error, don't just keep trying to register.
                     // Require the user to click a button again, or perform
                     // exponential back-off.
                 }
-                return null;
+                return regid;
             }
+
+            protected void onPostExecute(String regId) {
+                notifyServer(regId);
+            };
 
         }.execute(null, null, null);
 
@@ -117,4 +130,24 @@ public class GCMUtils {
         editor.commit();
     }
 
+    public static void notifyServer(String regId) {
+        if (regId != null && !regId.isEmpty() && HollerbackAppState.isValidSession()) {
+            HBRequestManager.postMe(HollerbackAppState.getValidToken(), regId, new HBAsyncHttpResponseHandler<Envelope<Object>>(new TypeReference<Envelope<Object>>() {
+            }) {
+
+                @Override
+                public void onResponseSuccess(int statusCode, Envelope<Object> response) {
+                    if (statusCode == 200) {
+                        PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_GCM_REGISTERED, true);
+                    }
+
+                }
+
+                @Override
+                public void onApiFailure(Metadata metaData) {
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_GCM_REGISTERED, false);
+                }
+            });
+        }
+    }
 }

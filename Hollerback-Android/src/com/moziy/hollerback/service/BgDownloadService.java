@@ -1,21 +1,26 @@
 package com.moziy.hollerback.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.activeandroid.query.Select;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.gcm.GCMBroadcastReceiver;
+import com.moziy.hollerback.model.Sender;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
+import com.moziy.hollerback.service.task.VideoDownloadTask.POST_TXN_OPS;
 import com.moziy.hollerback.util.NotificationUtil;
 
 public class BgDownloadService extends IntentService {
@@ -34,8 +39,12 @@ public class BgDownloadService extends IntentService {
 
         // TODO - sajjad: Add download of thumbs!
         Log.d(TAG, "bg download service launched!");
+
+        String where = ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "' AND " + //
+                ActiveRecordFields.C_VID_WATCHED_STATE + "='" + VideoModel.ResourceState.UNWATCHED + "'";
+
         // query the videos
-        List<VideoModel> videos = getVideos();
+        List<VideoModel> videos = VideoHelper.getVideosForTransaction(where); // clearing the transacting flag is done within the videodownloadtask
 
         if (videos.isEmpty()) {
             Log.w(TAG, TAG + " was initiated but no videos were found.");
@@ -47,8 +56,15 @@ public class BgDownloadService extends IntentService {
 
         if (success) { // lets notify the user that new videos have been downloaded
 
-            String message = NotificationUtil.generateNewVideoMessage(this, videos);
-            NotificationUtil.launchNotification(this, NotificationUtil.generateNotification(getString(R.string.app_name), message), NotificationUtil.Ids.SYNC_NOTIFICATION);
+            Set<Sender> senders = new HashSet<Sender>();
+            for (VideoModel v : videos) {
+                senders.add(new Sender(v));
+            }
+
+            for (Sender s : senders) {
+                String message = NotificationUtil.generateNewVideoMessage(HollerbackApplication.getInstance(), s);
+                NotificationUtil.launchNotification(getApplicationContext(), NotificationUtil.generateNotification(getString(R.string.app_name), message), (int) s.getConversationId());
+            }
 
         }
 
@@ -61,28 +77,20 @@ public class BgDownloadService extends IntentService {
         GCMBroadcastReceiver.completeWakefulIntent(intent);
     }
 
-    public List<VideoModel> getVideos() {
-        // search for all model whose videos are pending download
-        List<VideoModel> videos = new Select().from(VideoModel.class) //
-                .where(ActiveRecordFields.C_VID_STATE + "=? AND " + //
-                        ActiveRecordFields.C_VID_WATCHED_STATE + "=? AND " + //
-                        ActiveRecordFields.C_VID_TRANSACTING + "=?", //
-                        VideoModel.ResourceState.PENDING_DOWNLOAD, VideoModel.ResourceState.UNWATCHED, 0).execute(); //
-        return videos;
-    }
-
     public boolean downloadVideos(List<VideoModel> videos) {
 
         TaskGroup downloadTasks = new TaskGroup();
 
         // for each video, lets create a download task and add it to the task group
-        for (VideoModel video : videos) {
+        for (final VideoModel video : videos) {
             VideoDownloadTask t = new VideoDownloadTask(video);
+            t.setPostTxnOps(POST_TXN_OPS.CLEAR_ON_SUCCESS); // clears the transacting flag if the operation was successful
             t.setTaskListener(new Task.Listener() {
 
                 @Override
                 public void onTaskError(Task t) {
                     Log.w(TAG, "video with id: " + ((VideoDownloadTask) t).getVideoId() + " failed to download");
+
                     // notify of failure in case anyone is listening
                     Intent intent = new Intent(IABIntent.VIDEO_DOWNLOAD_FAILED);
                     intent.putExtra(IABIntent.PARAM_ID, ((VideoDownloadTask) t).getVideoId());
@@ -91,10 +99,12 @@ public class BgDownloadService extends IntentService {
 
                 @Override
                 public void onTaskComplete(Task t) {
+
                     Log.d(TAG, "video with id: " + ((VideoDownloadTask) t).getVideoId() + " downloaded.");
                     Intent intent = new Intent(IABIntent.VIDEO_DOWNLOADED);
                     intent.putExtra(IABIntent.PARAM_ID, ((VideoDownloadTask) t).getVideoId());
                     IABroadcastManager.sendLocalBroadcast(intent);
+
                 }
             });
             downloadTasks.addTask(t);
@@ -116,6 +126,19 @@ public class BgDownloadService extends IntentService {
                 taskGroupStatus = downloadTasks.isSuccess();
                 ++retrycount;
             } while (retrycount < DEFAULT_RETRY_COUNT && !taskGroupStatus);
+
+        }
+
+        // for all the failed tasks, clear the transacting flag
+        for (Task t : downloadTasks.getFailedTasks()) {
+            for (VideoModel v : videos) {
+                if (v.getVideoId().equals(((VideoDownloadTask) t).getVideoId())) {
+                    if (!v.isTransacting()) {
+                        throw new IllegalStateException("Video must be transacting!");
+                    }
+                    VideoHelper.clearVideoTransacting(v);
+                }
+            }
 
         }
 

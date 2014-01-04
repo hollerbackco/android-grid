@@ -8,6 +8,7 @@ import java.util.Locale;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -40,10 +41,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.helper.S3RequestHelper;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
-import com.moziy.hollerback.service.VideoUploadService;
 import com.moziy.hollerback.util.ConversionUtil;
-import com.moziy.hollerback.util.JsonModelUtil;
-import com.moziy.hollerback.util.QU;
 import com.moziy.hollerback.util.UploadCacheUtil;
 import com.moziy.hollerback.view.CustomVideoView;
 import com.origamilabs.library.views.StaggeredGridView;
@@ -204,7 +202,7 @@ public class ConversationHistoryFragment extends BaseFragment {
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_URLS);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.GET_CONVERSATION_VIDEOS);
         IABroadcastManager.registerForLocalBroadcast(receiver, IABIntent.UPLOAD_VIDEO_UPDATE);
-        QU.getDM().getVideos(false, mConversationId);
+        // QU.getDM().getVideos(false, mConversationId);
 
     }
 
@@ -274,7 +272,7 @@ public class ConversationHistoryFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 // XXX: pass in the watched ids here
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, mConversation.getConversationName(), new ArrayList<String>());
+                RecordVideoFragment fragment = RecordVideoFragment.newInstance(mConversationId, mConversation.getConversationName());
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(null)
                         .commitAllowingStateLoss();
 
@@ -371,18 +369,18 @@ public class ConversationHistoryFragment extends BaseFragment {
                 mVideoGalleryAdapter.mUploadingHelper.clear();
             } else if (IABIntent.isIntent(intent, IABIntent.GET_CONVERSATION_VIDEOS)) {
 
-                ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
+                // ArrayList<VideoModel> tempVideos = (ArrayList<VideoModel>) QU.getDM().getObjectForToken(intent.getStringExtra(IABIntent.PARAM_INTENT_DATA));
 
                 // helper.getS3URLParams(generateUploadParams(hash,
                 // intent.getStringExtra(IABIntent.PARAM_ID)));
 
                 // TODO - Sajjad : Review this!
-                if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
-                    LogUtil.i("Setting: same data set");
-                    return;
-                }
+                // if (mVideos != null && mVideos.equals(tempVideos) && mVideoGalleryAdapter.getCount() != 0) {
+                // LogUtil.i("Setting: same data set");
+                // return;
+                // }
 
-                mVideos = (ArrayList<VideoModel>) tempVideos.clone();
+                // mVideos = (ArrayList<VideoModel>) tempVideos.clone();
 
                 // TODO: Come back here for review, what is being cached here, and how is it related to Upload.
                 if (UploadCacheUtil.hasVideoCache(mActivity, mConversationId)) {
@@ -434,9 +432,9 @@ public class ConversationHistoryFragment extends BaseFragment {
     public boolean isUploadRunning() {
         ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
-                return true;
-            }
+            // if (VideoUploadService.class.getName().equals(service.service.getClassName())) {
+            // return true;
+            // }
         }
         return false;
     }
@@ -449,5 +447,34 @@ public class ConversationHistoryFragment extends BaseFragment {
                 // mVideoGallery.scrollToBottom();
             }
         });
+    }
+
+    public static class JsonModelUtil {
+
+        public static VideoModel createVideo(JSONObject videoItem) {
+            try {
+                VideoModel video = new VideoModel();
+                video.setLocalFileName(videoItem.getString("filename"));
+                video.setVideoId(videoItem.getString("id"));
+                video.setConversationId(videoItem.getLong("conversation_id"));
+                video.setRead(videoItem.getBoolean("isRead"));
+                video.setFileUrl(videoItem.getString("url"));
+                video.setThumbUrl(videoItem.getString("thumb_url"));
+                video.setCreateDate(videoItem.getString("created_at"));
+
+                // changed to sender_name since username was somehow deprecated: 9/1/2013 - PM
+                video.setSenderName(videoItem.getString("sender_name"));
+
+                if (videoItem.has("isUploading")) {
+                    video.setUploading(true);
+                }
+                return video;
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            return null;
+        }
     }
 }

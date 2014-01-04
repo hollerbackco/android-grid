@@ -11,9 +11,6 @@
 
 package com.moziy.hollerback.bitmap;
 
-import com.moziy.hollerback.activity.HollerbackMainActivity;
-import com.moziy.hollerback.activity.WelcomeFragmentActivity;
-
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.StrictMode;
@@ -33,7 +30,7 @@ public class Utils {
 
             if (Utils.hasHoneycomb()) {
                 threadPolicyBuilder.penaltyFlashScreen();
-                vmPolicyBuilder.setClassInstanceLimit(HollerbackMainActivity.class, 1).setClassInstanceLimit(WelcomeFragmentActivity.class, 1);
+                // vmPolicyBuilder.setClassInstanceLimit(HollerbackMainActivity.class, 1).setClassInstanceLimit(WelcomeFragmentActivity.class, 1);
             }
             StrictMode.setThreadPolicy(threadPolicyBuilder.build());
             StrictMode.setVmPolicy(vmPolicyBuilder.build());

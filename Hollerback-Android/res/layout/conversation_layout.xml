@@ -1,12 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_header"
     android:orientation="vertical" >
 
     <VideoView
         android:id="@+id/vv_preview"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/dim_800dp"
         android:layout_height="match_parent" />
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:background="@android:color/transparent" >
+
+        <ImageButton
+            android:id="@+id/ib_skip_backward"
+            android:layout_width="@dimen/dim_46dp"
+            android:layout_height="@dimen/dim_46dp"
+            android:layout_marginRight="@dimen/dim_10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_media_skip_backward" />
+
+        <ImageButton
+            android:id="@+id/ib_skip_forward"
+            android:layout_width="@dimen/dim_46dp"
+            android:layout_height="@dimen/dim_46dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_media_skip_forward" />
+    </LinearLayout>
+
+</FrameLayout>

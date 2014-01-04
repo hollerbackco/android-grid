@@ -1,15 +1,13 @@
 package com.moziy.hollerback.util;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
 import android.media.MediaRecorder.OutputFormat;
-import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -25,62 +23,44 @@ public class HBFileUtil {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
-    @Deprecated
-    // not used
-    /** Create a file Uri for saving an image or video */
-    public static Uri getOutputMediaFileUri(int type) {
-        return Uri.fromFile(getOutputMediaFile(type));
-    }
+    public static File getOutputVideoFile(VideoModel video) {
+        String filename = video.getGuid();
+        if (filename == null) {
+            filename = video.getVideoId();
+        }
 
-    @Deprecated
-    // not used
-    /** Create a File for saving an image or video */
-    public static File getOutputMediaFile(int type) {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
+        String subDir = filename.substring(0, 2); // this is the hex portion to use
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), DIRECTORY_NAME);
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
+        File mediaStorageDir = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir);
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(TAG, "failed to create directory");
                 return null;
             }
-        }
 
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
-        } else if (type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
-        } else {
-            return null;
-        }
+            File nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/.nomedia");
+            if (!nomedia.exists()) {
+                try {
+                    nomedia.createNewFile();
+                } catch (IOException e) {
+                    Log.w(TAG, "couldn't create global no media file");
+                    e.printStackTrace();
+                }
+            }
 
-        return mediaFile;
-    }
-
-    public static File getOutputVideoFile(VideoModel video) {
-        String filename = video.getGuid();
-
-        String subDir = filename.substring(0, 2); // this is the hex portion to use
-
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir);
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d(TAG, "failed to create directory");
-                return null;
+            // create a no media file and place it
+            nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/.nomedia");
+            try {
+                nomedia.createNewFile();
+            } catch (IOException e) {
+                Log.w(TAG, "couldn't create .nomedia file in dir: " + AppEnvironment.HB_SDCARD_PATH + "/" + subDir);
+                e.printStackTrace();
             }
         }
 
         // XXX: parse the filename rather than assuming it's mp4
-        File media = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + subDir + "/" + filename + ".mp4");
+        File media = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/" + filename + ".mp4");
         return media;
     }
 
@@ -111,12 +91,31 @@ public class HBFileUtil {
         LogUtil.i("File: " + fileParts[0]);
         LogUtil.i("File: " + fileParts[1]);
 
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME + "/" + fileParts[0]);
+        File mediaStorageDir = new File(AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0]);
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(TAG, "failed to create directory");
                 return null;
+            }
+
+            File nomedia = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/" + DIRECTORY_NAME + "/.nomedia");
+            if (!nomedia.exists()) {
+                try {
+                    nomedia.createNewFile();
+                } catch (IOException e) {
+                    Log.w(TAG, "couldn't create global no media file");
+                    e.printStackTrace();
+                }
+            }
+
+            // create a no media file and place it
+            nomedia = new File(AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0] + "/.nomedia");
+            try {
+                nomedia.createNewFile();
+            } catch (IOException e) {
+                Log.w(TAG, "couldn't create .nomedia file in dir: " + AppEnvironment.HB_SDCARD_PATH + "/" + fileParts[0]);
+                e.printStackTrace();
             }
         }
         // Create a media file name
@@ -130,7 +129,7 @@ public class HBFileUtil {
 
     public static String getFilePath() {
 
-        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + DIRECTORY_NAME;
+        String filePath = AppEnvironment.HB_SDCARD_PATH;
 
         // LogUtil.i("DIR: " + filePath);
 
@@ -141,6 +140,34 @@ public class HBFileUtil {
         String path = (getFilePath() + "/" + fileKey);
         // LogUtil.i("Local File: " + path);
         return path;
+    }
+
+    /**
+     * Assumes that the file is on disk
+     * @param segmentNum
+     * @param guid
+     * @param extension
+     * @return
+     */
+    public static File getSegmentedFile(int segmentNum, String guid, String extension) {
+        String fileName = getLocalFile(segmentNum, guid, extension);
+        File f = new File(fileName);
+
+        return f;
+    }
+
+    /**
+     * 
+     * @param partNum
+     * @param guid
+     * @return The full path of the local file given a part number and a guid
+     */
+    public static String getLocalFile(int partNum, String guid, String extension) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getFilePath()).append("/").append(guid.substring(0, 2)).append("/").append(guid).append(".").append(partNum).append(".").append(extension);
+
+        return sb.toString();
     }
 
     public static long getFileSize(String fileKey) {
@@ -164,6 +191,10 @@ public class HBFileUtil {
     public static String generateRandomFileName() {
         String name = UUID.randomUUID().toString();
         return name.substring(0, 2) + "/" + name;
+    }
+
+    public static String generateFileNameFromGUID(String guid) {
+        return guid.substring(0, 2) + "/" + guid;
     }
 
     public static String getFileFormat(int fileFormat) {

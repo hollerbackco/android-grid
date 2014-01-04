@@ -18,7 +18,6 @@ import android.widget.TextView;
 
 import com.moziy.hollerback.HollerbackInterfaces.OnContactSelectedListener;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.cache.memory.TempMemoryStore;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.util.StringUtil;
 
@@ -130,7 +129,7 @@ public class ContactsListAdapter extends BaseExpandableListAdapter {
             realposition = childPosition + mHollerBackCount;
         }
 
-        final UserModel user = TempMemoryStore.users.mUserModelHash.get(contactitems.get(realposition));
+        final UserModel user = new UserModel();// TempMemoryStore.users.mUserModelHash.get(contactitems.get(realposition));
         holder.name.setText(user.getName());
 
         if (invitedUsers.contains(user.phone)) {

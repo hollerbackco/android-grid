@@ -2,12 +2,9 @@ package com.moziy.hollerback.fragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import android.annotation.TargetApi;
@@ -15,7 +12,10 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.GradientDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.AudioManager;
@@ -33,6 +33,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.TextureView;
 import android.view.View;
@@ -41,12 +42,15 @@ import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.camera.util.CameraUtil;
 import com.moziy.hollerback.camera.view.Preview;
@@ -58,17 +62,17 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.service.TTYLService;
 import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.util.TimeUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
     public static final String FRAGMENT_TAG = RecordVideoFragment.class.getSimpleName();
-    public static final String FRAGMENT_ARG_WATCHED_IDS = "watched_ids";
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
     public static final String FRAGMENT_ARG_GOTO_CONVO = "to_conversation";
@@ -76,6 +80,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public static interface RecordingInfo {
         public static final String RECORDED_PARTS = "recorded_parts";
         public static final String RESOURCE_ROW_ID = "resource_row_id";
+        public static final String STATUS_BUNDLE_ARG_KEY = "record_status";
+        public static final String RESOURCE_GUID = "resource_guid";
 
         public void onRecordingFinished(Bundle info);
     }
@@ -94,8 +100,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private Button mSwitchCameraButton;
 
     private volatile boolean mSurfaceCreated = false;
+    private boolean mSpecialOrientationRequest;
 
-    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 14 ? true : false);
+    private static final boolean USE_SURFACE_VIEW = (Build.VERSION.SDK_INT < 16 ? true : false);
 
     TextView mTimer;
     private final Handler mHandler = new Handler();
@@ -107,19 +114,18 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private String mFileDataPath;
     protected String mFileDataName;
     private String mFileExt; // the file extension
+    private String mGuid;
 
     private VideoModel mVideoModel; // the model that represents the resource that will get uploaded
 
     private int mPartNum;
     private int mTotalParts;
 
-    private ArrayList<String> mWatchedIds;
-
-    int timer = 20;
+    int timer = 30;
 
     public static String TAG = "VideoApp";
 
-    private volatile boolean isRecording = false;
+    private volatile boolean mIsRecording = false;
 
     static MediaRecorder recorder;
 
@@ -134,23 +140,21 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private TextureView mTexturePreview;
 
-    public static RecordVideoFragment newInstance(long conversationId, String title, ArrayList<String> watchedIds) {
+    public static RecordVideoFragment newInstance(long conversationId, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(IABIntent.PARAM_ID, conversationId);
         bundle.putString(FRAGMENT_ARG_TITLE, title);
-        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static RecordVideoFragment newInstance(long conversationId, boolean toConversation, String title, ArrayList<String> watchedIds) {
+    public static RecordVideoFragment newInstance(long conversationId, boolean toConversation, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(IABIntent.PARAM_ID, conversationId);
         bundle.putString(FRAGMENT_ARG_TITLE, title);
         bundle.putBoolean(FRAGMENT_ARG_GOTO_CONVO, toConversation);
-        bundle.putStringArrayList(FRAGMENT_ARG_WATCHED_IDS, watchedIds);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -179,7 +183,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                     new Thread() {
                         public void run() {
                             if (startPreview(mCurrentCameraId)) {
-                                if (!isRecording) {
+                                if (!isRecording()) {
                                     startRecording();
                                 }
                             }
@@ -198,7 +202,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            mSpecialOrientationRequest = true;
+        }
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         getActivity().getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         getActivity().getWindow().addFlags(LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
@@ -219,7 +227,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         mPhones = args.getStringArray(FRAGMENT_ARG_PHONES);
-        mWatchedIds = args.getStringArrayList(FRAGMENT_ARG_WATCHED_IDS);
         args.getBoolean(FRAGMENT_ARG_GOTO_CONVO, false); // TODO, CLEANUP
 
         mPartNum = 0;
@@ -228,19 +235,58 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
+    private boolean mScreenOrientationLocked = false;
+
+    private void lockScreenOrientation() {
+        if (!mScreenOrientationLocked) {
+            final int orientation = getResources().getConfiguration().orientation;
+            final int rotation = getActivity().getWindowManager().getDefaultDisplay().getOrientation();
+
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+            } else if (rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_270) {
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                }
+            }
+
+            mScreenOrientationLocked = true;
+        }
+    }
+
+    private void unlockScreenOrientation() {
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        mScreenOrientationLocked = false;
+    }
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup v = (ViewGroup) inflater.inflate(R.layout.recording_layout, container, false);
+
+        mTimer = (TextView) v.findViewById(R.id.tv_timer);
+        GradientDrawable d = (GradientDrawable) mTimer.getBackground();
+        d.mutate();
+        d.setColor(Color.WHITE);
+
+        mBlinker = (ImageView) v.findViewById(R.id.iv_blinker);
 
         ViewGroup previewHolder = (FrameLayout) v.findViewById(R.id.preview);
         mPreviewDelegate = new PreviewTouchDelegate();
         if (USE_SURFACE_VIEW) {
             PreviewSurfaceView surfaceView = new PreviewSurfaceView(getActivity());
             surfaceView.getHolder().addCallback(this);
-            surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            surfaceView.setOnClickListener(mSendButtonClick);
+            // surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             mCameraPreview = surfaceView;
         } else {
             PreviewTextureView textureView = new PreviewTextureView(getActivity());
-            textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
+            textureView.setOnClickListener(mSendButtonClick);
+            // textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             textureView.setSurfaceTextureListener(this);
             mCameraPreview = textureView;
         }
@@ -255,31 +301,33 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         });
 
         mSendButton = (CustomButton) v.findViewById(R.id.bt_send);
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (isRecording) { // send the video once recording has stopped
-
-                    stopRecording();
-
-                    if (mConversationId < 0) {
-                        Log.d(TAG, "attempt to create new conversation");
-                        inviteAndRecordVideo();
-                    } else {
-                        Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
-                    }
-                }
-
-            }
-        });
+        mSendButton.setOnClickListener(mSendButtonClick);
 
         previewHolder.addView((View) mCameraPreview);
 
         return v;
 
     }
+
+    private View.OnClickListener mSendButtonClick = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            if (isRecording()) { // send the video once recording has stopped
+
+                stopRecording();
+
+                if (mConversationId < 0) {
+                    Log.d(TAG, "attempt to create new conversation");
+                    inviteAndRecordVideo();
+                } else {
+                    Log.d(TAG, "attempt to post to existing conversation");
+                    postToConversation(mConversationId);
+                }
+            }
+
+        }
+    };
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -304,11 +352,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void initializeView(View view) {
-        // TODO: write up this portion in cleanup
-    }
-
     // this can be used later if we go to a complete texture view solution
     public TextureView getTextureBasedView() {
         mTexturePreview = new PreviewTextureView(getActivity());
@@ -318,7 +361,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void onClick(View v) {
-                if (isRecording) { // send the video once recording has stopped
+                if (isRecording()) { // send the video once recording has stopped
 
                     stopRecording();
 
@@ -327,7 +370,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                         inviteAndRecordVideo();
                     } else {
                         Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId, mWatchedIds);
+                        postToConversation(mConversationId);
                     }
                 }
 
@@ -338,11 +381,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     private void createNewConversation(ArrayList<String> contacts) {
-        sendVideo(-1, contacts, null);
+        sendVideo(-1, contacts);
     }
 
-    private void postToConversation(long conversationId, ArrayList<String> watchedIds) {
-        sendVideo(conversationId, null, watchedIds);
+    private void postToConversation(long conversationId) {
+        sendVideo(conversationId, null);
     }
 
     /**
@@ -350,23 +393,53 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
      * @param fileName
      * @param contacts
      */
-    private void sendVideo(long conversationId, ArrayList<String> recipients, ArrayList<String> watchedIds) {
+    private void sendVideo(long conversationId, ArrayList<String> recipients) {
+
+        prepareVideoModel(conversationId, recipients);
+
+        long resourceRowId = mVideoModel.getId();
+
+        notifyTargetFragment(resourceRowId, mVideoModel.getGuid());
+
+        launchVideoService(resourceRowId);
+
+        // we're going back to the start conversation fragment
+        if (conversationId > 0) {
+            mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        } else {
+            getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
+        }
+
+    }
+
+    private void launchVideoService(long resourceRowId) {
+        Intent intent = new Intent();
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
+        // NOTE: the part and total parts will change once that multi part chunks can be uploaded
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
+        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
+        if (getArguments().containsKey(FRAGMENT_ARG_TITLE)) {
+            intent.putExtra(VideoUploadIntentService.TITLE_INTENT_ARG_KEY, getArguments().getString(FRAGMENT_ARG_TITLE));
+        }
+        intent.setClass(getActivity(), VideoUploadIntentService.class);
+        getActivity().startService(intent);
+    }
+
+    private void prepareVideoModel(long conversationId, ArrayList<String> recipients) {
 
         // Prepare the model for sending the video
         if (mVideoModel == null) {
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
-            df.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
             mVideoModel = new VideoModel();
             mVideoModel.setSegmented(true);
             mVideoModel.setSegmentFileName(mFileDataName);
             mVideoModel.setSegmentFileExtension(mFileExt); // the file extenstion or container
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
-            mVideoModel.setCreateDate(df.format(new Date()));
+            mVideoModel.setCreateDate(TimeUtil.FORMAT_ISO8601(new Date()));
             mVideoModel.setSenderName("me");
             mVideoModel.setNumParts(mTotalParts);
             mVideoModel.setRead(true); // since we recorded this, we've actually seen it too
-            mVideoModel.setGuid(UUID.randomUUID().toString());
+            mVideoModel.setGuid(mGuid);
             if (recipients != null) {
                 mVideoModel.setRecipients(recipients.toArray(new String[] {}));
 
@@ -379,35 +452,29 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 updateConversationTime(conversationId);
             }
 
+            Log.d(TAG, "saving model");
             mVideoModel.save();
 
         }
 
-        // TODO - Sajjad: Bind this resource to the conversation list so that we can mark the conversation as uploading
-        long resourceRowId = mVideoModel.getId();
+    }
+
+    private void notifyTargetFragment(long rowId, String guid) {
         Bundle info = new Bundle();
-        info.putLong(RecordingInfo.RESOURCE_ROW_ID, resourceRowId);
+        info.putLong(RecordingInfo.RESOURCE_ROW_ID, rowId);
         info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
+        info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
+        info.putString(RecordingInfo.RESOURCE_GUID, guid);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
+        } else { // XXX: Create a unified place for launching toasts, like in a toast receiver
+            Context c = HollerbackApplication.getInstance();
+            Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
         }
-
-        Intent intent = new Intent();
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceRowId);
-
-        // NOTE: the part and total parts will change once that multi part chunks can be uploaded
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, mPartNum);
-        intent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, mTotalParts);
-        intent.setClass(getActivity(), VideoUploadIntentService.class);
-        getActivity().startService(intent);
-
-        // we're going back to the start conversation fragment
-        mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
     }
 
     private void updateConversationTime(long conversationId) {
-        String timeStamp = TimeUtil.SERVER_TIME_FORMAT.format(new Date());
+        String timeStamp = TimeUtil.FORMAT_ISO8601(new Date());
 
         Log.d(TAG, "new convo timestamp: " + timeStamp);
         ActiveAndroidUpdateTask updateTimeTask = new ActiveAndroidUpdateTask(new Update(ConversationModel.class) //
@@ -422,12 +489,13 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void onTaskComplete(Task t) {
+                Log.d(TAG, "updated the conversation");
                 // broadcast that the conversations have been updated
                 IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.CONVERSATION_UPDATED));
 
             }
         });
-        new TaskExecuter().executeTask(updateTimeTask);
+        new TaskExecuter(true).executeTask(updateTimeTask); // run on a serial executer
     }
 
     private void inviteAndRecordVideo() {
@@ -456,19 +524,32 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             secondsPassed += 1;
             String seconds = String.valueOf(timer - secondsPassed) + "s";
             mTimer.setText(seconds);
+            mHandler.removeCallbacks(timeTask);
             if (secondsPassed >= timer) {
-                stopRecording();
-            }
+                if (isRecording()) { // send the video once recording has stopped
 
-            mHandler.postDelayed(timeTask, 1000);
+                    mHandler.removeCallbacks(timeTask); // remove
+                    stopRecording();
+
+                    if (mConversationId < 0) {
+                        Log.d(TAG, "attempt to create new conversation");
+                        inviteAndRecordVideo();
+                    } else {
+                        Log.d(TAG, "attempt to post to existing conversation");
+                        postToConversation(mConversationId);
+                    }
+                }
+            } else {
+                mHandler.postDelayed(timeTask, 1000);
+            }
         }
     };
     private ProgressDialog mProgressDialog;
+    private ImageView mBlinker;
 
     @Override
     public void onResume() {
         super.onResume();
-
         if (this.isVisible()) {
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
@@ -483,23 +564,40 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mProgressDialog.dismiss();
         }
 
-        if (isRecording) {
+        mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
+
+        if (isRecording()) {
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
-            isRecording = false;
+            clearRecordingFlag();
 
             // cleanup
             deleteRecording();
 
-            mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
             // TODO: delete the video as cleanup and remove the model
+
+            if (getTargetFragment() != null) {
+                Bundle recordingInfo = new Bundle();
+                recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
+                ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
+            }
 
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
 
+            // getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
+
+            // fire off a ttyl
+            Intent intent = new Intent();
+            intent.setClass(getActivity(), TTYLService.class);
+            intent.putExtra(TTYLService.CONVO_ID_INTENT_ARG_KEY, mConversationId);
+            getActivity().startService(intent);
+
         }
 
         if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
@@ -507,8 +605,22 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         inPreview = false;
+
         super.onPause();
         enableShutterSound();
+
+    }
+
+    private boolean isRecording() {
+        return mIsRecording;
+    }
+
+    private void setRecordingFlag() {
+        mIsRecording = true;
+    }
+
+    private void clearRecordingFlag() {
+        mIsRecording = false;
     }
 
     // TODO: Clean this up!!!!!
@@ -537,7 +649,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                                 if (previewStarted) {
 
-                                    if (!isRecording) {
+                                    if (!isRecording()) {
                                         startRecording();
                                     }
                                 }
@@ -557,7 +669,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                                     }, 500);
 
                                 }
-
                             }
                         });
                     }
@@ -576,8 +687,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                 // inform the user that recording has started
                 // mRecordButton.setImageResource(R.drawable.stop_button);
-                isRecording = true;
-                // mHandler.postDelayed(timeTask, 1000);
+                setRecordingFlag();
+                mHandler.removeCallbacks(timeTask);
+                mHandler.post(timeTask); // enable the time task
+                // mBlinker.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.blink));
             } else {
                 // prepare didn't work, release the camera
                 releaseMediaRecorder();
@@ -607,7 +720,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             return false;
 
         } finally {
-            isRecording = false;
+            clearRecordingFlag();
             recorder.reset();
             recorder.release();
         }
@@ -620,7 +733,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         mHandler.removeCallbacks(timeTask);
-        secondsPassed = 0;
 
         // Precondition: User decides to send video (no ttyl without video, etc)
         return true;
@@ -628,8 +740,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private String getNewFileName() {
 
-        if (mFileDataName == null) {
-            mFileDataName = HBFileUtil.generateRandomFileName();
+        if (mGuid == null) {
+            mGuid = UUID.randomUUID().toString();
+            mFileDataName = HBFileUtil.generateFileNameFromGUID(mGuid);
         }
 
         mFileExt = "mp4"; // although get this info from the output format type
@@ -657,23 +770,33 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-        // CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
+        CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
         // Step 3: Configure Camera
         CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
+        // recorder.setProfile(CamcorderProfile.get(mCurrentCameraId, CamcorderProfile.QUALITY_LOW));
 
         // recorder.setvideoextension
         targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT)
-                recorder.setOrientationHint(270);
-            else
+            if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT) {
+                if (Build.MANUFACTURER.equals("HTC")) {
+                    recorder.setOrientationHint(90);
+                } else {
+                    recorder.setOrientationHint(270);
+                }
+            } else {
                 recorder.setOrientationHint(90);
+            }
         }
 
         // Step 4: Set output file
         recorder.setOutputFile(getNewFileName());
+
+        // Step 5: Set Preview Display
+        if (USE_SURFACE_VIEW)
+            recorder.setPreviewDisplay(((PreviewSurfaceView) mCameraPreview).getHolder().getSurface());
 
         // Step 6: Prepare configured MediaRecorder
         try {
@@ -694,7 +817,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onStop() {
         super.onStop();
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        if (!mSpecialOrientationRequest) {
+            // mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        }
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_FULLSCREEN);
         mActivity.getWindow().clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
         mActivity.getActionBar().show();
@@ -743,13 +869,15 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         mSurfaceCreated = true;
+
         mProgressDialog = new ProgressDialog(getActivity());
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setMessage("Loading Camera...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
 
-        initCamera();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            initCamera();
 
     }
 
@@ -767,6 +895,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             public void run() {
                 if (mCamera != null) {
                     mCamera.stopPreview();
+                    mCamera.setPreviewCallback(null);
                     mCamera.release();
                     mCamera = null;
                 }
@@ -788,21 +917,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void surfaceCreated(SurfaceHolder holder) {
         mSurfaceCreated = true;
 
-        if (mCamera != null && !mOpenCameraThread.isAlive()) {
-            mCameraPreview.setAspectRatio((double) mBestVideoSize.width / (double) mBestVideoSize.height); // adjust the surfaceview
+        mSurfaceCreated = true;
 
-            new Thread() {
-                public void run() {
-                    if (startPreview(mCurrentCameraId)) {
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Loading Camera...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
 
-                        if (!isRecording) {
-                            startRecording();
-                        }
-                    }
-
-                };
-            }.start();
-        }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            initCamera();
 
     }
 
@@ -816,6 +940,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (mCamera != null) {
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
@@ -937,7 +1062,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             @Override
             public void run() {
-                if (isRecording) {
+                if (isRecording()) {
 
                     if (!stopRecording()) {
                         Log.w(TAG, "attempting to stop recording failed");
@@ -972,7 +1097,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 shutterSoundDisabled = mCamera.enableShutterSound(false);
 
         if (!shutterSoundDisabled) {
-            AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+            AudioManager am = (AudioManager) HollerbackApplication.getInstance().getSystemService(Context.AUDIO_SERVICE);
             mVolumeBeforeShutoff = am.getStreamVolume(AudioManager.STREAM_SYSTEM);
             am.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         }
@@ -988,7 +1113,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         if (mVolumeBeforeShutoff > 0) {
-            AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+            AudioManager am = (AudioManager) HollerbackApplication.getInstance().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(AudioManager.STREAM_SYSTEM, mVolumeBeforeShutoff, 0);
         }
 

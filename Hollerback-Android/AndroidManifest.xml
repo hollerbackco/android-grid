@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.moziy.hollerback"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="3"
+    android:versionName="0.1.1" >
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="19" />
 
     <supports-screens
         android:anyDensity="true"
@@ -47,6 +47,7 @@
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.moziy.hollerback.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Permission to vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -64,7 +65,7 @@
             android:value="hollerback.db" />
         <meta-data
             android:name="AA_DB_VERSION"
-            android:value="1" />
+            android:value="2" />
         <meta-data
             android:name="AA_SERIALIZERS"
             android:value="com.moziy.hollerback.activeandroid.StringArraySerializer" />
@@ -73,15 +74,11 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.moziy.hollerback.activity.SplashScreenActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
-        </activity>
-        <activity
             android:name="com.moziy.hollerback.activity.HollerbackMainActivity"
+            android:hardwareAccelerated="true"
             android:label="@string/app_name"
-            android:theme="@style/Hollerback" >
+            android:theme="@style/Hollerback"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -89,16 +86,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.moziy.hollerback.activity.WelcomeFragmentActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
-        </activity>
-        <activity
             android:name="com.moziy.hollerback.activity.SettingPreferenceActivity"
+            android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Example" >
+            android:theme="@style/Hollerback.Settings" >
         </activity>
 
         <receiver
@@ -116,7 +108,7 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".util.ResourceRecoveryUtil" >
+        <receiver android:name="com.moziy.hollerback.util.recovery.ResourceRecoveryUtil" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
@@ -146,7 +138,25 @@
             android:name=".service.PassiveUploadService"
             android:exported="false" >
         </service>
-"
+        <service
+            android:name=".service.TTYLService"
+            android:exported="false" >
+        </service>
+
+        <!-- Google Play General Campaign Tracking -->
+        <service android:name="com.google.analytics.tracking.android.CampaignTrackingService" />
+
+        <receiver
+            android:name="com.google.analytics.tracking.android.CampaignTrackingReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="1ed19e0f6100e773f794bf928ee1ef0b85ed4d6e" />
     </application>
 
 </manifest>

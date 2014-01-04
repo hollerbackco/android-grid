@@ -19,6 +19,13 @@
 #   public *;
 #}
 
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-dontpreverify
+-verbose
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
+
 #Google Play Specific Keeps
 -keep class * extends java.util.ListResourceBundle {
     protected Object[][] getContents();
@@ -35,4 +42,87 @@
 
 -keepnames class * implements android.os.Parcelable {
     public static final ** CREATOR;
+}
+
+#Google Analytics
+-keep public class com.google.** {*;}
+
+#AWS, Commons io
+-keep class org.apache.commons.logging.**               { *; }
+-keep class com.amazonaws.services.sqs.QueueUrlHandler  { *; }
+-keep class com.amazonaws.javax.xml.transform.sax.*     { public *; }
+-keep class com.amazonaws.javax.xml.stream.**           { *; }
+-keep class com.amazonaws.services.**.model.*Exception* { *; }
+-keep class org.codehaus.**                             { *; }
+-keepattributes Signature,*Annotation*
+
+-dontwarn javax.xml.stream.events.**
+-dontwarn org.codehaus.jackson.**
+-dontwarn org.apache.commons.logging.impl.**
+-dontwarn org.apache.http.conn.scheme.**
+
+#Support Library and Action Bar
+-keep class android.support.v4.app.** { *; } 
+-keep interface android.support.v4.app.** { *; } 
+-keep class com.actionbarsherlock.** { *; } 
+-keep interface com.actionbarsherlock.** { *; } 
+-keepattributes *Annotation*
+
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
+#Crittercism
+-keep public class com.crittercism.**
+-keepclassmembers public class com.crittercism.*
+{
+    *;
+}
+
+#ActiveAndroid
+-keep public class com.activeandroid.**
+-keep public class * extends com.activeandroid.ActiveRecordBase
+-keepattributes Column
+-keepattributes Table
+
+#Jackson
+-keepattributes Signature
+-keepnames class com.fasterxml.jackson.** { *; }
+-dontwarn com.fasterxml.jackson.databind.**
+
+
+#libphonenumber
+
+#AsyncHttp
+#-keep public class loopj.android.http.**
+
+#Volley
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Application
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+-keep public class * extends android.app.backup.BackupAgentHelper
+-keep public class * extends android.preference.Preference
+-keep public class com.android.vending.licensing.ILicensingService
+
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+}
+
+-keepclassmembers class * extends android.app.Activity {
+   public void *(android.view.View);
+}
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
 }
