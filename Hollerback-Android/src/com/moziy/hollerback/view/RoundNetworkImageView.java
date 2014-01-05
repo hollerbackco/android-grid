@@ -9,11 +9,17 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
+import com.android.volley.toolbox.NetworkImageView;
 import com.moziy.hollerback.R;
 
-public class RoundImageView extends ImageView {
+/**
+ * Takes an imageview and puts an alpha mask on it so that that image appears as round.
+ * @author sajjad
+ * TODO: add support for positioning
+ * TODO: Create a version that extends a regular imageview
+ */
+public class RoundNetworkImageView extends NetworkImageView {
     private static final String TAG = RoundNetworkImageView.class.getSimpleName();
     private Bitmap mMask;
     private int mRadius;
@@ -25,7 +31,7 @@ public class RoundImageView extends ImageView {
     private RectF mHaloBounds = new RectF();
     private int mPadding;
 
-    public RoundImageView(Context context, AttributeSet attrs) {
+    public RoundNetworkImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         setBackgroundColor(0);
@@ -44,7 +50,7 @@ public class RoundImageView extends ImageView {
         initPaint();
     }
 
-    public RoundImageView(Context context) {
+    public RoundNetworkImageView(Context context) {
         super(context);
     }
 
@@ -105,6 +111,7 @@ public class RoundImageView extends ImageView {
 
     @Override
     public String toString() {
-        return "RoundImageView [ , mRadius=" + mRadius + "]";
+        return "RoundNetworkImageView [ , mRadius=" + mRadius + "]";
     }
+
 }

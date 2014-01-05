@@ -11,13 +11,25 @@
         android:layout_height="match_parent"
         android:background="#FFFFFF" >
 
-        <com.moziy.hollerback.view.RoundImageView
+        <com.moziy.hollerback.view.RoundNetworkImageView
             android:id="@+id/iv_thumb"
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dim_20dp"
             android:padding="@dimen/dim_2dp"
+            app:radius="@dimen/dim_35dp" >
+        </com.moziy.hollerback.view.RoundNetworkImageView>
+
+        <com.moziy.hollerback.view.RoundImageView
+            android:id="@+id/iv_local_thumb"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            android:padding="@dimen/dim_2dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
             app:radius="@dimen/dim_35dp" >
         </com.moziy.hollerback.view.RoundImageView>
 

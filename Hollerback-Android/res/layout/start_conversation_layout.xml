@@ -26,13 +26,12 @@
 
     <ImageButton
         android:id="@+id/ib_start_video"
-        android:layout_width="175dp"
-        android:layout_height="175dp"
+        android:layout_width="@dimen/dim_175dp"
+        android:layout_height="@dimen/dim_175dp"
         android:layout_above="@+id/tv_tap_to_start"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/big_banana" />
+        android:src="@drawable/white_camera" />
 
     <!-- TODO: just a place holder, replace later -->
 

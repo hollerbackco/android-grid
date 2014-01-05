@@ -10,7 +10,11 @@ import java.util.Locale;
 import java.util.Map;
 
 import android.R.color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
+import android.support.v4.util.LruCache;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -31,12 +35,15 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.view.RoundImageView;
+import com.moziy.hollerback.view.RoundNetworkImageView;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
     private static final String TAG = ConversationListAdapter.class.getSimpleName();
     protected List<ConversationModel> mConversations;
     protected List<ConversationModel> mFilteredConversations;
+
+    private LruCache<String, Bitmap> mFileCache = new LruCache<String, Bitmap>(10); // up to 10 new convos
 
     LayoutInflater inflater;
     ConversationFilter mFilter;
@@ -108,7 +115,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
             viewHolder.conversationSubTitle = (TextView) convertView.findViewById(R.id.tv_ttyl);
-            viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
+            viewHolder.thumb = (RoundNetworkImageView) convertView.findViewById(R.id.iv_thumb);
+            viewHolder.localThumb = (RoundImageView) convertView.findViewById(R.id.iv_local_thumb);
             viewHolder.btnRecord = (CustomButton) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
 
@@ -140,6 +148,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
+            viewHolder.localThumb.setHaloBorderColor(-1);
             viewHolder.btnRecord.setEmphasized(false);
             viewHolder.btnRecord.setVisibility(View.VISIBLE);
 
@@ -159,7 +168,25 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         }
 
         if (conversationModel.getMostRecentThumbUrl() != null) {
-            viewHolder.thumb.setImageUrl(conversationModel.getMostRecentThumbUrl(), VolleySingleton.getInstance(mActivity).getImageLoader());
+
+            if (conversationModel.getMostRecentThumbUrl().contains("file:///")) {
+                // Log.d(TAG, "from file");
+                Bitmap b = mFileCache.get(conversationModel.getMostRecentThumbUrl());
+                if (b == null) {
+                    b = BitmapFactory.decodeFile(Uri.parse(conversationModel.getMostRecentThumbUrl()).getPath());
+                    if (b != null)
+                        mFileCache.put(conversationModel.getMostRecentThumbUrl(), b);
+                }
+                viewHolder.localThumb.setVisibility(View.VISIBLE);
+                viewHolder.thumb.setVisibility(View.INVISIBLE);
+                viewHolder.localThumb.setImageBitmap(b);
+                // viewHolder.thumb.setBackgroundDrawable(new BitmapDrawable(mActivity.getResources(), BitmapFactory.decodeFile(conversationModel.getMostRecentThumbUrl().substring(9)))); //
+                // setImageBitmap(BitmapFactory.decodeFile(conversationModel.getMostRecentThumbUrl().substring(9)));
+            } else {
+                viewHolder.thumb.setVisibility(View.VISIBLE);
+                viewHolder.localThumb.setVisibility(View.GONE);
+                viewHolder.thumb.setImageUrl(conversationModel.getMostRecentThumbUrl(), VolleySingleton.getInstance(mActivity).getImageLoader());
+            }
         }
 
         viewHolder.btnRecord.setOnClickListener(new View.OnClickListener() {
@@ -250,7 +277,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationName;
         TextView conversationTime;
         TextView conversationSubTitle;
-        RoundImageView thumb;
+        RoundNetworkImageView thumb;
+        RoundImageView localThumb;
         CustomButton btnRecord;
         int foregroundColor = -1;
         int backgroundColor = -1;

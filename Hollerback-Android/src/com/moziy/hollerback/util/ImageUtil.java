@@ -14,7 +14,7 @@ public class ImageUtil {
 
     // Do this in background thread or AsyncTask later
     public static Bitmap generateThumbnail(String videoFileNameSource) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(videoFileNameSource), Thumbnails.MICRO_KIND);
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(videoFileNameSource), Thumbnails.MINI_KIND);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
         writeBitmapToExternal(HBFileUtil.getImageUploadName(videoFileNameSource), bitmap);
         return bitmap;
@@ -40,9 +40,9 @@ public class ImageUtil {
     }
 
     public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
-        writeBitmapToExternal(HBFileUtil.getLocalFile(partNum, videoGuid, "png"), bitmap);
+        writeBitmapToExternal(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "png"), bitmap);
 
         return bitmap;
     }

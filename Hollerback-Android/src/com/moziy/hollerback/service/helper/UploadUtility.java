@@ -25,6 +25,8 @@ import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.PostToConvoResponse;
 import com.moziy.hollerback.service.PassiveUploadService;
+import com.moziy.hollerback.service.task.ConvoThumbTask;
+import com.moziy.hollerback.service.task.GenerateVideoThumbTask;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
@@ -136,6 +138,11 @@ public class UploadUtility implements RecoveryClient {
                 // inserting
                 Log.d(TAG, "inserting: " + conversationResp.toString());
                 conversationResp.save();
+
+                // generate the thumb
+                ConvoThumbTask t = new ConvoThumbTask(conversationResp.getConversationId(), new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, videoModel.getGuid(), "mp4"), HBFileUtil
+                        .getLocalThumbFile(videoModel.getGuid())));
+                t.run();
 
                 // fire off conversation intent
                 Intent intent = new Intent(IABIntent.CONVERSATION_CREATED);

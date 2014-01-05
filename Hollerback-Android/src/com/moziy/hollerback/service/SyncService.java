@@ -1,5 +1,7 @@
 package com.moziy.hollerback.service;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -336,7 +338,13 @@ public class SyncService extends IntentService implements RecoveryClient {
                             newConversation.setUnreadCount(unreadCount);
                             Log.w(TAG, "new unread: " + newConversation.getUnreadCount());
 
+                            // some cleanup, delete existing convo and also it's most recent thumb...
+                            String recentThumbUri = existingConversation.getMostRecentThumbUrl();
+                            deleteLocalThumb(recentThumbUri);
+
+                            //delete the convo
                             existingConversation.delete(); // delete it so that it gets updated
+
                         }
                     }
 
@@ -362,6 +370,24 @@ public class SyncService extends IntentService implements RecoveryClient {
         Log.d("performance", "time to insert to db: " + (System.currentTimeMillis() - start));
 
         return true;
+    }
+
+    private void deleteLocalThumb(String recentThumbUri) {
+        // delete the local thumb, no need to keep it
+        File f = null;
+        if (recentThumbUri != null && recentThumbUri.contains("file:///")) {
+            try {
+                f = new File(URI.create(recentThumbUri));
+            } catch (Exception e) { // extra caution
+                f = null;
+                e.printStackTrace();
+            }
+        }
+
+        if (f != null) {
+            Log.d(TAG, "deleted png");
+            f.delete();
+        }
     }
 
     private void updateVideoModel() {

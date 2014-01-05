@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore.Video.Thumbnails;
 
+import com.moziy.hollerback.util.ImageUtil;
+
 /**
  * This class generates a thumbnail for a given video file
  * @author sajjad
@@ -11,25 +13,46 @@ import android.provider.MediaStore.Video.Thumbnails;
  */
 public class GenerateVideoThumbTask extends AbsTask {
 
-    private String mFilePath;
+    private String mSrcFilePath;
+    private String mDstFilePath;
     private Bitmap mThumb;
 
+    /**
+     * Only generates the thumb as a bitmap and returns
+     * @param absoluteVideoPath
+     */
     public GenerateVideoThumbTask(String absoluteVideoPath) {
-        mFilePath = absoluteVideoPath;
+        mSrcFilePath = absoluteVideoPath;
+    }
+
+    public GenerateVideoThumbTask(String sourceVideoPath, String destPngPath) {
+        mSrcFilePath = sourceVideoPath;
+        mDstFilePath = destPngPath;
     }
 
     public Bitmap getThumb() {
         return mThumb;
     }
 
+    public String getDstPath() {
+        return mDstFilePath;
+    }
+
     @Override
     public void run() {
 
-        mThumb = ThumbnailUtils.createVideoThumbnail(mFilePath, Thumbnails.MINI_KIND);
-        if (mThumb == null) {
-            mIsSuccess = false;
+        mThumb = ThumbnailUtils.createVideoThumbnail(mSrcFilePath, Thumbnails.MINI_KIND);
+        if (mThumb != null) {
+
+            // lets save the thumb
+            if (mDstFilePath != null) {
+                if (ImageUtil.writeBitmapToExternal(mDstFilePath, mThumb) != null) {
+                    mIsSuccess = true;
+                }
+            } else
+                mIsSuccess = true;
         } else {
-            mIsSuccess = true;
+            mIsSuccess = false;
         }
 
         mIsFinished = true;

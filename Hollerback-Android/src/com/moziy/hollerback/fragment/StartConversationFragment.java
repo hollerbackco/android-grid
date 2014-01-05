@@ -288,7 +288,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
         private void sendSMSInvite(String guid) {
 
             ImageUtil.generatePngThumbnailFromVideo(0, guid);
-            Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalFile(0, guid, "png")));
+            Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
 
             SmsUtil.invite(mActivity, mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
