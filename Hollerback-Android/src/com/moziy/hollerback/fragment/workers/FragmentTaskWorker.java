@@ -57,7 +57,9 @@ public class FragmentTaskWorker extends AbsTaskWorker {
                     super.onPostExecute(result);
 
                     Log.d(TAG, "removing self from fragment manager");
-                    getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
+                    if (getFragmentManager() != null) { // if we've been removed completely, no need to remove
+                        getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
+                    }
                     clearTaskListeners(mTask);
                 }
 

@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import android.R.color;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.util.LruCache;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -38,6 +41,7 @@ import com.moziy.hollerback.view.RoundImageView;
 import com.moziy.hollerback.view.RoundNetworkImageView;
 import com.moziy.hollerback.widget.CustomButton;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
     private static final String TAG = ConversationListAdapter.class.getSimpleName();
     protected List<ConversationModel> mConversations;
@@ -50,6 +54,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
     private ColorPicker mColorPicker = new ColorPicker();
     private int mHBTextColor;
     private Map<ConversationModel, int[]> mConvoColorMap;
+    private SparseArray<Drawable> mColorDrawables;
 
     private SherlockFragmentActivity mActivity;
 
@@ -71,6 +76,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         mFilteredConversations = new ArrayList<ConversationModel>();
         mFilteredConversations.addAll(mConversations);
         mConvoColorMap = new HashMap<ConversationModel, int[]>();
+        mColorDrawables = new SparseArray<Drawable>(6);
         this.notifyDataSetChanged();
     }
 
@@ -127,6 +133,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         final ConversationModel conversationModel = mFilteredConversations.get(position);
         viewHolder.conversationSubTitle.setText(""); // clear the text
         // Log.d(TAG, "unread count: " + conversationModel.getUnreadCount());
+        Drawable bg;
         if (conversationModel.getUnreadCount() > 0) {
             int[] colors;
             if (mConvoColorMap.containsKey(conversationModel)) {
@@ -135,16 +142,15 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 colors = mColorPicker.getConvoColors();
                 mConvoColorMap.put(conversationModel, colors);
             }
+            bg = mActivity.getResources().getDrawable(colors[1]);
             viewHolder.thumb.setHaloBorderColor(colors[0]);
-            viewHolder.topLayer.setBackgroundColor(colors[1]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
             viewHolder.btnRecord.setEmphasized(true);
             viewHolder.btnRecord.setVisibility(View.GONE);
 
         } else {
-            convertView.setBackgroundColor(color.white);
-            viewHolder.topLayer.setBackgroundColor(Color.WHITE);
+            bg = mActivity.getResources().getDrawable(R.drawable.bg_white);
             viewHolder.conversationName.setTextColor(mHBTextColor);
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
@@ -155,6 +161,12 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             if (conversationModel.getSubTitle() != null)
                 viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
 
+        }
+
+        if (Build.VERSION.SDK_INT >= 16) {
+            viewHolder.topLayer.setBackground(bg);
+        } else {
+            viewHolder.topLayer.setBackgroundDrawable(bg);
         }
 
         viewHolder.conversationName.setText(conversationModel.getConversationName());
@@ -290,8 +302,11 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
      *
      */
     public class ColorPicker {
-
         private int mColorIndex = 0;
+
+        private int[] mBackgroundDrawable = {
+                R.drawable.bg_blue, R.drawable.bg_green, R.drawable.bg_red, R.drawable.bg_purple, R.drawable.bg_yellow, R.drawable.bg_orange
+        };
 
         private int[] mBackgroundColors = {
                 R.color.convo_blue, R.color.convo_green, R.color.convo_red, R.color.convo_purple, R.color.convo_yellow, R.color.convo_orange
@@ -301,9 +316,9 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         };
 
         public int[] getConvoColors() {
-
             int[] colors = {
-                    mActivity.getResources().getColor(mForegroundColors[mColorIndex]), mActivity.getResources().getColor(mBackgroundColors[mColorIndex])
+                    mActivity.getResources().getColor(mForegroundColors[mColorIndex]), mBackgroundDrawable[mColorIndex]
+            /* mActivity.getResources().getColor(mBackgroundColors[mColorIndex] */
             };
 
             ++mColorIndex;
@@ -313,7 +328,6 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
             return colors;
         }
-
     }
 
     class ConversationFilter extends Filter {
