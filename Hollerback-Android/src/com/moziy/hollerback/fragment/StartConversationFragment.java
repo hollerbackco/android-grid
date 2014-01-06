@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -137,6 +139,16 @@ public class StartConversationFragment extends BaseFragment implements Recording
         mTitleEt.setSelection(0);
 
         mProgressSpinner = (ProgressBar) v.findViewById(R.id.pb_spinner);
+
+        ((Button) v.findViewById(R.id.bt_edit)).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mTitleEt.requestFocus();
+                InputMethodManager im = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                im.showSoftInput(mTitleEt, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
 
         v.findViewById(R.id.ib_start_video).setOnClickListener(new View.OnClickListener() {
 

@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:ellipsize="end"
+        android:focusableInTouchMode="true"
         android:gravity="center"
         android:maxLines="1"
         android:paddingLeft="30dp"
@@ -24,6 +25,14 @@
         android:textColor="#555555"
         android:textSize="20sp" />
 
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_edit"
+        android:layout_width="@dimen/dim_40dp"
+        android:layout_height="@dimen/dim_40dp"
+        android:layout_marginTop="@dimen/dim_4dp"
+        android:background="@drawable/ic_action_edit"
+        app:tintColor="#80000000" />
+
     <ImageButton
         android:id="@+id/ib_start_video"
         android:layout_width="@dimen/dim_175dp"
@@ -31,7 +40,7 @@
         android:layout_above="@+id/tv_tap_to_start"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"
-        android:src="@drawable/white_camera" />
+        android:background="@drawable/btn_start_convo" />
 
     <!-- TODO: just a place holder, replace later -->
 
