@@ -40,6 +40,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
     private static final String ON_SAVE_ARG_RECORDING_INFO = "recording_info";
     private static final String ON_SAVE_ARG_WAITING = "waiting";
+    private static final String ON_SAVE_DONE_BUNDLE_ARG_KEY = "ON_SAVE_DONE";
     public static final String FRAGMENT_TAG = StartConversationFragment.class.getSimpleName();
     private static final String TAG = FRAGMENT_TAG;
     private static final String PHONES_BUNDLE_ARG_KEY = "phones";
@@ -74,6 +75,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private CustomEditText mTitleEt;
 
     private boolean mIsWaiting = false; // whether we're waiting on an event
+    private boolean mIsDone = false; // wehther we're done for the creation process
     private HashSet<Contact> mRecipients;
     private ArrayList<Contact> mNonHBContacts;
 
@@ -108,22 +110,19 @@ public class StartConversationFragment extends BaseFragment implements Recording
         mPhones = allPhones.toArray(new String[allPhones.size()]);
         Log.d(TAG, "title: " + mTitle);
 
-        // mTitle = args.getString(TITLE_BUNDLE_ARG_KEY);
-        // mPhones = args.getStringArray(PHONES_BUNDLE_ARG_KEY);
-
-        // mIsHBUsers = args.getBooleanArray(IS_HB_USERS_BUNDLE_ARG_KEY);
-        Log.d(TAG, "onCreate");
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
+
         if (savedInstanceState != null) {
 
             mIsWaiting = savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING);
             mRecordingInfo = savedInstanceState.getBundle(ON_SAVE_ARG_RECORDING_INFO);
+            mIsDone = savedInstanceState.getBoolean(ON_SAVE_DONE_BUNDLE_ARG_KEY);
 
             if (savedInstanceState.getBoolean(ON_SAVE_ARG_WAITING)) {
-
                 Log.d(TAG, "reregistering broadcasts in configuration changes");
                 mReceiver.register();
+
             }
         }
 
@@ -157,11 +156,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                 if (isResumed()) { // only if resumed
                     mIsWaiting = true; // mark this fragment as waiting for broadcasts
+                    mIsDone = false;
                     // register for inapp events
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATE_FAILURE);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_FAILED);
-                    IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.RECORDING_CANCELLED);
+                    mReceiver.register();
 
                     if (mTitleEt.getText().length() > 0) {
                         mTitle = mTitleEt.getText().toString();
@@ -193,16 +190,39 @@ public class StartConversationFragment extends BaseFragment implements Recording
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(ON_SAVE_ARG_WAITING, mIsWaiting);
         outState.putBundle(ON_SAVE_ARG_RECORDING_INFO, mRecordingInfo);
+        outState.putBoolean(ON_SAVE_DONE_BUNDLE_ARG_KEY, mIsDone);
         // save the state we were in
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void returnToConvoList() {
+
+        Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
+
+        if (f == null) {
+            Log.d(TAG, "ConversationListFragment not found");
+            // TODO - Sajjad: Delay the popping until after we've shown the sent icon
+            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+
+            f = ConversationListFragment.newInstance();
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+        } else {
+            Log.d(TAG, "ConversationListFragment found!");
+            getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
     }
 
     // receive broadcasts on the status of conversations
@@ -224,76 +244,73 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive()");
-            if (isAdded()) { // only do work if the fragment is added
+            Log.d(TAG, "onReceive() - isAdded: " + isAdded());
+            mIsDone = true;
+            mReceiver.unregister(); // unregister only when we get notified
 
-                if (intent.filterEquals(new Intent(IABIntent.CONVERSATION_CREATED))) {
-                    mIsWaiting = false;
-                    Log.d(TAG, "conversation created!, let's upload");
-                    mProgressSpinner.setVisibility(View.INVISIBLE); // TODO: add transition animation
+            if (intent.filterEquals(new Intent(IABIntent.CONVERSATION_CREATED))) {
+                mIsWaiting = false;
+                Log.d(TAG, "conversation created!, let's upload");
+                mProgressSpinner.setVisibility(View.INVISIBLE); // TODO: add transition animation
 
-                    if (mRecordingInfo == null) {
-                        throw new IllegalStateException("no recording info found: expected bundle from recording fragment");
-                    }
+                if (mRecordingInfo == null) {
+                    throw new IllegalStateException("no recording info found: expected bundle from recording fragment");
+                }
 
-                    long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
-                    int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
-                    String guid = mRecordingInfo.getString(RecordingInfo.RESOURCE_GUID);
+                long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
+                int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
+                String guid = mRecordingInfo.getString(RecordingInfo.RESOURCE_GUID);
 
-                    Intent uploadIntent = new Intent();
-                    uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
-                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
-                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
-                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
-                    getActivity().startService(uploadIntent);
+                uploadVideo(resourceId, totalParts, guid); // upload the resource whether the fragment is added or not because we got the creation intent
 
-                    // Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
-                    // // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    // getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
-                    // if (f == null)
-                    // f = ConversationListFragment.newInstance();
-                    // getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
+                if (isAdded()) {
 
-                    Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
-
-                    if (f == null) {
-                        Log.d(TAG, "ConversationListFragment not found");
-                        // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
-
-                        f = ConversationListFragment.newInstance();
-                        getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f).commit();
-                    } else {
-                        Log.d(TAG, "ConversationListFragment found!");
-                        getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    }
+                    returnToConvoList();
 
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
                     if (!mNonHBContacts.isEmpty())
                         sendSMSInvite(guid);
-
                 } else {
-                    // TODO: if it's a conversation creation failure, display a dialog
-                    mIsWaiting = false;
-                    mProgressSpinner.setVisibility(View.INVISIBLE);
-                    // go back to contacts or back to the conversation list?
-                    Toast.makeText(getActivity(), "couldn't send message, try again", Toast.LENGTH_SHORT).show();
-                    Log.w(TAG, "conversation failed");
+                    Log.w(TAG, "skipping sms invite since fragment not added");
+                }
 
-                    if (mRecordingInfo != null) {
+            } else {
 
-                        long rowId = mRecordingInfo.getLong(RESOURCE_ROW_ID);
-                        Log.d(TAG, "deleting row: " + rowId);
+                // TODO: if it's a conversation creation failure, display a dialog
+                mIsWaiting = false;
+                mProgressSpinner.setVisibility(View.INVISIBLE);
+                // go back to contacts or back to the conversation list?
+                Toast.makeText(HollerbackApplication.getInstance(), "couldn't send message, try again", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "conversation failed");
+
+                if (mRecordingInfo != null) {
+
+                    long rowId = mRecordingInfo.getLong(RESOURCE_ROW_ID);
+                    Log.d(TAG, "deleting row: " + rowId);
+                    if (rowId >= 0)
                         new Delete().from(VideoModel.class).where("Id = ?", rowId).executeSingle();
 
-                    }
-                    // cleanup and remove data from sql?
                 }
-            } else {
-                Log.w(TAG, "received broadcast when not added");
             }
+
+        }
+
+        private void uploadVideo(long resourceId, int totalParts, String guid) {
+            Context c;
+            if (isAdded()) {
+                c = getActivity();
+            } else {
+                c = HollerbackApplication.getInstance();
+            }
+
+            Intent uploadIntent = new Intent();
+            uploadIntent.setClass(c, VideoUploadIntentService.class);
+            uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
+            uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
+            uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
+            getActivity().startService(uploadIntent);
 
         }
 
@@ -302,7 +319,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
             ImageUtil.generatePngThumbnailFromVideo(0, guid);
             Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
 
-            SmsUtil.invite(mActivity, mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
+            SmsUtil.invite(getActivity(), mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
     }
 

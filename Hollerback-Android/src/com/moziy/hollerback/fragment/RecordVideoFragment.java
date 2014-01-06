@@ -125,6 +125,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     public static String TAG = "VideoApp";
 
+    private boolean mHasRecordingStarted = false;
     private volatile boolean mIsRecording = false;
 
     static MediaRecorder recorder;
@@ -579,13 +580,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             if (getTargetFragment() != null) {
                 Bundle recordingInfo = new Bundle();
                 recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
+                recordingInfo.putLong(RecordingInfo.RESOURCE_ROW_ID, -1);
                 ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
             }
 
             // Broadcast that recording was cancelled
             IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
 
-            // getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0); // pop the back stack
+            if (!isRemoving()) { // if user paused or something happened, just pop the backstack
+                getFragmentManager().popBackStack(); // pop the back stack
+            }
 
             // fire off a ttyl
             Intent intent = new Intent();
@@ -594,6 +598,26 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             getActivity().startService(intent);
 
         }
+        // else if (!hasRecordingStarted()) { // recording hasn't event started yet and we're getting kicked out
+        // Log.d(TAG, "recording hasn't started so lets just cancel");
+        // if (getTargetFragment() != null) {
+        // Bundle recordingInfo = new Bundle();
+        // recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
+        // recordingInfo.putLong(RecordingInfo.RESOURCE_ROW_ID, -1);
+        // ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
+        // }
+        //
+        // // Broadcast that recording was cancelled
+        // IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
+        //
+        // if (!isRemoving()) {
+        // if (mConversationId > 0) {
+        // mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        // } else {
+        // getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
+        // }
+        // }
+        // }
 
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -621,6 +645,14 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private void clearRecordingFlag() {
         mIsRecording = false;
+    }
+
+    private void setRecordingStarted() {
+        mHasRecordingStarted = true;
+    }
+
+    private boolean hasRecordingStarted() {
+        return mHasRecordingStarted;
     }
 
     // TODO: Clean this up!!!!!
@@ -688,6 +720,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 // inform the user that recording has started
                 // mRecordButton.setImageResource(R.drawable.stop_button);
                 setRecordingFlag();
+                setRecordingStarted();
                 mHandler.removeCallbacks(timeTask);
                 mHandler.post(timeTask); // enable the time task
                 // mBlinker.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.blink));
