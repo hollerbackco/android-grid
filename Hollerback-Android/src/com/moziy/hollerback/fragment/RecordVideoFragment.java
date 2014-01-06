@@ -717,13 +717,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
                 recorder.start();
 
-                // inform the user that recording has started
-                // mRecordButton.setImageResource(R.drawable.stop_button);
                 setRecordingFlag();
                 setRecordingStarted();
                 mHandler.removeCallbacks(timeTask);
                 mHandler.post(timeTask); // enable the time task
-                // mBlinker.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.blink));
+
             } else {
                 // prepare didn't work, release the camera
                 releaseMediaRecorder();
