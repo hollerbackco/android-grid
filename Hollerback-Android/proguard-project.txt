@@ -60,6 +60,8 @@
 -dontwarn org.codehaus.jackson.**
 -dontwarn org.apache.commons.logging.impl.**
 -dontwarn org.apache.http.conn.scheme.**
+-dontwarn org.apache.http.annotation.**
+-dontwarn com.amazonaws.**
 
 #Support Library and Action Bar
 -keep class android.support.v4.app.** { *; } 
@@ -84,6 +86,12 @@
 -keep public class * extends com.activeandroid.ActiveRecordBase
 -keepattributes Column
 -keepattributes Table
+-keepclassmembers class * {
+    @fully.qualified.package.AnnotationType *;
+}
+-keep public class com.moziy.hollerback.model.** { *; }
+-keep public class com.moziy.hollerback.activeandroid.** { *; }
+
 
 #Jackson
 -keepattributes Signature
