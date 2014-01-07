@@ -37,6 +37,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -50,6 +52,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.SyncService;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 
 public class ConversationListFragment extends BaseFragment implements OnConversationsUpdated, LoaderCallbacks<List<ConversationModel>> {
@@ -174,6 +177,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 this.startSettingsFragment();
                 break;
             case R.id.action_find_friends:
+
+                // log analytic event
+
+                AnalyticsUtil.log(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListAddFriends, null);
+
                 ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
 
                 mActivity.getSupportFragmentManager().beginTransaction()
@@ -182,6 +190,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 // Toast.makeText(mActivity, "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.action_add:
+                // log analytic event
+                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                        MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
                 // OldContactsFragment fragment = OldContactsFragment.newInstance();
                 ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
@@ -200,6 +211,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             ConversationModel conversation = (ConversationModel) parent.getItemAtPosition(position);
 
             if (conversation == null) {
+
+                // log analytic event
+                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                        MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListNewConvo, null).build());
+
                 // this is the footer view
                 Log.d(TAG, "footer view tapped");
                 AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);

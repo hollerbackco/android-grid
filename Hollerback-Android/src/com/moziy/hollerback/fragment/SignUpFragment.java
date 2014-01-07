@@ -23,11 +23,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -35,6 +39,8 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
+import com.moziy.hollerback.util.AnalyticsUtil;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 import com.moziy.hollerback.util.PhoneTextWatcher;
@@ -216,7 +222,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mPhoneNumberField.getWindowToken(), 0);
-
         if (verifyFields()) {
 
             if (mIsSubmitted) {
@@ -224,6 +229,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             }
 
             final String regionCode = mSelectedCountry.code;
+
+            // log analytic event
+            EasyTracker.getInstance(HollerbackApplication.getInstance()).send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitRegInfo, null, null).build());
 
             mIsSubmitted = true;
             mLoadingBar.startLoading();
@@ -244,6 +252,12 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.REGION_CODE, regionCode);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, response.user.is_verified);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
+
+                    if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) { // change this later so that we can have it logged for dev too
+                        // crashlytics
+                        Crashlytics.setUserIdentifier(String.valueOf(response.user.id));
+                        Crashlytics.setUserName(response.user.username);
+                    }
 
                     SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
                     mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)

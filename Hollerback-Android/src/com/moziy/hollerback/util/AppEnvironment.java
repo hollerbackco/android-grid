@@ -1,5 +1,7 @@
 package com.moziy.hollerback.util;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.provider.Settings.Secure;
 
@@ -22,6 +24,29 @@ public class AppEnvironment {
     public static final String HB_DISK_CACHE_PATH = HB_SDCARD_PATH + "/" + "Cache";
 
     public static final String ANDROID_ID = Secure.getString(HollerbackApplication.getInstance().getContentResolver(), Secure.ANDROID_ID);
+
+    public static final String APP_VERSION_CODE;
+
+    public static final String APP_VERSION_NAME;
+
+    static {
+        PackageInfo pi = null;
+        try {
+            pi = HollerbackApplication.getInstance().getPackageManager().getPackageInfo(HollerbackApplication.getInstance().getPackageName(), 0);
+
+        } catch (NameNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        if (pi != null) {
+            APP_VERSION_CODE = String.valueOf((pi.versionCode));
+            APP_VERSION_NAME = pi.versionName;
+        } else {
+            APP_VERSION_CODE = null;
+            APP_VERSION_NAME = null;
+        }
+
+    }
 
     // DEV
     // http://lit-sea-1934.herokuapp.com/

@@ -8,6 +8,7 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONObject;
 
 import android.app.Application;
+import android.os.Build;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -70,7 +71,18 @@ public class HollerbackAsyncClient {
     }
 
     private static void setHeaders() {
-        // client.addHeader("X-PLATFORM", "ANDROID");
+        client.addHeader(Header.HTTP_PLATFORM, "android");
+        client.addHeader(Header.HTTP_ANDROID_OS_VERSION, Build.VERSION.RELEASE + ";;" + Build.VERSION.SDK_INT);
+        client.addHeader(Header.HTTP_ANDROID_APP_VERSION, AppEnvironment.APP_VERSION_CODE + ";;" + AppEnvironment.APP_VERSION_NAME);
+        client.addHeader(Header.HTTP_ANDROID_MODEL_NAME, Build.MANUFACTURER + ";;" + Build.MODEL);
+    }
+
+    private interface Header {
+        public static final String HTTP_PLATFORM = "HTTP_PLATFORM";
+        public static final String HTTP_ANDROID_OS_VERSION = "HTTP_ANDROID_OS_VERSION";
+        public static final String HTTP_ANDROID_APP_VERSION = "HTTP_ANDROID_APP_VERSION";
+        public static final String HTTP_ANDROID_MODEL_NAME = "HTTP_ANDROID_MODEL_NAME";
+
     }
 
 }

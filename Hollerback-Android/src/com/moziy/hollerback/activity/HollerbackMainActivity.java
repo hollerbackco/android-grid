@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
@@ -24,7 +23,6 @@ import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConver
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.task.Task;
-import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.contacts.ContactsDelegate;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 
@@ -45,8 +43,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
         setTheme(R.style.Hollerback);
         mContactsDelegate = new ContactsDelegate(this);
         super.onCreate(savedInstanceState);
-        if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION)
-            Crashlytics.start(this);
+
         mContactsDelegate.initWorkers();
 
         setContentView(R.layout.hollerback_main);

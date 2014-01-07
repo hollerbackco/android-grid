@@ -6,6 +6,7 @@ import android.util.Log;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Set;
 import com.activeandroid.query.Update;
+import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +19,10 @@ import com.moziy.hollerback.service.BgDownloadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.TaskGroup;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class HollerbackApplication extends com.activeandroid.app.Application {
     private static HollerbackApplication sInstance = null;
@@ -29,6 +33,14 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) {
+            Crashlytics.start(this);
+            long userId = PreferenceManagerUtil.getPreferenceValue(HBPreferences.ID, -1L);
+            if (userId != -1) {
+                Crashlytics.setUserIdentifier(String.valueOf(userId));
+            }
+        }
 
         ActiveAndroid.setLoggingEnabled(true);
         initObjectMapper();

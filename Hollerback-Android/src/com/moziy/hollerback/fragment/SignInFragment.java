@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -26,6 +27,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.widget.CustomEditText;
@@ -171,6 +173,13 @@ public class SignInFragment extends BaseFragment {
         String userName = response.user.username;
         String phone = response.user.phone;
         long id = response.user.id;
+
+        // save info for crashlytics
+        if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) {
+
+            Crashlytics.setUserIdentifier(String.valueOf(id));
+            Crashlytics.setUserName(userName);
+        }
 
         /**
          * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
