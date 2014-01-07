@@ -114,10 +114,6 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.moziy.hollerback.service.VideoUploadService" />
-        <service
-            android:name="com.moziy.hollerback.service.HollerbackVideoService"
-            android:exported="false" />
         <service
             android:name=".service.VideoUploadIntentService"
             android:exported="false" >

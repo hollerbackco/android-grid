@@ -15,10 +15,10 @@ public class CustomActionBarHelper {
     private View mActionBar;
 
     public CustomActionBarHelper(View actionbar) {
-        mImageLeftBtn = (ImageButton) actionbar.findViewById(R.id.ib_action_left);
-        mImageRightBtn = (ImageButton) actionbar.findViewById(R.id.ib_action_right);
-        mHeaderLogo = (ImageView) actionbar.findViewById(R.id.iv_action_logo);
-        mHeaderText = (TextView) actionbar.findViewById(R.id.tv_action_name);
+        // mImageLeftBtn = (ImageButton) actionbar.findViewById(R.id.ib_action_left);
+        // mImageRightBtn = (ImageButton) actionbar.findViewById(R.id.ib_action_right);
+        // mHeaderLogo = (ImageView) actionbar.findViewById(R.id.iv_action_logo);
+        // mHeaderText = (TextView) actionbar.findViewById(R.id.tv_action_name);
         // mHeaderText.setTypeface(FontUtil.MuseoSans_500);
         mActionBar = actionbar;
     }
