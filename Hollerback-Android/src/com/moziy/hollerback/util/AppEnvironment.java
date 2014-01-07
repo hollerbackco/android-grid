@@ -87,7 +87,7 @@ public class AppEnvironment {
                 LogUtil.d("Setting Development Environment");
                 BASE_URL = "http://lit-sea-1934.herokuapp.com";
                 FORCE_PHONE_NUMBER_CHECK = true;
-                LOG_CRASHES = false;
+                LOG_CRASHES = true;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
                 UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
                 break;
