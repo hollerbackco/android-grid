@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -104,6 +105,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
 
         // mPlaybackIndex = -1;
@@ -129,6 +131,12 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
         mConvoDelegate.init(savedInstanceState);
         mHistoryDelegate.init(savedInstanceState);
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     /**
