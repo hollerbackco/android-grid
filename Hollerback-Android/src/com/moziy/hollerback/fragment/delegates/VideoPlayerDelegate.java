@@ -1,6 +1,8 @@
 package com.moziy.hollerback.fragment.delegates;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +41,7 @@ import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.HBFileUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
@@ -265,6 +268,50 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
             ++mPlaybackIndex;
         }
 
+        VideoModel nextVideo = mPlaybackQueue.get(mPlaybackIndex);
+
+        // sort the videos
+        Collections.sort(mPlaybackQueue, new Comparator<VideoModel>() {
+
+            @Override
+            public int compare(VideoModel lhs, VideoModel rhs) {
+
+                if (lhs.isRead() && !rhs.isRead()) {
+                    return -1;
+                } else if (!lhs.isRead() && rhs.isRead()) {
+                    return 1;
+                } else if (lhs.isRead() && rhs.isRead()) {
+
+                    if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() < TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                        return -1;
+                    } else if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() > TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                        return 1;
+                    }
+
+                    return 0;
+
+                } else if (!lhs.isRead() && !rhs.isRead()) {
+                    if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() < TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                        return -1;
+                    } else if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() > TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                return 0;
+            }
+        });
+
+        // find the video in the playback queue
+        for (int i = 0; i < mPlaybackQueue.size(); i++) {
+            if (nextVideo == mPlaybackQueue.get(i)) {
+                mPlaybackIndex = i;
+                break;
+            }
+        }
+
         // if we're just watching history, then start immediate playback, if it's on disk
         if (!mHasNewVideo && (VideoModel.ResourceState.ON_DISK.equals(video.getState()) || (video.isSegmented() /* && VideoModel.ResourceState.UPLOADED.equals(video.getState()) */))) {
             if (mPlaybackQueue.get(mPlaybackIndex).getGuid() == video.getGuid()) {
@@ -404,7 +451,8 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
     @Override
     public void onCompletion(MediaPlayer mp) {
         Log.d(TAG, "video playback complete");
-        mp.reset();
+        mVideoView.stopPlayback();
+        // mp.reset();
 
         // once the playback is complete, lets see if the next one is ready
         VideoModel video = mPlaybackQueue.get(mPlaybackIndex); // remove the one that just finished
@@ -471,8 +519,8 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
             f.setTargetFragment(mConvoFragment, 0);
-            mConvoFragment.getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
-                    .replace(R.id.fragment_holder, f).addToBackStack(ConversationFragment.FRAGMENT_TAG).commit();
+            mConvoFragment.getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f)
+                    .addToBackStack(ConversationFragment.FRAGMENT_TAG).commit();
         }
     }
 
