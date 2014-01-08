@@ -14,6 +14,7 @@ import android.content.res.Resources;
 
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.AppEnvironment;
 
 public class HttpDownloadTask extends AbsTask {
 
@@ -36,7 +37,7 @@ public class HttpDownloadTask extends AbsTask {
         HttpURLConnection conn = null;
         try {
             Resources res = HollerbackApplication.getInstance().getResources();
-            if (res.getBoolean(R.bool.ENABLE_PROXY)) {
+            if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_DEVELOPMENT && res.getBoolean(R.bool.ENABLE_PROXY)) {
                 Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(res.getString(R.string.PROXY_URL), res.getInteger(R.integer.PROXY_PORT)));
                 conn = (HttpURLConnection) (new URL(mSource).openConnection(proxy));
             } else {
