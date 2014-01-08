@@ -149,6 +149,9 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.btnRecord.setEmphasized(true);
             viewHolder.btnRecord.setVisibility(View.GONE);
 
+            if (conversationModel.getSubTitle() != null)
+                viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
+
         } else {
             bg = mActivity.getResources().getDrawable(R.drawable.bg_white);
             viewHolder.conversationName.setTextColor(mHBTextColor);

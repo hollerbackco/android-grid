@@ -269,7 +269,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
             mAllConvoVideos = new Select()//
                     .from(VideoModel.class) //
-                    .where(mWhere).execute();
+                    .where(mWhere).orderBy("strftime('%s'," + ActiveRecordFields.C_VID_CREATED_AT + ")").execute();
 
             // get the videos that we wish to download and set them as transacting
             mVideosForDownload = VideoHelper.getVideosForTransaction(mWhere + " AND " + ActiveRecordFields.C_VID_STATE + "='" + VideoModel.ResourceState.PENDING_DOWNLOAD + "'");
