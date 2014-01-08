@@ -10,7 +10,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.moziy.hollerback.R;
 
 /**
@@ -19,7 +18,7 @@ import com.moziy.hollerback.R;
  * TODO: add support for positioning
  * TODO: Create a version that extends a regular imageview
  */
-public class RoundNetworkImageView extends NetworkImageView {
+public class RoundNetworkImageView extends CustomNetworkImageView {
     private static final String TAG = RoundNetworkImageView.class.getSimpleName();
     private Bitmap mMask;
     private int mRadius;
