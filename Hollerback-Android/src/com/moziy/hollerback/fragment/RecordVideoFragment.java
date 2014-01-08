@@ -361,19 +361,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mTexturePreview.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View v) {
-                if (isRecording()) { // send the video once recording has stopped
-
-                    stopRecording();
-
-                    if (mConversationId < 0) {
-                        Log.d(TAG, "attempt to create new conversation");
-                        inviteAndRecordVideo();
-                    } else {
-                        Log.d(TAG, "attempt to post to existing conversation");
-                        postToConversation(mConversationId);
-                    }
-                }
+            public void onClick(View v) { // don't do anything
+                // if (isRecording()) { // send the video once recording has stopped
+                //
+                // stopRecording();
+                //
+                // if (mConversationId < 0) {
+                // Log.d(TAG, "attempt to create new conversation");
+                // inviteAndRecordVideo();
+                // } else {
+                // Log.d(TAG, "attempt to post to existing conversation");
+                // postToConversation(mConversationId);
+                // }
+                // }
 
             }
         });
