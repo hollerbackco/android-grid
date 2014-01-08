@@ -129,6 +129,11 @@ public class VideoModel extends BaseModel implements Serializable, SyncPayload {
 
     public void setCreateDate(String value) {
         created_at = value;
+        sent_at = created_at;
+    }
+
+    public String getSentAtDate() {
+        return sent_at;
     }
 
     public String getThumbUrl() {
