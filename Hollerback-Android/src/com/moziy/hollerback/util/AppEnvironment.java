@@ -62,7 +62,7 @@ public class AppEnvironment {
     public static final String ANDROID_RESOURCE_PATH = "android.resource://" + HollerbackApplication.getInstance().getPackageName() + "/";
     public static final String NOTIF_SOUND_URI = ANDROID_RESOURCE_PATH + R.raw.default_notification;
 
-    public static final int MEMORY_CACHE_SIZE = 20;
+    public static final int MEMORY_CACHE_SIZE = 30;
     public static final int DISK_CACHE_SIZE = 100;
 
     // public static final String PICTURE_NAME = null;
