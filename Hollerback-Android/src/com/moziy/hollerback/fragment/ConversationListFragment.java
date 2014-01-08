@@ -367,7 +367,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
 
         Log.d(TAG, "loader finished");
-        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity(), this);
         mConversationListAdapter.setConversations(data);
         mConversationList.setAdapter(mConversationListAdapter);
         mConversationList.setOnItemClickListener(mOnListItemClickListener);
@@ -381,7 +381,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     @Override
     public void onLoaderReset(Loader<List<ConversationModel>> loader) {
         // TODO: remove all references to the data
-        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity(), this);
         mConversationList.setAdapter(mConversationListAdapter);
         mConversationListAdapter.notifyDataSetChanged();
 

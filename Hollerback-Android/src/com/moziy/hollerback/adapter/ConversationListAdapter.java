@@ -57,10 +57,11 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
     private SparseArray<Drawable> mColorDrawables;
 
     private SherlockFragmentActivity mActivity;
+    private ConversationListFragment mFragment;
 
     // protected ImageLoader imageLoader = ImageLoader.getInstance();
 
-    public ConversationListAdapter(SherlockFragmentActivity activity) {
+    public ConversationListAdapter(SherlockFragmentActivity activity, ConversationListFragment fragment) {
         mActivity = activity;
         inflater = LayoutInflater.from(activity);
         mConversations = new ArrayList<ConversationModel>();
@@ -208,11 +209,13 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
             @Override
             public void onClick(View v) {
-                mActivity.getActionBar().hide();
-                // TODO: no need to pass in watched ids
-                RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName());
-                mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
-                        .replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
+                if (mFragment.isResumed()) { // don't process it if we're not resumed
+                    mActivity.getActionBar().hide();
+                    // TODO: no need to pass in watched ids
+                    RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName());
+                    mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in_scale_up, R.anim.fade_out, R.anim.slide_in_from_top, R.anim.slide_out_to_bottom)
+                            .replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commit();
+                }
             }
         });
 
