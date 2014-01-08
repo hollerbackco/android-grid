@@ -99,6 +99,22 @@ public class SignUpConfirmFragment extends BaseFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // if there's an access token set and the user is verified, go to the convo list
+        if (!"".equals(PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, "")) && PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_VERIFIED, false)) {
+
+            // user is officially logged in and registered, pop everything
+            getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
+
+            ConversationListFragment fragment = ConversationListFragment.newInstance();
+            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+        }
+
+    }
+
+    @Override
     protected void initializeView(View view) {
         mTxtPhone = (TextView) mRootView.findViewById(R.id.tv_phone);
 
@@ -183,15 +199,16 @@ public class SignUpConfirmFragment extends BaseFragment {
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, true);
 
-                            // user is officially logged in and registered, pop everything
-                            getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
+                            if (isResumed()) {
+                                // user is officially logged in and registered, pop everything
+                                getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
 
-                            // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
-                            // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
-                            // ContactsFragment fragment = ContactsFragment.newInstance();
-                            ConversationListFragment fragment = ConversationListFragment.newInstance();
-                            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                    .commitAllowingStateLoss();
+                                // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
+                                // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
+                                // ContactsFragment fragment = ContactsFragment.newInstance();
+                                ConversationListFragment fragment = ConversationListFragment.newInstance();
+                                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+                            }
                         } else {
                             Log.e(TAG, "no access token sent!");
                             throw new IllegalStateException("No access token sent on successful registration!");

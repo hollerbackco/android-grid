@@ -197,7 +197,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             // go directly to the signup fragment
             SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                    .commitAllowingStateLoss();
+                    .commit();
         }
     }
 
@@ -259,9 +259,11 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                         Crashlytics.setUserName(response.user.username);
                     }
 
-                    SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
-                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                    if (isResumed()) { // go to the confirmation only if in the resumed state
+                        SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
+                        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                                .addToBackStack(FRAGMENT_TAG).commit();
+                    }
 
                 }
 

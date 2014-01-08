@@ -178,25 +178,28 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 break;
             case R.id.action_find_friends:
 
-                // log analytic event
+                if (isResumed()) { // no need to launch if we're not in the resumed state
+                    // log analytic event
+                    AnalyticsUtil.log(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListAddFriends, null);
 
-                AnalyticsUtil.log(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListAddFriends, null);
+                    ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
 
-                ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
-
-                mActivity.getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top).replace(R.id.fragment_holder, f)
-                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                    mActivity.getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top).replace(R.id.fragment_holder, f)
+                            .addToBackStack(FRAGMENT_TAG).commit();
+                }
                 // Toast.makeText(mActivity, "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.action_add:
-                // log analytic event
-                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
-                        MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
-                // OldContactsFragment fragment = OldContactsFragment.newInstance();
-                ContactsFragment fragment = ContactsFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                        .commitAllowingStateLoss();
+                if (isResumed()) { // no need to take action if we're not in the resumed state
+                    // log analytic event
+                    EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                            MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
+                    // OldContactsFragment fragment = OldContactsFragment.newInstance();
+                    ContactsFragment fragment = ContactsFragment.newInstance();
+                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            .addToBackStack(FRAGMENT_TAG).commit();
+                }
                 break;
         }
 
@@ -207,6 +210,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            // return if we're not in the resumsed state since we can't add fragments
+            if (!isResumed())
+                return;
+
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
             ConversationModel conversation = (ConversationModel) parent.getItemAtPosition(position);
 
@@ -224,7 +232,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
                 ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                        .commitAllowingStateLoss();
+                        .commit();
 
                 return;
             }
