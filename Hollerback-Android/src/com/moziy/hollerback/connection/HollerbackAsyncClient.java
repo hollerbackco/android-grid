@@ -71,17 +71,17 @@ public class HollerbackAsyncClient {
     }
 
     private static void setHeaders() {
-        client.addHeader(Header.HTTP_PLATFORM, "android");
-        client.addHeader(Header.HTTP_ANDROID_OS_VERSION, Build.VERSION.RELEASE + ";;" + Build.VERSION.SDK_INT);
-        client.addHeader(Header.HTTP_ANDROID_APP_VERSION, AppEnvironment.APP_VERSION_CODE + ";;" + AppEnvironment.APP_VERSION_NAME);
-        client.addHeader(Header.HTTP_ANDROID_MODEL_NAME, Build.MANUFACTURER + ";;" + Build.MODEL);
+        client.addHeader(Header.PLATFORM, "android");
+        client.addHeader(Header.ANDROID_OS_VERSION, Build.VERSION.RELEASE + ";;" + Build.VERSION.SDK_INT);
+        client.addHeader(Header.ANDROID_APP_VERSION, AppEnvironment.APP_VERSION_CODE + ";;" + AppEnvironment.APP_VERSION_NAME);
+        client.addHeader(Header.ANDROID_MODEL_NAME, Build.MANUFACTURER + ";;" + Build.MODEL);
     }
 
     private interface Header {
-        public static final String HTTP_PLATFORM = "HTTP_PLATFORM";
-        public static final String HTTP_ANDROID_OS_VERSION = "HTTP_ANDROID_OS_VERSION";
-        public static final String HTTP_ANDROID_APP_VERSION = "HTTP_ANDROID_APP_VERSION";
-        public static final String HTTP_ANDROID_MODEL_NAME = "HTTP_ANDROID_MODEL_NAME";
+        public static final String PLATFORM = "PLATFORM";
+        public static final String ANDROID_OS_VERSION = "ANDROID_OS_VERSION";
+        public static final String ANDROID_APP_VERSION = "ANDROID_APP_VERSION";
+        public static final String ANDROID_MODEL_NAME = "ANDROID_MODEL_NAME";
 
     }
 
