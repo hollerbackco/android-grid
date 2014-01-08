@@ -169,10 +169,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return fragment;
     }
 
-    Thread mOpenCameraThread = new Thread() {
+    private Thread mOpenCameraThread = new Thread() {
         public void run() {
 
             openCamera();
+
+            setBestPreviewAndVideoSizes();
 
             mHandler.post(new Runnable() {
 
@@ -663,7 +665,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             @Override
             public void run() {
 
-                openCamera();
+                if (!openCamera()) // don't do anything if we couldn't open the camera for any reason
+                    return;
+
+                setBestPreviewAndVideoSizes();
 
                 mHandler.post(new Runnable() { // camera preview must be updated on ui thread
 
@@ -984,12 +989,44 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private void openCamera() {
+    /**
+     * 
+     * @return true for a successfull open or false for unsuccessfull open
+     */
+    private boolean openCamera() {
         Log.d(TAG, "opening " + mCurrentCameraId + " camera");
 
-        mCamera = Camera.open(mCurrentCameraId);
+        // handle case where the open gives us a runtime exception
+        int numRetries = 0;
+        do {
+
+            try {
+
+                mCamera = Camera.open(mCurrentCameraId);
+
+                if (mCamera == null)
+                    ++numRetries;
+
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                ++numRetries;
+                mCamera = null;
+            }
+
+        } while (numRetries <= 1 && mCamera == null);
+
+        if (mCamera == null) {
+            Toast.makeText(HollerbackApplication.getInstance(), "camera cannot be opened", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         disableShutterSound();
+
+        return true;
+
+    }
+
+    private void setBestPreviewAndVideoSizes() {
         // logic:
         // 1. see if there is a preferred video size, if so just use that
 
@@ -1018,7 +1055,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         }
 
         Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
-
     }
 
     /**
