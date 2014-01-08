@@ -7,11 +7,11 @@
     </com.moziy.hollerback.view.preference.CustomPreferenceCategory>
     <com.moziy.hollerback.view.preference.CustomPreferenceCategory android:title="@string/preference_category_account" >
         <com.moziy.hollerback.view.preference.CustomPreference
-            android:enabled="false"
+            android:enabled="true"
             android:key="preference_username"
             android:title="@string/preference_username" />
         <com.moziy.hollerback.view.preference.CustomPreference
-            android:enabled="false"
+            android:enabled="true"
             android:key="preference_phone"
             android:title="@string/preference_phone" />
     </com.moziy.hollerback.view.preference.CustomPreferenceCategory>

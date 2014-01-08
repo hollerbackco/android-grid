@@ -194,6 +194,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         super.onResume();
 
         if (mIsSubmitted && PreferenceManagerUtil.getPreferenceValue(HBPreferences.USERNAME, null) != null) {
+            mIsSubmitted = false; // clear it
             // go directly to the signup fragment
             SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
@@ -240,8 +241,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
                 @Override
                 public void onResponseSuccess(int statusCode, RegisterResponse response) {
-
-                    mIsSubmitted = false;
 
                     mLoadingBar.stopLoading();
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, response.user.username);

@@ -13,6 +13,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.HBEasterEggUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
@@ -67,6 +68,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
         this.getSupportActionBar().setCustomView(customView);
         this.getSupportActionBar().setIcon(R.drawable.banana_medium);
 
+        HBEasterEggUtil.init();
+
         addPreferencesFromResource(R.xml.app_preferences);
 
         preference_friends = (Preference) getPreferenceScreen().findPreference("preference_friends");
@@ -112,6 +115,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
+                HBEasterEggUtil.setX(true);
+
                 return false;
             }
         });
@@ -122,6 +127,8 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
+
+                HBEasterEggUtil.setY(true);
 
                 return false;
             }
