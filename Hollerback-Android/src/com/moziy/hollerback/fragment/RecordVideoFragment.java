@@ -73,6 +73,7 @@ import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class RecordVideoFragment extends BaseFragment implements TextureView.SurfaceTextureListener, SurfaceHolder.Callback2 {
+    private static final String TAG = RecordVideoFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = RecordVideoFragment.class.getSimpleName();
     public static final String FRAGMENT_ARG_PHONES = "phones";
     public static final String FRAGMENT_ARG_TITLE = "title";
@@ -124,8 +125,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private int mTotalParts;
 
     int timer = 30;
-
-    public static String TAG = "VideoApp";
 
     private volatile boolean mHasRecordingStarted = false;
     private volatile boolean mIsRecording = false;
@@ -1332,6 +1331,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             }
         }
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 
 }

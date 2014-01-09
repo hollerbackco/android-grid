@@ -233,4 +233,10 @@ public class SignInFragment extends BaseFragment {
 
     }
 
+    @Override
+    protected String getFragmentName() {
+        // TODO Auto-generated method stub
+        return TAG;
+    }
+
 }

@@ -475,4 +475,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         }
 
     }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
 }

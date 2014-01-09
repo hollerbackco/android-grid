@@ -31,6 +31,7 @@ import com.moziy.hollerback.debug.LogUtil;
  *
  */
 public class ConversationMembersFragment extends BaseFragment {
+    private static final String TAG = ConversationMembersFragment.class.getSimpleName();
     private SherlockFragmentActivity mActivity;
     private ViewGroup mRootView;
     private TextView mHeaderView;
@@ -247,5 +248,10 @@ public class ConversationMembersFragment extends BaseFragment {
             }
 
         });
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 }

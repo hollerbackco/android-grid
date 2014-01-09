@@ -47,7 +47,7 @@ import com.moziy.hollerback.view.CustomVideoView;
 import com.origamilabs.library.views.StaggeredGridView;
 
 public class ConversationHistoryFragment extends BaseFragment {
-
+    private static final String TAG = ConversationHistoryFragment.class.getSimpleName();
     public static final String BUNDLE_ARG_CONVERSATION = "conversation_arg";
     /**
      * This piece of shit takes up 100% height unless you restrict it
@@ -476,5 +476,10 @@ public class ConversationHistoryFragment extends BaseFragment {
 
             return null;
         }
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 }

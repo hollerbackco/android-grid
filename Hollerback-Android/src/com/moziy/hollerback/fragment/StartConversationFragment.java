@@ -336,4 +336,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
         mRecordingInfo = info;
     }
 
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
+
 }

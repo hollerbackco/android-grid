@@ -90,4 +90,9 @@ public class WelcomeFragment extends BaseFragment {
         fragmentTransaction.addToBackStack(SignInFragment.class.getSimpleName());
         fragmentTransaction.commit();
     }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
 }

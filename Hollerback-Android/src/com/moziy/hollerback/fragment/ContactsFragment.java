@@ -665,4 +665,9 @@ public class ContactsFragment extends BaseFragment {
         public void setNumberOfItems(int num);
     }
 
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
+
 }

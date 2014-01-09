@@ -386,4 +386,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         }
     }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
 }

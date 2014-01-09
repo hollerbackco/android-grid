@@ -320,4 +320,10 @@ public class SignUpConfirmFragment extends BaseFragment {
         });
 
     }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
+
 }

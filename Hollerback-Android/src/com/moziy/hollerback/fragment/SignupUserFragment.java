@@ -132,4 +132,9 @@ public class SignupUserFragment extends BaseFragment {
 
     }
 
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
+
 }
