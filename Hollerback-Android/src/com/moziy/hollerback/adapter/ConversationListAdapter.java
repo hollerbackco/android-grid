@@ -63,6 +63,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
     public ConversationListAdapter(SherlockFragmentActivity activity, ConversationListFragment fragment) {
         mActivity = activity;
+        mFragment = fragment;
         inflater = LayoutInflater.from(activity);
         mConversations = new ArrayList<ConversationModel>();
         mFilteredConversations = new ArrayList<ConversationModel>();
