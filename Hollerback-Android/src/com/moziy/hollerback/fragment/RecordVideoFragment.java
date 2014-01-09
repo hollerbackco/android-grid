@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
@@ -89,6 +90,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private static final int PREFERRED_VIDEO_WIDTH = 320;
     private static final int PREFERRED_VIDEO_HEIGHT = 240;
 
+    private final Semaphore mCameraSemaphore = new Semaphore(1);
     private volatile Camera mCamera = null;
     private Preview mCameraPreview;
     private PreviewTouchDelegate mPreviewDelegate;
@@ -125,8 +127,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     public static String TAG = "VideoApp";
 
-    private boolean mHasRecordingStarted = false;
+    private volatile boolean mHasRecordingStarted = false;
     private volatile boolean mIsRecording = false;
+
+    private volatile boolean mIsExiting;
 
     static MediaRecorder recorder;
 
@@ -563,6 +567,16 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     @Override
     public void onPause() {
 
+        try {
+            // not a great idea, but how to prevent camera failures?
+            mCameraSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        mIsExiting = true;
+
+        Log.d(TAG, "onPause");
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
@@ -570,6 +584,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mHandler.removeCallbacks(timeTask); // stop the timeer task from runnin
 
         if (isRecording()) {
+
+            // push these off to the background thread
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
             clearRecordingFlag();
@@ -599,27 +615,26 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             intent.putExtra(TTYLService.CONVO_ID_INTENT_ARG_KEY, mConversationId);
             getActivity().startService(intent);
 
+        } else if (!hasRecordingStarted()) { // recording hasn't event started yet and we're getting kicked out
+            Log.d(TAG, "recording hasn't started so lets just cancel");
+            if (getTargetFragment() != null) {
+                Bundle recordingInfo = new Bundle();
+                recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
+                recordingInfo.putLong(RecordingInfo.RESOURCE_ROW_ID, -1);
+                ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
+            }
+
+            // Broadcast that recording was cancelled
+            IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
+
+            if (!isRemoving()) {
+                if (mConversationId > 0) {
+                    mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                } else {
+                    getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
+                }
+            }
         }
-        // else if (!hasRecordingStarted()) { // recording hasn't event started yet and we're getting kicked out
-        // Log.d(TAG, "recording hasn't started so lets just cancel");
-        // if (getTargetFragment() != null) {
-        // Bundle recordingInfo = new Bundle();
-        // recordingInfo.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, false);
-        // recordingInfo.putLong(RecordingInfo.RESOURCE_ROW_ID, -1);
-        // ((RecordingInfo) getTargetFragment()).onRecordingFinished(recordingInfo);
-        // }
-        //
-        // // Broadcast that recording was cancelled
-        // IABroadcastManager.sendLocalBroadcast(new Intent(IABIntent.RECORDING_CANCELLED));
-        //
-        // if (!isRemoving()) {
-        // if (mConversationId > 0) {
-        // mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        // } else {
-        // getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
-        // }
-        // }
-        // }
 
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -634,6 +649,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         super.onPause();
         enableShutterSound();
+
+        mCameraSemaphore.release();
 
     }
 
@@ -682,12 +699,30 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                             @Override
                             public void run() {
 
+                                if (mCamera == null) // return if anything is going on
+                                    return;
+
+                                try {
+                                    mCameraSemaphore.acquire();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (mIsExiting) {
+                                    mCameraSemaphore.release();
+                                    Log.d(TAG, "exiting due to being paused");
+                                    return;
+                                }
+
                                 boolean previewStarted = startPreview(mCurrentCameraId);
 
                                 if (previewStarted) {
 
-                                    if (!isRecording()) {
+                                    if (!isRecording() && isResumed()) { // start the recording only if we're not recording and we're in the resumed state
+                                        Log.d(TAG, "start recording");
                                         startRecording();
+                                    } else if (!isResumed()) {
+                                        Log.d(TAG, "not starting recording due to being paused");
                                     }
                                 }
 
@@ -706,6 +741,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                                     }, 500);
 
                                 }
+
+                                mCameraSemaphore.release();
                             }
                         });
                     }
@@ -733,6 +770,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 // inform user
             }
         } catch (java.lang.RuntimeException e) {
+            e.printStackTrace();
             // Toast.makeText(mActivity, R.string.record_error, Toast.LENGTH_LONG).show();
             releaseMediaRecorder();
             onRecordingFailed();
