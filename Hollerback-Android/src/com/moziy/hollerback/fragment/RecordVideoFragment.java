@@ -33,6 +33,9 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -47,9 +50,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -287,12 +287,12 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         if (USE_SURFACE_VIEW) {
             PreviewSurfaceView surfaceView = new PreviewSurfaceView(getActivity());
             surfaceView.getHolder().addCallback(this);
-            surfaceView.setOnClickListener(mSendButtonClick);
+            // surfaceView.setOnClickListener(mSendButtonClick); //disable these for now
             // surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             mCameraPreview = surfaceView;
         } else {
             PreviewTextureView textureView = new PreviewTextureView(getActivity());
-            textureView.setOnClickListener(mSendButtonClick);
+            // textureView.setOnClickListener(mSendButtonClick); //disable these for now
             // textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             textureView.setSurfaceTextureListener(this);
             mCameraPreview = textureView;
