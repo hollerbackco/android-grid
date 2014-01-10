@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import android.support.v4.app.Fragment;
+import android.util.Log;
 
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.service.task.Task;
@@ -11,12 +12,13 @@ import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.TaskGroup;
 
 public class AbsTaskWorker extends Fragment {
-
+    private static final String TAG = AbsTaskWorker.class.getSimpleName();
     public static final String SERIAL_EXECUTER_BUNDLE_ARG_KEY = "SERIAL_EXECUTER";
     protected TaskExecuter mExecuter;
     protected Task mTask;
     protected TaskClient mTaskClient;
     protected boolean mRunSerially = false;
+    protected boolean mIsFinished;
 
     protected void clearTaskListeners(Task t) {
 
@@ -41,7 +43,9 @@ public class AbsTaskWorker extends Fragment {
     }
 
     protected void setTaskListeners(Task t, boolean notify) {
+
         if (t == null) {
+            Log.d(TAG, "task is null");
             return;
         }
 
@@ -70,6 +74,14 @@ public class AbsTaskWorker extends Fragment {
             }
 
         }
+    }
+
+    public Task getTask() {
+        return mTask;
+    }
+
+    public boolean isFinished() {
+        return mIsFinished;
     }
 
 }

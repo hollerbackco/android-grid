@@ -171,6 +171,7 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
         mPausedDuringPlayback = mVideoView.isPlaying();
         if (mPausedDuringPlayback)
             mVideoView.stopPlayback();
+
     }
 
     @Override

@@ -30,6 +30,7 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         setRetainInstance(true);
 
         mTask = ((TaskClient) getTargetFragment()).getTask(); // start working on the task
+        mIsFinished = false;
 
         if (getArguments() != null) {
             Bundle args = getArguments();
@@ -46,7 +47,11 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         Log.d(TAG, "myId: " + getTag());
 
         mTaskClient = (TaskClient) getTargetFragment();
-        setTaskListeners(mTask, false);
+        if (!mIsFinished) {
+            setTaskListeners(mTask, false);
+        } else {
+            setTaskListeners(mTask, true); // notify that we're done with the task
+        }
 
         if (mExecuter == null) {
             // start executing the task
@@ -55,12 +60,13 @@ public class FragmentTaskWorker extends AbsTaskWorker {
                 @Override
                 protected void onPostExecute(Task result) {
                     super.onPostExecute(result);
-
-                    Log.d(TAG, "removing self from fragment manager");
-                    if (getFragmentManager() != null) { // if we've been removed completely, no need to remove
-                        setTargetFragment(null, 0); // clear out the target fragment as to avoid state loss info
-                        getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
-                    }
+                    mIsFinished = true;
+                    Log.d(TAG, "finished " + getTag());
+                    // Log.d(TAG, "removing self from fragment manager");
+                    // if (getFragmentManager() != null) { // if we've been removed completely, no need to remove
+                    // setTargetFragment(null, 0); // clear out the target fragment as to avoid state loss info
+                    // getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
+                    // }
 
                     clearTaskListeners(mTask);
 

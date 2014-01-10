@@ -79,7 +79,7 @@ public class AppEnvironment {
     public static final int ENV_PRODUCTION = 0x9999;
     public static final int ENV_DEVELOPMENT = 0x1234;
 
-    public final int ENV = ENV_PRODUCTION;
+    public final int ENV = ENV_DEVELOPMENT;
 
     public final String IMAGE_THUMB_SUFFIX = "-thumb.png";
 

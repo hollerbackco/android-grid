@@ -199,14 +199,19 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     @Override
     public void onPause() {
+        if (isRemoving()) {
+            Log.d(TAG, "isRemoving = true");
+        }
 
         mVideoPlayerDelegate.onPreSuperPause(this);
         mConvoDelegate.onPreSuperPause(this);
+        mHistoryDelegate.onPreSuperPause(this);
 
         super.onPause();
 
         mVideoPlayerDelegate.onPostSuperPause(this);
         mConvoDelegate.onPostSuperPause(this);
+        mHistoryDelegate.onPostSuperPause(this);
 
     }
 

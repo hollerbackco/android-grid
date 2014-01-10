@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.activeandroid.query.Select;
@@ -28,11 +29,13 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     private static final String TAG = ConvoLoaderDelegate.class.getSimpleName();
     public static final String VIDEO_MODEL_INSTANCE_STATE = "VIDEO_MODEL_INSTANCE_STATE";
     public static final String CONVO_VIDEOS_INSTANCE_STATE = "CONVO_VIDEOS_INSTANCE_STATE";
+    public static final String VIDEO_DL_LIST_INSTANCE_STATE = "VIDEO_DL_LIST_INSTANCE_STATE";
     private ArrayList<VideoModel> mUnwatchedVideos; // contains all new videos (ONLY NEW VIDEOS - NO HISTORY)
     private Map<String, VideoModel> mConvoVideoMap; // contains all new videos plus any video that was requested to be downloaded (NEW + HISTORY)
     private ConversationFragment mConvoFragment;
     private OnVideoModelLoaded mOnModelLoadedListener;
     private BgDownloadReceiver mReceiver;
+    private ArrayList<String> mWaitingDownloadList;
 
     private long mConvoId;
 
@@ -67,6 +70,10 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
             if (savedInstanceState.containsKey(CONVO_VIDEOS_INSTANCE_STATE)) {
                 mConvoVideoMap = (HashMap<String, VideoModel>) savedInstanceState.getSerializable(CONVO_VIDEOS_INSTANCE_STATE);
             }
+
+            if (savedInstanceState.containsKey(VIDEO_DL_LIST_INSTANCE_STATE)) {
+                mWaitingDownloadList = (ArrayList<String>) savedInstanceState.getSerializable(VIDEO_DL_LIST_INSTANCE_STATE);
+            }
         }
 
         if (mUnwatchedVideos == null) {
@@ -79,6 +86,42 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     public void onPostSuperResume(Fragment fragment) {
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOADED);
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.VIDEO_DOWNLOAD_FAILED);
+    }
+
+    @Override
+    public void onPreSuperPause(Fragment fragment) {
+        super.onPreSuperPause(fragment);
+        Log.d(TAG, "convo map: " + mConvoVideoMap.size());
+        if (fragment.isRemoving()) { // remove all workers
+
+            FragmentManager fm = fragment.getFragmentManager();
+            android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+
+            boolean runTxn = false;
+
+            Fragment f = fm.findFragmentByTag(Worker.MODEL);
+            // remove the model worker
+            if (f != null) {
+                runTxn = true;
+                ft.remove(f);
+            }
+
+            for (VideoModel v : mConvoVideoMap.values()) {
+                Log.d(TAG, "find: " + ((v.getGuid() != null) ? v.getGuid() : v.getVideoId()));
+                f = fm.findFragmentByTag((v.getGuid() != null) ? v.getGuid() : v.getVideoId());
+                if (f != null) {
+                    runTxn = true;
+                    Log.d(TAG, "remove it");
+                    ft.remove(f);
+                }
+
+            }
+
+            if (runTxn) {
+                ft.commit();
+            }
+
+        }
     }
 
     @Override
@@ -96,6 +139,10 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         if (mConvoVideoMap != null) {
             outState.putSerializable(CONVO_VIDEOS_INSTANCE_STATE, new HashMap<String, VideoModel>(mConvoVideoMap));
         }
+
+        if (mWaitingDownloadList != null) {
+            outState.putSerializable(VIDEO_DL_LIST_INSTANCE_STATE, mWaitingDownloadList);
+        }
     }
 
     private boolean isAdded() {
@@ -109,13 +156,27 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     @Override
     public void onTaskComplete(Task t) {
 
-        if (t instanceof GetUnwatchedVideoModelTask) {
+        if (t instanceof GetUnwatchedVideoModelTask && mUnwatchedVideos == null) {
             handleModelTaskComplete(t);
         }
 
         else if (t instanceof VideoDownloadTask) {
+            // if we're waiting for the video task then handle the download, otherwise skip
+            boolean allow = false;
+            for (String id : mWaitingDownloadList) {
+                if (id.equals(((VideoDownloadTask) t).getVideoId())) {
+                    allow = true;
+                    mWaitingDownloadList.remove(id);
+                    break;
+                }
+            }
 
-            handleVideoDownload((VideoDownloadTask) t);
+            if (allow) {
+                Log.d(TAG, "handle new download " + ((VideoDownloadTask) t).getVideoId());
+                handleVideoDownload((VideoDownloadTask) t);
+            } else {
+                Log.d(TAG, "video already handled: " + ((VideoDownloadTask) t).getVideoId());
+            }
         }
 
     }
@@ -150,9 +211,14 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
         mOnModelLoadedListener.onVideoModelLoaded(mUnwatchedVideos); // notify
 
+        mWaitingDownloadList = new ArrayList<String>();
+
         // add the workers to download our videos
         for (VideoModel video : ((GetUnwatchedVideoModelTask) t).getVideosForDownload()) {
-            addDownloadWorkerFor(video);
+            if (addDownloadWorkerFor(video)) {
+                Log.d(TAG, "add to dl list: " + video.getVideoId());
+                mWaitingDownloadList.add(video.getVideoId());
+            }
         }
 
         Log.d(TAG, "active android task completed");

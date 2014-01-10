@@ -6,6 +6,8 @@ import java.util.List;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import com.activeandroid.query.Select;
@@ -62,6 +64,38 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     }
 
     @Override
+    public void onPreSuperPause(Fragment fragment) {
+        // remove all the workers
+
+        if (fragment.isRemoving()) {
+            FragmentManager fm = fragment.getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+
+            boolean runTxn = false;
+
+            // TODO: create a method that will remove the fragments given a list of names
+            Fragment f = fm.findFragmentByTag(Worker.LOCAL_HISTORY);
+            if (f != null) {
+                Log.d(TAG, "remove local history task");
+                ft.remove(f);
+                runTxn = true;
+            }
+
+            f = fm.findFragmentByTag(Worker.REMOTE_HISTORY);
+            if (f != null) {
+                Log.d(TAG, "remove remote history task");
+                ft.remove(f);
+                runTxn = true;
+            }
+
+            if (runTxn) {
+                Log.d(TAG, "running task removal transaction");
+                ft.commit();
+            }
+        }
+    }
+
+    @Override
     public void init(Bundle savedInstance) {
 
         if (savedInstance != null) {
@@ -100,7 +134,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
     @Override
     public void onTaskComplete(Task t) {
-        if (t instanceof GetLocalHistoryTask) {
+        if (t instanceof GetLocalHistoryTask && mLocalHistory == null) { // note that on config changes, we can get updates to ontaskcomplete
             // create a download worker if necessary
             Log.d(TAG, "local history load complete - thread id: " + Thread.currentThread().getId());
             mLocalHistory = ((GetLocalHistoryTask) t).getAllConvoVideos();
@@ -124,7 +158,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
         }
 
-        if (t instanceof GetRemoteHistoryTask) {
+        if (t instanceof GetRemoteHistoryTask && mRemoteHistory == null) {
             Log.d(TAG, "got remote history complete: " + ((GetRemoteHistoryTask) t).getRemoteVideos().size());
             mRemoteHistory = ((GetRemoteHistoryTask) t).getRemoteVideos();
             // mRemoteHistory.removeAll(mLocalHistory); // remove duplicates
@@ -188,6 +222,8 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                     .from(VideoModel.class) //
                     .where(mWhere).orderBy("strftime('%s'," + ActiveRecordFields.C_VID_CREATED_AT + ") DESC").limit(HISTORY_LIMIT).execute();
 
+            mIsSuccess = true;
+            mIsFinished = true;
         }
 
         public List<VideoModel> getAllConvoVideos() {
