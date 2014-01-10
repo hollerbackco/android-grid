@@ -17,7 +17,7 @@ public class VideoHelper {
      */
     public static synchronized List<VideoModel> getVideosForTransaction(String where) {
 
-        List<VideoModel> videos = new Select().from(VideoModel.class).where(where + " AND " + ActiveRecordFields.C_VID_TRANSACTING + "=0").execute();
+        List<VideoModel> videos = new Select().from(VideoModel.class).where("(" + where + ")" + " AND " + ActiveRecordFields.C_VID_TRANSACTING + "=0").execute();
         ActiveAndroid.beginTransaction();
         try {
             for (VideoModel video : videos) {
@@ -33,7 +33,7 @@ public class VideoHelper {
     }
 
     public static synchronized VideoModel getVideoForTransaction(String where) {
-        VideoModel v = new Select().from(VideoModel.class).where(where + " AND " + ActiveRecordFields.C_VID_TRANSACTING + "=0").executeSingle();
+        VideoModel v = new Select().from(VideoModel.class).where("(" + where + ")" + " AND " + ActiveRecordFields.C_VID_TRANSACTING + "=0").executeSingle();
         if (v != null) {
             v.setTransacting();
             v.save();
