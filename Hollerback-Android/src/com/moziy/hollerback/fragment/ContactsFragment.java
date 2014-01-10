@@ -158,6 +158,8 @@ public class ContactsFragment extends BaseFragment {
         if (mSelected != null && !mSelected.isEmpty()) {
             Log.d(TAG, "inflating menu");
             inflater.inflate(R.menu.send_to_contacts, menu);
+        } else {
+            inflater.inflate(R.menu.add_friends, menu);
         }
 
     }
@@ -177,6 +179,12 @@ public class ContactsFragment extends BaseFragment {
             }
 
             return true;
+        } else if (item.getItemId() == R.id.mi_add_friends) {
+
+            ContactBookFragment fragment = ContactBookFragment.newInstance();
+            mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                    .replace(R.id.fragment_holder, fragment).addToBackStack(FRAGMENT_TAG).commit();
+
         }
 
         return super.onOptionsItemSelected(item);

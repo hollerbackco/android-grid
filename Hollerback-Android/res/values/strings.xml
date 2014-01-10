@@ -141,4 +141,9 @@
         <item quantity="many">You have new messages!</item>
     </plurals>
 
+    <!-- Contacts Book -->
+    <string name="contacts_lc">contacts</string>
+    <string name="hollerback_users_lc">hollerback users</string>
+    <string name="search_lc">search</string>
+
 </resources>
