@@ -35,11 +35,10 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
 import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.network.VolleySingleton;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.view.RoundImageView;
-import com.moziy.hollerback.view.RoundNetworkImageView;
 import com.moziy.hollerback.widget.CustomButton;
+import com.squareup.picasso.Picasso;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class ConversationListAdapter extends BaseAdapter implements Filterable {
@@ -123,7 +122,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
             viewHolder.conversationSubTitle = (TextView) convertView.findViewById(R.id.tv_ttyl);
-            viewHolder.thumb = (RoundNetworkImageView) convertView.findViewById(R.id.iv_thumb);
+            viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
             viewHolder.localThumb = (RoundImageView) convertView.findViewById(R.id.iv_local_thumb);
             viewHolder.btnRecord = (CustomButton) convertView.findViewById(R.id.btnRecord);
             convertView.setTag(viewHolder);
@@ -202,7 +201,9 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             } else {
                 viewHolder.thumb.setVisibility(View.VISIBLE);
                 viewHolder.localThumb.setVisibility(View.GONE);
-                viewHolder.thumb.setImageUrl(conversationModel.getMostRecentThumbUrl(), VolleySingleton.getInstance(mActivity).getImageLoader());
+                // viewHolder.thumb.setImageUrl(conversationModel.getMostRecentThumbUrl(), VolleySingleton.getInstance(mActivity).getImageLoader());
+                // Picasso.with(mActivity).setDebugging(true);
+                Picasso.with(mActivity).load(conversationModel.getMostRecentThumbUrl()).into(viewHolder.thumb);
             }
         }
 
@@ -296,7 +297,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationName;
         TextView conversationTime;
         TextView conversationSubTitle;
-        RoundNetworkImageView thumb;
+        RoundImageView thumb;
         RoundImageView localThumb;
         CustomButton btnRecord;
         int foregroundColor = -1;
