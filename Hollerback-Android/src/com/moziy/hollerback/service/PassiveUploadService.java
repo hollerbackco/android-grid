@@ -55,11 +55,17 @@ public class PassiveUploadService extends IntentService {
             // lets start a transaction, the method below ensures that we don't retrieve a list of transacting videos
             pendingList = VideoHelper.getVideosForTransaction(sb.toString());
 
-            Log.d(TAG, "attempting to upload previously pending resources");
+            if (pendingList == null) {
+                Log.w(TAG, "txn in process");
+                return;
+            }
+
+            Log.d(TAG, "attempting to upload previously pending resources: " + pendingList.size());
             for (VideoModel v : pendingList) {
                 if (!v.isTransacting())
-                    throw new IllegalStateException("Video must be transacting!");
+                    throw new IllegalStateException("Video " + v.getGuid() + " must be transacting!");
 
+                Log.d(TAG, "passive upload: " + v.getGuid());
                 if (VideoModel.ResourceState.PENDING_UPLOAD.equals(v.getState())) {
                     int totalParts = v.getNumParts();
                     // for each part lets upload the resource

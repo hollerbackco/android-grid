@@ -16,6 +16,7 @@ import com.moziy.hollerback.lifecycle.AppLifecycle;
 import com.moziy.hollerback.lifecycle.AppLifecycle.AppIdleListener;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.BgDownloadService;
+import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.TaskGroup;
@@ -33,7 +34,6 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
         if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) {
             Crashlytics.start(this);
             long userId = PreferenceManagerUtil.getPreferenceValue(HBPreferences.ID, -1L);
@@ -129,6 +129,11 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
             // launch the background download service
             Intent intent = new Intent();
             intent.setClass(HollerbackApplication.this, BgDownloadService.class);
+            startService(intent);
+
+            // launch the passive upload service
+            intent = new Intent();
+            intent.setClass(HollerbackApplication.this, PassiveUploadService.class);
             startService(intent);
 
         }

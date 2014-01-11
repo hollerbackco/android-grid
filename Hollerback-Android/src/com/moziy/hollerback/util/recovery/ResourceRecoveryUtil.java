@@ -44,9 +44,10 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
             Log.d(TAG, "initiating recovery");
             register(client); // register the client
 
-            if ((PreferenceManagerUtil.getPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE) - System.currentTimeMillis()) > INITIAL_TIME) // if it's less than a minute
-                schedule(INITIAL_TIME);
         }
+
+        if ((PreferenceManagerUtil.getPreferenceValue(HBPreferences.RECOVERY_ALARM_TIME, Long.MAX_VALUE) - System.currentTimeMillis()) > INITIAL_TIME) // if it's less than a minute
+            schedule(INITIAL_TIME);
 
     }
 
@@ -81,6 +82,15 @@ public class ResourceRecoveryUtil extends WakefulBroadcastReceiver {
 
         Log.d(TAG, "registering: " + client.getFullyQualifiedClassName());
         Log.d(TAG, "clients: " + clients.toString());
+
+        // debug
+        Set<String> clientel = PreferenceManagerUtil.getPreferenceValueSet(HBPreferences.RECOVERY_CLIENTS, new HashSet<String>());
+        StringBuilder sb = new StringBuilder();
+        for (String c : clientel) {
+            sb.append(c).append(" ");
+        }
+
+        Log.d(TAG, "registered clientel: " + sb.toString());
     }
 
     private static void unregister(RecoveryClient client) {

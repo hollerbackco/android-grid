@@ -91,7 +91,6 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     @Override
     public void onPreSuperPause(Fragment fragment) {
         super.onPreSuperPause(fragment);
-        Log.d(TAG, "convo map: " + mConvoVideoMap.size());
         if (fragment.isRemoving()) { // remove all workers
 
             FragmentManager fm = fragment.getFragmentManager();
@@ -241,7 +240,12 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         if (isAdded()) {
             // add the video to the list of videos
             mConvoVideoMap.put(video.getGuid(), video);
-            return addDownloadWorkerFor(video);
+            boolean added = addDownloadWorkerFor(video);
+            if (added) {
+                mWaitingDownloadList.add(video.getVideoId());
+            }
+
+            return added;
         }
 
         return false;
