@@ -13,7 +13,7 @@
         <item name="android:actionBarItemBackground">@drawable/selectable_background_example</item>
         <item name="android:popupMenuStyle">@style/PopupMenu.Example</item>
         <item name="android:dropDownListViewStyle">@style/DropDownListView.Example</item>
-        <item name="android:actionBarTabStyle">@style/ActionBarTabStyle.Example</item>
+        <item name="android:actionBarTabStyle">@style/ContactBook.ActionBar.TabView</item>
         <item name="android:actionDropDownStyle">@style/DropDownNav.Example</item>
         <item name="android:actionBarStyle">@style/ActionBar.Solid.Example</item>
         <item name="android:actionModeBackground">@drawable/cab_background_top_example</item>

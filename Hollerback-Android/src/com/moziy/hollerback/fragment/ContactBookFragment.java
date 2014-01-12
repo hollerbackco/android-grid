@@ -44,6 +44,7 @@ public class ContactBookFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         mActionbar = getSherlockActivity().getSupportActionBar();
+        mActionbar.setTitle(getString(R.string.contactbook_title));
 
     }
 
@@ -80,18 +81,21 @@ public class ContactBookFragment extends BaseFragment {
         // create three tabs
         Tab tab = mActionbar.newTab();
         tab.setText(R.string.contacts_lc);
+        tab.setCustomView(R.layout.contact_tab_view);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.contacts_lc);
         mActionbar.addTab(tab, 0);
 
         tab = mActionbar.newTab();
         tab.setText(R.string.hollerback_users_lc);
+        tab.setCustomView(R.layout.contact_tab_view);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.hollerback_users_lc);
         mActionbar.addTab(tab, 1, true); // tab, position, selected
 
         tab = mActionbar.newTab();
         tab.setText(R.string.search_lc);
+        tab.setCustomView(R.layout.contact_tab_view);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.search_lc);
         mActionbar.addTab(tab, 2);

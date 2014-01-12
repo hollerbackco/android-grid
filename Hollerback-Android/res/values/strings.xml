@@ -145,5 +145,10 @@
     <string name="contacts_lc">contacts</string>
     <string name="hollerback_users_lc">hollerback users</string>
     <string name="search_lc">search</string>
+    <string name="contactbook_title">Add Friends</string>
+
+    <!-- Friend List -->
+    <string name="recents">Recents</string>
+    <string name="my_friends">My Friends</string>
 
 </resources>

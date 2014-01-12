@@ -65,6 +65,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
     private List<Contact> mContacts;
     private List<Contact> mHBContacts;
+    private List<Contact> mRecents;
+    private List<Contact> mFriends;
+
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
 
@@ -93,6 +96,10 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
             mContactsLoadState = LOADING_STATE.DONE;
+
+            // XXX: fill in later
+            mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
+
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
             // lets see if we should launch our workers to check the contacts against the server
@@ -100,9 +107,13 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         } else if (t instanceof GetHBContactsTask) {
             Log.d(TAG, "got hb contacts");
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
+
             // remove all of hb contacts from contacts
             mContacts.removeAll(mHBContacts);
             mHBContactsLoadState = LOADING_STATE.DONE;
+
+            mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
+
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
 
@@ -146,6 +157,16 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     @Override
     public List<Contact> getHollerbackContacts() {
         return mHBContacts;
+    }
+
+    @Override
+    public List<Contact> getRecentContacts() {
+        return mRecents;
+    }
+
+    @Override
+    public List<Contact> getFriends() {
+        return mFriends;
     }
 
     /**

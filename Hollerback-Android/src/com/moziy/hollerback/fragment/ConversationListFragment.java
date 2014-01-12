@@ -195,7 +195,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                     // log analytic event
                     EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
                             MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
-                    ContactsFragment fragment = ContactsFragment.newInstance();
+                    FriendsFragment fragment = FriendsFragment.newInstance();
                     mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                             .addToBackStack(FRAGMENT_TAG).commit();
 

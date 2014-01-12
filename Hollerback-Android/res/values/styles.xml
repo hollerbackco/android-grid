@@ -31,6 +31,9 @@
     <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="actionBarItemBackground">@drawable/topbar</item>
         <item name="android:buttonStyle">@style/DefaultButton</item>
+        <item name="android:actionBarTabStyle">@style/ContactBook.ActionBar.TabView</item>
+        <item name="android:actionBarTabBarStyle">@style/ContactBook.ActionBar.TabBar</item>
+        <item name="android:actionBarTabTextStyle">@style/ContactBook.ActionBar.TabText</item>
     </style>
 
     <style name="ActionBar.Solid.Example" parent="@style/Widget.Sherlock.Light.ActionBar.Solid.Inverse">
@@ -55,6 +58,21 @@
 
     <style name="ActionBarTabStyle.Example" parent="@style/Widget.Sherlock.ActionBar.TabView">
         <item name="android:background">@drawable/tab_indicator_ab_example</item>
+    </style>
+
+    <style name="ContactBook.ActionBar.TabView" parent="@style/Widget.Sherlock.ActionBar.TabView">
+        <item name="android:background">@android:color/white</item>
+        <item name="android:paddingLeft">@dimen/dim_8dp</item>
+        <item name="android:paddingRight">@dimen/dim_8dp</item>
+    </style>
+
+    <style name="ContactBook.ActionBar.TabBar" parent="@style/Widget.Sherlock.ActionBar.TabBar">
+        <item name="android:showDividers">middle</item>
+        <item name="android:dividerPadding">@dimen/dim_6dp</item>
+    </style>
+
+    <style name="ContactBook.ActionBar.TabText" parent="@style/Widget.Sherlock.ActionBar.TabText">
+        <item name="android:textColor">@color/gray_font</item>
     </style>
 
     <style name="DropDownNav.Example" parent="@style/Widget.Sherlock.Spinner.DropDown.ActionBar">

@@ -17,4 +17,8 @@ public interface ContactsInterface {
     public LOADING_STATE getDeviceContactsLoadState();
 
     public LOADING_STATE getHbContactsLoadState();
+
+    public List<Contact> getRecentContacts();
+
+    public List<Contact> getFriends();
 }
