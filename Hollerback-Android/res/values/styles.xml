@@ -1,78 +1,35 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback">
 
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
-    </style>
-
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:windowNoTitle">true</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="HB" parent="Theme.Sherlock.NoActionBar">
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:background">#ffffffff</item>
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
+    <style name="HollerbackTheme" parent="Theme.Hollerback">
         <item name="android:buttonStyle">@style/DefaultButton</item>
-    </style>
-
-    <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
-        <item name="actionBarItemBackground">@drawable/topbar</item>
-        <item name="android:buttonStyle">@style/DefaultButton</item>
-        <item name="android:actionBarTabStyle">@style/ContactBook.ActionBar.TabView</item>
+        <item name="android:editTextStyle">@style/DefaultEditText</item>
+        <item name="android:textViewStyle">@style/DefaultTextView</item>
         <item name="android:actionBarTabBarStyle">@style/ContactBook.ActionBar.TabBar</item>
         <item name="android:actionBarTabTextStyle">@style/ContactBook.ActionBar.TabText</item>
+        <item name="android:actionBarTabStyle">@style/ContactBook.ActionBar.TabView</item>
     </style>
 
-    <style name="ActionBar.Solid.Example" parent="@style/Widget.Sherlock.Light.ActionBar.Solid.Inverse">
-        <item name="background">@drawable/ab_solid_example</item>
-        <item name="backgroundStacked">@drawable/ab_stacked_solid_example</item>
-        <item name="backgroundSplit">@drawable/ab_bottom_solid_example</item>
-        <item name="progressBarStyle">@style/ProgressBar.Example</item>
-    </style>
-
-    <style name="ActionBar.Transparent.Example" parent="@style/Widget.Sherlock.ActionBar">
-        <item name="background">@drawable/ab_transparent_example</item>
-        <item name="progressBarStyle">@style/ProgressBar.Example</item>
-    </style>
-
-    <style name="PopupMenu.Example" parent="@style/Widget.Sherlock.ListPopupWindow">
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel_example</item>
-    </style>
-
-    <style name="DropDownListView.Example" parent="@style/Widget.Sherlock.ListView.DropDown">
-        <item name="android:listSelector">@drawable/selectable_background_example</item>
-    </style>
-
-    <style name="ActionBarTabStyle.Example" parent="@style/Widget.Sherlock.ActionBar.TabView">
-        <item name="android:background">@drawable/tab_indicator_ab_example</item>
+    <style name="HollerbackTheme.Settings">
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
 
     <style name="ContactBook.ActionBar.TabView" parent="@style/Widget.Sherlock.ActionBar.TabView">
-        <item name="android:background">@android:color/white</item>
+        <item name="android:layout_gravity">center</item>
         <item name="android:paddingLeft">@dimen/dim_8dp</item>
         <item name="android:paddingRight">@dimen/dim_8dp</item>
     </style>
 
     <style name="ContactBook.ActionBar.TabBar" parent="@style/Widget.Sherlock.ActionBar.TabBar">
         <item name="android:showDividers">middle</item>
+        <item name="android:divider">@drawable/abs__list_divider_holo_light</item>
         <item name="android:dividerPadding">@dimen/dim_6dp</item>
     </style>
 
     <style name="ContactBook.ActionBar.TabText" parent="@style/Widget.Sherlock.ActionBar.TabText">
         <item name="android:textColor">@color/gray_font</item>
+        <item name="android:textSize">@dimen/dim_16dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 
     <style name="DropDownNav.Example" parent="@style/Widget.Sherlock.Spinner.DropDown.ActionBar">
@@ -87,12 +44,6 @@
 
     <style name="ActionButton.CloseMode.Example" parent="@style/Widget.Sherlock.ActionButton.CloseMode">
         <item name="android:background">@drawable/btn_cab_done_example</item>
-    </style>
-
-    <!-- this style is only referenced in a Light.DarkActionBar based theme -->
-    <style name="Theme.Example.Widget" parent="@style/Theme.Sherlock">
-        <item name="popupMenuStyle">@style/PopupMenu.Example</item>
-        <item name="dropDownListViewStyle">@style/DropDownListView.Example</item>
     </style>
 
     <style name="BlueCheckBox">
