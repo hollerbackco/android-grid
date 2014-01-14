@@ -291,8 +291,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                         c.save();
                         ((HollerbackMainActivity) getActivity()).getContactsInterface().getRecentContacts().add(0, c);
 
-                        ActiveAndroid.setTransactionSuccessful();
                     }
+                    ActiveAndroid.setTransactionSuccessful();
                 } finally {
                     ActiveAndroid.endTransaction();
                 }
