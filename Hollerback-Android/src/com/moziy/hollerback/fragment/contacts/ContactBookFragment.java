@@ -188,10 +188,10 @@ public class ContactBookFragment extends BaseFragment {
 
         public TabPagerAdapter(FragmentManager fm, ActionBar actionBar) {
             super(fm);
-            mContactsFragment = new ContactsChildFragment();
+            mContactsFragment = ContactsChildFragment.newInstance();
             mContactsFragment.setChildFragment();
 
-            mAddedMeFragment = new AddedMeChildFragment();
+            mAddedMeFragment = AddedMeChildFragment.newInstance();
             mAddedMeFragment.setChildFragment();
 
             mSearchFragment = FriendsFragment.newInstance();

@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -33,6 +34,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.contacts.ContactItem;
 import com.moziy.hollerback.contacts.ContactListSegmentData;
+import com.moziy.hollerback.contacts.ContactTextPlaceHolder;
 import com.moziy.hollerback.contacts.ContactViewHolder;
 import com.moziy.hollerback.contacts.ContactsAdapterData;
 import com.moziy.hollerback.contacts.ContactsAdapterData.AbsContactItem;
@@ -52,7 +54,7 @@ import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.widget.CustomEditText;
 
-public class FriendsFragment extends BaseFragment {
+public class FriendsFragment extends BaseFragment implements AdapterView.OnItemClickListener {
     private static final String TAG = FriendsFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
     // type - serializable/enum
@@ -62,16 +64,17 @@ public class FriendsFragment extends BaseFragment {
         START_CONVERSATION, INVITE_FRIENDS
     };
 
-    private ContactsInterface mContactsInterface;
-    private LayoutInflater mInflater;
-    private StickyHeaderListView mStickyListView;
-    private ListView mContactsList;
-    private ContactsAdapterData mAdapter;
-    private InternalReceiver mReceiver;
-    private CustomEditText mSearchBar;
-    private HashSet<Contact> mSelected;
-    private NextAction mAction;
-    private ItemManager mItemManager;
+    protected ContactsInterface mContactsInterface;
+    protected LayoutInflater mInflater;
+    protected StickyHeaderListView mStickyListView;
+    protected ListView mContactsList;
+    protected ContactsAdapterData mAdapter;
+    protected InternalReceiver mReceiver;
+    protected CustomEditText mSearchBar;
+    protected HashSet<Contact> mSelected;
+    protected NextAction mAction;
+    protected ItemManager mItemManager;
+    protected ActionMode mActionMode;
 
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -106,17 +109,17 @@ public class FriendsFragment extends BaseFragment {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
 
-        // mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
-        //
-        // switch (mAction) {
-        // case START_CONVERSATION:
-        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
-        // showIntroDialog();
-        // break;
-        // case INVITE_FRIENDS:
-        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
-        // break;
-        // }
+        mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
+
+        switch (mAction) {
+            case START_CONVERSATION:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+                showIntroDialog();
+                break;
+            case INVITE_FRIENDS:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
+                break;
+        }
 
         mInflater = LayoutInflater.from(getActivity());
 
@@ -130,7 +133,7 @@ public class FriendsFragment extends BaseFragment {
         View v = inflater.inflate(R.layout.friends_layout, container, false);
         Log.d(TAG, "onCreateView");
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
-        mContactsList.setOnItemClickListener(mOnContactClick);
+        mContactsList.setOnItemClickListener(this);
 
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
 
@@ -246,11 +249,13 @@ public class FriendsFragment extends BaseFragment {
         ContactListSegmentData segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.recents);
         segmentData.mContacts = ci.getRecentContacts();
+        segmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
         listData.add(segmentData);
 
         segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.my_friends);
         segmentData.mContacts = ci.getFriends();
+        segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
         listData.add(segmentData);
 
         return listData;
@@ -301,8 +306,15 @@ public class FriendsFragment extends BaseFragment {
                     }
                 }
 
-                if (mSelected.size() == 1 || mSelected.size() == 0) {
-                    getSherlockActivity().invalidateOptionsMenu();
+                if (mSelected.size() == 1) {
+                    // getSherlockActivity().invalidateOptionsMenu();
+                    if (mActionMode == null)
+                        mActionMode = getSherlockActivity().startActionMode(mActionModeCallbacks);
+                } else if (mSelected.size() == 0) {
+
+                    if (mActionMode != null) {
+                        mActionMode.finish();
+                    }
                 }
 
                 // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
@@ -326,6 +338,36 @@ public class FriendsFragment extends BaseFragment {
             // startLoading();
         }
     }
+
+    private ActionMode.Callback mActionModeCallbacks = new ActionMode.Callback() {
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.send_to_contacts, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if (item.getItemId() == R.id.mi_next) {
+                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            }
+            return false;
+        }
+    };
 
     /**
      * Listens to CONTACTS_UPDATED
@@ -416,6 +458,11 @@ public class FriendsFragment extends BaseFragment {
                     // create a place holder item
                     PlaceHolder item = new PlaceHolder(mItemType, headerItem.getHeaderPosition());
                     mItems.add(item);
+                } else {
+                    if (data.mTextPlaceHolderMsg != null) {
+                        ContactTextPlaceHolder ph = new ContactTextPlaceHolder(mItemType, headerItem.getHeaderPosition(), data.mTextPlaceHolderMsg);
+                        mItems.add(ph);
+                    }
                 }
 
                 ++mItemType;
@@ -441,6 +488,51 @@ public class FriendsFragment extends BaseFragment {
     @Override
     protected String getFragmentName() {
         return TAG;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Item item = (Item) parent.getItemAtPosition(position);
+        if (item.getContact() != null) {
+
+            Contact c = item.getContact();
+
+            if (item instanceof AbsContactItem) {
+                boolean selected = !((AbsContactItem) item).getSelected();
+                ((AbsContactItem) item).setSelected(selected);
+                ContactViewHolder holder = (ContactViewHolder) view.getTag();
+                holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
+
+                if (selected) {
+                    mSelected.add(c);
+                } else {
+                    mSelected.remove(c);
+                }
+            }
+
+            if (mSelected.size() == 1) {
+                // getSherlockActivity().invalidateOptionsMenu();
+                if (mActionMode == null)
+                    mActionMode = getSherlockActivity().startActionMode(mActionModeCallbacks);
+            } else if (mSelected.size() == 0) {
+
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                }
+            }
+
+            // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
+            // c.mPhone
+            // }, c.mName, new boolean[] {
+            // c.mIsOnHollerback
+            // });
+
+            // if keyboard is showing hide it
+            InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
+
+        }
+
     }
 
 }

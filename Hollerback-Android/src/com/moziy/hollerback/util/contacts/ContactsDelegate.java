@@ -26,6 +26,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -98,7 +99,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mContactsLoadState = LOADING_STATE.DONE;
 
             // XXX: fill in later
-            mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
+            // mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
+            mRecents = new ArrayList<Contact>();
 
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
@@ -112,7 +114,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mContacts.removeAll(mHBContacts);
             mHBContactsLoadState = LOADING_STATE.DONE;
 
-            mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
+            // mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
+            mFriends = new ArrayList<Contact>();
+            mFriends = new Select().from(Contact.class).execute();
 
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }

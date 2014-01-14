@@ -11,7 +11,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.util.security.HashUtil;
 
 @Table(name = ActiveRecordFields.T_FRIENDS)
-public class Contact implements Serializable {
+public class Contact extends BaseModel implements Serializable {
     /**
      * 
      */
@@ -19,12 +19,12 @@ public class Contact implements Serializable {
     private static final String TAG = Contact.class.getSimpleName();
 
     @Column(name = ActiveRecordFields.C_FRIENDS_NAME)
-    public final String mName;
+    public String mName;
 
     @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_LABEL)
-    public final String mPhoneLabel;
+    public String mPhoneLabel;
 
-    public final int mPhotoID;
+    public int mPhotoID;
 
     @Column(name = ActiveRecordFields.C_FRIENDS_IS_ON_HOLLERBACK)
     public boolean mIsOnHollerback;
@@ -32,7 +32,7 @@ public class Contact implements Serializable {
     @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
     public String mUsername; // if an hb friend, the username
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
+    @Column(name = ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME)
     public String mLastContactTime; // the last time the user was contacted
 
     @Column(name = ActiveRecordFields.C_FRIENDS_PHONES)
@@ -40,6 +40,10 @@ public class Contact implements Serializable {
 
     @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_HASHES)
     public ArrayList<String> mPhoneHashes = new ArrayList<String>(); // an array of phone hashes
+
+    public Contact() {
+        super();
+    }
 
     public Contact(String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
         super();

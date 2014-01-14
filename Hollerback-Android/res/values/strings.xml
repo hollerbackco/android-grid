@@ -153,6 +153,9 @@
 
     <!-- Friend List -->
     <string name="recents">Recents</string>
+    <string name="no_recents">No recents yet</string>
     <string name="my_friends">My Friends</string>
+    <string name="no_friends">Your Friends list is empty, try adding some friends</string>
+    <string name="nobody_has_added_you">Nobody has added you</string>
 
 </resources>
