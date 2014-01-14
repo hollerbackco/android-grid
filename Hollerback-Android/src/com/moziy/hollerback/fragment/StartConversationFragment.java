@@ -27,6 +27,7 @@ import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
@@ -279,6 +280,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Log.w(TAG, "skipping sms invite since fragment not added");
                 }
 
+                // NOTE: Contacts stuf
+
                 // for the users that we just sent too, lets mark the time we sent to them
                 ActiveAndroid.beginTransaction();
                 try {
@@ -286,11 +289,15 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     for (Contact c : mRecipients) {
                         c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
                         c.save();
+                        ((HollerbackMainActivity) getActivity()).getContactsInterface().getRecentContacts().add(0, c);
+
                         ActiveAndroid.setTransactionSuccessful();
                     }
                 } finally {
                     ActiveAndroid.endTransaction();
                 }
+
+                // move out later
 
             } else {
 

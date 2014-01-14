@@ -252,6 +252,8 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
         mAdapter = new ContactsAdapterData(mActivity);
         mAdapter.setItemManager(mItemManager);
         mContactsList.setAdapter(mAdapter);
+        mSelected.clear();
+        getSherlockActivity().invalidateOptionsMenu();
     }
 
     protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
