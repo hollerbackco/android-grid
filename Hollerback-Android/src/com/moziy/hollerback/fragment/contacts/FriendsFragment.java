@@ -1,10 +1,8 @@
-package com.moziy.hollerback.fragment;
+package com.moziy.hollerback.fragment.contacts;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -43,6 +41,8 @@ import com.moziy.hollerback.contacts.ContactsAdapterData.Item;
 import com.moziy.hollerback.contacts.GeneralHeaderItem;
 import com.moziy.hollerback.contacts.HBContactItem;
 import com.moziy.hollerback.contacts.PlaceHolder;
+import com.moziy.hollerback.fragment.BaseFragment;
+import com.moziy.hollerback.fragment.StartConversationFragment;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
@@ -106,17 +106,17 @@ public class FriendsFragment extends BaseFragment {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
 
-        mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
-
-        switch (mAction) {
-            case START_CONVERSATION:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
-                showIntroDialog();
-                break;
-            case INVITE_FRIENDS:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
-                break;
-        }
+        // mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
+        //
+        // switch (mAction) {
+        // case START_CONVERSATION:
+        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+        // showIntroDialog();
+        // break;
+        // case INVITE_FRIENDS:
+        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
+        // break;
+        // }
 
         mInflater = LayoutInflater.from(getActivity());
 
@@ -127,7 +127,7 @@ public class FriendsFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.contacts_layout, container, false);
+        View v = inflater.inflate(R.layout.friends_layout, container, false);
         Log.d(TAG, "onCreateView");
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
         mContactsList.setOnItemClickListener(mOnContactClick);
@@ -135,6 +135,7 @@ public class FriendsFragment extends BaseFragment {
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
 
         mSearchBar = (CustomEditText) v.findViewById(R.id.txtSearch);
+        mSearchBar.setVisibility(View.GONE);
         mSearchBar.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -224,22 +225,24 @@ public class FriendsFragment extends BaseFragment {
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
     }
 
-    private Map<Integer, List<Contact>> getContactMap(ContactsInterface ci) {
-
-        Map<Integer, List<Contact>> buddyMap = new LinkedHashMap<Integer, List<Contact>>();
-
-        // buddyMap.put(ItemType.RECENTS_HEADER, value)
-        buddyMap.put(ItemType.RECENTS_CONTACT, mContactsInterface.getRecentContacts());
-        buddyMap.put(ItemType.FRIENDS_CONTACT, mContactsInterface.getFriends());
-
-        return buddyMap;
-    }
-
-    private List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
+    protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
 
         List<ContactListSegmentData> listData = new ArrayList<ContactListSegmentData>();
 
-        // build recents
+        // ContactListSegmentData segmentData = null;
+        // char firstChar = 0;
+        // for (Contact c : ci.getRecentContacts()) {
+        // if (c.mName.charAt(0) != firstChar) {
+        // firstChar = c.mName.toUpperCase().charAt(0);
+        // segmentData = new ContactListSegmentData();
+        // segmentData.mSegmentTitle = String.valueOf(firstChar);
+        // segmentData.mContacts = new ArrayList<Contact>();
+        // listData.add(segmentData);
+        // }
+        //
+        // segmentData.mContacts.add(c);
+        // }
+        // // build recents
         ContactListSegmentData segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.recents);
         segmentData.mContacts = ci.getRecentContacts();
@@ -384,7 +387,7 @@ public class FriendsFragment extends BaseFragment {
                 GeneralHeaderItem headerItem = null;
                 if (data.mSegmentTitle != null) {
 
-                    headerItem = new GeneralHeaderItem(mItems.size(), data.mSegmentTitle, mItemType);
+                    headerItem = new GeneralHeaderItem(mItems.size(), mItems.size(), data.mSegmentTitle, mItemType);
                     headerItem.setInflater(LayoutInflater.from(mActivity));
                     ++mItemType;
                     mItems.add(headerItem);
@@ -428,6 +431,11 @@ public class FriendsFragment extends BaseFragment {
             return mItems;
         }
 
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.send_to);
     }
 
     @Override

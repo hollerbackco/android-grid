@@ -146,6 +146,10 @@
     <string name="hollerback_users_lc">hollerback users</string>
     <string name="search_lc">search</string>
     <string name="contactbook_title">Add Friends</string>
+    <string name="users_in_my_contacts">Users in My Contacts</string>
+    <string name="invite_contacts">Invite Contacts</string>
+    <string name="users_who_have_added_me">Users who have Added Me</string>
+    <string name="send_to">Send to...</string>
 
     <!-- Friend List -->
     <string name="recents">Recents</string>

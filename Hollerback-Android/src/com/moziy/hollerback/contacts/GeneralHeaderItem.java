@@ -12,12 +12,14 @@ import com.moziy.hollerback.widget.CustomTextView;
 public class GeneralHeaderItem implements HeaderItem {
 
     private int mPosition;
+    private int mHeaderPosition;
     private int mNumItems = 0;
     private String mTitle;
     private LayoutInflater mInflater;
     private int mItemType;
 
-    public GeneralHeaderItem(int position, String title, int itemType) {
+    public GeneralHeaderItem(int headerPosition, int position, String title, int itemType) {
+        mHeaderPosition = mHeaderPosition;
         mPosition = position;
         mTitle = title;
         mItemType = itemType;
@@ -65,7 +67,7 @@ public class GeneralHeaderItem implements HeaderItem {
     @Override
     public int getHeaderPosition() {
 
-        return mPosition;
+        return mHeaderPosition;
     }
 
     @Override

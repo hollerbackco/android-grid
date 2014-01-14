@@ -63,8 +63,9 @@ public class SignInFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.getSherlockActivity().getSupportActionBar().show();
-        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
-        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+
+        // TODO: fix sajjad
+        // this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
     }
 
     @Override
@@ -231,6 +232,11 @@ public class SignInFragment extends BaseFragment {
 
         return status;// mPasswordEditText.getText() != null && mPasswordEditText.getText().length() > 0;
 
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.signin);
     }
 
     @Override

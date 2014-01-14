@@ -33,6 +33,7 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.fragment.contacts.ContactBookFragment;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
@@ -83,20 +84,21 @@ public class ContactsFragment extends BaseFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mIsChildFragment = true;
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
 
         mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
 
-        switch (mAction) {
-            case START_CONVERSATION:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
-                showIntroDialog();
-                break;
-            case INVITE_FRIENDS:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
-                break;
-        }
+        // switch (mAction) {
+        // case START_CONVERSATION:
+        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+        // showIntroDialog();
+        // break;
+        // case INVITE_FRIENDS:
+        // getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
+        // break;
+        // }
 
         mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
         mInflater = LayoutInflater.from(getActivity());

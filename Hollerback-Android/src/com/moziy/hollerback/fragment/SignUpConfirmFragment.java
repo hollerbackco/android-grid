@@ -69,8 +69,9 @@ public class SignUpConfirmFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.action_verify);
-        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+        getSherlockActivity().getActionBar().show();
+        // TODO: fix sajjad
+        // this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         mPhoneUtil = PhoneNumberUtil.getInstance();
 
@@ -324,6 +325,11 @@ public class SignUpConfirmFragment extends BaseFragment {
     @Override
     protected String getFragmentName() {
         return TAG;
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.action_verify);
     }
 
 }

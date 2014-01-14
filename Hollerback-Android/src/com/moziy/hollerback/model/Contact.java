@@ -5,30 +5,45 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.util.security.HashUtil;
 
+@Table(name = ActiveRecordFields.T_FRIENDS)
 public class Contact implements Serializable {
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
     private static final String TAG = Contact.class.getSimpleName();
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_NAME)
     public final String mName;
-    public final String mPhone;
-    public byte[] mPhoneHashed;
-    public String mPhoneHashHexString;
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_LABEL)
     public final String mPhoneLabel;
+
     public final int mPhotoID;
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_IS_ON_HOLLERBACK)
     public boolean mIsOnHollerback;
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
     public String mUsername; // if an hb friend, the username
 
+    @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
+    public String mLastContactTime; // the last time the user was contacted
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_PHONES)
     public ArrayList<String> mPhones = new ArrayList<String>(); // an array of phones associated with this contact
+
+    @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_HASHES)
     public ArrayList<String> mPhoneHashes = new ArrayList<String>(); // an array of phone hashes
 
     public Contact(String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
         super();
         this.mName = mName;
-        this.mPhone = mPhone;
         this.mPhoneLabel = mPhoneLabel;
         this.mPhotoID = mPhotoID;
 
@@ -47,7 +62,7 @@ public class Contact implements Serializable {
 
     @Override
     public String toString() {
-        return "Contact [mName=" + mName + ", mPhone=" + mPhone + ", mPhoneLabel=" + mPhoneLabel + "]";
+        return "Contact [mName=" + mName + ", mPhoneLabel=" + mPhoneLabel + "]";
     }
 
     /**

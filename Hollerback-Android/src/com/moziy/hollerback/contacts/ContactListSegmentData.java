@@ -12,4 +12,5 @@ import com.moziy.hollerback.model.Contact;
 public class ContactListSegmentData {
     public String mSegmentTitle;
     public List<Contact> mContacts;
+    public List<ContactListSegmentData> mChildSegments;
 }

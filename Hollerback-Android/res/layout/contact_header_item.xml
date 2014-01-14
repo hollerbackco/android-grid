@@ -8,7 +8,7 @@
         android:id="@+id/tv_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="center_vertical|left"
         android:paddingBottom="@dimen/dim_10dp"
         android:paddingLeft="@dimen/dim_20dp"
         android:paddingTop="@dimen/dim_10dp"

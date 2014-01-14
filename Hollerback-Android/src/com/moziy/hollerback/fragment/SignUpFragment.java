@@ -106,9 +106,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
-        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
+        getSherlockActivity().getSupportActionBar().show();
 
         Bundle args = getArguments();
         mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);
@@ -139,9 +137,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = this.getSherlockActivity();
-        this.getSherlockActivity().getSupportActionBar().show();
-        this.getSherlockActivity().getSupportActionBar().setTitle(R.string.create_account);
-        this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         // TODO Auto-generated method stub
         View fragmentView = inflater.inflate(R.layout.signup_fragment, container, false);
@@ -187,6 +182,11 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         TextView headerCPhone = (TextView) view.findViewById(R.id.tv_header_counter_phone);
         TextView signupAgreement = (TextView) view.findViewById(R.id.tv_signup_agreement);
 
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -385,6 +385,11 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             }
 
         }
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.create_account);
     }
 
     @Override

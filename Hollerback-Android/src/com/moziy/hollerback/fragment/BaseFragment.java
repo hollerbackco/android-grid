@@ -2,10 +2,9 @@ package com.moziy.hollerback.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -16,11 +15,15 @@ import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 
 public abstract class BaseFragment extends SherlockFragment {
+    private static final String CHILD_FRAGMENT_BUNDLE_ARG_KEY = "CHILD_FRAGMENT";
     protected SherlockFragmentActivity mActivity;
     private LoadingFragmentUtil mLoading;
+    // protected TextView mActionBarTitle;
+    protected boolean mIsChildFragment;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -38,20 +41,44 @@ public abstract class BaseFragment extends SherlockFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(CHILD_FRAGMENT_BUNDLE_ARG_KEY)) {
+                mIsChildFragment = savedInstanceState.getBoolean(CHILD_FRAGMENT_BUNDLE_ARG_KEY);
+            }
+        }
+
         mActivity = this.getSherlockActivity();
+        ActionBar supportActionBar = mActivity.getSupportActionBar();
         if (!(this instanceof RecordVideoFragment)) {
-            setHasOptionsMenu(true);
 
-            mLoading = new LoadingFragmentUtil(mActivity);
+            if (!mIsChildFragment) {
+                setHasOptionsMenu(true);
+                //
+                mLoading = new LoadingFragmentUtil(mActivity);
+                supportActionBar.setIcon(R.drawable.banana_medium);
+                supportActionBar.setHomeButtonEnabled(true);
+                supportActionBar.setDisplayHomeAsUpEnabled(true);
+                supportActionBar.setDisplayShowTitleEnabled(false);
+                supportActionBar.setDisplayShowCustomEnabled(true);
+                //
+                // if (supportActionBar.getCustomView() == null) { // if there is no custom view, set it
+                //
+                // // set custom view for the title
+                // LayoutInflater inflater = LayoutInflater.from(mActivity);
+                // View customView = inflater.inflate(R.layout.header_title, null);
+                // mActionBarTitle = (TextView) customView.findViewById(R.id.title);
+                // mActionBarTitle.setText(getActionBarTitle());
+                //
+                // supportActionBar.setCustomView(customView);
+                // supportActionBar.setDisplayShowCustomEnabled(true);
+                // } else {
+                // mActionBarTitle = (TextView) supportActionBar.getCustomView().findViewById(R.id.title);
+                // }
+                // supportActionBar.show();
+            }
 
-            mActivity.getSupportActionBar().show();
-            mActivity.getSupportActionBar().setIcon(R.drawable.banana_medium);
-            mActivity.getSupportActionBar().setHomeButtonEnabled(true);
-            mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
-            mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         } else {
-            mActivity.getSupportActionBar().hide();
+            supportActionBar.hide();
         }
     }
 
@@ -67,11 +94,27 @@ public abstract class BaseFragment extends SherlockFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (!mIsChildFragment) {
+            ((HollerbackMainActivity) getActivity()).getCustomActionBarTitle().setText(getActionBarTitle());
+        }
+    }
+
+    @Override
     public void onPause() {
         if (!(this instanceof RecordVideoFragment)) {
-            mLoading.stopLoading();
+            if (!mIsChildFragment) {
+                mLoading.stopLoading();
+            }
         }
         super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(CHILD_FRAGMENT_BUNDLE_ARG_KEY, mIsChildFragment);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -80,18 +123,8 @@ public abstract class BaseFragment extends SherlockFragment {
         menu.clear();
     }
 
-    @Override
-    public void onResume() {
-        if (!(this instanceof RecordVideoFragment)) {
-            LayoutInflater inflater = LayoutInflater.from(mActivity);
-            View customView = inflater.inflate(R.layout.header_title, null);
-            TextView txtTitle = (TextView) customView.findViewById(R.id.title);
-            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString());
-
-            mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
-            mActivity.getSupportActionBar().setCustomView(customView);
-        }
-        super.onResume();
+    protected String getActionBarTitle() {
+        return "";
     }
 
     protected void initializeView(View view) {
@@ -104,6 +137,14 @@ public abstract class BaseFragment extends SherlockFragment {
 
     protected void stopLoading() {
         mLoading.stopLoading();
+    }
+
+    public void setChildFragment() {
+        mIsChildFragment = true;
+    }
+
+    public void clearChildFragment() {
+        mIsChildFragment = false;
     }
 
     protected abstract String getFragmentName();

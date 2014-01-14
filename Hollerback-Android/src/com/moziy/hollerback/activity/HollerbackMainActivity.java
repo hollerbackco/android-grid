@@ -10,7 +10,11 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
@@ -34,15 +38,17 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     String convId = null;
     private InternalReceiver mReceiver;
     private ContactsDelegate mContactsDelegate; // handles all operations for retrieving and storing contacts
+    private TextView mActionBarTitle;
 
     private boolean mLaunchWelcome = false;
     private boolean mLaunchInviteFriends = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.Hollerback);
         mContactsDelegate = new ContactsDelegate(this);
         super.onCreate(savedInstanceState);
+
+        setupActionBar();
 
         mContactsDelegate.initWorkers();
 
@@ -127,6 +133,28 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     protected void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    private void setupActionBar() {
+        ActionBar supportActionBar = getSupportActionBar();
+
+        supportActionBar.setIcon(R.drawable.banana_medium);
+        supportActionBar.setHomeButtonEnabled(true);
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+        supportActionBar.setDisplayShowTitleEnabled(false);
+
+        // set custom view for the title
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View customView = inflater.inflate(R.layout.header_title, null);
+        mActionBarTitle = (TextView) customView.findViewById(R.id.title);
+        supportActionBar.setCustomView(customView);
+        supportActionBar.setDisplayShowCustomEnabled(true);
+        supportActionBar.show();
+
+    }
+
+    public TextView getCustomActionBarTitle() {
+        return mActionBarTitle;
     }
 
     public void initFragment() {

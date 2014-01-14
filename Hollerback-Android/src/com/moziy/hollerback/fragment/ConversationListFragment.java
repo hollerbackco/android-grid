@@ -49,6 +49,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.fragment.contacts.FriendsFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.SyncService;

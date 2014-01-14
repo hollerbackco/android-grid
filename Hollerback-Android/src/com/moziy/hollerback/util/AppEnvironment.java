@@ -5,6 +5,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.provider.Settings.Secure;
 
+import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.debug.LogUtil;
@@ -115,6 +116,7 @@ public class AppEnvironment {
                 LOG_CRASHES = true;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
                 UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;
+                GoogleAnalytics.getInstance(HollerbackApplication.getInstance()).setDryRun(true); // debug mode
                 break;
             case ENV_PRODUCTION:
                 // DBUtil.copyDbToSdcard();

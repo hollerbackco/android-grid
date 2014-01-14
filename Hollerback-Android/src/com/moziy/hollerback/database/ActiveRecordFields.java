@@ -62,11 +62,19 @@ public class ActiveRecordFields {
     public static final String C_USER_IS_VERIFIED = "UserIsVerified";
     public static final String C_USER_HOLLERBACK_USER = "UserHollerbackUser";
 
-    // User Conversation Relationship
+    // Friends/Contacts
+    public static final String C_FRIENDS_NAME = "name";
+    public static final String C_FRIENDS_PHONE_LABEL = "phone_label";
+    public static final String C_FRIENDS_IS_ON_HOLLERBACK = "is_hb_user";
+    public static final String C_FRIENDS_USERNAME = "username";
+    public static final String C_FRIENDS_LAST_CONTACT_TIME = "last_contact_time";
+    public static final String C_FRIENDS_PHONES = "phones";
+    public static final String C_FRIENDS_PHONE_HASHES = "phone_hashes";
 
     // Tables
     public static final String T_CONVERSATION = "Conversation";
     public static final String T_USERS = "Users";
     public static final String T_VIDEOS = "Videos";
+    public static final String T_FRIENDS = "Friends";
 
 }

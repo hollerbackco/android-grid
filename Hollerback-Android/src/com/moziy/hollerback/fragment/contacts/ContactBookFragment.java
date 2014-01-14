@@ -1,4 +1,4 @@
-package com.moziy.hollerback.fragment;
+package com.moziy.hollerback.fragment.contacts;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,22 +7,25 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.ActionBar.TabListener;
+import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.fragment.BaseFragment;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
     private static final int NUM_TABS = 3;
 
-    private ContactsFragment mContactsFragment;
-    private Fragment mHollerbackContactsFragment;
-    private Fragment mSearchFragment;
     private ViewPager mPager;
     private TabPagerAdapter mPagerAdapter;
     private ActionBar mActionbar;
@@ -38,13 +41,26 @@ public class ContactBookFragment extends BaseFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        ActionBar actionBar = getSherlockActivity().getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        super.onCreate(savedInstanceState);
+    public boolean onOptionsItemSelected(MenuItem item) {
 
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getFragmentManager().popBackStack();
+                return true;
+
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "title; " + getActionBarTitle());
         mActionbar = getSherlockActivity().getSupportActionBar();
-        mActionbar.setTitle(getString(R.string.contactbook_title));
+        mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
     }
 
@@ -78,27 +94,40 @@ public class ContactBookFragment extends BaseFragment {
         super.onActivityCreated(savedInstanceState);
         mPagerAdapter = new TabPagerAdapter(getChildFragmentManager(), getSherlockActivity().getSupportActionBar());
         mPager.setAdapter(mPagerAdapter);
+
+        LayoutInflater inflater = LayoutInflater.from(mActivity);
+
         // create three tabs
         Tab tab = mActionbar.newTab();
         tab.setText(R.string.contacts_lc);
-        tab.setCustomView(R.layout.contact_tab_view);
+        View v = inflater.inflate(R.layout.contact_tab_view, null);
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.contacts_lc));
+        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.contacts_lc);
         mActionbar.addTab(tab, 0);
 
         tab = mActionbar.newTab();
         tab.setText(R.string.hollerback_users_lc);
-        tab.setCustomView(R.layout.contact_tab_view);
+        v = inflater.inflate(R.layout.contact_tab_view, null);
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
+        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.hollerback_users_lc);
         mActionbar.addTab(tab, 1, true); // tab, position, selected
 
         tab = mActionbar.newTab();
         tab.setText(R.string.search_lc);
-        tab.setCustomView(R.layout.contact_tab_view);
+        v = inflater.inflate(R.layout.contact_tab_view, null);
+        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.search_lc));
+        tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.search_lc);
         mActionbar.addTab(tab, 2);
+
     }
 
     @Override
@@ -146,17 +175,27 @@ public class ContactBookFragment extends BaseFragment {
 
     }
 
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.contactbook_title);
+    }
+
     public static class TabPagerAdapter extends FragmentPagerAdapter {
 
-        private ContactsFragment mContactsFragment;
-        private Fragment mHollerbackContactsFragment;
-        private Fragment mSearchFragment;
+        private ContactsChildFragment mContactsFragment;
+        private AddedMeChildFragment mAddedMeFragment;
+        private FriendsFragment mSearchFragment;
 
         public TabPagerAdapter(FragmentManager fm, ActionBar actionBar) {
             super(fm);
-            mContactsFragment = ContactsFragment.newInstance();
-            mHollerbackContactsFragment = ContactsFragment.newInstance();
-            mSearchFragment = ContactsFragment.newInstance();
+            mContactsFragment = new ContactsChildFragment();
+            mContactsFragment.setChildFragment();
+
+            mAddedMeFragment = new AddedMeChildFragment();
+            mAddedMeFragment.setChildFragment();
+
+            mSearchFragment = FriendsFragment.newInstance();
+            mSearchFragment.setChildFragment();
         }
 
         @Override
@@ -165,12 +204,12 @@ public class ContactBookFragment extends BaseFragment {
                 case 0:
                     return mContactsFragment;
                 case 1:
-                    return mHollerbackContactsFragment;
+                    return mAddedMeFragment;
                 case 2:
                     return mSearchFragment;
             }
 
-            return mHollerbackContactsFragment;
+            return mAddedMeFragment;
         }
 
         @Override

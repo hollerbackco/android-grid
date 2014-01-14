@@ -642,7 +642,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mCamera = null;
         }
 
-        mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+        // TODO: put correct sajjad
+        // mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
 
         inPreview = false;
 
