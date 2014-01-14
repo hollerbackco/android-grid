@@ -12,6 +12,8 @@ public interface ContactsInterface {
 
     public List<Contact> getDeviceContacts();
 
+    public List<Contact> getContactsExcludingHBContacts();
+
     public List<Contact> getHollerbackContacts();
 
     public LOADING_STATE getDeviceContactsLoadState();
@@ -21,4 +23,6 @@ public interface ContactsInterface {
     public List<Contact> getRecentContacts();
 
     public List<Contact> getFriends();
+
+    public boolean removeContactFrom(Contact contact, List<Contact> list);
 }

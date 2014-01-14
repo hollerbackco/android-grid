@@ -3,6 +3,7 @@ package com.moziy.hollerback.fragment.contacts;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -54,7 +55,7 @@ import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.widget.CustomEditText;
 
-public class FriendsFragment extends BaseFragment implements AdapterView.OnItemClickListener {
+public class FriendsFragment extends BaseFragment implements AdapterView.OnItemClickListener, ActionMode.Callback {
     private static final String TAG = FriendsFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
     // type - serializable/enum
@@ -123,8 +124,10 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
 
         mInflater = LayoutInflater.from(getActivity());
 
-        mSelected = new HashSet<Contact>();
         Log.d(TAG, "oncreate");
+        mSelected = new HashSet<Contact>();
+        mItemManager = new ItemManager();
+        mItemManager.setItems(buildSegmentData(mContactsInterface));
 
     }
 
@@ -173,15 +176,30 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        mItemManager = new ItemManager();
-        mItemManager.setItems(buildSegmentData(mContactsInterface));
+        Log.d(TAG, "onActivityCreated");
 
         mAdapter = new ContactsAdapterData(mActivity);
         mAdapter.setItemManager(mItemManager);
 
         mContactsList.setAdapter(mAdapter);
         mStickyListView.setIndexer(mAdapter);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        rebuildList();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (isRemoving()) {
+            if (mActionMode != null) {
+                mActionMode.finish();
+            }
+        }
     }
 
     @Override
@@ -226,6 +244,14 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
     public void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    protected void rebuildList() {
+        mItemManager = new ItemManager();
+        mItemManager.setItems(buildSegmentData(mContactsInterface));
+        mAdapter = new ContactsAdapterData(mActivity);
+        mAdapter.setItemManager(mItemManager);
+        mContactsList.setAdapter(mAdapter);
     }
 
     protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
@@ -284,53 +310,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
 
     }
 
-    private AdapterView.OnItemClickListener mOnContactClick = new AdapterView.OnItemClickListener() {
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Item item = (Item) parent.getItemAtPosition(position);
-            if (item.getContact() != null) {
-
-                Contact c = item.getContact();
-
-                if (item instanceof AbsContactItem) {
-                    boolean selected = !((AbsContactItem) item).getSelected();
-                    ((AbsContactItem) item).setSelected(selected);
-                    ContactViewHolder holder = (ContactViewHolder) view.getTag();
-                    holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
-
-                    if (selected) {
-                        mSelected.add(c);
-                    } else {
-                        mSelected.remove(c);
-                    }
-                }
-
-                if (mSelected.size() == 1) {
-                    // getSherlockActivity().invalidateOptionsMenu();
-                    if (mActionMode == null)
-                        mActionMode = getSherlockActivity().startActionMode(mActionModeCallbacks);
-                } else if (mSelected.size() == 0) {
-
-                    if (mActionMode != null) {
-                        mActionMode.finish();
-                    }
-                }
-
-                // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
-                // c.mPhone
-                // }, c.mName, new boolean[] {
-                // c.mIsOnHollerback
-                // });
-
-                // if keyboard is showing hide it
-                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
-
-            }
-        }
-    };
-
     @Override
     protected void initializeView(View view) {
 
@@ -338,36 +317,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
             // startLoading();
         }
     }
-
-    private ActionMode.Callback mActionModeCallbacks = new ActionMode.Callback() {
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            mActionMode = null;
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.send_to_contacts, menu);
-            return true;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            if (item.getItemId() == R.id.mi_next) {
-                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
-                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
-            }
-            return false;
-        }
-    };
 
     /**
      * Listens to CONTACTS_UPDATED
@@ -513,7 +462,7 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
             if (mSelected.size() == 1) {
                 // getSherlockActivity().invalidateOptionsMenu();
                 if (mActionMode == null)
-                    mActionMode = getSherlockActivity().startActionMode(mActionModeCallbacks);
+                    mActionMode = getSherlockActivity().startActionMode(FriendsFragment.this);
             } else if (mSelected.size() == 0) {
 
                 if (mActionMode != null) {
@@ -533,6 +482,37 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
 
         }
 
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mActionMode = null;
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.send_to_contacts, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.mi_next) {
+            StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+        }
+        return false;
+    }
+
+    public Set<Contact> getSelectedContacts() {
+        return mSelected;
     }
 
 }

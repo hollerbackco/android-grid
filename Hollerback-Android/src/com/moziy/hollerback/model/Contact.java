@@ -18,6 +18,8 @@ public class Contact extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final String TAG = Contact.class.getSimpleName();
 
+    public long mAndroidContactId;
+
     @Column(name = ActiveRecordFields.C_FRIENDS_NAME)
     public String mName;
 
@@ -45,8 +47,9 @@ public class Contact extends BaseModel implements Serializable {
         super();
     }
 
-    public Contact(String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
+    public Contact(long contactId, String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
         super();
+        this.mAndroidContactId = contactId;
         this.mName = mName;
         this.mPhoneLabel = mPhoneLabel;
         this.mPhotoID = mPhotoID;

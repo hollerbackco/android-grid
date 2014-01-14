@@ -5,11 +5,13 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 
-import com.activeandroid.ActiveAndroid;
+import com.actionbarsherlock.view.ActionMode;
+import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactListSegmentData;
 import com.moziy.hollerback.contacts.ContactViewHolder;
@@ -19,6 +21,7 @@ import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 
 public class ContactsChildFragment extends FriendsFragment {
+    private static final String TAG = ContactsChildFragment.class.getSimpleName();
 
     public static ContactsChildFragment newInstance() {
         return newInstance(FriendsFragment.NextAction.START_CONVERSATION);
@@ -34,21 +37,12 @@ public class ContactsChildFragment extends FriendsFragment {
     }
 
     @Override
+    protected void rebuildList() {
+    }
+
+    @Override
     public void onPause() {
 
-        if (isRemoving()) {
-            // TOOD: put in background task
-            ActiveAndroid.beginTransaction();
-            try {
-                for (Contact c : mContactsInterface.getFriends()) {
-                    c.save();
-                }
-
-                ActiveAndroid.setTransactionSuccessful();
-            } finally {
-                ActiveAndroid.endTransaction();
-            }
-        }
         super.onPause();
 
     }
@@ -65,7 +59,7 @@ public class ContactsChildFragment extends FriendsFragment {
 
         segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.invite_contacts);
-        segmentData.mContacts = ci.getDeviceContacts();
+        segmentData.mContacts = ci.getContactsExcludingHBContacts();
         listData.add(segmentData);
 
         return listData;
@@ -86,21 +80,39 @@ public class ContactsChildFragment extends FriendsFragment {
                 holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
 
                 if (selected) {
+                    Log.d(TAG, "adding to friends; " + c.toString());
                     mSelected.add(c);
+                    // mContactsInterface.getFriends().add(c);
+                    // Collections.sort(mContactsInterface.getFriends(), Contact.COMPARATOR);
+                    //
+                    // mContactsInterface.removeContactFrom(c, mContactsInterface.getContactsExcludingHBContacts());
+                    // mContactsInterface.removeContactFrom(c, mContactsInterface.getHollerbackContacts());
                 } else {
+
                     mSelected.remove(c);
+                    // mContactsInterface.getFriends().remove(c);
+                    // mContactsInterface.getContactsExcludingHBContacts().add(c);
+                    // Collections.sort(mContactsInterface.getContactsExcludingHBContacts(), Contact.COMPARATOR);
+                    //
+                    // mContactsInterface.getHollerbackContacts().add(c);
+                    // Collections.sort(mContactsInterface.getHollerbackContacts(), Contact.COMPARATOR);
                 }
             }
+
+            // if (mSelected.size() > 0) {
+            // if (mActionMode == null) {
+            // mActionMode = getSherlockActivity().startActionMode(ContactsChildFragment.this);
+            // }
+            // } else if (mSelected.size() == 0) {
+            // if (mActionMode != null)
+            // mActionMode.finish();
+            // }
 
             // if (mSelected.size() == 1) {
             // // getSherlockActivity().invalidateOptionsMenu();
             // } else if (mSelected.size() == 0) {
             //
             // }
-
-            mContactsInterface.getFriends().add(c);
-            mContactsInterface.getDeviceContacts().remove(c);
-            mContactsInterface.getHollerbackContacts().remove(c);
 
             // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
             // c.mPhone
@@ -113,5 +125,15 @@ public class ContactsChildFragment extends FriendsFragment {
             imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
 
         }
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
+        if (item.getItemId() == R.id.mi_next) {
+            getFragmentManager().popBackStack();
+            return true;
+        }
+        return super.onActionItemClicked(mode, item);
     }
 }

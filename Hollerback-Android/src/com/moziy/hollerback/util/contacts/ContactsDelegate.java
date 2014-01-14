@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.connection.HollerbackAPI;
+import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
@@ -46,6 +48,7 @@ import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.CursorTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskGroup;
+import com.moziy.hollerback.util.CollectionOpUtils;
 
 /**
  * This class is a delegate to contact related operations
@@ -64,10 +67,11 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private Queue<Task> mTaskQueue = new LinkedList<Task>();
     private static final String PHONE_COLUMN = (Build.VERSION.SDK_INT >= 16 ? Phone.NORMALIZED_NUMBER : Phone.NUMBER);
 
-    private List<Contact> mContacts;
-    private List<Contact> mHBContacts;
-    private List<Contact> mRecents;
-    private List<Contact> mFriends;
+    private List<Contact> mContacts; // all phone contacts
+    private List<Contact> mContactsExcludingHbFriends; // contacts excluding hollerback friends
+    private List<Contact> mHBContacts; // hollerback contacts
+    private List<Contact> mRecents; // recents
+    private List<Contact> mFriends; // friends
 
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
@@ -96,6 +100,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             Log.d(TAG, "got user contacts");
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
+            mContactsExcludingHbFriends = new ArrayList<Contact>(mContacts); // add all for now
             mContactsLoadState = LOADING_STATE.DONE;
 
             // XXX: fill in later
@@ -111,13 +116,44 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
 
             // remove all of hb contacts from contacts
-            mContacts.removeAll(mHBContacts);
-            mHBContactsLoadState = LOADING_STATE.DONE;
+
+            if (mHBContacts != null && mContactsExcludingHbFriends != null) {
+                for (Contact hbContact : mHBContacts) {
+                    Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
+                    while (itr.hasNext()) {
+
+                        if (hbContact.mAndroidContactId == itr.next().mAndroidContactId) {
+                            itr.remove();
+                            break;
+                        }
+                    }
+                }
+            }
 
             // mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
-            mFriends = new ArrayList<Contact>();
-            mFriends = new Select().from(Contact.class).execute();
+            mFriends = new Select().from(Contact.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
+            Log.d(TAG, "friends size: " + mFriends.size());
+            if (mFriends != null) {
+                // lets remove the friends from the contacts excluding hb and from the hbcontacts
+                for (Contact friend : mFriends) {
+                    Iterator<Contact> itr = mHBContacts.iterator();
+                    while (itr.hasNext()) {
+                        if (CollectionOpUtils.intersects(friend.mPhoneHashes, itr.next().mPhoneHashes)) {
+                            itr.remove();
+                        }
+                    }
 
+                    itr = mContactsExcludingHbFriends.iterator();
+                    while (itr.hasNext()) {
+                        if (CollectionOpUtils.intersects(friend.mPhoneHashes, itr.next().mPhoneHashes)) {
+                            itr.remove();
+                        }
+                    }
+
+                }
+            }
+
+            mHBContactsLoadState = LOADING_STATE.DONE;
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
 
@@ -171,6 +207,24 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     @Override
     public List<Contact> getFriends() {
         return mFriends;
+    }
+
+    @Override
+    public List<Contact> getContactsExcludingHBContacts() {
+        return mContactsExcludingHbFriends;
+    }
+
+    @Override
+    public boolean removeContactFrom(Contact contact, List<Contact> list) {
+        Iterator<Contact> itr = list.iterator();
+        while (itr.hasNext()) {
+            if (CollectionOpUtils.intersects(contact.mPhoneHashes, itr.next().mPhoneHashes)) {
+                itr.remove();
+                Log.d(TAG, "removed");
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -232,7 +286,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     } else { // new contact
 
                         if (phone != null) {
-                            Contact contact = new Contact(name, phone, phoneLabel, photoId);
+                            Contact contact = new Contact(contactId, name, phone, phoneLabel, photoId);
                             mContactMap.put(contactId, contact);
                         }
                     }
