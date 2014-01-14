@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -27,6 +29,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -73,11 +76,16 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private List<Contact> mRecents; // recents
     private List<Contact> mFriends; // friends
 
+    private List<Contact> mPendingTransferToFriends;
+    private List<Contact> mPendingRemovalFromFriends;
+
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
+        mPendingRemovalFromFriends = new ArrayList<Contact>();
+        mPendingTransferToFriends = new ArrayList<Contact>();
 
     }
 
@@ -106,6 +114,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             // XXX: fill in later
             // mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
             mRecents = new ArrayList<Contact>();
+            mRecents = new Select().from(Contact.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
+                    .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
 
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
@@ -433,6 +443,113 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             addTask(new GetHBContactsTask(contactsTask));
 
         }
+    }
+
+    public Transaction beginTransaction() {
+        return new TransactionImpl();
+    }
+
+    public interface Transaction {
+
+        public void commit();
+
+        public void addToFriends(Contact c);
+
+        public void removeFromFriends(Contact c);
+    }
+
+    private class TransactionImpl implements Transaction {
+
+        private Set<Contact> mPendingAdd;
+        private Set<Contact> mPendingRemove;
+
+        public TransactionImpl() {
+            mPendingAdd = new HashSet<Contact>();
+            mPendingRemove = new HashSet<Contact>();
+        }
+
+        @Override
+        public void commit() {
+
+            // add friends to the friends list
+            if (mFriends != null && !mPendingAdd.isEmpty()) {
+                // TODO: combine the transactions
+                ActiveAndroid.beginTransaction();
+                try {
+
+                    for (Contact newFriend : mPendingAdd) {
+
+                        mFriends.add(newFriend);
+
+                        if (mHBContacts != null) {
+                            removeContactFrom(newFriend, mHBContacts);
+                        }
+
+                        if (mContactsExcludingHbFriends != null) {
+                            removeContactFrom(newFriend, mContactsExcludingHbFriends);
+                        }
+
+                        newFriend.save();
+                    }
+
+                    ActiveAndroid.setTransactionSuccessful();
+
+                } finally {
+
+                    ActiveAndroid.endTransaction();
+
+                }
+
+                Collections.sort(mFriends, Contact.COMPARATOR); // sort the friends
+
+            }
+
+            // remove friends from the friends list
+            if (mFriends != null && !mPendingRemove.isEmpty()) {
+
+                ActiveAndroid.beginTransaction();
+                try {
+
+                    for (Contact existingFriend : mPendingRemove) {
+
+                        removeContactFrom(existingFriend, mFriends);
+
+                        if (mHBContacts != null && existingFriend.mIsOnHollerback) {
+
+                            mHBContacts.add(existingFriend);
+                        }
+
+                        if (mContactsExcludingHbFriends != null && !existingFriend.mIsOnHollerback) {
+                            mContactsExcludingHbFriends.add(existingFriend);
+                        }
+
+                        existingFriend.delete();
+                    }
+
+                    ActiveAndroid.setTransactionSuccessful();
+
+                } finally {
+
+                    ActiveAndroid.endTransaction();
+
+                }
+
+            }
+
+        }
+
+        @Override
+        public void addToFriends(Contact c) {
+            mPendingAdd.add(c);
+            mPendingRemove.remove(c);
+        }
+
+        @Override
+        public void removeFromFriends(Contact c) {
+            mPendingRemove.add(c);
+            mPendingAdd.remove(c);
+        }
+
     }
 
 }

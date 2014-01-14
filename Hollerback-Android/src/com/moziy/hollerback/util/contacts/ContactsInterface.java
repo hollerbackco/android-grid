@@ -3,6 +3,7 @@ package com.moziy.hollerback.util.contacts;
 import java.util.List;
 
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 
 public interface ContactsInterface {
 
@@ -23,6 +24,8 @@ public interface ContactsInterface {
     public List<Contact> getRecentContacts();
 
     public List<Contact> getFriends();
+
+    public Transaction beginTransaction();
 
     public boolean removeContactFrom(Contact contact, List<Contact> list);
 }

@@ -2,6 +2,7 @@ package com.moziy.hollerback.fragment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -34,6 +36,7 @@ import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.SmsUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 
 public class StartConversationFragment extends BaseFragment implements RecordingInfo {
@@ -276,6 +279,19 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Log.w(TAG, "skipping sms invite since fragment not added");
                 }
 
+                // for the users that we just sent too, lets mark the time we sent to them
+                ActiveAndroid.beginTransaction();
+                try {
+                    Date now = new Date();
+                    for (Contact c : mRecipients) {
+                        c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
+                        c.save();
+                        ActiveAndroid.setTransactionSuccessful();
+                    }
+                } finally {
+                    ActiveAndroid.endTransaction();
+                }
+
             } else {
 
                 // TODO: if it's a conversation creation failure, display a dialog
@@ -329,6 +345,11 @@ public class StartConversationFragment extends BaseFragment implements Recording
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mReceiver.unregister();
         Log.d(TAG, "onDestroy()");
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.start_conversation);
     }
 
     @Override

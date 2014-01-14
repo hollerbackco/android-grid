@@ -17,10 +17,12 @@ import com.moziy.hollerback.contacts.ContactListSegmentData;
 import com.moziy.hollerback.contacts.ContactViewHolder;
 import com.moziy.hollerback.contacts.ContactsAdapterData.AbsContactItem;
 import com.moziy.hollerback.contacts.ContactsAdapterData.Item;
+import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 
-public class ContactsChildFragment extends FriendsFragment {
+public class ContactsChildFragment extends FriendsFragment implements ContactBookChild {
     private static final String TAG = ContactsChildFragment.class.getSimpleName();
 
     public static ContactsChildFragment newInstance() {
@@ -35,6 +37,8 @@ public class ContactsChildFragment extends FriendsFragment {
 
         return f;
     }
+
+    private Transaction mTransaction;
 
     @Override
     protected void rebuildList() {
@@ -79,9 +83,14 @@ public class ContactsChildFragment extends FriendsFragment {
                 ContactViewHolder holder = (ContactViewHolder) view.getTag();
                 holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
 
+                if (mTransaction == null) {
+                    mTransaction = mContactsInterface.beginTransaction();
+                }
+
                 if (selected) {
                     Log.d(TAG, "adding to friends; " + c.toString());
                     mSelected.add(c);
+                    mTransaction.addToFriends(c);
                     // mContactsInterface.getFriends().add(c);
                     // Collections.sort(mContactsInterface.getFriends(), Contact.COMPARATOR);
                     //
@@ -90,6 +99,7 @@ public class ContactsChildFragment extends FriendsFragment {
                 } else {
 
                     mSelected.remove(c);
+                    mTransaction.removeFromFriends(c);
                     // mContactsInterface.getFriends().remove(c);
                     // mContactsInterface.getContactsExcludingHBContacts().add(c);
                     // Collections.sort(mContactsInterface.getContactsExcludingHBContacts(), Contact.COMPARATOR);
@@ -135,5 +145,16 @@ public class ContactsChildFragment extends FriendsFragment {
             return true;
         }
         return super.onActionItemClicked(mode, item);
+    }
+
+    @Override
+    public Transaction getContactTransaction() {
+        return mTransaction;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTransaction = null; // nullify transaction when destroyed so we don't hol on to the context
     }
 }

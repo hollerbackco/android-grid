@@ -7,9 +7,11 @@ import android.os.Bundle;
 
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactListSegmentData;
+import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
+import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 
-public class AddedMeChildFragment extends FriendsFragment {
+public class AddedMeChildFragment extends FriendsFragment implements ContactBookChild {
 
     public static AddedMeChildFragment newInstance() {
         return newInstance(FriendsFragment.NextAction.START_CONVERSATION);
@@ -41,6 +43,12 @@ public class AddedMeChildFragment extends FriendsFragment {
         // listData.add(segmentData);
 
         return listData;
+    }
+
+    @Override
+    public Transaction getContactTransaction() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

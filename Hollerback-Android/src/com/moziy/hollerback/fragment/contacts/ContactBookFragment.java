@@ -1,8 +1,5 @@
 package com.moziy.hollerback.fragment.contacts;
 
-import java.util.Collections;
-import java.util.Set;
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,12 +19,9 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.ActionBar.TabListener;
 import com.actionbarsherlock.view.MenuItem;
-import com.activeandroid.ActiveAndroid;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.fragment.BaseFragment;
-import com.moziy.hollerback.model.Contact;
-import com.moziy.hollerback.util.contacts.ContactsInterface;
+import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
@@ -39,7 +33,7 @@ public class ContactBookFragment extends BaseFragment {
 
     private ContactsChildFragment mContactsFragment;
     private AddedMeChildFragment mAddedMeFragment;
-    private FriendsFragment mSearchFragment;
+    private ContactsChildFragment mSearchFragment;
 
     @Override
     protected String getFragmentName() {
@@ -145,32 +139,18 @@ public class ContactBookFragment extends BaseFragment {
     public void onPause() {
 
         if (isRemoving()) {
+
+            for (Fragment f : getChildFragmentManager().getFragments()) {
+                Transaction t = ((ContactBookChild) f).getContactTransaction();
+                if (t != null) {
+                    Log.d(TAG, "commiting contact transaction");
+                    t.commit();
+                }
+            }
+
             getSherlockActivity().getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
             getSherlockActivity().getActionBar().removeAllTabs();
 
-            // lets process the data - figure out whether to move it to the delegate..probably yes
-            if (mContactsFragment != null) {
-                Set<Contact> newFriends = mContactsFragment.getSelectedContacts();
-                ContactsInterface contactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
-                for (Contact newFriend : newFriends) {
-                    Log.d(TAG, "adding new friend: " + newFriend.toString());
-                    contactsInterface.getFriends().add(newFriend);
-                    contactsInterface.removeContactFrom(newFriend, contactsInterface.getContactsExcludingHBContacts());
-                    contactsInterface.removeContactFrom(newFriend, contactsInterface.getHollerbackContacts());
-                }
-
-                Collections.sort(contactsInterface.getFriends(), Contact.COMPARATOR);
-                ActiveAndroid.beginTransaction();
-                try {
-                    for (Contact f : newFriends) {
-                        f.save();
-                    }
-
-                    ActiveAndroid.setTransactionSuccessful();
-                } finally {
-                    ActiveAndroid.endTransaction();
-                }
-            }
         }
 
         super.onPause();
@@ -225,7 +205,7 @@ public class ContactBookFragment extends BaseFragment {
             mAddedMeFragment = AddedMeChildFragment.newInstance();
             mAddedMeFragment.setChildFragment();
 
-            mSearchFragment = FriendsFragment.newInstance();
+            mSearchFragment = ContactsChildFragment.newInstance();
             mSearchFragment.setChildFragment();
         }
 
@@ -248,5 +228,9 @@ public class ContactBookFragment extends BaseFragment {
             return NUM_TABS;
         }
 
+    }
+
+    public interface ContactBookChild {
+        public Transaction getContactTransaction();
     }
 }
