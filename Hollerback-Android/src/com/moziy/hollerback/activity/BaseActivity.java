@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.moziy.hollerback.HollerbackApplication;
@@ -39,12 +38,6 @@ public class BaseActivity extends SherlockFragmentActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        EasyTracker.getInstance(this).activityStart(this);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         HollerbackApplication.getInstance().getAppLifecycle().setActive();
@@ -64,7 +57,6 @@ public class BaseActivity extends SherlockFragmentActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        EasyTracker.getInstance(this).activityStop(this);
     }
 
     private boolean checkPlayServices() {

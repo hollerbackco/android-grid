@@ -20,11 +20,9 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
@@ -176,8 +174,7 @@ public class SignUpConfirmFragment extends BaseFragment {
             public void onClick(View v) {
 
                 // log analytic event
-                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
-                        MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitVerification, null, null).build());
+                AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitVerification, null, null).build());
 
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mTxtVerify.getWindowToken(), 0);

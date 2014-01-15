@@ -10,12 +10,11 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
-import com.google.analytics.tracking.android.Tracker;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 
 public abstract class BaseFragment extends SherlockFragment {
@@ -85,12 +84,9 @@ public abstract class BaseFragment extends SherlockFragment {
     @Override
     public void onStart() {
         super.onStart();
-        Tracker tracker = EasyTracker.getInstance(mActivity);
-        if (tracker != null) {
-            tracker.set(Fields.SCREEN_NAME, getFragmentName());
-            tracker.send(MapBuilder.createAppView().build());
-        }
-        // EasyTracker.getInstance(mActivity). .sendView("Home Screen"); // Where myTracker is an instance of Tracker.
+
+        AnalyticsUtil.getGaTracker().set(Fields.SCREEN_NAME, getFragmentName());
+        AnalyticsUtil.getGaTracker().send(MapBuilder.createAppView().build());
     }
 
     @Override

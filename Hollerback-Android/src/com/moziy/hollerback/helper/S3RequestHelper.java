@@ -121,14 +121,14 @@ public class S3RequestHelper {
                     override.setContentType("video/mp4");
                     Date expirationDate = new Date(System.currentTimeMillis() + 3600000);
 
-                    GeneratePresignedUrlRequest urlVideoRequest = new GeneratePresignedUrlRequest(AppEnvironment.getInstance().PICTURE_BUCKET, uploadParams.getFileName());
+                    GeneratePresignedUrlRequest urlVideoRequest = new GeneratePresignedUrlRequest(AppEnvironment.getInstance().UPLOAD_BUCKET, uploadParams.getFileName());
                     urlVideoRequest.setExpiration(expirationDate);
                     urlVideoRequest.setResponseHeaders(override);
 
                     URL videoUrl = s3Client.generatePresignedUrl(urlVideoRequest);
 
                     override.setContentType("image/jpeg");
-                    GeneratePresignedUrlRequest urlImageRequest = new GeneratePresignedUrlRequest(AppEnvironment.getInstance().PICTURE_BUCKET, uploadParams.getThumbnailName());
+                    GeneratePresignedUrlRequest urlImageRequest = new GeneratePresignedUrlRequest(AppEnvironment.getInstance().UPLOAD_BUCKET, uploadParams.getThumbnailName());
                     urlImageRequest.setExpiration(expirationDate);
                     urlImageRequest.setResponseHeaders(override);
 

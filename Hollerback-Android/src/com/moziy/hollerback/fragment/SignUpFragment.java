@@ -25,13 +25,11 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -232,7 +230,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             final String regionCode = mSelectedCountry.code;
 
             // log analytic event
-            EasyTracker.getInstance(HollerbackApplication.getInstance()).send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitRegInfo, null, null).build());
+            AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitRegInfo, null, null).build());
 
             mIsSubmitted = true;
             mLoadingBar.startLoading();

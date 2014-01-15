@@ -221,12 +221,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         Bundle args = getArguments();
 
-        // bind arguments to fragment
-        if (args.containsKey(FRAGMENT_ARG_TITLE)) {
-            // setting title
-            mActivity.getSupportActionBar().setTitle(args.getString(FRAGMENT_ARG_TITLE));
-        }
-
         if (args.containsKey(IABIntent.PARAM_ID)) {
             mConversationId = args.getLong(IABIntent.PARAM_ID);
             LogUtil.i("HollerbackCamera CONVO: " + mConversationId);
@@ -554,16 +548,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private ImageView mBlinker;
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (this.isVisible()) {
-            mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            mActivity.getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.background_camera));
-        }
-
-    }
-
-    @Override
     public void onPause() {
 
         try {
@@ -635,6 +619,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             }
         }
 
+        enableShutterSound();
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
@@ -648,7 +633,6 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         inPreview = false;
 
         super.onPause();
-        enableShutterSound();
 
         mCameraSemaphore.release();
 

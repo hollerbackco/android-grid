@@ -2,6 +2,7 @@ package com.moziy.hollerback;
 
 import java.util.concurrent.Semaphore;
 
+import android.app.NotificationManager;
 import android.content.Context;
 
 import com.activeandroid.ActiveAndroid;
@@ -44,15 +45,23 @@ public class HollerbackAppState {
     }
 
     public static void logOut(Context ctx) {
+
         PreferenceManagerUtil.clearPreferences();
+
         ActiveAndroid.beginTransaction();
         new Delete().from(ConversationModel.class).execute();
         new Delete().from(VideoModel.class).execute();
         new Delete().from(UserModel.class).execute();
         new Delete().from(Friend.class).execute();
-        VolleySingleton.getInstance(ctx).getRequestQueue().getCache().clear(); // clear everything
         ActiveAndroid.setTransactionSuccessful();
         ActiveAndroid.endTransaction();
+
+        VolleySingleton.getInstance(ctx).getRequestQueue().getCache().clear(); // clear everything
+
+        // remove all notifications
+        NotificationManager nm = (NotificationManager) HollerbackApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancelAll();
+
     }
 
 }

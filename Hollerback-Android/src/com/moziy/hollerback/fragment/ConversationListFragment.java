@@ -37,7 +37,6 @@ import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
@@ -194,8 +193,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             case R.id.action_add:
                 if (isResumed()) { // no need to take action if we're not in the resumed state
                     // log analytic event
-                    EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
-                            MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
+                    AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
                     FriendsFragment fragment = FriendsFragment.newInstance();
                     mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                             .addToBackStack(FRAGMENT_TAG).commit();
@@ -222,8 +220,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             if (conversation == null) {
 
                 // log analytic event
-                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
-                        MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListNewConvo, null).build());
+                AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListNewConvo, null).build());
 
                 // this is the footer view
                 Log.d(TAG, "footer view tapped");

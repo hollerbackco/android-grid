@@ -3,7 +3,6 @@ package com.moziy.hollerback;
 import android.content.Intent;
 import android.util.Log;
 
-import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Set;
 import com.activeandroid.query.Update;
 import com.crashlytics.android.Crashlytics;
@@ -20,6 +19,7 @@ import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.service.task.TaskGroup;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
@@ -42,7 +42,9 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
             }
         }
 
-        ActiveAndroid.setLoggingEnabled(true);
+        // init google analytics
+        AnalyticsUtil.initializeGoogleAnalytics(this);
+
         initObjectMapper();
 
         mLifecycle = new AppLifecycle();
@@ -71,13 +73,11 @@ public class HollerbackApplication extends com.activeandroid.app.Application {
 
     @Override
     public void onLowMemory() {
-        // TODO Auto-generated method stub
         super.onLowMemory();
     }
 
     @Override
     public void onTrimMemory(int level) {
-        // TODO Auto-generated method stub
         super.onTrimMemory(level);
     }
 

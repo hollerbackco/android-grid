@@ -2,13 +2,36 @@ package com.moziy.hollerback.util;
 
 import java.util.HashMap;
 
+import android.app.Application;
 import android.os.Build;
 
-import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
-import com.moziy.hollerback.HollerbackApplication;
+import com.google.analytics.tracking.android.Tracker;
 
 public class AnalyticsUtil {
+
+    private static final String GA_TRACKER_ID = "UA-46827545-1";
+    private static final int GA_DEFAULT_PERIOD = 15 * 60 * 1000;
+
+    private static GoogleAnalytics sGa;
+    private static Tracker sTracker;
+
+    public static void initializeGoogleAnalytics(Application app) {
+
+        sGa = GoogleAnalytics.getInstance(app);
+        sGa.setDryRun(AppEnvironment.getInstance().GA_IS_DRY_RUN);
+        sTracker = sGa.getTracker(GA_TRACKER_ID);
+
+    }
+
+    public static GoogleAnalytics getGa() {
+        return sGa;
+    }
+
+    public static Tracker getGaTracker() {
+        return sTracker;
+    }
 
     public interface Category {
         public static final String Registration = "Registration";
@@ -35,7 +58,7 @@ public class AnalyticsUtil {
     }
 
     public static void log(String category, String action, String label, Long value) {
-        EasyTracker.getInstance(HollerbackApplication.getInstance()).send(MapBuilder.createEvent(category, action, label, value).build());
+        sTracker.send(MapBuilder.createEvent(category, action, label, value).build());
     }
 
     public static String getDeviceName() {
