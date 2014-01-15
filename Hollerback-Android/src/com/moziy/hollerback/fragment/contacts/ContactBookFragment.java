@@ -20,8 +20,8 @@ import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.ActionBar.TabListener;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.fragment.BaseFragment;
-import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
@@ -111,7 +111,7 @@ public class ContactBookFragment extends BaseFragment {
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.contacts_lc);
-        mActionbar.addTab(tab, 0);
+        mActionbar.addTab(tab, 0, true);
 
         tab = mActionbar.newTab();
         tab.setText(R.string.hollerback_users_lc);
@@ -121,7 +121,7 @@ public class ContactBookFragment extends BaseFragment {
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.hollerback_users_lc);
-        mActionbar.addTab(tab, 1, true); // tab, position, selected
+        mActionbar.addTab(tab, 1); // tab, position, selected
 
         tab = mActionbar.newTab();
         tab.setText(R.string.search_lc);

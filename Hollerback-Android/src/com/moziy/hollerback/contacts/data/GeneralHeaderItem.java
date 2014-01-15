@@ -1,11 +1,11 @@
-package com.moziy.hollerback.contacts;
+package com.moziy.hollerback.contacts.data;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.contacts.ContactsAdapterData.HeaderItem;
+import com.moziy.hollerback.contacts.data.ContactsAdapterData.HeaderItem;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.widget.CustomTextView;
 

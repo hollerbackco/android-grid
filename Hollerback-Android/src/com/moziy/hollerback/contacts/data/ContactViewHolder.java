@@ -1,4 +1,4 @@
-package com.moziy.hollerback.contacts;
+package com.moziy.hollerback.contacts.data;
 
 import android.widget.ImageView;
 

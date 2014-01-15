@@ -6,10 +6,10 @@ import java.util.List;
 import android.os.Bundle;
 
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.contacts.ContactListSegmentData;
+import com.moziy.hollerback.contacts.ContactsInterface;
+import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
+import com.moziy.hollerback.contacts.data.ContactListSegmentData;
 import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
-import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
-import com.moziy.hollerback.util.contacts.ContactsInterface;
 
 public class AddedMeChildFragment extends FriendsFragment implements ContactBookChild {
 

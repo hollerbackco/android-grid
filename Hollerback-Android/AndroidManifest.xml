@@ -94,7 +94,8 @@
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/HollerbackTheme.Settings" >
+            android:theme="@style/HollerbackTheme.Settings"
+            android:uiOptions="splitActionBarWhenNarrow" >
         </activity>
 
         <receiver

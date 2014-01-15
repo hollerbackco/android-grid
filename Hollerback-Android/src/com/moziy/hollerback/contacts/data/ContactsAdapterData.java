@@ -1,4 +1,4 @@
-package com.moziy.hollerback.contacts;
+package com.moziy.hollerback.contacts.data;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.contacts.ContactsAdapterData.Item;
+import com.moziy.hollerback.contacts.data.ContactsAdapterData.Item;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
 

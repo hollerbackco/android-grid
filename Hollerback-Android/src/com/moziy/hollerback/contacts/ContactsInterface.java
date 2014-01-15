@@ -1,9 +1,9 @@
-package com.moziy.hollerback.util.contacts;
+package com.moziy.hollerback.contacts;
 
 import java.util.List;
 
+import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.model.Contact;
-import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
 
 public interface ContactsInterface {
 
@@ -27,5 +27,4 @@ public interface ContactsInterface {
 
     public Transaction beginTransaction();
 
-    public boolean removeContactFrom(Contact contact, List<Contact> list);
 }

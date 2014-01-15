@@ -13,14 +13,14 @@ import android.widget.AdapterView;
 import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
-import com.moziy.hollerback.contacts.ContactListSegmentData;
-import com.moziy.hollerback.contacts.ContactViewHolder;
-import com.moziy.hollerback.contacts.ContactsAdapterData.AbsContactItem;
-import com.moziy.hollerback.contacts.ContactsAdapterData.Item;
+import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
+import com.moziy.hollerback.contacts.ContactsInterface;
+import com.moziy.hollerback.contacts.data.ContactListSegmentData;
+import com.moziy.hollerback.contacts.data.ContactViewHolder;
+import com.moziy.hollerback.contacts.data.ContactsAdapterData.AbsContactItem;
+import com.moziy.hollerback.contacts.data.ContactsAdapterData.Item;
 import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
 import com.moziy.hollerback.model.Contact;
-import com.moziy.hollerback.util.contacts.ContactsDelegate.Transaction;
-import com.moziy.hollerback.util.contacts.ContactsInterface;
 
 public class ContactsChildFragment extends FriendsFragment implements ContactBookChild {
     private static final String TAG = ContactsChildFragment.class.getSimpleName();
@@ -91,44 +91,13 @@ public class ContactsChildFragment extends FriendsFragment implements ContactBoo
                     Log.d(TAG, "adding to friends; " + c.toString());
                     mSelected.add(c);
                     mTransaction.addToFriends(c);
-                    // mContactsInterface.getFriends().add(c);
-                    // Collections.sort(mContactsInterface.getFriends(), Contact.COMPARATOR);
-                    //
-                    // mContactsInterface.removeContactFrom(c, mContactsInterface.getContactsExcludingHBContacts());
-                    // mContactsInterface.removeContactFrom(c, mContactsInterface.getHollerbackContacts());
+
                 } else {
 
                     mSelected.remove(c);
                     mTransaction.removeFromFriends(c);
-                    // mContactsInterface.getFriends().remove(c);
-                    // mContactsInterface.getContactsExcludingHBContacts().add(c);
-                    // Collections.sort(mContactsInterface.getContactsExcludingHBContacts(), Contact.COMPARATOR);
-                    //
-                    // mContactsInterface.getHollerbackContacts().add(c);
-                    // Collections.sort(mContactsInterface.getHollerbackContacts(), Contact.COMPARATOR);
                 }
             }
-
-            // if (mSelected.size() > 0) {
-            // if (mActionMode == null) {
-            // mActionMode = getSherlockActivity().startActionMode(ContactsChildFragment.this);
-            // }
-            // } else if (mSelected.size() == 0) {
-            // if (mActionMode != null)
-            // mActionMode.finish();
-            // }
-
-            // if (mSelected.size() == 1) {
-            // // getSherlockActivity().invalidateOptionsMenu();
-            // } else if (mSelected.size() == 0) {
-            //
-            // }
-
-            // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
-            // c.mPhone
-            // }, c.mName, new boolean[] {
-            // c.mIsOnHollerback
-            // });
 
             // if keyboard is showing hide it
             InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);

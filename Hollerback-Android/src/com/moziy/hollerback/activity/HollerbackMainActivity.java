@@ -19,6 +19,8 @@ import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.contacts.ContactsDelegate;
+import com.moziy.hollerback.contacts.ContactsInterface;
 import com.moziy.hollerback.fragment.ContactsFragment;
 import com.moziy.hollerback.fragment.ContactsFragment.NextAction;
 import com.moziy.hollerback.fragment.ConversationListFragment;
@@ -27,8 +29,6 @@ import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConver
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.task.Task;
-import com.moziy.hollerback.util.contacts.ContactsDelegate;
-import com.moziy.hollerback.util.contacts.ContactsInterface;
 
 public class HollerbackMainActivity extends BaseActivity implements OnConversationsUpdated, TaskClient {
 

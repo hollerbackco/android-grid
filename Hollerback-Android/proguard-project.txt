@@ -26,6 +26,9 @@
 -verbose
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
+#Picasso related
+-dontwarn com.squareup.okhttp.**
+
 #Google Play Specific Keeps
 -keep class * extends java.util.ListResourceBundle {
     protected Object[][] getContents();
