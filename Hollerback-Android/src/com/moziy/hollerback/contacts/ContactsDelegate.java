@@ -105,7 +105,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
                 while (itr.hasNext()) {
                     if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) { // if the phone numbers match, then take it off
-                        Log.d(TAG, "removed: " + friend.mName + " from list");
                         itr.remove();
                     }
                 }
@@ -120,7 +119,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
 
             // remove all of hb contacts from contacts
-            Log.d(TAG, "friends size: " + mFriends.size());
             if (mFriends != null) {
                 // lets remove the friends from the contacts excluding hb and from the hbcontacts
                 for (Contact friend : mFriends) {
@@ -128,7 +126,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     while (itr.hasNext()) {
                         if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) {
                             itr.remove();
-                            Log.d(TAG, "removed hb friend");
                         }
                     }
 
@@ -141,7 +138,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     while (itr.hasNext()) {
                         if (CollectionOpUtils.intersects(itr.next().mPhoneHashes, hbContact.mPhoneHashes)) {
                             itr.remove();
-                            Log.d(TAG, "removed " + hbContact.mUsername + " from excludingContacts");
                         }
                     }
                 }
@@ -214,7 +210,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         while (itr.hasNext()) {
             if (CollectionOpUtils.intersects(contact.mPhoneHashes, itr.next().mPhoneHashes)) {
                 itr.remove();
-                Log.d(TAG, "removed");
                 return true;
 
             }

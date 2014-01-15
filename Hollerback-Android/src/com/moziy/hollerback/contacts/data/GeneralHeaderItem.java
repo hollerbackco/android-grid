@@ -19,7 +19,7 @@ public class GeneralHeaderItem implements HeaderItem {
     private int mItemType;
 
     public GeneralHeaderItem(int headerPosition, int position, String title, int itemType) {
-        mHeaderPosition = mHeaderPosition;
+        mHeaderPosition = headerPosition;
         mPosition = position;
         mTitle = title;
         mItemType = itemType;
