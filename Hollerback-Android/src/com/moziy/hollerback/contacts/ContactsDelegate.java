@@ -1,6 +1,7 @@
 package com.moziy.hollerback.contacts;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.model.Friend;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.CollectionOpUtils;
 
@@ -54,16 +56,11 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private List<Contact> mRecents; // recents
     private List<Contact> mFriends; // friends
 
-    private List<Contact> mPendingTransferToFriends;
-    private List<Contact> mPendingRemovalFromFriends;
-
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
-        mPendingRemovalFromFriends = new ArrayList<Contact>();
-        mPendingTransferToFriends = new ArrayList<Contact>();
 
     }
 
@@ -91,10 +88,10 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             // XXX: fill in later
             // mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
-            mRecents = new ArrayList<Contact>();
-            mRecents = new Select().from(Contact.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
+            List<Friend> friends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
                     .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
 
+            mRecents = Contact.getContactsFor(friends);
             LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
             // lets see if we should launch our workers to check the contacts against the server
@@ -119,7 +116,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             }
 
             // mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
-            mFriends = new Select().from(Contact.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
+            List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
+            mFriends = Contact.getContactsFor(friends);
+
             Log.d(TAG, "friends size: " + mFriends.size());
             if (mFriends != null) {
                 // lets remove the friends from the contacts excluding hb and from the hbcontacts
@@ -202,12 +201,15 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         return mContactsExcludingHbFriends;
     }
 
-    private boolean removeContactFrom(Contact contact, List<Contact> list) {
+    @Override
+    public boolean removeContactFrom(Contact contact, Collection<Contact> list) {
         Iterator<Contact> itr = list.iterator();
         while (itr.hasNext()) {
             if (CollectionOpUtils.intersects(contact.mPhoneHashes, itr.next().mPhoneHashes)) {
                 itr.remove();
                 Log.d(TAG, "removed");
+                return true;
+
             }
         }
 
@@ -258,7 +260,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                             removeContactFrom(newFriend, mContactsExcludingHbFriends);
                         }
 
-                        newFriend.save();
+                        new Friend(newFriend).save(); // save to db
                     }
 
                     ActiveAndroid.setTransactionSuccessful();
@@ -290,8 +292,12 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                             removeContactFrom(existingFriend, mContactsExcludingHbFriends);
                             mContactsExcludingHbFriends.add(existingFriend);
                         }
+                        // TODO: work out..sajjad - NOT correct since the id is not transferred this will always fail
+                        if (existingFriend.mFriend != null) {
+                            existingFriend.mFriend.delete();
+                            existingFriend.mFriend = null;
 
-                        existingFriend.delete();
+                        }
                     }
 
                     ActiveAndroid.setTransactionSuccessful();

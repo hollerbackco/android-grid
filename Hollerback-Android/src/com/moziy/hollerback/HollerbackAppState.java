@@ -6,8 +6,8 @@ import android.content.Context;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
-import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.Friend;
 import com.moziy.hollerback.model.UserModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.network.VolleySingleton;
@@ -49,7 +49,7 @@ public class HollerbackAppState {
         new Delete().from(ConversationModel.class).execute();
         new Delete().from(VideoModel.class).execute();
         new Delete().from(UserModel.class).execute();
-        new Delete().from(Contact.class).execute();
+        new Delete().from(Friend.class).execute();
         VolleySingleton.getInstance(ctx).getRequestQueue().getCache().clear(); // clear everything
         ActiveAndroid.setTransactionSuccessful();
         ActiveAndroid.endTransaction();

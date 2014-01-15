@@ -4,47 +4,48 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
-import com.activeandroid.annotation.Column;
-import com.activeandroid.annotation.Table;
-import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.util.security.HashUtil;
 
-@Table(name = ActiveRecordFields.T_FRIENDS)
-public class Contact extends BaseModel implements Serializable {
+public class Contact implements Serializable {
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
     private static final String TAG = Contact.class.getSimpleName();
 
+    public Friend mFriend;
+
     public long mAndroidContactId;
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_NAME)
     public String mName;
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_LABEL)
     public String mPhoneLabel;
 
     public int mPhotoID;
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_IS_ON_HOLLERBACK)
     public boolean mIsOnHollerback;
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
     public String mUsername; // if an hb friend, the username
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME)
     public String mLastContactTime; // the last time the user was contacted
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_PHONES)
     public ArrayList<String> mPhones = new ArrayList<String>(); // an array of phones associated with this contact
 
-    @Column(name = ActiveRecordFields.C_FRIENDS_PHONE_HASHES)
     public ArrayList<String> mPhoneHashes = new ArrayList<String>(); // an array of phone hashes
 
-    public Contact() {
-        super();
+    public Contact(Friend f) {
+        this.mAndroidContactId = f.mAndroidContactId;
+        this.mIsOnHollerback = f.mIsOnHollerback;
+        this.mName = f.mName;
+        this.mPhoneLabel = f.mPhoneLabel;
+        this.mPhotoID = f.mPhotoID;
+        this.mUsername = f.mUsername;
+        this.mLastContactTime = f.mLastContactTime;
+        this.mPhones = new ArrayList<String>(f.mPhones);
+        this.mPhoneHashes = new ArrayList<String>(this.mPhoneHashes);
+        this.mFriend = f;
     }
 
     public Contact(long contactId, String mName, String mPhone, String mPhoneLabel, int mPhotoID) {
@@ -57,6 +58,38 @@ public class Contact extends BaseModel implements Serializable {
         mPhones.add(mPhone);
 
         // Log.d(TAG, "creating contact: " + toString());
+    }
+
+    public void save() {
+        if (mFriend != null) {
+            mFriend.mAndroidContactId = mAndroidContactId;
+            mFriend.mName = mName;
+            mFriend.mPhoneLabel = mPhoneLabel;
+            mFriend.mPhotoID = mPhotoID;
+            mFriend.mPhones = new ArrayList<String>(mPhones);
+            mFriend.mPhoneHashes = new ArrayList<String>(mPhoneHashes);
+            mFriend.mLastContactTime = mLastContactTime;
+            mFriend.mIsOnHollerback = mIsOnHollerback;
+            mFriend.mUsername = mUsername;
+            mFriend.save();
+        } else {
+            mFriend = new Friend(this);
+            mFriend.save();
+        }
+    }
+
+    public static List<Contact> getContactsFor(List<Friend> friends) {
+        if (friends == null) {
+            return null;
+        }
+
+        List<Contact> contacts = new ArrayList<Contact>();
+        for (Friend f : friends) {
+            contacts.add(new Contact(f));
+        }
+
+        return contacts;
+
     }
 
     public void generateHash(MessageDigest md5) {

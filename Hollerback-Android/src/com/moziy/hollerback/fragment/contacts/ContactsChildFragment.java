@@ -77,9 +77,18 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
                     mSelected.add(c);
                     mTransaction.addToFriends(c);
 
+                    for (Contact sel : mSelected) {
+                        Log.d(TAG, "selected: " + sel.toString());
+                    }
                 } else {
+                    Log.d(TAG, "removing from friends; " + c.toString());
 
-                    mSelected.remove(c);
+                    Log.d(TAG, "removed: " + mContactsInterface.removeContactFrom(c, mSelected));
+
+                    for (Contact sel : mSelected) {
+                        Log.d(TAG, "still selected: " + sel.toString());
+                    }
+
                     mTransaction.removeFromFriends(c);
                 }
             }

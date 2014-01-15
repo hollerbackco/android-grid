@@ -1,5 +1,6 @@
 package com.moziy.hollerback.fragment.contacts;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import android.os.Bundle;
@@ -142,13 +143,22 @@ public class ContactBookFragment extends BaseFragment {
     public void onPause() {
 
         if (isRemoving()) {
-
+            Set<Contact> selected = new HashSet<Contact>();
             for (Fragment f : getChildFragmentManager().getFragments()) {
                 Transaction t = ((ContactBookChild) f).getContactTransaction();
                 if (t != null) {
                     Log.d(TAG, "commiting contact transaction");
                     t.commit();
                 }
+
+                Set<Contact> childSelections = ((ContactBookChild) f).getSelectedContacts();
+                if (childSelections != null) {
+                    selected.addAll(childSelections);
+                }
+            }
+
+            if (getTargetFragment() != null) {
+                ((OnContactBookSelectionsDone) getTargetFragment()).onContactBookSelectionsDone(selected);
             }
 
             getSherlockActivity().getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
@@ -235,6 +245,8 @@ public class ContactBookFragment extends BaseFragment {
 
     public interface ContactBookChild {
         public Transaction getContactTransaction();
+
+        public Set<Contact> getSelectedContacts();
     }
 
     public interface OnContactBookSelectionsDone {

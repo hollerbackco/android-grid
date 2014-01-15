@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.EditText;
 
 import com.moziy.hollerback.R;
@@ -54,7 +53,6 @@ public class CustomEditText extends EditText {
 
     private void setTypefaceFromAttrs(TypedArray array) {
         String fontName = array.getString(R.styleable.CustomFont_typeface);
-        Log.d("ct", "font name: " + fontName);
         if (fontName != null) {
             setTypeface(FontManager.getFont(fontName));
         }
