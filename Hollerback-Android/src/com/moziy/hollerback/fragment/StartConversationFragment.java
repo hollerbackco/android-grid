@@ -283,15 +283,31 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 // NOTE: Contacts stuf
 
                 // for the users that we just sent too, lets mark the time we sent to them
+
+                Date now = new Date();
+                List<Contact> recents = ((HollerbackMainActivity) getActivity()).getContactsInterface().getRecentContacts();
+                for (Contact c : mRecipients) {
+                    c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
+                    recents.add(0, c);
+
+                }
+
                 ActiveAndroid.beginTransaction();
                 try {
-                    Date now = new Date();
-                    for (Contact c : mRecipients) {
-                        c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
-                        c.save();
-                        ((HollerbackMainActivity) getActivity()).getContactsInterface().getRecentContacts().add(0, c);
 
+                    for (int i = 0; i < recents.size(); i++) {
+
+                        if (i < 3) {
+                            Contact contact = recents.get(i);
+                            contact.save();
+                        } else {
+                            Contact removed = recents.remove(i);
+                            if (removed.mFriend.getId() != null) {
+                                removed.mFriend.delete();
+                            }
+                        }
                     }
+
                     ActiveAndroid.setTransactionSuccessful();
                 } finally {
                     ActiveAndroid.endTransaction();

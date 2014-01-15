@@ -88,55 +88,62 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             // XXX: fill in later
             // mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
-            List<Friend> friends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
+            List<Friend> recentFriends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
                     .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
 
-            mRecents = Contact.getContactsFor(friends);
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
+            // get the recents
+            mRecents = Contact.getContactsFor(recentFriends);
 
-            // lets see if we should launch our workers to check the contacts against the server
-
-        } else if (t instanceof GetHBContactsTask) {
-            Log.d(TAG, "got hb contacts");
-            mHBContacts = ((GetHBContactsTask) t).getHBContacts();
-
-            // remove all of hb contacts from contacts
-
-            if (mHBContacts != null && mContactsExcludingHbFriends != null) {
-                for (Contact hbContact : mHBContacts) {
-                    Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
-                    while (itr.hasNext()) {
-
-                        if (hbContact.mAndroidContactId == itr.next().mAndroidContactId) {
-                            itr.remove();
-                            break;
-                        }
-                    }
-                }
-            }
-
+            // get the list of friends
             // mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
             List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
             mFriends = Contact.getContactsFor(friends);
 
+            // lets remove the friends from the retrieved contacts
+            for (Contact friend : mFriends) {
+
+                Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
+                while (itr.hasNext()) {
+                    if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) { // if the phone numbers match, then take it off
+                        Log.d(TAG, "removed: " + friend.mName + " from list");
+                        itr.remove();
+                    }
+                }
+
+            }
+
+            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
+
+        } else if (t instanceof GetHBContactsTask) {
+
+            Log.d(TAG, "got hb contacts");
+            mHBContacts = ((GetHBContactsTask) t).getHBContacts();
+
+            // remove all of hb contacts from contacts
             Log.d(TAG, "friends size: " + mFriends.size());
             if (mFriends != null) {
                 // lets remove the friends from the contacts excluding hb and from the hbcontacts
                 for (Contact friend : mFriends) {
                     Iterator<Contact> itr = mHBContacts.iterator();
                     while (itr.hasNext()) {
-                        if (CollectionOpUtils.intersects(friend.mPhoneHashes, itr.next().mPhoneHashes)) {
+                        if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) {
                             itr.remove();
+                            Log.d(TAG, "removed hb friend");
                         }
                     }
 
-                    itr = mContactsExcludingHbFriends.iterator();
+                }
+            }
+
+            if (mContactsExcludingHbFriends != null && mHBContacts != null) {
+                for (Contact hbContact : mHBContacts) {
+                    Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
                     while (itr.hasNext()) {
-                        if (CollectionOpUtils.intersects(friend.mPhoneHashes, itr.next().mPhoneHashes)) {
+                        if (CollectionOpUtils.intersects(itr.next().mPhoneHashes, hbContact.mPhoneHashes)) {
                             itr.remove();
+                            Log.d(TAG, "removed " + hbContact.mUsername + " from excludingContacts");
                         }
                     }
-
                 }
             }
 

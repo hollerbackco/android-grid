@@ -205,11 +205,15 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         // segmentData.mContacts.add(c);
         // }
         // // build recents
-        mRecentSegmentData = new ContactListSegmentData();
-        mRecentSegmentData.mSegmentTitle = getString(R.string.recents);
-        mRecentSegmentData.mContacts = ci.getRecentContacts();
-        mRecentSegmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
-        listData.add(mRecentSegmentData);
+
+        // if there are no recents, don't show them
+        if (ci.getRecentContacts() != null && !ci.getRecentContacts().isEmpty()) {
+            mRecentSegmentData = new ContactListSegmentData();
+            mRecentSegmentData.mSegmentTitle = getString(R.string.recents);
+            mRecentSegmentData.mContacts = ci.getRecentContacts();
+            mRecentSegmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
+            listData.add(mRecentSegmentData);
+        }
 
         mFriendsSegmentData = new ContactListSegmentData();
         mFriendsSegmentData.mSegmentTitle = getString(R.string.my_friends);
