@@ -1,5 +1,7 @@
 package com.moziy.hollerback.fragment.contacts;
 
+import java.util.Set;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,6 +24,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.fragment.BaseFragment;
+import com.moziy.hollerback.model.Contact;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
@@ -232,5 +235,9 @@ public class ContactBookFragment extends BaseFragment {
 
     public interface ContactBookChild {
         public Transaction getContactTransaction();
+    }
+
+    public interface OnContactBookSelectionsDone {
+        public void onContactBookSelectionsDone(Set<Contact> selectedContacts);
     }
 }

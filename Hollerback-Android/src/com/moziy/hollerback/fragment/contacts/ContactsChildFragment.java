@@ -4,14 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 
-import com.actionbarsherlock.view.ActionMode;
-import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.contacts.ContactsInterface;
@@ -19,23 +16,15 @@ import com.moziy.hollerback.contacts.data.ContactListSegmentData;
 import com.moziy.hollerback.contacts.data.ContactViewHolder;
 import com.moziy.hollerback.contacts.data.ContactsAdapterData.AbsContactItem;
 import com.moziy.hollerback.contacts.data.ContactsAdapterData.Item;
+import com.moziy.hollerback.fragment.AbsContactListFragment;
 import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
 import com.moziy.hollerback.model.Contact;
 
-public class ContactsChildFragment extends FriendsFragment implements ContactBookChild {
+public class ContactsChildFragment extends AbsContactListFragment implements ContactBookChild {
     private static final String TAG = ContactsChildFragment.class.getSimpleName();
 
     public static ContactsChildFragment newInstance() {
-        return newInstance(FriendsFragment.NextAction.START_CONVERSATION);
-    }
-
-    public static ContactsChildFragment newInstance(NextAction action) {
-        ContactsChildFragment f = new ContactsChildFragment();
-        Bundle arg = new Bundle();
-        arg.putSerializable(NEXT_ACTION_BUNDLE_ARG_KEY, action);
-        f.setArguments(arg);
-
-        return f;
+        return new ContactsChildFragment();
     }
 
     private Transaction mTransaction;
@@ -83,7 +72,7 @@ public class ContactsChildFragment extends FriendsFragment implements ContactBoo
                 ContactViewHolder holder = (ContactViewHolder) view.getTag();
                 holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
 
-                if (mTransaction == null) {
+                if (mTransaction == null) { // contact/friend update transaction
                     mTransaction = mContactsInterface.beginTransaction();
                 }
 
@@ -107,16 +96,6 @@ public class ContactsChildFragment extends FriendsFragment implements ContactBoo
     }
 
     @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-
-        if (item.getItemId() == R.id.mi_next) {
-            getFragmentManager().popBackStack();
-            return true;
-        }
-        return super.onActionItemClicked(mode, item);
-    }
-
-    @Override
     public Transaction getContactTransaction() {
         return mTransaction;
     }
@@ -125,5 +104,10 @@ public class ContactsChildFragment extends FriendsFragment implements ContactBoo
     public void onDestroy() {
         super.onDestroy();
         mTransaction = null; // nullify transaction when destroyed so we don't hol on to the context
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 }

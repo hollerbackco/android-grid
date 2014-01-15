@@ -1,19 +1,13 @@
-package com.moziy.hollerback.fragment.contacts;
+package com.moziy.hollerback.fragment;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,14 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 
-import com.actionbarsherlock.view.ActionMode;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
@@ -48,24 +36,11 @@ import com.moziy.hollerback.contacts.data.ContactsAdapterData.Item;
 import com.moziy.hollerback.contacts.data.GeneralHeaderItem;
 import com.moziy.hollerback.contacts.data.HBContactItem;
 import com.moziy.hollerback.contacts.data.PlaceHolder;
-import com.moziy.hollerback.fragment.BaseFragment;
-import com.moziy.hollerback.fragment.StartConversationFragment;
 import com.moziy.hollerback.model.Contact;
-import com.moziy.hollerback.util.SmsUtil;
-import com.moziy.hollerback.util.sharedpreference.HBPreferences;
-import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.widget.CustomEditText;
 
-public class FriendsFragment extends BaseFragment implements AdapterView.OnItemClickListener, ActionMode.Callback, View.OnClickListener {
-    private static final String TAG = FriendsFragment.class.getSimpleName();
-    public static final String FRAGMENT_TAG = TAG;
-    // type - serializable/enum
-    public static final String NEXT_ACTION_BUNDLE_ARG_KEY = "NEXT_ACTION";
-
-    public enum NextAction {
-        START_CONVERSATION, INVITE_FRIENDS
-    };
+public abstract class AbsContactListFragment extends BaseFragment implements AdapterView.OnItemClickListener {
 
     protected ContactsInterface mContactsInterface;
     protected LayoutInflater mInflater;
@@ -75,11 +50,7 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
     protected InternalReceiver mReceiver;
     protected CustomEditText mSearchBar;
     protected HashSet<Contact> mSelected;
-    protected NextAction mAction;
     protected ItemManager mItemManager;
-    protected ActionMode mActionMode;
-    protected View mBottomBarLayout;
-    protected Button mNextButton;
 
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -96,34 +67,10 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
             IABroadcastManager.unregisterLocalReceiver(mReceiver);
     }
 
-    public static FriendsFragment newInstance() {
-        return newInstance(NextAction.START_CONVERSATION);
-    }
-
-    public static FriendsFragment newInstance(NextAction action) {
-        FriendsFragment f = new FriendsFragment();
-        Bundle arg = new Bundle();
-        arg.putSerializable(NEXT_ACTION_BUNDLE_ARG_KEY, action);
-        f.setArguments(arg);
-
-        return f;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
-
-        switch (mAction) {
-            case START_CONVERSATION:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
-                showIntroDialog();
-                break;
-            case INVITE_FRIENDS:
-                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
-                break;
-        }
 
         mInflater = LayoutInflater.from(getActivity());
 
@@ -140,10 +87,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
         mContactsList.setOnItemClickListener(this);
 
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
-
-        mBottomBarLayout = v.findViewById(R.id.bottom_bar_layout);
-        mNextButton = (Button) v.findViewById(R.id.bt_next);
-        mNextButton.setOnClickListener(this);
 
         mSearchBar = (CustomEditText) v.findViewById(R.id.txtSearch);
         mSearchBar.setVisibility(View.GONE);
@@ -199,49 +142,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onPause() {
         super.onPause();
-        if (isRemoving()) {
-            if (mActionMode != null) {
-                mActionMode.finish();
-            }
-
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        if (mSelected != null && !mSelected.isEmpty()) {
-            inflater.inflate(R.menu.send_to_contacts, menu);
-        } else {
-            inflater.inflate(R.menu.add_friends, menu);
-        }
-
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.mi_next) {
-
-            if (mAction == NextAction.START_CONVERSATION) {
-                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
-                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
-            } else {
-                // send an sms and then pop the backstack
-                SmsUtil.invite(mActivity, new ArrayList<Contact>(mSelected), HollerbackApplication.getInstance().getString(R.string.sms_invite_friends), null, null);
-                getFragmentManager().popBackStack();
-            }
-
-            return true;
-        } else if (item.getItemId() == R.id.mi_add_friends) {
-
-            ContactBookFragment fragment = ContactBookFragment.newInstance();
-            mActivity.getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                    .replace(R.id.fragment_holder, fragment).addToBackStack(FRAGMENT_TAG).commit();
-
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -263,69 +163,7 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
         getSherlockActivity().invalidateOptionsMenu();
     }
 
-    protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
-
-        List<ContactListSegmentData> listData = new ArrayList<ContactListSegmentData>();
-
-        // ContactListSegmentData segmentData = null;
-        // char firstChar = 0;
-        // for (Contact c : ci.getRecentContacts()) {
-        // if (c.mName.charAt(0) != firstChar) {
-        // firstChar = c.mName.toUpperCase().charAt(0);
-        // segmentData = new ContactListSegmentData();
-        // segmentData.mSegmentTitle = String.valueOf(firstChar);
-        // segmentData.mContacts = new ArrayList<Contact>();
-        // listData.add(segmentData);
-        // }
-        //
-        // segmentData.mContacts.add(c);
-        // }
-        // // build recents
-        ContactListSegmentData segmentData = new ContactListSegmentData();
-        segmentData.mSegmentTitle = getString(R.string.recents);
-        segmentData.mContacts = ci.getRecentContacts();
-        segmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
-        listData.add(segmentData);
-
-        segmentData = new ContactListSegmentData();
-        segmentData.mSegmentTitle = getString(R.string.my_friends);
-        segmentData.mContacts = ci.getFriends();
-        segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
-        listData.add(segmentData);
-
-        return listData;
-    }
-
-    private void showIntroDialog() {
-        boolean seenIntroDialog = PreferenceManagerUtil.getPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, false);
-        if (!seenIntroDialog) {
-            AlertDialog.Builder builder = new Builder(getActivity());
-            builder.setTitle(getString(R.string.start_convo_intro_title));
-            builder.setMessage(getString(R.string.start_convo_intro_body));
-            builder.setPositiveButton(getString(R.string.ok), new OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, true);
-                    if (isAdded()) {
-                        dialog.dismiss();
-                    }
-
-                }
-            });
-            builder.setCancelable(false);
-            builder.create().show();
-        }
-
-    }
-
-    @Override
-    protected void initializeView(View view) {
-
-        if (mContactsInterface.getDeviceContactsLoadState() == LOADING_STATE.LOADING || mContactsInterface.getHbContactsLoadState() == LOADING_STATE.LOADING) {
-            // startLoading();
-        }
-    }
+    protected abstract List<ContactListSegmentData> buildSegmentData(ContactsInterface ci);
 
     /**
      * Listens to CONTACTS_UPDATED
@@ -434,16 +272,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
     }
 
     @Override
-    protected String getActionBarTitle() {
-        return getString(R.string.send_to);
-    }
-
-    @Override
-    protected String getFragmentName() {
-        return TAG;
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Item item = (Item) parent.getItemAtPosition(position);
         if (item.getContact() != null) {
@@ -463,12 +291,6 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
                 }
             }
 
-            if (mSelected.size() == 1) {
-                showBottomBar();
-            } else if (mSelected.size() == 0) {
-                hideBottomBar();
-            }
-
             // if keyboard is showing hide it
             InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
@@ -477,86 +299,8 @@ public class FriendsFragment extends BaseFragment implements AdapterView.OnItemC
 
     }
 
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        mActionMode = null;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.send_to_contacts, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == R.id.mi_next) {
-            StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
-            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                    .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
-        }
-        return false;
-    }
-
     public Set<Contact> getSelectedContacts() {
         return mSelected;
-    }
-
-    protected void showBottomBar() {
-        if (mBottomBarLayout.getVisibility() == View.GONE) {
-            mBottomBarLayout.setVisibility(View.VISIBLE);
-            mBottomBarLayout.setAlpha(0.0f);
-            mBottomBarLayout.animate().alpha(1.0f).setListener(null);
-        }
-    }
-
-    protected void hideBottomBar() {
-        if (mBottomBarLayout.getVisibility() == View.VISIBLE) {
-            mBottomBarLayout.animate().alpha(0.0f).setListener(new AnimatorListener() {
-
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mBottomBarLayout.setVisibility(View.GONE);
-
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    // TODO Auto-generated method stub
-
-                }
-            });
-
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.bt_next) {
-            if (mSelected != null && !mSelected.isEmpty()) {
-                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
-                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
-                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
-            }
-        }
     }
 
 }
