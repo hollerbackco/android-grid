@@ -135,7 +135,7 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
     @Override
     public void onResume() {
         super.onResume();
-        rebuildList();
+        // rebuildList();
 
     }
 
@@ -153,15 +153,15 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
     /**
      * This method will rebuild the list on onResume
      */
-    protected void rebuildList() {
-        mItemManager = new ItemManager();
-        mItemManager.setItems(buildSegmentData(mContactsInterface));
-        mAdapter = new ContactsAdapterData(mActivity);
-        mAdapter.setItemManager(mItemManager);
-        mContactsList.setAdapter(mAdapter);
-        mSelected.clear();
-        getSherlockActivity().invalidateOptionsMenu();
-    }
+    // protected void rebuildList() {
+    // mItemManager = new ItemManager();
+    // mItemManager.setItems(buildSegmentData(mContactsInterface));
+    // mAdapter = new ContactsAdapterData(mActivity);
+    // mAdapter.setItemManager(mItemManager);
+    // mContactsList.setAdapter(mAdapter);
+    // mSelected.clear();
+    // getSherlockActivity().invalidateOptionsMenu();
+    // }
 
     protected abstract List<ContactListSegmentData> buildSegmentData(ContactsInterface ci);
 

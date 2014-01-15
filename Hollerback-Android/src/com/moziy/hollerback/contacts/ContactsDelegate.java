@@ -269,8 +269,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
                 }
 
-                Collections.sort(mFriends, Contact.COMPARATOR); // sort the friends
-
             }
 
             // remove friends from the friends list
@@ -304,6 +302,17 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
                 }
 
+            }
+
+            if (mFriends != null) {
+                Collections.sort(mFriends, Contact.COMPARATOR); // sort the friends
+
+            }
+            if (mHBContacts != null) {
+                Collections.sort(mHBContacts, Contact.COMPARATOR);
+            }
+            if (mContactsExcludingHbFriends != null) {
+                Collections.sort(mContactsExcludingHbFriends, Contact.COMPARATOR);
             }
 
         }

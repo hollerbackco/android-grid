@@ -30,10 +30,6 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
     private Transaction mTransaction;
 
     @Override
-    protected void rebuildList() {
-    }
-
-    @Override
     public void onPause() {
 
         super.onPause();
@@ -103,7 +99,6 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mTransaction = null; // nullify transaction when destroyed so we don't hol on to the context
     }
 
     @Override
