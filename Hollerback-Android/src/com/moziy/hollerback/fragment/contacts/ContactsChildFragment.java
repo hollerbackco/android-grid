@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,9 +31,9 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
     private Transaction mTransaction;
 
     @Override
-    public void onPause() {
-
-        super.onPause();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mSearchBar.setVisibility(View.VISIBLE);
 
     }
 
@@ -44,6 +45,7 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
         ContactListSegmentData segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.users_in_my_contacts);
         segmentData.mContacts = ci.getHollerbackContacts();
+        segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends_in_contacts);
         listData.add(segmentData);
 
         segmentData = new ContactListSegmentData();
@@ -74,22 +76,27 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
 
                 if (selected) {
                     Log.d(TAG, "adding to friends; " + c.toString());
-                    mSelected.add(c);
-                    mTransaction.addToFriends(c);
 
-                    for (Contact sel : mSelected) {
-                        Log.d(TAG, "selected: " + sel.toString());
+                    mSelected.add(c);
+                    if (c.mIsOnHollerback) {
+                        mTransaction.addToFriends(c);
+                    } else {
+                        mContactsInterface.getInviteList().add(c);
                     }
+
                 } else {
                     Log.d(TAG, "removing from friends; " + c.toString());
 
-                    Log.d(TAG, "removed: " + mContactsInterface.removeContactFrom(c, mSelected));
+                    Log.d(TAG, "removed: " + mSelected.remove(c));
 
                     for (Contact sel : mSelected) {
                         Log.d(TAG, "still selected: " + sel.toString());
                     }
 
                     mTransaction.removeFromFriends(c);
+                    if (!c.mIsOnHollerback) {
+                        mContactsInterface.getInviteList().remove(c);
+                    }
                 }
             }
 

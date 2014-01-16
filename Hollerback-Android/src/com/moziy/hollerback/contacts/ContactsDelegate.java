@@ -55,6 +55,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private List<Contact> mHBContacts; // hollerback contacts
     private List<Contact> mRecents; // recents
     private List<Contact> mFriends; // friends
+    private Set<Contact> mInviteList; // users that we plan on inviting
 
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
@@ -84,6 +85,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
             mContactsExcludingHbFriends = new ArrayList<Contact>(mContacts); // add all for now
+            mInviteList = new HashSet<Contact>();
             mContactsLoadState = LOADING_STATE.DONE;
 
             // XXX: fill in later
@@ -205,6 +207,11 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
+    public Set<Contact> getInviteList() {
+        return mInviteList;
+    }
+
+    @Override
     public boolean removeContactFrom(Contact contact, Collection<Contact> list) {
         Iterator<Contact> itr = list.iterator();
         while (itr.hasNext()) {
@@ -262,7 +269,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                             removeContactFrom(newFriend, mContactsExcludingHbFriends);
                         }
 
-                        new Friend(newFriend).save(); // save to db
+                        newFriend.save(); // save to friends
                     }
 
                     ActiveAndroid.setTransactionSuccessful();

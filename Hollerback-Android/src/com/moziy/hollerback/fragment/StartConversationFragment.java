@@ -280,15 +280,18 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Log.w(TAG, "skipping sms invite since fragment not added");
                 }
 
-                // NOTE: Contacts stuf
+                // NOTE: Contacts stuff - move to a method later
 
                 // for the users that we just sent too, lets mark the time we sent to them
 
                 Date now = new Date();
                 List<Contact> recents = ((HollerbackMainActivity) getActivity()).getContactsInterface().getRecentContacts();
                 for (Contact c : mRecipients) {
-                    c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
-                    recents.add(0, c);
+                    if (c.mIsOnHollerback) {
+                        c.mLastContactTime = TimeUtil.FORMAT_ISO8601(now);
+                        recents.remove(c); // remove duplicate entries
+                        recents.add(0, c);
+                    }
 
                 }
 
@@ -301,10 +304,10 @@ public class StartConversationFragment extends BaseFragment implements Recording
                             Contact contact = recents.get(i);
                             contact.save();
                         } else {
-                            Contact removed = recents.remove(i);
-                            if (removed.mFriend.getId() != null) {
-                                removed.mFriend.delete();
-                            }
+                            recents.remove(i);
+                            // if (removed.mFriend.getId() != null) {
+                            // removed.mFriend.delete();
+                            // }
                         }
                     }
 
@@ -313,7 +316,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     ActiveAndroid.endTransaction();
                 }
 
-                // move out later
+                // clear the invite list
+                ((HollerbackMainActivity) getActivity()).getContactsInterface().getInviteList().clear();
 
             } else {
 

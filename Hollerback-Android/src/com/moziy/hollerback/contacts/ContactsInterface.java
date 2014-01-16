@@ -2,6 +2,7 @@ package com.moziy.hollerback.contacts;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.model.Contact;
@@ -25,6 +26,8 @@ public interface ContactsInterface {
     public List<Contact> getRecentContacts();
 
     public List<Contact> getFriends();
+
+    public Set<Contact> getInviteList();
 
     public Transaction beginTransaction();
 

@@ -16,9 +16,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
 
 import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
@@ -58,9 +61,6 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     private boolean mRebuildList;
 
-    private ContactListSegmentData mRecentSegmentData;
-    private ContactListSegmentData mFriendsSegmentData;
-
     public static FriendsFragment newInstance() {
         return newInstance(NextAction.START_CONVERSATION);
     }
@@ -95,9 +95,17 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
-        mBottomBarLayout = v.findViewById(R.id.bottom_bar_layout);
-        mNextButton = (Button) v.findViewById(R.id.bt_next);
+        // lets inflate the stub
+        ViewStub stub = (ViewStub) v.findViewById(R.id.stub);
+        stub.setLayoutResource(R.layout.friends_layout_bottom_bar_stub);
+        LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.dim_48dp));
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        stub.setLayoutParams(params);
+
+        mBottomBarLayout = stub.inflate();
+        mNextButton = (Button) mBottomBarLayout.findViewById(R.id.bt_next);
         mNextButton.setOnClickListener(this);
+        mSearchBar.setVisibility(View.VISIBLE);
 
         return v;
     }
@@ -142,7 +150,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.add_friends, menu);
+        inflater.inflate(R.menu.friend_list_menu, menu);
 
     }
 
@@ -206,20 +214,30 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         // }
         // // build recents
 
+        ContactListSegmentData segmentData;
         // if there are no recents, don't show them
         if (ci.getRecentContacts() != null && !ci.getRecentContacts().isEmpty()) {
-            mRecentSegmentData = new ContactListSegmentData();
-            mRecentSegmentData.mSegmentTitle = getString(R.string.recents);
-            mRecentSegmentData.mContacts = ci.getRecentContacts();
-            mRecentSegmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
-            listData.add(mRecentSegmentData);
+            segmentData = new ContactListSegmentData();
+            segmentData.mSegmentTitle = getString(R.string.recents);
+            segmentData.mContacts = ci.getRecentContacts();
+            segmentData.mTextPlaceHolderMsg = getString(R.string.no_recents);
+            listData.add(segmentData);
         }
 
-        mFriendsSegmentData = new ContactListSegmentData();
-        mFriendsSegmentData.mSegmentTitle = getString(R.string.my_friends);
-        mFriendsSegmentData.mContacts = ci.getFriends();
-        mFriendsSegmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
-        listData.add(mFriendsSegmentData);
+        // Friends
+        segmentData = new ContactListSegmentData();
+        segmentData.mSegmentTitle = getString(R.string.my_friends);
+        segmentData.mContacts = ci.getFriends();
+        segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
+        listData.add(segmentData);
+
+        if (ci.getInviteList() != null && !ci.getInviteList().isEmpty()) {
+            // Ask to Join
+            segmentData = new ContactListSegmentData();
+            segmentData.mSegmentTitle = getString(R.string.ask_to_join_title);
+            segmentData.mContacts = new ArrayList<Contact>(ci.getInviteList());
+            listData.add(segmentData);
+        }
 
         return listData;
     }

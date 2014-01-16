@@ -29,7 +29,7 @@ import com.moziy.hollerback.model.Contact;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
-    private static final int NUM_TABS = 3;
+    private static final int NUM_TABS = 1;
 
     private ViewPager mPager;
     private TabPagerAdapter mPagerAdapter;
@@ -69,7 +69,8 @@ public class ContactBookFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "title; " + getActionBarTitle());
         mActionbar = getSherlockActivity().getSupportActionBar();
-        mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        // TODO: Enable when feature complete
+        // mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
     }
 
@@ -115,27 +116,29 @@ public class ContactBookFragment extends BaseFragment {
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.contacts_lc);
-        mActionbar.addTab(tab, 0, true);
 
-        tab = mActionbar.newTab();
-        tab.setText(R.string.hollerback_users_lc);
-        v = inflater.inflate(R.layout.contact_tab_view, null);
-        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
-        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        tab.setCustomView(v);
-        tab.setTabListener(mTabListener);
-        tab.setContentDescription(R.string.hollerback_users_lc);
-        mActionbar.addTab(tab, 1); // tab, position, selected
+        // TODO: Enable when feature complete
+        // mActionbar.addTab(tab, 0, true);
 
-        tab = mActionbar.newTab();
-        tab.setText(R.string.search_lc);
-        v = inflater.inflate(R.layout.contact_tab_view, null);
-        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.search_lc));
-        tab.setCustomView(v);
-        tab.setTabListener(mTabListener);
-        tab.setContentDescription(R.string.search_lc);
-        mActionbar.addTab(tab, 2);
+        // tab = mActionbar.newTab();
+        // tab.setText(R.string.hollerback_users_lc);
+        // v = inflater.inflate(R.layout.contact_tab_view, null);
+        // ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
+        // v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        // tab.setCustomView(v);
+        // tab.setTabListener(mTabListener);
+        // tab.setContentDescription(R.string.hollerback_users_lc);
+        // mActionbar.addTab(tab, 1); // tab, position, selected
+        //
+        // tab = mActionbar.newTab();
+        // tab.setText(R.string.search_lc);
+        // v = inflater.inflate(R.layout.contact_tab_view, null);
+        // v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        // ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.search_lc));
+        // tab.setCustomView(v);
+        // tab.setTabListener(mTabListener);
+        // tab.setContentDescription(R.string.search_lc);
+        // mActionbar.addTab(tab, 2);
 
     }
 

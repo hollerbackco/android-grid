@@ -5,6 +5,7 @@
     android:background="@color/background_header" >
 
     <include
+        android:id="@+id/search_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         layout="@layout/search_bar"
@@ -26,21 +27,9 @@
         </ListView>
     </com.moziy.hollerback.view.StickyHeaderListView>
 
-    <RelativeLayout
-        android:id="@+id/bottom_bar_layout"
-        style="@style/Widget.Sherlock.Light.ActionMode"
+    <ViewStub
+        android:id="@+id/stub"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dim_48dp"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone" >
-
-        <Button
-            android:id="@+id/bt_next"
-            style="@style/Widget.Sherlock.ActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:text="@string/action_next" />
-    </RelativeLayout>
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
