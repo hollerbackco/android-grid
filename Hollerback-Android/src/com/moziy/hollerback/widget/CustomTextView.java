@@ -63,7 +63,7 @@ public class CustomTextView extends TextView {
         super.onDraw(canvas);
 
         if (mBorderPaint != null) {
-            canvas.drawRect(0, getScrollY(), getWidth(), getHeight() + getScrollY(), mBorderPaint);
+            canvas.drawRect(getScrollX(), getScrollY(), getWidth() + getScrollX(), getHeight() + getScrollY(), mBorderPaint);
         }
 
     }

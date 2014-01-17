@@ -3,13 +3,19 @@ package com.moziy.hollerback.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Parcelable;
+import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -18,8 +24,45 @@ import com.moziy.hollerback.model.Contact;
 public class SmsUtil {
     private static final String TAG = SmsUtil.class.getSimpleName();
 
-    public static void sendSms(List<Contact> contacts, Uri imageUri, String body) {
-        Log.d(TAG, "TODO: handle sending sms");
+    public static final String SMS_SENT_INTENT = "com.moziy.hollerback.SMS_SENT";
+
+    public static void sendSms(Context context, String recipients, Uri dataUri, String body) {
+
+        SmsManager smsMgr = SmsManager.getDefault();
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(SMS_SENT_INTENT), 0);
+
+        context.registerReceiver(new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+                        Toast.makeText(context, "SMS sent", Toast.LENGTH_LONG).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        Toast.makeText(context, "Generic failure", Toast.LENGTH_LONG).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(context, "No service", Toast.LENGTH_LONG).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(context, "Null PDU", Toast.LENGTH_LONG).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(context, "Radio off", Toast.LENGTH_LONG).show();
+                        break;
+                }
+
+                context.unregisterReceiver(this);
+
+            }
+        }, new IntentFilter(SMS_SENT_INTENT));
+
+        if (dataUri == null) {
+            smsMgr.sendTextMessage(recipients, null, body, pendingIntent, null);
+        } else {
+            smsMgr.sendTextMessage(recipients, null, body, pendingIntent, null);
+        }
     }
 
     public static void invite(Context context, List<Contact> friends, String body, Uri extraUriStream, String type) {

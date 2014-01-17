@@ -1,48 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/dim_300dp"
-    android:layout_height="@dimen/dim_400dp"
-    android:layout_gravity="center" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_header"
+    android:padding="@dimen/dim_10dp" >
 
-    <RelativeLayout
-        android:layout_width="@dimen/dim_300dp"
-        android:layout_height="@dimen/dim_400dp"
-        android:background="@drawable/cab_background_bottom_hollerback"
-        android:padding="@dimen/dim_10dp" >
+    <com.moziy.hollerback.widget.CustomTextView
+        android:id="@+id/tv_recipients"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:minLines="2"
+        android:padding="@dimen/dim_10dp"
+        android:textColor="#000000"
+        app:borderColor="#000000"
+        app:borderWidth="@dimen/dim_1dp" />
 
-        <com.moziy.hollerback.widget.CustomTextView
-            android:id="@+id/tv_recipients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:minLines="2"
-            android:padding="@dimen/dim_5dp"
-            android:textColor="#000000" />
+    <com.moziy.hollerback.widget.CustomEditText
+        android:id="@+id/et_sms_message"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bt_send"
+        android:layout_below="@+id/tv_recipients"
+        android:layout_marginTop="@dimen/dim_5dp"
+        android:background="#FFFFFF"
+        android:gravity="left"
+        android:inputType="textShortMessage|textMultiLine"
+        android:padding="@dimen/dim_20dp"
+        android:text="Let&apos;s see how this looks"
+        android:textColor="#000000" >
+    </com.moziy.hollerback.widget.CustomEditText>
 
-        <com.moziy.hollerback.widget.CustomEditText
-            android:id="@+id/et_sms_message"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/bt_send"
-            android:layout_below="@+id/tv_recipients"
-            android:layout_marginTop="@dimen/dim_5dp"
-            android:background="#FFFFFF"
-            android:gravity="left"
-            android:inputType="textShortMessage|textMultiLine"
-            android:padding="@dimen/dim_5dp"
-            android:text="Let&apos;s see how this looks"
-            android:textColor="#000000" >
-        </com.moziy.hollerback.widget.CustomEditText>
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_send"
+        style="@android:style/Widget.Holo.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/dim_5dp"
+        android:gravity="center"
+        android:text="@string/action_send"
+        android:visibility="gone" />
 
-        <com.moziy.hollerback.widget.CustomButton
-            android:id="@+id/bt_send"
-            style="@android:style/Widget.Holo.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="@dimen/dim_5dp"
-            android:gravity="center"
-            android:text="@string/action_send" />
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>

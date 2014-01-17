@@ -362,8 +362,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
             ImageUtil.generatePngThumbnailFromVideo(0, guid);
             Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
 
-            SmsDialogFragment d = SmsDialogFragment.newInstance(mNonHBContacts, uri, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
-            d.show(getFragmentManager(), "sms_dialog");
+            SmsFragment d = SmsFragment.newInstance(mNonHBContacts, uri, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+            getFragmentManager().beginTransaction().replace(R.id.fragment_holder, d).commit();
             // SmsUtil.invite(getActivity(), mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
     }
