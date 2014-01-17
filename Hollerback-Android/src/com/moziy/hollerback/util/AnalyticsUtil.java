@@ -39,8 +39,10 @@ public class AnalyticsUtil {
     }
 
     public interface Action {
+        public static final String EnteredSignUp = "EnteredSignup";
         public static final String SubmitRegInfo = "SubmitRegInfo";
         public static final String SubmitVerification = "SubmitVerfication";
+        public static final String RegistrationComplete = "RegistrationComplete";
     }
 
     public interface UiAction extends Action {
@@ -55,6 +57,21 @@ public class AnalyticsUtil {
         public static final String ConvoListHistory = "convo_list_watch_history_btn";
         public static final String ConvoListWatchUnread = "convo_list_watch_unread_btn";
 
+    }
+
+    public interface ScreenNames {
+        public static final String CONTACT_BOOK = "Contact Book";
+        public static final String CONTACT_BOOK_CHILD = "Contact Book Child";
+        public static final String FRIENDS_LIST = "Friends List";
+        public static final String SMS_INVITE = "SMS Invite";
+        public static final String CONVERSATION_LIST = "Conversation List";
+        public static final String VIDEO_RECORD = "Record Video";
+        public static final String SIGN_IN = "Sign In";
+        public static final String SIGN_UP_VERIFY = "Sign Up Verification";
+        public static final String SIGN_UP_USER = "Sign Up Email/Password";
+        public static final String SIGN_UP_PHONE = "Sign Up Username/Phone";
+        public static final String START_CONVO = "Start Conversation";
+        public static final String WELCOME = "Welcome";
     }
 
     public static void log(String category, String action, String label, Long value) {

@@ -27,6 +27,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
@@ -240,9 +241,9 @@ public class SignInFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
+    protected String getScreenName() {
         // TODO Auto-generated method stub
-        return TAG;
+        return AnalyticsUtil.ScreenNames.SIGN_IN;
     }
 
 }

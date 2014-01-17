@@ -68,6 +68,7 @@ import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomButton;
@@ -1319,8 +1320,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.VIDEO_RECORD;
     }
 
 }

@@ -15,6 +15,7 @@ import com.moziy.hollerback.contacts.ContactsInterface;
 import com.moziy.hollerback.contacts.data.ContactListSegmentData;
 import com.moziy.hollerback.fragment.AbsContactListFragment;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.SmsUtil;
 
 public class InviteFragment extends AbsContactListFragment {
@@ -96,8 +97,8 @@ public class InviteFragment extends AbsContactListFragment {
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.SMS_INVITE;
     }
 
     @Override

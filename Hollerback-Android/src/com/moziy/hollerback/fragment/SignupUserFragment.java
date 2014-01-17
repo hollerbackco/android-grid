@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
 import com.moziy.hollerback.widget.CustomButton;
 import com.moziy.hollerback.widget.CustomEditText;
@@ -134,8 +135,8 @@ public class SignupUserFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.SIGN_UP_USER;
     }
 
 }

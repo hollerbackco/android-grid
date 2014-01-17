@@ -34,6 +34,7 @@ import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.VideoUploadIntentService;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.SmsUtil;
@@ -385,8 +386,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.START_CONVO;
     }
 
 }

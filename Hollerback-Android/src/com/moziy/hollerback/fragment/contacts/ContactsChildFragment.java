@@ -25,6 +25,7 @@ import com.moziy.hollerback.contacts.data.ContactsAdapterData.Item;
 import com.moziy.hollerback.fragment.AbsContactListFragment;
 import com.moziy.hollerback.fragment.contacts.ContactBookFragment.ContactBookChild;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.AnalyticsUtil;
 
 public class ContactsChildFragment extends AbsContactListFragment implements ContactBookChild {
     private static final String TAG = ContactsChildFragment.class.getSimpleName();
@@ -185,7 +186,7 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.CONTACT_BOOK_CHILD;
     }
 }

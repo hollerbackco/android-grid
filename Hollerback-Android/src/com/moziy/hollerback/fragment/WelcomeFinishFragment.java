@@ -66,7 +66,7 @@ public class WelcomeFinishFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
+    protected String getScreenName() {
         return TAG;
     }
 

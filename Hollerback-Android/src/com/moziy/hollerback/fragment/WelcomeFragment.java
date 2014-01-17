@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.google.analytics.tracking.android.MapBuilder;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.widget.CustomButton;
 
 public class WelcomeFragment extends BaseFragment {
@@ -63,6 +65,9 @@ public class WelcomeFragment extends BaseFragment {
                 //
                 // return;
                 // } else {
+
+                AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.EnteredSignUp, null, null).build());
+
                 SignupUserFragment f = new SignupUserFragment();
                 getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
                 // }
@@ -92,7 +97,7 @@ public class WelcomeFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.WELCOME;
     }
 }

@@ -187,7 +187,7 @@ public class SignUpConfirmFragment extends BaseFragment {
 
                     @Override
                     public void onResponseSuccess(int statusCode, VerifyResponse response) {
-
+                        AnalyticsUtil.getGaTracker().send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.RegistrationComplete, null, null).build());
                         SignUpConfirmFragment.this.stopLoading();
 
                         if (response.access_token != null) { // lets save the access token
@@ -320,8 +320,8 @@ public class SignUpConfirmFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.SIGN_UP_VERIFY;
     }
 
     @Override

@@ -28,6 +28,7 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.fragment.BaseFragment;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.AnalyticsUtil;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
@@ -43,9 +44,9 @@ public class ContactBookFragment extends BaseFragment {
     private ContactsChildFragment mSearchFragment;
 
     @Override
-    protected String getFragmentName() {
-        // TODO Auto-generated method stub
-        return TAG;
+    protected String getScreenName() {
+
+        return AnalyticsUtil.ScreenNames.CONTACT_BOOK;
     }
 
     public static ContactBookFragment newInstance() {

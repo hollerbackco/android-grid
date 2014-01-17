@@ -85,7 +85,7 @@ public abstract class BaseFragment extends SherlockFragment {
     public void onStart() {
         super.onStart();
 
-        AnalyticsUtil.getGaTracker().set(Fields.SCREEN_NAME, getFragmentName());
+        AnalyticsUtil.getGaTracker().set(Fields.SCREEN_NAME, getScreenName());
         AnalyticsUtil.getGaTracker().send(MapBuilder.createAppView().build());
     }
 
@@ -143,7 +143,7 @@ public abstract class BaseFragment extends SherlockFragment {
         mIsChildFragment = false;
     }
 
-    protected abstract String getFragmentName();
+    protected abstract String getScreenName();
     /*
      * protected abstract void onActionBarIntialized( CustomActionBarHelper viewHelper);
      */

@@ -479,7 +479,7 @@ public class ConversationHistoryFragment extends BaseFragment {
     }
 
     @Override
-    protected String getFragmentName() {
+    protected String getScreenName() {
         return TAG;
     }
 }

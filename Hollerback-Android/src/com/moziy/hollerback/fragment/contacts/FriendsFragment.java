@@ -42,6 +42,7 @@ import com.moziy.hollerback.fragment.AbsContactListFragment;
 import com.moziy.hollerback.fragment.StartConversationFragment;
 import com.moziy.hollerback.fragment.contacts.ContactBookFragment.OnContactBookSelectionsDone;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
@@ -317,8 +318,8 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.FRIENDS_LIST;
     }
 
     @Override

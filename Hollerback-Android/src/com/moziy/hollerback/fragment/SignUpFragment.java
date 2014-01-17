@@ -391,7 +391,7 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     }
 
     @Override
-    protected String getFragmentName() {
-        return TAG;
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.SIGN_UP_PHONE;
     }
 }
