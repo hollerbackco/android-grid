@@ -49,6 +49,7 @@ import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.contacts.FriendsFragment;
+import com.moziy.hollerback.fragment.contacts.InviteFragment;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.SyncService;
@@ -182,7 +183,9 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                     // log analytic event
                     AnalyticsUtil.log(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListAddFriends, null);
 
-                    ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
+                    // ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
+
+                    InviteFragment f = InviteFragment.newInstance();
 
                     mActivity.getSupportFragmentManager().beginTransaction()
                             .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top).replace(R.id.fragment_holder, f)

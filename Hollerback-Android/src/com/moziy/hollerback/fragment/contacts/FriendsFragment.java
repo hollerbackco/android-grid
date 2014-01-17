@@ -16,7 +16,6 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
@@ -157,17 +156,17 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         final MenuItem item = menu.findItem(R.id.mi_search);
         mSearchView = (SearchView) item.getActionView();
         mSearchView.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-        mSearchView.setOnQueryTextFocusChangeListener(new OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    item.collapseActionView();
-                    mSearchView.setQuery("", false);
-                }
-
-            }
-        });
+        // mSearchView.setOnQueryTextFocusChangeListener(new OnFocusChangeListener() {
+        //
+        // @Override
+        // public void onFocusChange(View v, boolean hasFocus) {
+        // if (!hasFocus) {
+        // item.collapseActionView();
+        // mSearchView.setQuery("", false);
+        // }
+        //
+        // }
+        // });
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
@@ -179,13 +178,14 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                if (newText.length() > 0) {
-                    mStickyListView.disableStickyHeader();
-                } else {
-                    mStickyListView.enableStickyHeader();
+                if (mStickyListView != null) {
+                    if (newText.length() > 0) {
+                        mStickyListView.disableStickyHeader();
+                    } else {
+                        mStickyListView.enableStickyHeader();
+                    }
+                    mAdapter.getFilter().filter(newText);
                 }
-                mAdapter.getFilter().filter(newText);
-
                 return true;
             }
         });
@@ -272,7 +272,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         if (ci.getInviteList() != null && !ci.getInviteList().isEmpty()) {
             // Ask to Join
             segmentData = new ContactListSegmentData();
-            segmentData.mSegmentTitle = getString(R.string.ask_to_join_title);
+            segmentData.mSegmentTitle = getString(R.string.from_contacts_title);
             segmentData.mContacts = new ArrayList<Contact>(ci.getInviteList());
             listData.add(segmentData);
         }

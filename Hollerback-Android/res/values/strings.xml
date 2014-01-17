@@ -7,6 +7,7 @@
     <string name="loading_message">Hollerback is loading, please wait.</string>
     <string name="action_settings">My Account</string>
     <string name="action_find_friends">Add Friends</string>
+    <string name="action_invite_friends">Invite Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>
     <string name="action_switch">Switch Camera</string>
@@ -143,6 +144,7 @@
 
     <!-- Contacts Book -->
     <string name="contacts_lc">contacts</string>
+    <string name="contacts_cc">Contacts</string>
     <string name="hollerback_users_lc">hollerback users</string>
     <string name="search_lc">search</string>
     <string name="contactbook_title">Add Friends</string>
@@ -158,6 +160,10 @@
     <string name="no_friends">Your Friends list is empty; try adding some friends.</string>
     <string name="no_friends_in_contacts">No Hollerback users in your contacts. Ask some friends to join.</string>
     <string name="nobody_has_added_you">Nobody has added you</string>
-    <string name="ask_to_join_title">Ask to Join</string>
+    <string name="from_contacts_title">From Contacts</string>
+
+    <!-- Invite fragment -->
+    <string name="contacts_book_empty">Your contacts book may be empty.</string>
+    <string name="invite">Invite</string>
 
 </resources>
