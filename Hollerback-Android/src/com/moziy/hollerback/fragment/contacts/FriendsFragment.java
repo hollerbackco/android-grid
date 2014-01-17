@@ -12,9 +12,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
@@ -22,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
+import android.widget.SearchView;
 
 import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
@@ -60,6 +63,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     protected Button mNextButton;
 
     private boolean mRebuildList;
+    private SearchView mSearchView;
 
     public static FriendsFragment newInstance() {
         return newInstance(NextAction.START_CONVERSATION);
@@ -105,7 +109,6 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mBottomBarLayout = stub.inflate();
         mNextButton = (Button) mBottomBarLayout.findViewById(R.id.bt_next);
         mNextButton.setOnClickListener(this);
-        mSearchBar.setVisibility(View.VISIBLE);
 
         return v;
     }
@@ -151,6 +154,41 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.friend_list_menu, menu);
+        final MenuItem item = menu.findItem(R.id.mi_search);
+        mSearchView = (SearchView) item.getActionView();
+        mSearchView.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        mSearchView.setOnQueryTextFocusChangeListener(new OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    item.collapseActionView();
+                    mSearchView.setQuery("", false);
+                }
+
+            }
+        });
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                if (newText.length() > 0) {
+                    mStickyListView.disableStickyHeader();
+                } else {
+                    mStickyListView.enableStickyHeader();
+                }
+                mAdapter.getFilter().filter(newText);
+
+                return true;
+            }
+        });
 
     }
 

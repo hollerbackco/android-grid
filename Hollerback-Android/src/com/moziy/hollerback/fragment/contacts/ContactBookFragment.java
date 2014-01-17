@@ -21,6 +21,8 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.ActionBar.TabListener;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
@@ -34,6 +36,7 @@ public class ContactBookFragment extends BaseFragment {
     private ViewPager mPager;
     private TabPagerAdapter mPagerAdapter;
     private ActionBar mActionbar;
+    public int mCurrentPage = -1;
 
     private ContactsChildFragment mContactsFragment;
     private AddedMeChildFragment mAddedMeFragment;
@@ -47,6 +50,27 @@ public class ContactBookFragment extends BaseFragment {
 
     public static ContactBookFragment newInstance() {
         return new ContactBookFragment();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        Log.d(TAG, "onCreateOptionsMenu");
+        if (mContactsFragment != null) {
+            super.onCreateOptionsMenu(menu, inflater);
+            mContactsFragment.onCreateOptionsMenu(menu, inflater);
+        }
+
+        // inflater.inflate(R.menu.contact_book_child_menu, menu);
+        // MenuItem item = menu.findItem(R.id.mi_search);
+        // mSearchView = (SearchView) item.getActionView();
+        // mSearchView.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        // if (getChildFragmentManager().getFragments() != null) {
+        // for (Fragment f : getChildFragmentManager().getFragments()) {
+        // ((SherlockFragment) f).onCreateOptionsMenu(menu, inflater);
+        // }
+        // }
+
     }
 
     @Override
@@ -67,6 +91,7 @@ public class ContactBookFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         Log.d(TAG, "title; " + getActionBarTitle());
         mActionbar = getSherlockActivity().getSupportActionBar();
         // TODO: Enable when feature complete
@@ -83,6 +108,7 @@ public class ContactBookFragment extends BaseFragment {
             @Override
             public void onPageSelected(int position) {
                 mActionbar.selectTab(mActionbar.getTabAt(position));
+
             }
 
             @Override
@@ -146,6 +172,7 @@ public class ContactBookFragment extends BaseFragment {
     public void onPause() {
 
         if (isRemoving()) {
+
             Set<Contact> selected = new HashSet<Contact>();
             for (Fragment f : getChildFragmentManager().getFragments()) {
                 Transaction t = ((ContactBookChild) f).getContactTransaction();
@@ -229,6 +256,7 @@ public class ContactBookFragment extends BaseFragment {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
+                    getSherlockActivity().invalidateOptionsMenu();
                     return mContactsFragment;
                 case 1:
                     return mAddedMeFragment;

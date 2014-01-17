@@ -8,9 +8,5 @@
         android:showAsAction="collapseActionView|ifRoom"
         android:title="@string/action_search">
     </item>
-    <item
-        android:id="@+id/mi_add_friends"
-        android:showAsAction="always"
-        android:title="@string/action_find_friends"/>
 
 </menu>

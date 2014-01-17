@@ -5,11 +5,16 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.SearchView;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.contacts.ContactsInterface;
@@ -24,6 +29,8 @@ import com.moziy.hollerback.model.Contact;
 public class ContactsChildFragment extends AbsContactListFragment implements ContactBookChild {
     private static final String TAG = ContactsChildFragment.class.getSimpleName();
 
+    private SearchView mSearchView;
+
     public static ContactsChildFragment newInstance() {
         return new ContactsChildFragment();
     }
@@ -31,9 +38,69 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
     private Transaction mTransaction;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mSearchBar.setVisibility(View.VISIBLE);
+        ((ContactBookFragment) getParentFragment()).mCurrentPage = 0;
+        getSherlockActivity().invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        Log.d(TAG, "onCreateOptionsMenu");
+        inflater.inflate(R.menu.contact_book_child_menu, menu);
+        final MenuItem item = menu.findItem(R.id.mi_search);
+        mSearchView = (SearchView) item.getActionView();
+        mSearchView.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        // mSearchView.setOnQueryTextFocusChangeListener(new OnFocusChangeListener() {
+        //
+        // @Override
+        // public void onFocusChange(View v, boolean hasFocus) {
+        // if (!hasFocus) {
+        // mSearchView.setQuery("", false);
+        // item.collapseActionView();
+        // }
+        //
+        // }
+        // });
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                mSearchView.setQuery("", false);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                if (mStickyListView != null) {
+                    if (newText.length() > 0) {
+                        mStickyListView.disableStickyHeader();
+                    } else {
+                        mStickyListView.enableStickyHeader();
+                    }
+                    mAdapter.getFilter().filter(newText);
+                }
+                return true;
+            }
+        });
+
+    }
+
+    @Override
+    public void onPause() {
+        if (mSearchView != null) {
+            mSearchView.setQuery("", false);
+        }
+        super.onPause();
 
     }
 
