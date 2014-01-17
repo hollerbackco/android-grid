@@ -37,7 +37,6 @@ import com.moziy.hollerback.service.VideoUploadIntentService;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.ImageUtil;
-import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.widget.CustomEditText;
 
@@ -270,7 +269,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                 if (isAdded()) {
 
-                    returnToConvoList();
+                    // returnToConvoList();
 
                     Context c = HollerbackApplication.getInstance();
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
@@ -363,7 +362,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
             ImageUtil.generatePngThumbnailFromVideo(0, guid);
             Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
 
-            SmsUtil.invite(getActivity(), mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
+            SmsDialogFragment d = SmsDialogFragment.newInstance(mNonHBContacts, uri, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body));
+            d.show(getFragmentManager(), "sms_dialog");
+            // SmsUtil.invite(getActivity(), mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
     }
 

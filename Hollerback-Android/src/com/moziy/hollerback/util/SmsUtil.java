@@ -18,6 +18,10 @@ import com.moziy.hollerback.model.Contact;
 public class SmsUtil {
     private static final String TAG = SmsUtil.class.getSimpleName();
 
+    public static void sendSms(List<Contact> contacts, Uri imageUri, String body) {
+        Log.d(TAG, "TODO: handle sending sms");
+    }
+
     public static void invite(Context context, List<Contact> friends, String body, Uri extraUriStream, String type) {
         // build the uri
         StringBuilder sb = new StringBuilder();
