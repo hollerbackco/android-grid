@@ -272,10 +272,11 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     // returnToConvoList();
 
                     Context c = HollerbackApplication.getInstance();
-                    Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
                     if (!mNonHBContacts.isEmpty())
                         sendSMSInvite(guid);
+                    else
+                        Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
                 } else {
                     Log.w(TAG, "skipping sms invite since fragment not added");
                 }

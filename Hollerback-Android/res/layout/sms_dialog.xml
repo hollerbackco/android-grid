@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_header"
+    android:orientation="vertical"
     android:padding="@dimen/dim_10dp" >
 
     <com.moziy.hollerback.widget.CustomTextView
@@ -43,4 +44,4 @@
         android:text="@string/action_send"
         android:visibility="gone" />
 
-</RelativeLayout>
+</LinearLayout>

@@ -42,6 +42,7 @@ public class SmsFragment extends BaseFragment {
     private List<Contact> mContacts;
     private Uri mImageUri;
     private String mBody;
+    private InputMethodManager mInputManager;
 
     public static SmsFragment newInstance(ArrayList<Contact> contacts, Uri imageUri, String body) {
 
@@ -98,6 +99,7 @@ public class SmsFragment extends BaseFragment {
         mImageUri = args.getParcelable(IMAGE_URI_BUNDLE_ARG_KEY);
         mBody = args.getString(MSG_BODY_BUNDLE_ARG_KEY);
         mProgressDialog = new ProgressDialog(getActivity());
+        mInputManager = (InputMethodManager) getSherlockActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 
     @Override
@@ -107,13 +109,13 @@ public class SmsFragment extends BaseFragment {
         mRecipientTv = (TextView) v.findViewById(R.id.tv_recipients);
         mMessageEt = (EditText) v.findViewById(R.id.et_sms_message);
 
-        InputMethodManager imm = (InputMethodManager) getSherlockActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-
         mSendBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+                mMessageEt.clearFocus();
+                mInputManager.hideSoftInputFromWindow(mMessageEt.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
                 if (isAdded()) {
 
                     StringBuilder sb = new StringBuilder();
@@ -127,6 +129,7 @@ public class SmsFragment extends BaseFragment {
 
                     SmsUtil.sendSms(getActivity(), sb.toString(), mImageUri, mBody);
                     returnToConvoList();
+
                 }
 
             }
@@ -162,7 +165,14 @@ public class SmsFragment extends BaseFragment {
             // new BitmapDrawable(getResources(), new FileInputStream(mImageUri.getPath()))
         }
         mMessageEt.setText(mBody);
+        mMessageEt.requestFocus();
+        mInputManager.showSoftInput(mMessageEt, InputMethodManager.SHOW_IMPLICIT);
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 
     private void returnToConvoList() {
