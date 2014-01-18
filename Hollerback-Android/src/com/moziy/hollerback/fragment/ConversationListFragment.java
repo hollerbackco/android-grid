@@ -231,7 +231,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 set.setTarget(view);
                 set.start();
 
-                ContactsFragment fragment = ContactsFragment.newInstance();
+                // ContactsFragment fragment = ContactsFragment.newInstance();
+                FriendsFragment fragment = FriendsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commit();
 
