@@ -114,7 +114,7 @@ public class SmsFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 mMessageEt.clearFocus();
-                mInputManager.hideSoftInputFromWindow(mMessageEt.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+                mInputManager.toggleSoftInputFromWindow(mMessageEt.getWindowToken(), 0, 0);
 
                 if (isAdded()) {
 
@@ -168,11 +168,6 @@ public class SmsFragment extends BaseFragment {
         mMessageEt.requestFocus();
         mInputManager.showSoftInput(mMessageEt, InputMethodManager.SHOW_IMPLICIT);
 
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 
     private void returnToConvoList() {
