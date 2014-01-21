@@ -82,7 +82,7 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.friends_layout, container, false);
+        View v = inflater.inflate(getLayoutId(), container, false);
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
         mContactsList.setOnItemClickListener(this);
 
@@ -119,6 +119,10 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
         initializeView(v);
 
         return v;
+    }
+
+    public int getLayoutId() {
+        return R.layout.abs_friends_layout;
     }
 
     @Override

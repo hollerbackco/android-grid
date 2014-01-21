@@ -17,12 +17,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 import android.widget.SearchView;
 
 import com.actionbarsherlock.view.ActionMode;
@@ -99,18 +96,17 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
-        // lets inflate the stub
-        ViewStub stub = (ViewStub) v.findViewById(R.id.stub);
-        stub.setLayoutResource(R.layout.friends_layout_bottom_bar_stub);
-        LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.dim_48dp));
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        stub.setLayoutParams(params);
-
-        mBottomBarLayout = stub.inflate();
+        mBottomBarLayout = v.findViewById(R.id.bottom);
         mNextButton = (Button) mBottomBarLayout.findViewById(R.id.bt_next);
         mNextButton.setOnClickListener(this);
 
         return v;
+    }
+
+    @Override
+    public int getLayoutId() {
+        Log.d(TAG, "layout id");
+        return R.layout.friends_fragment_layout;
     }
 
     @Override
