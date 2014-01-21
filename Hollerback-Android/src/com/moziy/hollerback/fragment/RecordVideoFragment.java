@@ -840,7 +840,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT) {
-                if (Build.MANUFACTURER.equals("HTC")) {
+                if (Build.MANUFACTURER.equals("HTC") && Build.VERSION.SDK_INT <= 15) { // only for 4.03/4.04 devices
                     recorder.setOrientationHint(90);
                 } else {
                     recorder.setOrientationHint(270);

@@ -127,10 +127,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             //
             // }
 
-            setupContactsAfterLoad();
-
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
-
         } else if (t instanceof GetHBContactsTask) {
 
             Log.d(TAG, "got hb contacts");
@@ -163,10 +159,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             mHBContactsLoadState = LOADING_STATE.DONE;
 
-            setupContactsAfterLoad();
-
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
-
         } else if (t instanceof GetFriendsTask) {
 
             if (t.isSuccess()) {
@@ -189,26 +181,15 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     ActiveAndroid.endTransaction();
                 }
 
-            } else { // lets just load the friends from the database
-
-                // just load from the local database
-                List<Friend> recentFriends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
-                        .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
-
-                mRecents = Contact.getContactsFor(recentFriends);
-
-                // get the list of friends
-                List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
-                mFriends = Contact.getContactsFor(friends);
-
             }
 
             mFriendsLoadState = LOADING_STATE.DONE;
 
-            setupContactsAfterLoad();
-
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
+
+        setupContactsAfterLoad();
+
+        LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
     }
 
@@ -216,13 +197,31 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     public void onTaskError(Task t) {
         if (t instanceof GetHBContactsTask) {
             mHBContactsLoadState = LOADING_STATE.FAILED;
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
+
         }
 
         if (t instanceof GetUserContactsTask) {
             mContactsLoadState = LOADING_STATE.FAILED;
-            LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
         }
+
+        if (t instanceof GetFriendsTask) {
+
+            // just load from the local database
+            List<Friend> recentFriends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
+                    .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
+
+            mRecents = Contact.getContactsFor(recentFriends);
+
+            // get the list of friends
+            List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
+            mFriends = Contact.getContactsFor(friends);
+
+            mFriendsLoadState = LOADING_STATE.FAILED;
+        }
+
+        setupContactsAfterLoad();
+
+        LocalBroadcastManager.getInstance(mActivity).sendBroadcast(new Intent(IABIntent.CONTACTS_UPDATED));
 
     }
 
@@ -232,8 +231,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     private void setupContactsAfterLoad() {
-        if (mHBContactsLoadState == LOADING_STATE.DONE && mFriendsLoadState == LOADING_STATE.DONE && mContactsLoadState == LOADING_STATE.DONE) {
 
+        if (mContacts != null && mHBContacts != null) {
             mContactsExcludingHbContacts = new ArrayList<Contact>(mContacts);
             for (Contact hbContact : mHBContacts) {
 
@@ -245,7 +244,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     }
                 }
             }
+        }
 
+        if (mHBContacts != null && mFriends != null) {
             mHBContactsExludingFriends = new ArrayList<Contact>(mHBContacts);
             for (Contact friend : mFriends) {
 
@@ -257,8 +258,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 }
 
             }
-
         }
+
     }
 
     @Override
@@ -313,10 +314,12 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
-    public boolean removeContactFrom(Contact contact, Collection<Contact> list) {
+    public boolean removeContactFrom(Contact src, Collection<Contact> list) {
         Iterator<Contact> itr = list.iterator();
+        Contact dest;
         while (itr.hasNext()) {
-            if (CollectionOpUtils.intersects(contact.mPhoneHashes, itr.next().mPhoneHashes)) {
+            dest = itr.next();
+            if (CollectionOpUtils.intersects(src.mPhoneHashes, dest.mPhoneHashes) || src.mUsername.equals(dest.mUsername)) {
                 itr.remove();
                 return true;
 
@@ -399,17 +402,16 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                     for (Contact existingFriend : mPendingRemove) {
 
                         removeContactFrom(existingFriend, mFriends);
+
+                        removeContactFrom(existingFriend, mRecents);
+
                         usernames.add(existingFriend.mUsername);
 
-                        if (mHBContactsExludingFriends != null && existingFriend.mIsOnHollerback) {
+                        if (mHBContactsExludingFriends != null) {
                             removeContactFrom(existingFriend, mHBContactsExludingFriends);
                             mHBContactsExludingFriends.add(existingFriend);
                         }
 
-                        if (mContactsExcludingHbContacts != null && !existingFriend.mIsOnHollerback) {
-                            removeContactFrom(existingFriend, mContactsExcludingHbContacts);
-                            mContactsExcludingHbContacts.add(existingFriend);
-                        }
                         // TODO: work out..sajjad - NOT correct since the id is not transferred this will always fail
                         if (existingFriend.mFriend != null) {
                             existingFriend.mFriend.delete();

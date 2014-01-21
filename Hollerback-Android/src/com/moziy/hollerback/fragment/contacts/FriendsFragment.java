@@ -239,11 +239,17 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
      * This method will rebuild the list on onResume
      */
     protected void rebuildList(boolean clearSelection) {
+
         mItemManager = new ItemManager();
         mItemManager.setItems(buildSegmentData(mContactsInterface));
         mAdapter = new ContactsAdapterData(mActivity);
         mAdapter.setItemManager(mItemManager);
         mContactsList.setAdapter(mAdapter);
+        mStickyListView.setIndexer(mAdapter);
+
+        // mItemManager.setItems(buildSegmentData(mContactsInterface));
+        // mAdapter.notifyDataSetChanged();
+
         if (clearSelection)
             mSelected.clear();
         getSherlockActivity().invalidateOptionsMenu();
@@ -271,6 +277,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         ContactListSegmentData segmentData;
         // if there are no recents, don't show them
         if (ci.getRecentContacts() != null && !ci.getRecentContacts().isEmpty()) {
+            Log.d(TAG, "setting renents");
             segmentData = new ContactListSegmentData();
             segmentData.mSegmentTitle = getString(R.string.recents);
             segmentData.mContacts = ci.getRecentContacts();
@@ -507,16 +514,25 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
             android.view.MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.remove_friend_menu, menu);
             mMultiActionMode = mode;
+
+            Log.d(TAG, "menu size: " + menu.size());
+
             return true;
         }
 
         @Override
         public boolean onActionItemClicked(android.view.ActionMode mode, android.view.MenuItem item) {
             if (item.getItemId() == R.id.mi_remove) {
+                Log.d(TAG, "removing friends");
+                for (Contact c : mContactRemovalSet) {
+                    mFriendRemovalTransaction.removeFromFriends(c);
+                }
                 mFriendRemovalTransaction.commit();
                 mContactRemovalSet.clear();
 
             }
+
+            rebuildList(true); // rebuild the list
 
             mode.finish();
 
@@ -527,15 +543,14 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
             Item item = (Item) mContactsList.getItemAtPosition(position);
             if (item.getContact() != null) {
-
+                Log.d(TAG, "checked " + checked);
                 if (checked) {
                     mContactRemovalSet.add(item.getContact());
                 } else {
                     mContactRemovalSet.remove(item.getContact());
                 }
 
-                mode.setTitle(mContactRemovalSet.size() + " selected");
-                Log.d(TAG, "setting title");
+                mode.setTitle(String.format(getString(R.string.remove_selected), mContactRemovalSet.size()));
             }
 
         }

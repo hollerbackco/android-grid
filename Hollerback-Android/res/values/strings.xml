@@ -8,6 +8,7 @@
     <string name="action_settings">My Account</string>
     <string name="action_find_friends">Add Friends</string>
     <string name="action_remove_friend">Remove Friend</string>
+    <string name="action_remove">Remove</string>
     <string name="action_invite_friends">Invite Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>
@@ -162,6 +163,8 @@
     <string name="no_friends_in_contacts">No Hollerback users in your contacts. Ask some friends to join.</string>
     <string name="nobody_has_added_you">Nobody has added you</string>
     <string name="from_contacts_title">From Contacts</string>
+    <string name="remove_selected">%1$s selected</string>
+    <string name="remove_friends">Remove Friends</string>
 
     <!-- Invite fragment -->
     <string name="contacts_book_empty">Your contacts book may be empty.</string>

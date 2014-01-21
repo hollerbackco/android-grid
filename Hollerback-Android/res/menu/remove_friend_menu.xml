@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/mi_remove"
-        android:icon="@drawable/ic_action_remove"
-        android:title="@string/action_remove_friend"/>
+        android:showAsAction="always|withText"
+        android:title="@string/action_remove"/>
 
 </menu>

@@ -23,5 +23,6 @@
     <color name="convo_blue_2">#008cd2</color>
     <color name="slightly_desaturated_yellow">#c3bf76</color>
     <color name="slightly_desaturated_blue">#76a9c3</color>
+    <color name="light_blue">#ADD8E6</color>
 
 </resources>

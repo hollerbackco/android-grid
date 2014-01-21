@@ -103,6 +103,7 @@ public class StickyHeaderListView extends FrameLayout implements OnScrollListene
 
         if (adapter != null) {
             mAdapter = adapter;
+
             // This code is needed only if dataset changes do not force a call
             // to OnScroll
             // mAdapter.registerDataSetObserver(mListDataObserver);
