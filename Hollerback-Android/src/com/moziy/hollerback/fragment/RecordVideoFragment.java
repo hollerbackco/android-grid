@@ -164,10 +164,10 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         return fragment;
     }
 
-    public static RecordVideoFragment newInstance(String[] phones, String title) {
+    public static RecordVideoFragment newInstance(String[] contacts, String title) {
         RecordVideoFragment fragment = new RecordVideoFragment();
         Bundle bundle = new Bundle();
-        bundle.putStringArray(FRAGMENT_ARG_PHONES, phones);
+        bundle.putStringArray(FRAGMENT_ARG_PHONES, contacts);
         bundle.putString(FRAGMENT_ARG_TITLE, title);
         fragment.setArguments(bundle);
         return fragment;

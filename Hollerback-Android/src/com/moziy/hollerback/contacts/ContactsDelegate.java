@@ -132,31 +132,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             Log.d(TAG, "got hb contacts");
             mHBContacts = ((GetHBContactsTask) t).getHBContacts();
 
-            // remove all of hb contacts from contacts
-            // if (mFriends != null) {
-            // // lets remove the friends from the contacts excluding hb and from the hbcontacts
-            // for (Contact friend : mFriends) {
-            // Iterator<Contact> itr = mHBContacts.iterator();
-            // while (itr.hasNext()) {
-            // if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) {
-            // itr.remove();
-            // }
-            // }
-            //
-            // }
-            // }
-            //
-            // if (mContactsExcludingHbContacts != null && mHBContacts != null) {
-            // for (Contact hbContact : mHBContacts) {
-            // Iterator<Contact> itr = mContactsExcludingHbContacts.iterator();
-            // while (itr.hasNext()) {
-            // if (CollectionOpUtils.intersects(itr.next().mPhoneHashes, hbContact.mPhoneHashes)) {
-            // itr.remove();
-            // }
-            // }
-            // }
-            // }
-
             mHBContactsLoadState = LOADING_STATE.DONE;
 
         } else if (t instanceof GetFriendsTask) {

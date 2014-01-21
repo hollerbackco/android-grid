@@ -96,23 +96,27 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         // create the title string and get all the phones
         StringBuilder sb = new StringBuilder();
-        List<String> allPhones = new ArrayList<String>();
+        List<String> recipients = new ArrayList<String>();
         mNonHBContacts = new ArrayList<Contact>();
         for (Contact c : mRecipients) {
             sb.append(c.mName).append(", ");
 
-            for (String phone : c.mPhones) {
-                allPhones.add(phone);
-            }
+            if (c.mUsername != null && !c.mUsername.isEmpty()) {
+                recipients.add(c.mUsername);
+            } else {
 
-            if (!c.mIsOnHollerback) {
+                for (String phone : c.mPhones) {
+                    recipients.add(phone);
+                }
+
                 mNonHBContacts.add(c);
             }
 
         }
+
         sb.delete(sb.length() - 2, sb.length() - 1); // there should always be a recipient
         mTitle = sb.toString();
-        mPhones = allPhones.toArray(new String[allPhones.size()]);
+        mPhones = recipients.toArray(new String[recipients.size()]);
         Log.d(TAG, "title: " + mTitle);
 
         // New Conversation Created Intent
