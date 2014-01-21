@@ -105,7 +105,6 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     @Override
     public int getLayoutId() {
-        Log.d(TAG, "layout id");
         return R.layout.friends_fragment_layout;
     }
 

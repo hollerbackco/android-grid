@@ -78,6 +78,16 @@ public class HollerbackAPI {
     // public static final String API_HISTORY = "/me/conversations/%1$s/history";
     public static final String API_HISTORY = "/me/conversations/%1$s/videos";
 
+    /**
+     * Friends
+     */
+
+    public static final String API_FRIENDS = "/me/friends";
+
+    public static final String API_ADD_FRIENDS = API_FRIENDS + "/add";
+
+    public static final String API_REMOVE_FRIENDS = API_FRIENDS + "/remove";
+
     // /////////////
 
     public static final String PARAM_EMAIL = "email";

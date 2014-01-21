@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moziy.hollerback.database.ActiveRecordFields;
 
 @Table(name = ActiveRecordFields.T_FRIENDS)
@@ -18,6 +19,7 @@ public class Friend extends BaseModel implements Serializable {
 
     public long mAndroidContactId;
 
+    @JsonProperty("name")
     @Column(name = ActiveRecordFields.C_FRIENDS_NAME)
     public String mName;
 
@@ -29,6 +31,7 @@ public class Friend extends BaseModel implements Serializable {
     @Column(name = ActiveRecordFields.C_FRIENDS_IS_ON_HOLLERBACK)
     public boolean mIsOnHollerback;
 
+    @JsonProperty("username")
     @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
     public String mUsername; // if an hb friend, the username
 

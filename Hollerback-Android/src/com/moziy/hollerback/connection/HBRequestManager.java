@@ -252,4 +252,31 @@ public class HBRequestManager {
         HollerbackAsyncClient.getInstance().post(String.format(HollerbackAPI.API_CONVERSATION_WATCHALL, conversationId), params, handler);
 
     }
+
+    public static void getFriends(AsyncHttpResponseHandler handler) {
+        RequestParams params = new RequestParams();
+
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+
+        HollerbackAsyncClient.getInstance().get(HollerbackAPI.API_FRIENDS, params, handler);
+    }
+
+    public static void addFriends(ArrayList<String> friends, AsyncHttpResponseHandler handler) {
+
+        RequestParams params = new RequestParams();
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+        params.put(HollerbackAPI.PARAM_USERNAME, friends);
+
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_ADD_FRIENDS, params, handler);
+
+    }
+
+    public static void removeFriends(ArrayList<String> friends, AsyncHttpResponseHandler handler) {
+        RequestParams params = new RequestParams();
+
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+        params.put(HollerbackAPI.PARAM_USERNAME, friends);
+
+        HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_REMOVE_FRIENDS, params, handler);
+    }
 }

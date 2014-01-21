@@ -23,6 +23,10 @@ public interface ContactsInterface {
 
     public LOADING_STATE getHbContactsLoadState();
 
+    public LOADING_STATE getFriendsLoadState();
+
+    public List<Contact> getHBContactsExcludingFriends();
+
     public List<Contact> getRecentContacts();
 
     public List<Contact> getFriends();

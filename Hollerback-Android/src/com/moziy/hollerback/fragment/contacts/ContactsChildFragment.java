@@ -103,6 +103,8 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
         }
         super.onPause();
 
+        // lets sync with the server
+
     }
 
     @Override
@@ -112,7 +114,7 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
 
         ContactListSegmentData segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.users_in_my_contacts);
-        segmentData.mContacts = ci.getHollerbackContacts();
+        segmentData.mContacts = ci.getHBContactsExcludingFriends();
         segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends_in_contacts);
         listData.add(segmentData);
 
