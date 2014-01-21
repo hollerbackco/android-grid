@@ -7,6 +7,7 @@
     <string name="loading_message">Hollerback is loading, please wait.</string>
     <string name="action_settings">My Account</string>
     <string name="action_find_friends">Add Friends</string>
+    <string name="action_remove_friend">Remove Friend</string>
     <string name="action_invite_friends">Invite Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>

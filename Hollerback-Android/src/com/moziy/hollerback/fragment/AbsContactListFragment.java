@@ -40,7 +40,7 @@ import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.widget.CustomEditText;
 
-public abstract class AbsContactListFragment extends BaseFragment implements AdapterView.OnItemClickListener {
+public abstract class AbsContactListFragment extends BaseFragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     protected ContactsInterface mContactsInterface;
     protected LayoutInflater mInflater;
@@ -284,6 +284,11 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
 
     public Set<Contact> getSelectedContacts() {
         return mSelected;
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        return false;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.moziy.hollerback.fragment.contacts;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +19,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SearchView;
 
 import com.actionbarsherlock.view.ActionMode;
@@ -28,6 +31,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.contacts.ContactsInterface;
 import com.moziy.hollerback.contacts.ContactsInterface.LOADING_STATE;
 import com.moziy.hollerback.contacts.data.ContactListSegmentData;
@@ -56,11 +60,16 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     protected NextAction mAction;
     protected ActionMode mActionMode;
+    protected android.view.ActionMode mMultiActionMode;
+
     protected View mBottomBarLayout;
     protected Button mNextButton;
 
     private boolean mRebuildList;
     private SearchView mSearchView;
+
+    private Set<Contact> mContactRemovalSet;
+    private Transaction mFriendRemovalTransaction;
 
     public static FriendsFragment newInstance() {
         return newInstance(NextAction.START_CONVERSATION);
@@ -90,6 +99,9 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
                 break;
         }
 
+        mContactRemovalSet = new HashSet<Contact>();
+        mFriendRemovalTransaction = mContactsInterface.beginTransaction();
+
     }
 
     @Override
@@ -101,6 +113,14 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mNextButton.setOnClickListener(this);
 
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mContactsList.setMultiChoiceModeListener(mMultiChoiceLisenter);
+        mContactsList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mContactsList.setOnItemLongClickListener(this);
     }
 
     @Override
@@ -319,6 +339,18 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        // Log.d(TAG, "action mode: " + mMultiActionMode);
+        // if (mMultiActionMode != null) {
+        //
+        // Item item = (Item) parent.getItemAtPosition(position);
+        // if (item.getContact() != null) {
+        // Contact c = item.getContact();
+        // ((AbsListView) parent).setItemChecked(position, mContactRemovalSet.contains(c) ? false : true);
+        // }
+        // return;
+        // }
+
         Item item = (Item) parent.getItemAtPosition(position);
         if (item.getContact() != null) {
 
@@ -364,7 +396,9 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.send_to_contacts, menu);
+        inflater.inflate(R.menu.remove_friend_menu, menu);
+        mActionMode = mode;
+
         return true;
     }
 
@@ -439,5 +473,72 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mRebuildList = true;
 
     }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        Item item = (Item) parent.getItemAtPosition(position);
+
+        if (item.getContact() != null) {
+            getActivity().startActionMode(mMultiChoiceLisenter);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle removing friends with multi choice
+     * Uses standard android menu and not actionbar sherlock
+     */
+    private AbsListView.MultiChoiceModeListener mMultiChoiceLisenter = new AbsListView.MultiChoiceModeListener() {
+
+        @Override
+        public boolean onPrepareActionMode(android.view.ActionMode mode, android.view.Menu menu) {
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(android.view.ActionMode mode) {
+            mMultiActionMode = null;
+        }
+
+        @Override
+        public boolean onCreateActionMode(android.view.ActionMode mode, android.view.Menu menu) {
+            android.view.MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.remove_friend_menu, menu);
+            mMultiActionMode = mode;
+            return true;
+        }
+
+        @Override
+        public boolean onActionItemClicked(android.view.ActionMode mode, android.view.MenuItem item) {
+            if (item.getItemId() == R.id.mi_remove) {
+                mFriendRemovalTransaction.commit();
+                mContactRemovalSet.clear();
+
+            }
+
+            mode.finish();
+
+            return true;
+        }
+
+        @Override
+        public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
+            Item item = (Item) mContactsList.getItemAtPosition(position);
+            if (item.getContact() != null) {
+
+                if (checked) {
+                    mContactRemovalSet.add(item.getContact());
+                } else {
+                    mContactRemovalSet.remove(item.getContact());
+                }
+
+                mode.setTitle(mContactRemovalSet.size() + " selected");
+                Log.d(TAG, "setting title");
+            }
+
+        }
+    };
 
 }
