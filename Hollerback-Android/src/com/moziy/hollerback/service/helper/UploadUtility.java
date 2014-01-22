@@ -98,7 +98,19 @@ public class UploadUtility implements RecoveryClient {
 
         // presumption that all the files have been uploaded
         Log.d(TAG, "recipients: " + videoModel.getRecipients()[0]);
-        List<String> contacts = Arrays.asList(videoModel.getRecipients());
+        List<String> recipients = Arrays.asList(videoModel.getRecipients());
+
+        List<String> phones = new ArrayList<String>();
+        List<String> usernames = new ArrayList<String>();
+
+        // separate the recipients
+        for (String recipient : recipients) {
+            if (recipient.charAt(0) == '+') {
+                phones.add(recipient);
+            } else {
+                usernames.add(recipient);
+            }
+        }
 
         final boolean[] isDone = {
             false
@@ -106,7 +118,7 @@ public class UploadUtility implements RecoveryClient {
 
         final TimeStamp convoUpdateTime = ConversationModel.getConvoTimeStamp();
 
-        HBRequestManager.createNewConversation(contacts, title, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
+        HBRequestManager.createNewConversation(phones, usernames, title, new HBSyncHttpResponseHandler<Envelope<ConversationModel>>(new TypeReference<Envelope<ConversationModel>>() {
         }) {
 
             @Override

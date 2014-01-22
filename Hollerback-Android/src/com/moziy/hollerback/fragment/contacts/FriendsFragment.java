@@ -53,6 +53,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     public static final String FRAGMENT_TAG = TAG;
     // type - serializable/enum
     public static final String NEXT_ACTION_BUNDLE_ARG_KEY = "NEXT_ACTION";
+    private static final int ALPHABETICAL_HEADER_BOUND = 25;
 
     public enum NextAction {
         START_CONVERSATION, INVITE_FRIENDS
@@ -64,6 +65,7 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     protected View mBottomBarLayout;
     protected Button mNextButton;
+    protected boolean mShowAlphabeticalHeaders;
 
     private boolean mRebuildList;
     private SearchView mSearchView;
@@ -257,24 +259,13 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
     protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
 
+        if (ci.getFriends() != null)
+            mShowAlphabeticalHeaders = (ci.getFriends().size() > ALPHABETICAL_HEADER_BOUND ? true : false);
+
         List<ContactListSegmentData> listData = new ArrayList<ContactListSegmentData>();
 
-        // ContactListSegmentData segmentData = null;
-        // char firstChar = 0;
-        // for (Contact c : ci.getRecentContacts()) {
-        // if (c.mName.charAt(0) != firstChar) {
-        // firstChar = c.mName.toUpperCase().charAt(0);
-        // segmentData = new ContactListSegmentData();
-        // segmentData.mSegmentTitle = String.valueOf(firstChar);
-        // segmentData.mContacts = new ArrayList<Contact>();
-        // listData.add(segmentData);
-        // }
-        //
-        // segmentData.mContacts.add(c);
-        // }
-        // // build recents
+        ContactListSegmentData segmentData = null;
 
-        ContactListSegmentData segmentData;
         // if there are no recents, don't show them
         if (ci.getRecentContacts() != null && !ci.getRecentContacts().isEmpty()) {
             Log.d(TAG, "setting renents");
@@ -288,9 +279,27 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         // Friends
         segmentData = new ContactListSegmentData();
         segmentData.mSegmentTitle = getString(R.string.my_friends);
-        segmentData.mContacts = ci.getFriends();
-        segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
+        segmentData.mContacts = new ArrayList<Contact>();
+        if (!mShowAlphabeticalHeaders) {
+            segmentData.mContacts = ci.getFriends();
+            segmentData.mTextPlaceHolderMsg = getString(R.string.no_friends);
+        }
         listData.add(segmentData);
+
+        if (mShowAlphabeticalHeaders) {
+            char firstChar = 0;
+            for (Contact c : ci.getFriends()) {
+                if (c.mName.charAt(0) != firstChar) {
+                    firstChar = c.mName.toUpperCase().charAt(0);
+                    segmentData = new ContactListSegmentData();
+                    segmentData.mSegmentTitle = String.valueOf(firstChar);
+                    segmentData.mContacts = new ArrayList<Contact>();
+                    listData.add(segmentData);
+                }
+
+                segmentData.mContacts.add(c);
+            }
+        }
 
         if (ci.getInviteList() != null && !ci.getInviteList().isEmpty()) {
             // Ask to Join

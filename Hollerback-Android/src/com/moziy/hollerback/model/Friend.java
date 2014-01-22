@@ -35,6 +35,7 @@ public class Friend extends BaseModel implements Serializable {
     @Column(name = ActiveRecordFields.C_FRIENDS_USERNAME)
     public String mUsername; // if an hb friend, the username
 
+    @JsonProperty("last_sent_at")
     @Column(name = ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME)
     public String mLastContactTime; // the last time the user was contacted
 
