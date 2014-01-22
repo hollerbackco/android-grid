@@ -56,6 +56,11 @@ public class SearchForUserFragment extends AbsContactListFragment implements Con
         super.onCreate(savedInstanceState);
         mContactTransaction = mContactsInterface.beginTransaction();
 
+        if (savedInstanceState != null) {
+            for (Contact selected : mSelected)
+                mContactTransaction.addToFriends(selected);
+        }
+
     }
 
     @Override
