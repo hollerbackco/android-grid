@@ -58,6 +58,7 @@
 
     <!-- Sign In/Sign Up -->
     <string name="name">Username</string>
+    <string name="username_lc">username</string>
     <string name="email">Email</string>
     <string name="username_or_email">Username or Email</string>
     <string name="password">Password</string>
@@ -165,6 +166,9 @@
     <string name="from_contacts_title">From Contacts</string>
     <string name="remove_selected">%1$s selected</string>
     <string name="remove_friends">Remove Friends</string>
+
+    <!-- Search User Fragment -->
+
 
     <!-- Invite fragment -->
     <string name="contacts_book_empty">Your contacts book may be empty.</string>

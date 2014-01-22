@@ -247,10 +247,8 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mAdapter = new ContactsAdapterData(mActivity);
         mAdapter.setItemManager(mItemManager);
         mContactsList.setAdapter(mAdapter);
+        mStickyListView.setAdapter(mAdapter);
         mStickyListView.setIndexer(mAdapter);
-
-        // mItemManager.setItems(buildSegmentData(mContactsInterface));
-        // mAdapter.notifyDataSetChanged();
 
         if (clearSelection)
             mSelected.clear();

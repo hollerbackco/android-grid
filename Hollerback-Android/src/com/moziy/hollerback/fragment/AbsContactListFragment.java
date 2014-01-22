@@ -90,31 +90,7 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
 
         mSearchBar = (CustomEditText) v.findViewById(R.id.txtSearch);
         mSearchBar.setVisibility(View.GONE);
-        mSearchBar.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
-                    mStickyListView.disableStickyHeader();
-                } else {
-                    mStickyListView.enableStickyHeader();
-                }
-                mAdapter.getFilter().filter(s.toString());
-
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // TODO Auto-generated method stub
-
-            }
-        });
+        mSearchBar.addTextChangedListener(mDefaultTextWatcher);
 
         initializeView(v);
 
@@ -135,6 +111,32 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
         mContactsList.setAdapter(mAdapter);
         mStickyListView.setIndexer(mAdapter);
     }
+
+    protected TextWatcher mDefaultTextWatcher = new TextWatcher() {
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (s.length() > 0) {
+                mStickyListView.disableStickyHeader();
+            } else {
+                mStickyListView.enableStickyHeader();
+            }
+            mAdapter.getFilter().filter(s.toString());
+
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            // TODO Auto-generated method stub
+
+        }
+    };
 
     @Override
     public void onDestroy() {

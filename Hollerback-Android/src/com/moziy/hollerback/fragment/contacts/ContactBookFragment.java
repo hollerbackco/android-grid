@@ -32,16 +32,17 @@ import com.moziy.hollerback.util.AnalyticsUtil;
 
 public class ContactBookFragment extends BaseFragment {
     private static final String TAG = ContactBookFragment.class.getSimpleName();
-    private static final int NUM_TABS = 1;
+    private static final int NUM_TABS = 2;
 
     private ViewPager mPager;
     private TabPagerAdapter mPagerAdapter;
     private ActionBar mActionbar;
     public int mCurrentPage = -1;
+    private int mCurrentTab = -1;
 
     private ContactsChildFragment mContactsFragment;
     private AddedMeChildFragment mAddedMeFragment;
-    private ContactsChildFragment mSearchFragment;
+    private SearchForUserFragment mSearchFragment;
 
     @Override
     protected String getScreenName() {
@@ -56,10 +57,21 @@ public class ContactBookFragment extends BaseFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
-        Log.d(TAG, "onCreateOptionsMenu");
-        if (mContactsFragment != null) {
-            super.onCreateOptionsMenu(menu, inflater);
-            mContactsFragment.onCreateOptionsMenu(menu, inflater);
+        switch (mCurrentTab) {
+            case 0:
+                if (mContactsFragment != null) {
+                    super.onCreateOptionsMenu(menu, inflater);
+                    mContactsFragment.onCreateOptionsMenu(menu, inflater);
+                }
+
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                break;
+
         }
 
         // inflater.inflate(R.menu.contact_book_child_menu, menu);
@@ -96,7 +108,7 @@ public class ContactBookFragment extends BaseFragment {
         Log.d(TAG, "title; " + getActionBarTitle());
         mActionbar = getSherlockActivity().getSupportActionBar();
         // TODO: Enable when feature complete
-        // mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
     }
 
@@ -145,7 +157,7 @@ public class ContactBookFragment extends BaseFragment {
         tab.setContentDescription(R.string.contacts_lc);
 
         // TODO: Enable when feature complete
-        // mActionbar.addTab(tab, 0, true);
+        mActionbar.addTab(tab, 0, true);
 
         // tab = mActionbar.newTab();
         // tab.setText(R.string.hollerback_users_lc);
@@ -157,15 +169,16 @@ public class ContactBookFragment extends BaseFragment {
         // tab.setContentDescription(R.string.hollerback_users_lc);
         // mActionbar.addTab(tab, 1); // tab, position, selected
         //
-        // tab = mActionbar.newTab();
-        // tab.setText(R.string.search_lc);
-        // v = inflater.inflate(R.layout.contact_tab_view, null);
-        // v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        // ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.search_lc));
-        // tab.setCustomView(v);
-        // tab.setTabListener(mTabListener);
-        // tab.setContentDescription(R.string.search_lc);
-        // mActionbar.addTab(tab, 2);
+
+        tab = mActionbar.newTab();
+        tab.setText(R.string.username_lc);
+        v = inflater.inflate(R.layout.contact_tab_view, null);
+        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.username_lc));
+        tab.setCustomView(v);
+        tab.setTabListener(mTabListener);
+        tab.setContentDescription(R.string.username_lc);
+        mActionbar.addTab(tab, 1);
 
     }
 
@@ -221,6 +234,9 @@ public class ContactBookFragment extends BaseFragment {
                     break;
             }
 
+            mCurrentTab = tab.getPosition();
+            getSherlockActivity().invalidateOptionsMenu();
+
         }
 
         @Override
@@ -249,7 +265,7 @@ public class ContactBookFragment extends BaseFragment {
             mAddedMeFragment = AddedMeChildFragment.newInstance();
             mAddedMeFragment.setChildFragment();
 
-            mSearchFragment = ContactsChildFragment.newInstance();
+            mSearchFragment = SearchForUserFragment.newInstance();
             mSearchFragment.setChildFragment();
         }
 
@@ -260,7 +276,7 @@ public class ContactBookFragment extends BaseFragment {
                     getSherlockActivity().invalidateOptionsMenu();
                     return mContactsFragment;
                 case 1:
-                    return mAddedMeFragment;
+                    return mSearchFragment;
                 case 2:
                     return mSearchFragment;
             }
