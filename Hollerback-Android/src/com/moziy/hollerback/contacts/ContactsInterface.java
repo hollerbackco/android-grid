@@ -33,6 +33,10 @@ public interface ContactsInterface {
 
     public Set<Contact> getInviteList();
 
+    public Contact getFriendByUsername(String username);
+
+    public boolean hasFriend(String username);
+
     public Transaction beginTransaction();
 
     public boolean removeContactFrom(Contact contact, Collection<Contact> list);

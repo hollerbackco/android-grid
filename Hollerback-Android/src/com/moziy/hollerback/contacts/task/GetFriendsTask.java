@@ -1,6 +1,7 @@
 package com.moziy.hollerback.contacts.task;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import android.util.Log;
 
@@ -43,6 +44,9 @@ public class GetFriendsTask extends AbsTask {
                         }
                     }
                 }
+
+                // sort the friends
+                Collections.sort(mFriends, Contact.COMPARATOR);
 
                 Log.d(TAG, "user has " + mFriends.size() + " friends and " + mRecentFriends.size() + " recents");
 

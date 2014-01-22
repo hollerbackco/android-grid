@@ -48,6 +48,10 @@ public class Contact implements Serializable {
         this.mPhones = new ArrayList<String>(f.mPhones);
         this.mPhoneHashes = new ArrayList<String>(this.mPhoneHashes);
         this.mFriend = f;
+
+        if (mName == null) {
+            mName = mUsername;
+        }
     }
 
     public Contact(long contactId, String mName, String mPhone, String mPhoneLabel, int mPhotoID) {

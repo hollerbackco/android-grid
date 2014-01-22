@@ -168,7 +168,8 @@
     <string name="remove_friends">Remove Friends</string>
 
     <!-- Search User Fragment -->
-
+    <string name="find_by_username">find by username</string>
+    <string name="already_a_friend">%1$s is already a friend.</string>
 
     <!-- Invite fragment -->
     <string name="contacts_book_empty">Your contacts book may be empty.</string>

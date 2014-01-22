@@ -102,31 +102,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             mInviteList = new HashSet<Contact>();
             mContactsLoadState = LOADING_STATE.DONE;
 
-            // XXX: fill in later
-            // mRecents = new ArrayList<Contact>(mContacts.subList(0, Math.min(3, mContacts.size())));
-            // List<Friend> recentFriends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
-            // .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
-
-            // get the recents
-            // mRecents = Contact.getContactsFor(recentFriends);
-
-            // get the list of friends
-            // mFriends = new ArrayList<Contact>(mContacts.subList(0, Math.min(10, mContacts.size())));
-            // List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
-            // mFriends = Contact.getContactsFor(friends);
-            //
-            // // lets remove the friends from the retrieved contacts
-            // for (Contact friend : mFriends) {
-            //
-            // Iterator<Contact> itr = mContactsExcludingHbFriends.iterator();
-            // while (itr.hasNext()) {
-            // if (CollectionOpUtils.intersects(friend.mPhones, itr.next().mPhones)) { // if the phone numbers match, then take it off
-            // itr.remove();
-            // }
-            // }
-            //
-            // }
-
         } else if (t instanceof GetHBContactsTask) {
 
             Log.d(TAG, "got hb contacts");
@@ -339,6 +314,19 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
                     for (Contact newFriend : mPendingAdd) {
 
+                        boolean isFriend = false;
+                        // only add if the user is not a friend already
+                        for (Contact c : mFriends) {
+                            if (c.mUsername.equals(newFriend.mUsername)) {
+                                isFriend = true;
+                                break;
+                            }
+                        }
+
+                        if (isFriend) {
+                            continue;
+                        }
+
                         mFriends.add(newFriend);
                         usernames.add(newFriend.mUsername);
 
@@ -431,10 +419,35 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
         @Override
         public void removeFromFriends(Contact c) {
-            mPendingRemove.add(c);
-            mPendingAdd.remove(c);
+
+            if (!mPendingAdd.remove(c))
+                mPendingRemove.add(c);
+
         }
 
+    }
+
+    @Override
+    public boolean hasFriend(String username) {
+        for (Contact f : mFriends) {
+            if (f.mUsername.equals(username)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    public Contact getFriendByUsername(String username) {
+
+        for (Contact f : mFriends) {
+            if (f.mUsername.equals(username)) {
+                return f;
+            }
+
+        }
+
+        return null;
     }
 
 }

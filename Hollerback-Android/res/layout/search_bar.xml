@@ -7,6 +7,7 @@
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/icon_search"
         android:hint="@string/action_search"
+        android:imeOptions="actionDone"
         android:inputType="text"
         android:paddingLeft="@dimen/dim_20dp" />
 

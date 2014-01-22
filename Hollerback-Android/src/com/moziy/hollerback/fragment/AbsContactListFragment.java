@@ -42,6 +42,8 @@ import com.moziy.hollerback.widget.CustomEditText;
 
 public abstract class AbsContactListFragment extends BaseFragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
+    protected static final String SELECTED_INSTANCE_STATE_KEY = "SELECTED_INSTANCE_STATE";
+
     protected ContactsInterface mContactsInterface;
     protected LayoutInflater mInflater;
     protected StickyHeaderListView mStickyListView;
@@ -74,9 +76,17 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
 
         mInflater = LayoutInflater.from(getActivity());
 
-        mSelected = new HashSet<Contact>();
-        mItemManager = new ItemManager();
-        mItemManager.setItems(buildSegmentData(mContactsInterface));
+        if (savedInstanceState != null) {
+            mSelected = (HashSet<Contact>) savedInstanceState.getSerializable(SELECTED_INSTANCE_STATE_KEY);
+            mItemManager = new ItemManager();
+            mItemManager.setItems(buildSegmentData(mContactsInterface));
+
+            setItemSelections();
+        } else {
+            mSelected = new HashSet<Contact>();
+            mItemManager = new ItemManager();
+            mItemManager.setItems(buildSegmentData(mContactsInterface));
+        }
 
     }
 
@@ -95,6 +105,12 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
         initializeView(v);
 
         return v;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(SELECTED_INSTANCE_STATE_KEY, mSelected);
+        super.onSaveInstanceState(outState);
     }
 
     public int getLayoutId() {
@@ -142,6 +158,20 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
     public void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    protected void setItemSelections() {
+        for (Item i : mItemManager.getItems()) {
+            if (i.getContact() == null) {
+                continue;
+            }
+
+            for (Contact selected : mSelected) {
+                if (i.getContact() == selected) {
+                    ((AbsContactItem) i).setSelected(true);
+                }
+            }
+        }
     }
 
     /**

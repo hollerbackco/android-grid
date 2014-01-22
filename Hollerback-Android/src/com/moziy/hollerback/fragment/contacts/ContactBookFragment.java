@@ -171,13 +171,13 @@ public class ContactBookFragment extends BaseFragment {
         //
 
         tab = mActionbar.newTab();
-        tab.setText(R.string.username_lc);
+        tab.setText(R.string.find_by_username);
         v = inflater.inflate(R.layout.contact_tab_view, null);
         v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.username_lc));
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.find_by_username));
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
-        tab.setContentDescription(R.string.username_lc);
+        tab.setContentDescription(R.string.find_by_username);
         mActionbar.addTab(tab, 1);
 
     }
