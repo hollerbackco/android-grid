@@ -36,8 +36,12 @@ public class GetFriendsTask extends AbsTask {
                 }
 
                 mRecentFriends = new ArrayList<Contact>();
-                for (Friend f : response.data.recent_friends) {
-                    mRecentFriends.add(new Contact(f));
+                for (Friend recent : response.data.recent_friends) {
+                    for (Contact friend : mFriends) {
+                        if (friend.mUsername.equals(recent.mUsername)) {
+                            mRecentFriends.add(friend);
+                        }
+                    }
                 }
 
                 Log.d(TAG, "user has " + mFriends.size() + " friends and " + mRecentFriends.size() + " recents");
