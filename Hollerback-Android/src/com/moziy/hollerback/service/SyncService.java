@@ -17,7 +17,6 @@ import android.util.Log;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
@@ -33,6 +32,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.SyncResponse;
+import com.moziy.hollerback.util.AppSynchronization;
 import com.moziy.hollerback.util.NotificationUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
@@ -63,7 +63,7 @@ public class SyncService extends IntentService implements RecoveryClient {
         int retryCount = intent.getIntExtra(INTENT_ARG_RETRY_COUNT, 0);
 
         try {
-            HollerbackAppState.sSyncSemaphore.acquire(); // make sure that we can progress
+            AppSynchronization.sSyncSemaphore.acquire(); // make sure that we can progress
         } catch (InterruptedException e) {
             e.printStackTrace();
             // TODO: reschedule?
@@ -72,7 +72,7 @@ public class SyncService extends IntentService implements RecoveryClient {
 
         sync(intent, fromGcm);
 
-        HollerbackAppState.sSyncSemaphore.release();
+        AppSynchronization.sSyncSemaphore.release();
 
     }
 

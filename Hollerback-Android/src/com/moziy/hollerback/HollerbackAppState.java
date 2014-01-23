@@ -1,6 +1,5 @@
 package com.moziy.hollerback;
 
-import java.util.concurrent.Semaphore;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -16,8 +15,6 @@ import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class HollerbackAppState {
-
-    public static Semaphore sSyncSemaphore = new Semaphore(1); // only a single client can run
 
     private static HollerbackAppState sInstance;
 

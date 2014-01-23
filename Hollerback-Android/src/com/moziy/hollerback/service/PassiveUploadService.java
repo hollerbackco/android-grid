@@ -11,6 +11,7 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.util.AppSynchronization;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
@@ -43,6 +44,13 @@ public class PassiveUploadService extends IntentService {
         List<VideoModel> pendingList = new Select().from(VideoModel.class).where(sb.toString()).execute();
 
         try {
+            AppSynchronization.sVideoUploadSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+
             if (pendingList == null || pendingList.isEmpty()) {
                 Log.d(TAG, "no pending videos/messages to upload, yay");
                 // cancel any recurring alarm
@@ -100,6 +108,8 @@ public class PassiveUploadService extends IntentService {
 
         } finally {
             ResourceRecoveryUtil.completeWakefulIntent(intent);
+
+            AppSynchronization.sVideoUploadSemaphore.release();
         }
 
     }

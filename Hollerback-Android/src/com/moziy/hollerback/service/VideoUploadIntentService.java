@@ -12,6 +12,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.util.AppSynchronization;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 /**
@@ -49,83 +50,93 @@ public class VideoUploadIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
 
-        // lets lookup the id passed in from our intent arguments
-        final VideoModel model = VideoHelper.getVideoForTransaction("Id = " + resourceId); // new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
+        try {
+            AppSynchronization.sVideoUploadSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            long resourceId = intent.getLongExtra(INTENT_ARG_RESOURCE_ID, -1);
 
-        UploadUtility uploadUtility = new UploadUtility();
+            // lets lookup the id passed in from our intent arguments
+            final VideoModel model = VideoHelper.getVideoForTransaction("Id = " + resourceId); // new Select().from(VideoModel.class).where("Id = ?", resourceId).executeSingle();
 
-        if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
+            UploadUtility uploadUtility = new UploadUtility();
 
-            String title = intent.getStringExtra(TITLE_INTENT_ARG_KEY);
-            uploadUtility.postToNewConversation(model, title);
-            Log.d(TAG, "returning..");
+            if (model.getConversationId() < 0) { // there is no conversation, so lets post this conversation
 
-        } else { // a conversation exists
+                String title = intent.getStringExtra(TITLE_INTENT_ARG_KEY);
+                uploadUtility.postToNewConversation(model, title);
+                Log.d(TAG, "returning..");
 
-            // get all the previously pending videos for this conversation, and ensure that we send them off
+            } else { // a conversation exists
 
-            if (!model.isTransacting()) {
-                throw new IllegalStateException("Video must be transacting!");
-            }
+                // get all the previously pending videos for this conversation, and ensure that we send them off
 
-            // get all the videos that are waiting to be uploaded/pending upload for this conversation
-            StringBuilder sb = new StringBuilder();
-            sb.append("(").append(ActiveRecordFields.C_VID_STATE).append("='").append(VideoModel.ResourceState.UPLOADED_PENDING_POST).append("'").append(" OR ").append(ActiveRecordFields.C_VID_STATE)
-                    .append("='").append(VideoModel.ResourceState.PENDING_UPLOAD).append("') AND ").append(ActiveRecordFields.C_CONV_ID).append("=").append(model.getConversationId());
+                if (!model.isTransacting()) {
+                    throw new IllegalStateException("Video must be transacting!");
+                }
 
-            Log.d(TAG, sb.toString());
+                // get all the videos that are waiting to be uploaded/pending upload for this conversation
+                StringBuilder sb = new StringBuilder();
+                sb.append("(").append(ActiveRecordFields.C_VID_STATE).append("='").append(VideoModel.ResourceState.UPLOADED_PENDING_POST).append("'").append(" OR ")
+                        .append(ActiveRecordFields.C_VID_STATE).append("='").append(VideoModel.ResourceState.PENDING_UPLOAD).append("') AND ").append(ActiveRecordFields.C_CONV_ID).append("=")
+                        .append(model.getConversationId());
 
-            List<VideoModel> mVideos = VideoHelper.getVideosForTransaction(sb.toString());
+                Log.d(TAG, sb.toString());
 
-            if (mVideos == null) {
-                mVideos = new ArrayList<VideoModel>();
-            }
+                List<VideoModel> mVideos = VideoHelper.getVideosForTransaction(sb.toString());
 
-            mVideos.add(model);
+                if (mVideos == null) {
+                    mVideos = new ArrayList<VideoModel>();
+                }
 
-            boolean requestRecovery = false;
+                mVideos.add(model);
 
-            for (VideoModel v : mVideos) {
+                boolean requestRecovery = false;
 
-                // if it's pending upload and not transacting
-                if (VideoModel.ResourceState.PENDING_UPLOAD.equals(v.getState())) {
+                for (VideoModel v : mVideos) {
 
-                    // lets get the part info
-                    int totalParts = v.getNumParts();
+                    // if it's pending upload and not transacting
+                    if (VideoModel.ResourceState.PENDING_UPLOAD.equals(v.getState())) {
 
-                    // for each part lets upload the resource
-                    for (int i = 0; i < totalParts; i++) {
-                        uploadUtility.uploadResource(v, i, totalParts);
+                        // lets get the part info
+                        int totalParts = v.getNumParts();
+
+                        // for each part lets upload the resource
+                        for (int i = 0; i < totalParts; i++) {
+                            uploadUtility.uploadResource(v, i, totalParts);
+                        }
+                    }
+
+                    // now if the model state is pending post and it's not transacting, then let's go ahead and post
+                    if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(v.getState())) {
+
+                        uploadUtility.postToExistingConversation(v);
+
+                    }
+
+                    if (!ResourceState.UPLOADED.equals(v.getState())) {
+                        requestRecovery = true;
+                    }
+
+                    if (!v.isTransacting()) {
+                        throw new IllegalStateException("Video must be transacting");
                     }
                 }
 
-                // now if the model state is pending post and it's not transacting, then let's go ahead and post
-                if (VideoModel.ResourceState.UPLOADED_PENDING_POST.equals(v.getState())) {
+                // clear the model from transacting
+                Log.d(TAG, "clearing transacting");
+                VideoHelper.clearVideoTransacting(mVideos);
 
-                    uploadUtility.postToExistingConversation(v);
-
-                }
-
-                if (!ResourceState.UPLOADED.equals(v.getState())) {
-                    requestRecovery = true;
-                }
-
-                if (!v.isTransacting()) {
-                    throw new IllegalStateException("Video must be transacting");
+                if (requestRecovery) { // if we're not in the uploading state, then request recovery
+                    Log.d(TAG, "requesting recovery");
+                    ResourceRecoveryUtil.requestRecovery(PassiveUploadService.getRecoveryClient());
                 }
             }
-
-            // clear the model from transacting
-            Log.d(TAG, "clearing transacting");
-            VideoHelper.clearVideoTransacting(mVideos);
-
-            if (requestRecovery) { // if we're not in the uploading state, then request recovery
-                Log.d(TAG, "requesting recovery");
-                ResourceRecoveryUtil.requestRecovery(PassiveUploadService.getRecoveryClient());
-            }
+        } finally {
+            AppSynchronization.sVideoUploadSemaphore.release();
         }
     }
-
 }

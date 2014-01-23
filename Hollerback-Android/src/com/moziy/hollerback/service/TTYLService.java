@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
@@ -15,6 +14,7 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.util.AppSynchronization;
 
 public class TTYLService extends IntentService {
     private static final String TAG = TTYLService.class.getSimpleName();
@@ -31,7 +31,7 @@ public class TTYLService extends IntentService {
         long conversationId = intent.getLongExtra(CONVO_ID_INTENT_ARG_KEY, -1);
 
         try {
-            HollerbackAppState.sSyncSemaphore.acquire();
+            AppSynchronization.sSyncSemaphore.acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
             return;
@@ -40,7 +40,7 @@ public class TTYLService extends IntentService {
 
         sendTTYL(conversationId);
 
-        HollerbackAppState.sSyncSemaphore.release();
+        AppSynchronization.sSyncSemaphore.release();
 
     }
 

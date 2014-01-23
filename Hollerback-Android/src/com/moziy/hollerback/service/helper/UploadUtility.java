@@ -10,7 +10,6 @@ import android.util.Log;
 import com.activeandroid.query.Select;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.moziy.hollerback.HollerbackAppState;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -28,6 +27,7 @@ import com.moziy.hollerback.service.PassiveUploadService;
 import com.moziy.hollerback.service.task.ConvoThumbTask;
 import com.moziy.hollerback.service.task.GenerateVideoThumbTask;
 import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.AppSynchronization;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil.RecoveryClient;
 
@@ -205,7 +205,7 @@ public class UploadUtility implements RecoveryClient {
     public boolean postToExistingConversation(final VideoModel videoModel) {
 
         try {
-            HollerbackAppState.sSyncSemaphore.acquire();
+            AppSynchronization.sSyncSemaphore.acquire();
         } catch (InterruptedException e1) {
             e1.printStackTrace();
             Log.w(TAG, "Interrupted and need to reschedule");
@@ -280,7 +280,7 @@ public class UploadUtility implements RecoveryClient {
             }
         }
 
-        HollerbackAppState.sSyncSemaphore.release(); // release the semaphore
+        AppSynchronization.sSyncSemaphore.release(); // release the semaphore
 
         Log.d(TAG, "done");
         return true;
