@@ -20,8 +20,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
-import com.activeandroid.query.Delete;
-import com.activeandroid.query.Select;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
@@ -30,11 +28,9 @@ import com.moziy.hollerback.contacts.task.ContactsTaskGroup;
 import com.moziy.hollerback.contacts.task.GetFriendsTask;
 import com.moziy.hollerback.contacts.task.GetHBContactsTask;
 import com.moziy.hollerback.contacts.task.GetUserContactsTask;
-import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.Contact;
-import com.moziy.hollerback.model.Friend;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.CollectionOpUtils;
 
@@ -113,23 +109,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             if (t.isSuccess()) {
 
-                // lets delete the friends from the db
-                new Delete().from(Friend.class).execute();
-
                 mFriends = ((GetFriendsTask) t).getFriends();
                 mRecents = ((GetFriendsTask) t).getRecentFriends();
-
-                ActiveAndroid.beginTransaction();
-                try {
-                    // lets save the friends
-                    for (Contact c : mFriends) {
-                        c.save();
-                    }
-
-                    ActiveAndroid.setTransactionSuccessful();
-                } finally {
-                    ActiveAndroid.endTransaction();
-                }
 
             }
 
@@ -156,15 +137,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
         if (t instanceof GetFriendsTask) {
 
-            // just load from the local database
-            List<Friend> recentFriends = new Select().from(Friend.class).where(ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + " IS NOT NULL ")
-                    .orderBy("strftime('%s'," + ActiveRecordFields.C_FRIENDS_LAST_CONTACT_TIME + ") DESC").limit(3).execute();
-
-            mRecents = Contact.getContactsFor(recentFriends);
-
-            // get the list of friends
-            List<Friend> friends = new Select().from(Friend.class).orderBy(ActiveRecordFields.C_FRIENDS_NAME).execute();
-            mFriends = Contact.getContactsFor(friends);
+            mFriends = ((GetFriendsTask) t).getFriends();
+            mRecents = ((GetFriendsTask) t).getRecentFriends();
 
             mFriendsLoadState = LOADING_STATE.FAILED;
         }
@@ -182,7 +156,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
     private void setupContactsAfterLoad() {
 
-        if (mContacts != null && mHBContacts != null) {
+        if (mContacts != null && mHBContacts != null && mContactsExcludingHbContacts == null) {
             mContactsExcludingHbContacts = new ArrayList<Contact>(mContacts);
             for (Contact hbContact : mHBContacts) {
 
@@ -196,7 +170,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             }
         }
 
-        if (mHBContacts != null && mFriends != null) {
+        if (mHBContacts != null && mFriends != null && mHBContactsExludingFriends == null) {
             mHBContactsExludingFriends = new ArrayList<Contact>(mHBContacts);
             for (Contact friend : mFriends) {
 
