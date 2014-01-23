@@ -13,7 +13,7 @@
         android:padding="5dp"
         android:visibility="gone" />
 
-    <TextView
+    <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
