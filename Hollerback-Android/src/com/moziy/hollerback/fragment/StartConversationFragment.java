@@ -176,6 +176,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                     }
 
+                    InputMethodManager im = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    im.hideSoftInputFromWindow(mTitleEt.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
                     RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
                     f.setTargetFragment(StartConversationFragment.this, 0);
 

@@ -105,15 +105,18 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
                 ft.remove(f);
             }
 
-            for (VideoModel v : mConvoVideoMap.values()) {
-                Log.d(TAG, "find: " + ((v.getGuid() != null) ? v.getGuid() : v.getVideoId()));
-                f = fm.findFragmentByTag((v.getGuid() != null) ? v.getGuid() : v.getVideoId());
-                if (f != null) {
-                    runTxn = true;
-                    Log.d(TAG, "remove it");
-                    ft.remove(f);
-                }
+            if (mConvoVideoMap != null) {
 
+                for (VideoModel v : mConvoVideoMap.values()) {
+                    Log.d(TAG, "find: " + ((v.getGuid() != null) ? v.getGuid() : v.getVideoId()));
+                    f = fm.findFragmentByTag((v.getGuid() != null) ? v.getGuid() : v.getVideoId());
+                    if (f != null) {
+                        runTxn = true;
+                        Log.d(TAG, "remove it");
+                        ft.remove(f);
+                    }
+
+                }
             }
 
             if (runTxn) {
