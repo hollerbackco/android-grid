@@ -21,7 +21,9 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SearchView;
 
@@ -73,6 +75,9 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     private Set<Contact> mContactRemovalSet;
     private Transaction mFriendRemovalTransaction;
 
+    private GridView mGridView;
+    private ArrayAdapter<String> mRecipientAdapter;
+
     public static FriendsFragment newInstance() {
         return newInstance(NextAction.START_CONVERSATION);
     }
@@ -89,6 +94,9 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mInflater = LayoutInflater.from(getActivity());
+
         mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
 
         switch (mAction) {
@@ -114,6 +122,8 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mNextButton = (Button) mBottomBarLayout.findViewById(R.id.bt_next);
         mNextButton.setOnClickListener(this);
 
+        mGridView = (GridView) mBottomBarLayout.findViewById(R.id.gl_recipients);
+
         return v;
     }
 
@@ -123,6 +133,15 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mContactsList.setMultiChoiceModeListener(mMultiChoiceLisenter);
         mContactsList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mContactsList.setOnItemLongClickListener(this);
+
+        mRecipientAdapter = new ArrayAdapter<String>(getActivity(), R.layout.chips_adapter, R.id.textView1);
+        if (savedInstanceState != null) {
+            for (Contact c : mSelected) {
+                mRecipientAdapter.add(c.mName);
+            }
+        }
+        mGridView.setAdapter(mRecipientAdapter);
+
     }
 
     @Override
@@ -378,8 +397,11 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
 
                 if (selected) {
                     mSelected.add(c);
+                    mRecipientAdapter.add(c.mName);
+                    mGridView.smoothScrollToPosition(mRecipientAdapter.getCount() - 1);
                 } else {
                     mSelected.remove(c);
+                    mRecipientAdapter.remove(c.mName);
                 }
             }
 

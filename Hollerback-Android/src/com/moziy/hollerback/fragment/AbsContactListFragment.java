@@ -202,6 +202,8 @@ public abstract class AbsContactListFragment extends BaseFragment implements Ada
                         mItemManager.setItems(buildSegmentData(mContactsInterface));
                         mAdapter.setItemManager(mItemManager);
                         mContactsList.setAdapter(mAdapter);
+                        mStickyListView.setAdapter(mAdapter);
+                        mStickyListView.setIndexer(mAdapter);
                     }
                 }
 

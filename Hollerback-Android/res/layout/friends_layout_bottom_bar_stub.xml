@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/bottom_bar_layout"
-    style="@style/Widget.Sherlock.Light.ActionMode"
+    style="@style/ActionBar.Solid.Hollerback"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dim_48dp"
+    android:layout_height="@dimen/dim_60dp"
     android:layout_alignParentBottom="true"
-    android:visibility="gone" >
+    android:visibility="visible" >
+
+    <GridView
+        android:id="@+id/gl_recipients"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/bt_next"
+        android:numColumns="auto_fit" >
+    </GridView>
 
     <Button
         android:id="@+id/bt_next"
         style="@style/Widget.Sherlock.ActionButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentRight="true"
-        android:text="@string/action_next" />
+        android:gravity="center"
+        android:text="@string/action_next"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>

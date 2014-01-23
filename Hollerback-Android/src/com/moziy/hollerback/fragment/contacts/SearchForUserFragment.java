@@ -2,6 +2,7 @@ package com.moziy.hollerback.fragment.contacts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +35,8 @@ import com.moziy.hollerback.model.Friend;
 import com.moziy.hollerback.model.web.Envelope;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.util.AnalyticsUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class SearchForUserFragment extends AbsContactListFragment implements ContactBookChild {
     private static final String TAG = SearchForUserFragment.class.getSimpleName();
@@ -86,7 +89,16 @@ public class SearchForUserFragment extends AbsContactListFragment implements Con
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
 
                     String username = v.getText().toString().trim();
-                    if (!mContactsInterface.hasFriend(username)) {
+                    if (username == null || "".equals(username)) {
+
+                        Toast.makeText(HollerbackApplication.getInstance(), getString(R.string.field_empty), Toast.LENGTH_LONG).show();
+
+                        return false;
+                    }
+
+                    if (PreferenceManagerUtil.getPreferenceValue(HBPreferences.USERNAME, "").toLowerCase(Locale.US).equals(username.toLowerCase())) {
+                        Toast.makeText(HollerbackApplication.getInstance(), String.format(getString(R.string.you_are_your_best_friend), username), Toast.LENGTH_LONG).show();
+                    } else if (!mContactsInterface.hasFriend(username)) {
                         mProgress.setVisibility(View.VISIBLE);
                         HBRequestManager.findFriend(username, mResponseHandler);
                     } else {

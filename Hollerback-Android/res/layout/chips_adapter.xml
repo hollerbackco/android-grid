@@ -2,20 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+    android:background="@drawable/chips_edittext_gb"
+    android:orientation="horizontal"
+    android:padding="@dimen/dim_3dp" >
 
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="5dp" />
+        android:padding="5dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:padding="@dimen/dim_3dp"
+        android:singleLine="true"
         android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/gray_font" />
 
 </LinearLayout>

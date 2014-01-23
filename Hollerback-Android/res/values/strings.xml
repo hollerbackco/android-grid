@@ -170,6 +170,8 @@
     <!-- Search User Fragment -->
     <string name="find_by_username">find by username</string>
     <string name="already_a_friend">%1$s is already a friend.</string>
+    <string name="you_are_your_best_friend">hollerback! you are your best friend</string>
+    <string name="field_empty">can\'t search for an empty username</string>
 
     <!-- Invite fragment -->
     <string name="contacts_book_empty">Your contacts book may be empty.</string>
