@@ -76,6 +76,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
     private ProgressBar mProgressSpinner;
     private String[] mPhones;
     private String mTitle;
+    private String mTitleHint;
     private Bundle mRecordingInfo = null;
     private CustomEditText mTitleEt;
 
@@ -115,9 +116,8 @@ public class StartConversationFragment extends BaseFragment implements Recording
         }
 
         sb.delete(sb.length() - 2, sb.length() - 1); // there should always be a recipient
-        mTitle = sb.toString();
+        mTitleHint = sb.toString();
         mPhones = recipients.toArray(new String[recipients.size()]);
-        Log.d(TAG, "title: " + mTitle);
 
         // New Conversation Created Intent
         mReceiver = new InternalReceiver();
@@ -143,7 +143,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
         View v = inflater.inflate(R.layout.start_conversation_layout, container, false);
 
         mTitleEt = ((CustomEditText) v.findViewById(R.id.tv_title));
-        mTitleEt.setHint(mTitle);
+        mTitleEt.setHint(mTitleHint);
         mTitleEt.setSelection(0);
 
         mProgressSpinner = (ProgressBar) v.findViewById(R.id.pb_spinner);
@@ -170,10 +170,12 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     mReceiver.register();
 
                     if (mTitleEt.getText().length() > 0) {
+
                         mTitle = mTitleEt.getText().toString();
+                        Log.d(TAG, "sending message with title: " + mTitle);
+
                     }
 
-                    Log.d(TAG, "sending message with title: " + mTitle);
                     RecordVideoFragment f = RecordVideoFragment.newInstance(mPhones, mTitle);
                     f.setTargetFragment(StartConversationFragment.this, 0);
 
