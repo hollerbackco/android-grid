@@ -36,6 +36,7 @@ public class AnalyticsUtil {
     public interface Category {
         public static final String Registration = "Registration";
         public static final String UI = "UserInterface";
+        public static final String Camera = "Camera";
     }
 
     public interface Action {
@@ -73,6 +74,15 @@ public class AnalyticsUtil {
         public static final String START_CONVO = "Start Conversation";
         public static final String WELCOME = "Welcome";
         public static final String SEARCH_FOR_USERNAME = "Search Username";
+    }
+
+    public interface Fields {
+        public static final String NotAvailable = "N/A";
+    }
+
+    public interface CameraFields extends Fields {
+        public static final String PreferredVideoSize = "Preferred Video Size";
+        public static final String PrefferedPreviewSize = "Preferred Preview Size";
     }
 
     public static void log(String category, String action, String label, Long value) {

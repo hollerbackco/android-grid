@@ -51,6 +51,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
+import com.google.analytics.tracking.android.Fields;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.camera.util.CameraUtil;
@@ -1064,6 +1065,9 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             Log.d(TAG, "mBestVideoSize:" + mBestVideoSize.width + "x" + mBestVideoSize.height);
             Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
 
+            AnalyticsUtil.getGaTracker().set(Fields.customDimension(1), mBestVideoSize.width + "x" + mBestVideoSize.height);
+            AnalyticsUtil.getGaTracker().set(Fields.customDimension(2), mBestPreviewSize.width + "x" + mBestPreviewSize.height);
+
             return;
         }
 
@@ -1072,10 +1076,15 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mBestVideoSize = mBestPreviewSize;
 
         if (mBestPreviewSize == null) {
+            AnalyticsUtil.getGaTracker().set(Fields.customDimension(1), AnalyticsUtil.Fields.NotAvailable);
+            AnalyticsUtil.getGaTracker().set(Fields.customDimension(2), AnalyticsUtil.Fields.NotAvailable);
             Log.e(TAG, "nothing suitable found for recording");
             // XXX: log this
             return;
         }
+
+        AnalyticsUtil.getGaTracker().set(Fields.customDimension(1), mBestVideoSize.width + "x" + mBestVideoSize.height);
+        AnalyticsUtil.getGaTracker().set(Fields.customDimension(2), mBestPreviewSize.width + "x" + mBestPreviewSize.height);
 
         Log.d(TAG, "mBestPreviewSize: " + mBestPreviewSize.width + "x" + mBestPreviewSize.height);
     }
