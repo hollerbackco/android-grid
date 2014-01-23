@@ -94,7 +94,6 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             Log.d(TAG, "got user contacts");
             // alright we have our contacts
             mContacts = ((GetUserContactsTask) t).getContacts();
-            mContactsExcludingHbContacts = new ArrayList<Contact>(mContacts); // add all for now
             mInviteList = new HashSet<Contact>();
             mContactsLoadState = LOADING_STATE.DONE;
 
@@ -163,6 +162,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
                 Iterator<Contact> itr = mContactsExcludingHbContacts.iterator();
 
                 while (itr.hasNext()) {
+
                     if (CollectionOpUtils.intersects(itr.next().mPhoneHashes, hbContact.mPhoneHashes)) {
                         itr.remove();
                     }
