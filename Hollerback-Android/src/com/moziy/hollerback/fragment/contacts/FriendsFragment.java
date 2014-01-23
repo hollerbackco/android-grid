@@ -135,10 +135,8 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
         mContactsList.setOnItemLongClickListener(this);
 
         mRecipientAdapter = new ArrayAdapter<String>(getActivity(), R.layout.chips_adapter, R.id.textView1);
-        if (savedInstanceState != null) {
-            for (Contact c : mSelected) {
-                mRecipientAdapter.add(c.mName);
-            }
+        for (Contact c : mSelected) {
+            mRecipientAdapter.add(c.mName);
         }
         mGridView.setAdapter(mRecipientAdapter);
 
