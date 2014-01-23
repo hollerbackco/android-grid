@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/dim_60dp"
     android:layout_alignParentBottom="true"
-    android:visibility="visible" >
+    android:visibility="gone" >
 
     <GridView
         android:id="@+id/gl_recipients"
