@@ -4,7 +4,6 @@ import java.util.List;
 
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -39,7 +38,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.moziy.hollerback.HollerbackAppState;
-import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.activity.SettingPreferenceActivity;
@@ -241,13 +239,16 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             // if (conversation.getUnreadCount() > 0) {
             if (true) {
 
-                Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, ConvoHistoryFragment.newInstance(conversation.getConversationId())).addToBackStack(FRAGMENT_TAG).commit();
 
-                // dismiss any notifications bound to this convo id
-                NotificationManager nm = (NotificationManager) HollerbackApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
-                nm.cancel((int) conversation.getConversationId());
-
-                startConversationFragment(conversation);
+                return;
+                // Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
+                //
+                // // dismiss any notifications bound to this convo id
+                // NotificationManager nm = (NotificationManager) HollerbackApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
+                // nm.cancel((int) conversation.getConversationId());
+                //
+                // startConversationFragment(conversation);
             } else {
 
                 AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);

@@ -232,14 +232,24 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
     }
 
-    private static class GetRemoteHistoryTask extends AbsTask {
+    public static class GetRemoteHistoryTask extends AbsTask {
         private static final String TAG = ConvoHistoryDelegate.GetRemoteHistoryTask.class.getSimpleName();
         private long mConvoId;
         boolean isDone = false;
         private ArrayList<VideoModel> mRemoteVideos;
+        private int mHistoryLimit;
+        private boolean mRemoveLocalVideos;
 
         public GetRemoteHistoryTask(long convoId) {
             mConvoId = convoId;
+            mHistoryLimit = ConversationFragment.HISTORY_LIMIT;
+            mRemoveLocalVideos = true;
+        }
+
+        public GetRemoteHistoryTask(long convoId, int limit, boolean removeLocalVideos) {
+            mConvoId = convoId;
+            mHistoryLimit = limit;
+            mRemoveLocalVideos = removeLocalVideos;
         }
 
         public ArrayList<VideoModel> getRemoteVideos() {
@@ -249,9 +259,8 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
         @Override
         public void run() {
             // get the last 5 videos
-            HBRequestManager.getHistory(mConvoId, 1, ConversationFragment.HISTORY_LIMIT, new HBSyncHttpResponseHandler<Envelope<ArrayList<VideoModel>>>(
-                    new TypeReference<Envelope<ArrayList<VideoModel>>>() {
-                    }) {
+            HBRequestManager.getHistory(mConvoId, 1, mHistoryLimit, new HBSyncHttpResponseHandler<Envelope<ArrayList<VideoModel>>>(new TypeReference<Envelope<ArrayList<VideoModel>>>() {
+            }) {
 
                 @Override
                 public void onResponseSuccess(int statusCode, Envelope<ArrayList<VideoModel>> response) {
@@ -283,17 +292,19 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
             // we have remote videos:
 
             // now see if we have the remote videos in our database
-            if (mIsSuccess && mRemoteVideos != null) {
-                Iterator<VideoModel> itr = mRemoteVideos.iterator();
-                while (itr.hasNext()) {
-                    VideoModel remote = itr.next();
-                    VideoModel local = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_GUID + "=?", remote.getVideoId()).executeSingle();
-                    if (local != null) {
-                        Log.d(TAG, "removing video already in local db: " + remote.toString());
-                        itr.remove();
+            if (mRemoveLocalVideos) {
+                if (mIsSuccess && mRemoteVideos != null) {
+                    Iterator<VideoModel> itr = mRemoteVideos.iterator();
+                    while (itr.hasNext()) {
+                        VideoModel remote = itr.next();
+                        VideoModel local = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_GUID + "=?", remote.getVideoId()).executeSingle();
+                        if (local != null) {
+                            Log.d(TAG, "removing video already in local db: " + remote.toString());
+                            itr.remove();
+                        }
                     }
-                }
 
+                }
             }
 
             mIsFinished = true;

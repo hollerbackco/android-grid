@@ -74,6 +74,7 @@ public class AnalyticsUtil {
         public static final String START_CONVO = "Start Conversation";
         public static final String WELCOME = "Welcome";
         public static final String SEARCH_FOR_USERNAME = "Search Username";
+        public static final String CONVO_HISTORY = "Conversation History";
     }
 
     public interface Fields {
