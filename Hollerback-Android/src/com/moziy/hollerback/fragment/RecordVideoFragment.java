@@ -32,6 +32,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -278,15 +279,19 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         mBlinker = (ImageView) v.findViewById(R.id.iv_blinker);
 
         ViewGroup previewHolder = (FrameLayout) v.findViewById(R.id.preview);
+        android.widget.FrameLayout.LayoutParams layoutParams = new android.widget.FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER);
         mPreviewDelegate = new PreviewTouchDelegate();
         if (USE_SURFACE_VIEW) {
             PreviewSurfaceView surfaceView = new PreviewSurfaceView(getActivity());
             surfaceView.getHolder().addCallback(this);
+            surfaceView.setLayoutParams(layoutParams);
             // surfaceView.setOnClickListener(mSendButtonClick); //disable these for now
             // surfaceView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             mCameraPreview = surfaceView;
         } else {
             PreviewTextureView textureView = new PreviewTextureView(getActivity());
+            textureView.setLayoutParams(layoutParams);
             // textureView.setOnClickListener(mSendButtonClick); //disable these for now
             // textureView.setOnTouchListener(mPreviewDelegate.mOnPreviewTouchListener);
             textureView.setSurfaceTextureListener(this);
