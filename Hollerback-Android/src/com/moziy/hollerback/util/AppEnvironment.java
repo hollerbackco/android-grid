@@ -1,9 +1,14 @@
 package com.moziy.hollerback.util;
 
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Point;
 import android.os.Environment;
 import android.provider.Settings.Secure;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.WindowManager;
 
 import com.activeandroid.ActiveAndroid;
 import com.moziy.hollerback.HollerbackApplication;
@@ -35,6 +40,12 @@ public class AppEnvironment {
 
     public static final String APP_VERSION_NAME;
 
+    public static final float VIDEO_ASPECT_RATIO = (4.0f / 3.0f);
+
+    public static final Point SCREEN_SIZE;
+
+    public static final Point OPTIMAL_VIDEO_SIZE;
+
     static {
         PackageInfo pi = null;
         try {
@@ -50,6 +61,34 @@ public class AppEnvironment {
         } else {
             APP_VERSION_CODE = null;
             APP_VERSION_NAME = null;
+        }
+
+        WindowManager windowManager = (WindowManager) HollerbackApplication.getInstance().getSystemService(Context.WINDOW_SERVICE);
+        Display d = windowManager.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        d.getMetrics(metrics);
+
+        SCREEN_SIZE = new Point(metrics.widthPixels, metrics.heightPixels);
+
+        OPTIMAL_VIDEO_SIZE = new Point(SCREEN_SIZE);
+
+        boolean isHeightLongSide = (SCREEN_SIZE.y > SCREEN_SIZE.x ? true : false);
+        if (isHeightLongSide) {
+
+            if (((double) SCREEN_SIZE.y / (double) SCREEN_SIZE.x) > VIDEO_ASPECT_RATIO) {
+                OPTIMAL_VIDEO_SIZE.x = (int) ((double) SCREEN_SIZE.y / VIDEO_ASPECT_RATIO); // make the width wider
+            } else { //
+                OPTIMAL_VIDEO_SIZE.y = (int) ((double) SCREEN_SIZE.x * VIDEO_ASPECT_RATIO);
+            }
+
+        } else if (((double) SCREEN_SIZE.y / (double) SCREEN_SIZE.x) < VIDEO_ASPECT_RATIO) { // width is the longer side
+
+            if ((double) SCREEN_SIZE.y / (double) SCREEN_SIZE.x > VIDEO_ASPECT_RATIO) {
+                OPTIMAL_VIDEO_SIZE.y = (int) (SCREEN_SIZE.y * VIDEO_ASPECT_RATIO);
+            } else {
+                OPTIMAL_VIDEO_SIZE.x = (int) (SCREEN_SIZE.x * VIDEO_ASPECT_RATIO);
+            }
+
         }
 
     }

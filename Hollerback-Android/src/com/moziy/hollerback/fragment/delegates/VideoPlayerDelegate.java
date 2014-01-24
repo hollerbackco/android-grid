@@ -17,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
@@ -126,6 +128,8 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
     public void onViewCreated(View parentView) {
         mVideoView = (VideoView) parentView.findViewById(R.id.vv_preview);
+        mVideoView.setLayoutParams(getVideoViewLayoutParams());
+
         mProgress = (ProgressBar) parentView.findViewById(R.id.progress);
         mProgress.setVisibility(View.VISIBLE);
         Log.d(TAG, "onCreateView");
@@ -153,6 +157,12 @@ public class VideoPlayerDelegate extends AbsFragmentLifecylce implements OnVideo
 
             }
         });
+    }
+
+    private LayoutParams getVideoViewLayoutParams() {
+
+        LayoutParams params = new LayoutParams(AppEnvironment.OPTIMAL_VIDEO_SIZE.x, AppEnvironment.OPTIMAL_VIDEO_SIZE.y, Gravity.CENTER);
+        return params;
     }
 
     @Override

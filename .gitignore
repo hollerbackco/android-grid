@@ -43,6 +43,9 @@ local.properties
 # PDT-specific
 .buildpath
 
+#Crashylytics
+com_crashlytics_export_strings.xml
+
 #
 ant.properties
 

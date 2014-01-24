@@ -105,6 +105,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSherlockActivity().getActionBar().hide();
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
 
