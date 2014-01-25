@@ -30,10 +30,8 @@ import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegate;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
-import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.date.TimeUtil;
 
 public class ConversationFragment extends SherlockFragment implements TaskClient, RecordingInfo {
@@ -308,19 +306,6 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);
-    }
-
-    /**
-     * A class used to differentiate a video download and a history video download
-     * @author sajjad
-     *
-     */
-    public static class HistoryVideoDownloadTask extends VideoDownloadTask {
-
-        public HistoryVideoDownloadTask(VideoModel model) {
-            super(model);
-        }
-
     }
 
 }

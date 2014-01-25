@@ -13,8 +13,4 @@
         android:transcriptMode="alwaysScroll" >
     </ListView>
 
-    <include
-        layout="@layout/conversation_layout"
-        android:visibility="invisible" />
-
 </FrameLayout>

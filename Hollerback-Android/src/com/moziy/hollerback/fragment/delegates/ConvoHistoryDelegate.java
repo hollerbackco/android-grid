@@ -16,7 +16,7 @@ import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
-import com.moziy.hollerback.fragment.ConversationFragment;
+import com.moziy.hollerback.fragment.ConvoHistoryTwo;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.model.web.Envelope;
@@ -32,11 +32,11 @@ import com.moziy.hollerback.service.task.Task;
  */
 public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.Listener {
     private static final String TAG = ConvoHistoryDelegate.class.getSimpleName();
-    private static final int HISTORY_LIMIT = 5;
+    private static final int HISTORY_LIMIT = -1;
     private static final String LOCAL_HISTORY_INSTANCE_STATE = "local_history_instance_state";
     private static final String REMOTE_HISTORY_INSTANCE_STATE = "remote_history_instance_state";
 
-    private ConversationFragment mConvoFragment;
+    private ConvoHistoryTwo mConvoFragment;
     private List<VideoModel> mLocalHistory;
     private ArrayList<VideoModel> mRemoteHistory;
     private long mConvoId;
@@ -55,7 +55,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
     @Override
     public void onPreSuperAttach(Fragment fragment) {
-        mConvoFragment = (ConversationFragment) fragment;
+        mConvoFragment = (ConvoHistoryTwo) fragment;
     }
 
     @Override
@@ -142,7 +142,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                 if (v.getVideoId() == null) {
                     v.setVideoId(v.getGuid());
                 }
-                Log.d(TAG, "Local video: " + v.toString());
+                // Log.d(TAG, "Local video: " + v.toString());
                 if (mOnHistoryModelLoaded != null) {
                     mOnHistoryModelLoaded.onHistoryModelLoaded(v);
                 } else {
@@ -180,12 +180,14 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
                     v.setGuid(v.getVideoId());
                 v.setWatchedState(VideoModel.ResourceState.WATCHED_AND_POSTED);
                 v.setState(ResourceState.PENDING_DOWNLOAD);
-                v.setTransacting(); // set transacting because we are about to request a download
-                v.save();
-                Log.d(TAG, "remote video: " + v.toString());
+                // Sajjad : took out because we don't want to download
+                // v.setTransacting(); // set transacting because we are about to request a download
+                // v.save();
+                // Log.d(TAG, "remote video: " + v.toString());
                 if (mOnHistoryModelLoaded != null)
                     mOnHistoryModelLoaded.onHistoryModelLoaded(v);
-                mLoaderDelegate.requestDownload(v);
+                // we don't want to download
+                // mLoaderDelegate.requestDownload(v);
             }
 
             mOnHistoryModelLoaded.onRemoteHistoryLoaded(mRemoteHistory);
@@ -242,7 +244,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
         public GetRemoteHistoryTask(long convoId) {
             mConvoId = convoId;
-            mHistoryLimit = ConversationFragment.HISTORY_LIMIT;
+            mHistoryLimit = ConvoHistoryTwo.HISTORY_LIMIT;
             mRemoveLocalVideos = true;
         }
 
@@ -290,21 +292,32 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
             }
 
             // we have remote videos:
+            StringBuilder sb = new StringBuilder();
 
             // now see if we have the remote videos in our database
             if (mRemoveLocalVideos) {
                 if (mIsSuccess && mRemoteVideos != null) {
                     Iterator<VideoModel> itr = mRemoteVideos.iterator();
+                    VideoModel remote = itr.next();
+                    sb.append(ActiveRecordFields.C_VID_GUID).append("='").append(remote.getVideoId()).append("'");
                     while (itr.hasNext()) {
-                        VideoModel remote = itr.next();
-                        VideoModel local = new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_GUID + "=?", remote.getVideoId()).executeSingle();
-                        if (local != null) {
-                            Log.d(TAG, "removing video already in local db: " + remote.toString());
-                            itr.remove();
+                        remote = itr.next();
+                        sb.append(" OR ").append(ActiveRecordFields.C_VID_GUID).append("='").append(remote.getVideoId()).append("'");
+
+                    }
+
+                    List<VideoModel> localVideos = new Select().from(VideoModel.class).where(sb.toString()).execute();
+                    for (VideoModel local : localVideos) {
+                        itr = mRemoteVideos.iterator();
+                        while (itr.hasNext()) {
+                            if (local.getGuid().equals(itr.next().getGuid())) {
+                                itr.remove();
+                            }
                         }
                     }
 
                 }
+
             }
 
             mIsFinished = true;

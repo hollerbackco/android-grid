@@ -14,8 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,14 +31,13 @@ import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate;
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate;
-import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegate;
+import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegateTwo;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
-import com.moziy.hollerback.service.task.VideoDownloadTask;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.squareup.picasso.Picasso;
 
@@ -49,15 +50,15 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
     public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
     public static final String RECORDING_INFO_INSTANCE_STATE = "RECORDING_INFO_INSTANCE_STATE";
 
-    public static ConversationFragment newInstance(long conversationId) {
-        ConversationFragment c = new ConversationFragment();
+    public static ConvoHistoryTwo newInstance(long conversationId) {
+        ConvoHistoryTwo c = new ConvoHistoryTwo();
         Bundle args = new Bundle();
         args.putLong(CONVO_ID_BUNDLE_ARG_KEY, conversationId);
         c.setArguments(args);
         return c;
     }
 
-    public static final int HISTORY_LIMIT = 5;
+    public static final int HISTORY_LIMIT = -1; // fetch all the history
 
     private long mConvoId;
     private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
@@ -66,27 +67,35 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
 
     private ConvoLoaderDelegate mConvoDelegate;
     private ConvoHistoryDelegate mHistoryDelegate;
-    private VideoPlayerDelegate mVideoPlayerDelegate;
+    private VideoPlayerDelegateTwo mVideoPlayerDelegateTwo;
+
+    private ConvoHistoryAdapter mAdapter;
+    private ListView mConvoListView;
 
     @Override
     public void onAttach(Activity activity) {
 
+        if (mAdapter == null) {
+            mAdapter = new ConvoHistoryAdapter(getActivity(), R.layout.convo_history_list_item, R.id.tv_date);
+        }
+
         if (mConvoDelegate == null) {
             mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
             mConvoDelegate = new ConvoLoaderDelegate(mConvoId);
-            mVideoPlayerDelegate = new VideoPlayerDelegate(mConvoId);
-            mConvoDelegate.setOnModelLoadedListener(mVideoPlayerDelegate);
+            mVideoPlayerDelegateTwo = new VideoPlayerDelegateTwo(mConvoId, mConvoDelegate);
+            mVideoPlayerDelegateTwo.setAdapter(mAdapter);
+            mConvoDelegate.setOnModelLoadedListener(mVideoPlayerDelegateTwo);
             mHistoryDelegate = new ConvoHistoryDelegate(mConvoId, mConvoDelegate);
-            mHistoryDelegate.setOnHistoryVideoDownloadListener(mVideoPlayerDelegate);
+            mHistoryDelegate.setOnHistoryVideoDownloadListener(mVideoPlayerDelegateTwo);
         }
 
-        mVideoPlayerDelegate.onPreSuperAttach(this);
+        mVideoPlayerDelegateTwo.onPreSuperAttach(this);
         mConvoDelegate.onPreSuperAttach(this);
         mHistoryDelegate.onPreSuperAttach(this);
 
         super.onAttach(activity);
 
-        mVideoPlayerDelegate.onPostSuperAttach(this);
+        mVideoPlayerDelegateTwo.onPostSuperAttach(this);
         mConvoDelegate.onPostSuperAttach(this);
         mHistoryDelegate.onPostSuperAttach(this);
 
@@ -94,13 +103,13 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
 
     @Override
     public void onDetach() {
-        mVideoPlayerDelegate.onPreSuperDetach(this);
+        mVideoPlayerDelegateTwo.onPreSuperDetach(this);
         mConvoDelegate.onPreSuperDetach(this);
         mHistoryDelegate.onPreSuperDetach(this);
 
         super.onDetach();
 
-        mVideoPlayerDelegate.onPostSuperDetach(this);
+        mVideoPlayerDelegateTwo.onPostSuperDetach(this);
         mConvoDelegate.onPostSuperDetach(this);
         mHistoryDelegate.onPostSuperDetach(this);
 
@@ -131,7 +140,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
             mTaskQueue = new LinkedList<Task>();
         }
 
-        mVideoPlayerDelegate.init(savedInstanceState);
+        mVideoPlayerDelegateTwo.init(savedInstanceState);
         mConvoDelegate.init(savedInstanceState);
         mHistoryDelegate.init(savedInstanceState);
 
@@ -142,6 +151,15 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
         super.onDestroy();
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
+    private AdapterView.OnItemClickListener mClickListener = new AdapterView.OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // getView().findViewById(R.id.convo_include).setVisibility(View.VISIBLE);
+            mVideoPlayerDelegateTwo.play(position);
+        }
+    };
 
     /**
      * Add a task to the queue with an executer
@@ -165,8 +183,10 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.conversation_layout, container, false);
-        mVideoPlayerDelegate.onViewCreated(v);
+        View v = inflater.inflate(R.layout.convo_history_layout, container, false);
+        mConvoListView = (ListView) v.findViewById(R.id.lv_convo_history);
+        mConvoListView.setOnItemClickListener(mClickListener);
+        mConvoListView.setAdapter(mAdapter);
 
         return v;
     }
@@ -174,12 +194,12 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
-        mVideoPlayerDelegate.onPreSuperActivityCreated(savedInstanceState);
+        mVideoPlayerDelegateTwo.onPreSuperActivityCreated(savedInstanceState);
         mConvoDelegate.onPreSuperActivityCreated(savedInstanceState);
 
         super.onActivityCreated(savedInstanceState);
 
-        mVideoPlayerDelegate.onPostSuperActivityCreated(savedInstanceState);
+        mVideoPlayerDelegateTwo.onPostSuperActivityCreated(savedInstanceState);
         mConvoDelegate.onPostSuperActivityCreated(savedInstanceState);
 
     }
@@ -187,7 +207,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
     @Override
     public void onResume() {
 
-        mVideoPlayerDelegate.onPreSuperResume(this);
+        mVideoPlayerDelegateTwo.onPreSuperResume(this);
         mConvoDelegate.onPreSuperResume(this);
 
         super.onResume();
@@ -197,7 +217,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
             return;
         }
 
-        mVideoPlayerDelegate.onPostSuperResume(this);
+        mVideoPlayerDelegateTwo.onPostSuperResume(this);
         mConvoDelegate.onPostSuperResume(this);
     }
 
@@ -207,13 +227,13 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
             Log.d(TAG, "isRemoving = true");
         }
 
-        mVideoPlayerDelegate.onPreSuperPause(this);
+        mVideoPlayerDelegateTwo.onPreSuperPause(this);
         mConvoDelegate.onPreSuperPause(this);
         mHistoryDelegate.onPreSuperPause(this);
 
         super.onPause();
 
-        mVideoPlayerDelegate.onPostSuperPause(this);
+        mVideoPlayerDelegateTwo.onPostSuperPause(this);
         mConvoDelegate.onPostSuperPause(this);
         mHistoryDelegate.onPostSuperPause(this);
 
@@ -231,7 +251,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
             outState.putBundle(RECORDING_INFO_INSTANCE_STATE, mRecordingInfo);
         }
 
-        mVideoPlayerDelegate.onSaveInstanceState(outState);
+        mVideoPlayerDelegateTwo.onSaveInstanceState(outState);
         mConvoDelegate.onSaveInstanceState(outState);
         mHistoryDelegate.onSaveInstanceState(outState);
 
@@ -263,6 +283,10 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
 
     public LinkedList<Task> getTaskQueue() {
         return mTaskQueue;
+    }
+
+    public VideoPlayerDelegateTwo getVideoDelegate() {
+        return mVideoPlayerDelegateTwo;
     }
 
     // public void addHistoryVideo(VideoModel video) {
@@ -311,19 +335,6 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
 
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);
-    }
-
-    /**
-     * A class used to differentiate a video download and a history video download
-     * @author sajjad
-     *
-     */
-    public static class HistoryVideoDownloadTask extends VideoDownloadTask {
-
-        public HistoryVideoDownloadTask(VideoModel model) {
-            super(model);
-        }
-
     }
 
     public static class ConvoHistoryAdapter extends ArrayAdapter<VideoModel> {

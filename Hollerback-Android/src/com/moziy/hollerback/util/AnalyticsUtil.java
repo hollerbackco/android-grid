@@ -75,6 +75,7 @@ public class AnalyticsUtil {
         public static final String WELCOME = "Welcome";
         public static final String SEARCH_FOR_USERNAME = "Search Username";
         public static final String CONVO_HISTORY = "Conversation History";
+        public static final String VIDEO_VIEW = "Video View";
     }
 
     public interface Fields {

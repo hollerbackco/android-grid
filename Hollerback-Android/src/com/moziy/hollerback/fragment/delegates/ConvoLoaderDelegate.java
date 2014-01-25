@@ -18,7 +18,7 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.AbsFragmentLifecylce;
-import com.moziy.hollerback.fragment.ConversationFragment;
+import com.moziy.hollerback.fragment.ConvoHistoryTwo;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.helper.VideoHelper;
 import com.moziy.hollerback.service.task.AbsTask;
@@ -32,7 +32,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     public static final String VIDEO_DL_LIST_INSTANCE_STATE = "VIDEO_DL_LIST_INSTANCE_STATE";
     private ArrayList<VideoModel> mUnwatchedVideos; // contains all new videos (ONLY NEW VIDEOS - NO HISTORY)
     private Map<String, VideoModel> mConvoVideoMap; // contains all new videos plus any video that was requested to be downloaded (NEW + HISTORY)
-    private ConversationFragment mConvoFragment;
+    private ConvoHistoryTwo mConvoFragment;
     private OnVideoModelLoaded mOnModelLoadedListener;
     private BgDownloadReceiver mReceiver;
     private ArrayList<String> mWaitingDownloadList;
@@ -49,7 +49,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
     @Override
     public void onPreSuperAttach(Fragment fragment) {
-        mConvoFragment = (ConversationFragment) fragment;
+        mConvoFragment = (ConvoHistoryTwo) fragment;
     }
 
     @Override

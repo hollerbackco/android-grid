@@ -2,7 +2,6 @@ package com.moziy.hollerback.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 public class SquareImageView extends ImageView {
@@ -25,8 +24,6 @@ public class SquareImageView extends ImageView {
 
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-
-        Log.d(TAG, width + "x" + height);
 
         height = width;
 
