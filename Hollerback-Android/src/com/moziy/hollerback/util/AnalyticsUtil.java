@@ -72,6 +72,7 @@ public class AnalyticsUtil {
         public static final String SIGN_UP_USER = "Sign Up Email/Password";
         public static final String SIGN_UP_PHONE = "Sign Up Username/Phone";
         public static final String START_CONVO = "Start Conversation";
+        public static final String CONVO = "Conversation View";
         public static final String WELCOME = "Welcome";
         public static final String SEARCH_FOR_USERNAME = "Search Username";
     }

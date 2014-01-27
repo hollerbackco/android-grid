@@ -23,6 +23,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Filter.FilterListener;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -211,15 +212,23 @@ public class FriendsFragment extends AbsContactListFragment implements ActionMod
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(final String newText) {
 
                 if (mStickyListView != null) {
-                    if (newText.length() > 0) {
-                        mStickyListView.disableStickyHeader();
-                    } else {
-                        mStickyListView.enableStickyHeader();
-                    }
-                    mAdapter.getFilter().filter(newText);
+
+                    mAdapter.getFilter().filter(newText, new FilterListener() {
+
+                        @Override
+                        public void onFilterComplete(int count) {
+                            if (newText.length() > 0) {
+                                mStickyListView.disableStickyHeader();
+                            } else {
+                                mStickyListView.enableStickyHeader();
+                            }
+
+                        }
+                    });
+
                 }
                 return true;
             }
