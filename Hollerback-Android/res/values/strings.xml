@@ -178,4 +178,7 @@
     <string name="contacts_book_empty">Your contacts book may be empty.</string>
     <string name="invite">Invite</string>
 
+    <!-- Convo History II -->
+    <string name="no_member_info">Members: ...?</string>
+
 </resources>

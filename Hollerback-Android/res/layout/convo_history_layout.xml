@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:orientation="vertical" >
+
+    <com.moziy.hollerback.widget.CustomTextView
+        android:id="@+id/tv_members"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="@dimen/dim_80dp"
+        android:padding="@dimen/dim_10dp"
+        android:text="@string/no_member_info"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:borderColor="@android:color/black"
+        app:borderWidth="@dimen/dim_1dp" />
 
     <ListView
         android:id="@+id/lv_convo_history"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/tv_members"
         android:fastScrollEnabled="true"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll" >
     </ListView>
 
-</FrameLayout>
+</RelativeLayout>

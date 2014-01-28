@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
@@ -30,10 +31,13 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.HBRequestManager;
+import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate;
@@ -41,8 +45,13 @@ import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate;
 import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegateTwo;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
+import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.Friend;
 import com.moziy.hollerback.model.VideoModel;
+import com.moziy.hollerback.model.web.Envelope;
+import com.moziy.hollerback.model.web.Envelope.Metadata;
+import com.moziy.hollerback.service.task.AbsTask;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.AnalyticsUtil;
@@ -52,7 +61,7 @@ import com.squareup.picasso.Picasso;
 
 public class ConvoHistoryTwo extends BaseFragment implements TaskClient, RecordingInfo {
 
-    private static final String TAG = ConversationFragment.class.getSimpleName();
+    private static final String TAG = ConvoHistoryTwo.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
     public static final String CONVO_ID_BUNDLE_ARG_KEY = "CONVO_ID";
     public static final String CONVO_TITLE_BUNDLE_ARG_KEY = "CONVO_TITLE";
@@ -84,6 +93,11 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     private ConvoHistoryAdapter mAdapter;
     private ListView mConvoListView;
+    private TextView mMembersTv;
+    private String mMembersMessage;
+
+    private List<Contact> mMembers;
+    private static final String MEMBERS_WORKER = "MEMBERS_WORKER";
 
     @Override
     public void onAttach(Activity activity) {
@@ -100,6 +114,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             mConvoDelegate.setOnModelLoadedListener(mVideoPlayerDelegateTwo);
             mHistoryDelegate = new ConvoHistoryDelegate(mConvoId, mConvoDelegate);
             mHistoryDelegate.setOnHistoryVideoDownloadListener(mVideoPlayerDelegateTwo);
+
         }
 
         mVideoPlayerDelegateTwo.onPreSuperAttach(this);
@@ -130,15 +145,17 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.convo_history_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.convo_history_menu, menu);
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.mi_about) {
-            Toast.makeText(HollerbackApplication.getInstance(), "members..", Toast.LENGTH_LONG).show();
+            mMembersTv.setVisibility((mMembersTv.getVisibility() == View.GONE ? View.VISIBLE : View.GONE));
+
             return true;
         }
 
@@ -148,6 +165,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActivity().getActionBar().show();
         setHasOptionsMenu(true);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
@@ -171,6 +189,8 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         if (mTaskQueue == null) {
             mTaskQueue = new LinkedList<Task>();
         }
+
+        addTaskToQueue(new GetMembersTask(mConvoId), MEMBERS_WORKER);
 
         mVideoPlayerDelegateTwo.init(savedInstanceState);
         mConvoDelegate.init(savedInstanceState);
@@ -220,6 +240,8 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         mConvoListView.setOnItemClickListener(mClickListener);
         mConvoListView.setAdapter(mAdapter);
 
+        mMembersTv = (TextView) v.findViewById(R.id.tv_members);
+
         return v;
     }
 
@@ -257,6 +279,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     public void onPause() {
         if (isRemoving()) {
             Log.d(TAG, "isRemoving = true");
+
         }
 
         mVideoPlayerDelegateTwo.onPreSuperPause(this);
@@ -295,6 +318,27 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     public void onTaskComplete(Task t) {
         mConvoDelegate.onTaskComplete(t);
         mHistoryDelegate.onTaskComplete(t);
+
+        if (t instanceof GetMembersTask) {
+
+            mMembers = ((GetMembersTask) t).getMembers();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Members: ");
+            for (Contact c : mMembers) {
+                sb.append(c.mName).append(", ");
+            }
+
+            sb.delete(sb.length() - 2, sb.length());
+            mMembersTv.setText(sb.toString());
+
+            if (isResumed()) {
+                Fragment worker = getFragmentManager().findFragmentByTag(MEMBERS_WORKER);
+                if (worker != null)
+                    getFragmentManager().beginTransaction().remove(worker).commit();
+            }
+
+        }
 
     }
 
@@ -377,6 +421,59 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     protected String getActionBarTitle() {
         return mConvoTitle;
+    }
+
+    public static class GetMembersTask extends AbsTask {
+
+        private long mConvoId;
+        boolean isDone = false;
+
+        private List<Contact> mMembers;
+
+        public GetMembersTask(long convoId) {
+            mConvoId = convoId;
+        }
+
+        public List<Contact> getMembers() {
+            return mMembers;
+        }
+
+        @Override
+        public void run() {
+
+            HBRequestManager.getMembers(mConvoId, new HBSyncHttpResponseHandler<Envelope<ArrayList<Friend>>>(new TypeReference<Envelope<ArrayList<Friend>>>() {
+            }) {
+
+                @Override
+                public void onResponseSuccess(int statusCode, Envelope<ArrayList<Friend>> response) {
+
+                    mMembers = Contact.getContactsFor(response.data);
+                    mIsSuccess = true;
+                }
+
+                @Override
+                public void onApiFailure(Metadata metaData) {
+                    mIsSuccess = false;
+                }
+
+                @Override
+                public void onPostResponse() {
+                    mIsFinished = true;
+                    isDone = true;
+                }
+            });
+
+            while (!isDone) {
+                Log.d(TAG, "not done");
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        }
     }
 
     public static class ConvoHistoryAdapter extends ArrayAdapter<VideoModel> {

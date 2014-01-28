@@ -1,8 +1,11 @@
 package com.moziy.hollerback.fragment;
 
 import android.os.Bundle;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout.LayoutParams;
@@ -18,11 +21,31 @@ public class VideoPlaybackFragment extends BaseFragment {
     public static final String PLAYBACK_INDEX_BUNDLE_ARG_KEY = "PLAYBACK_INDEX";
     private VideoView mVideoView;
 
+    private GestureDetector mGestureDetector;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mGestureDetector = new GestureDetector(getActivity(), mGestureListener);
         getActivity().getActionBar().hide();
     }
+
+    private SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
+
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            if (isResumed()) {
+                getFragmentManager().popBackStack();
+                return true;
+            }
+            return false;
+        }
+
+        public boolean onDown(MotionEvent e) {
+            return true;
+        };
+
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -30,6 +53,15 @@ public class VideoPlaybackFragment extends BaseFragment {
         mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
         LayoutParams params = new LayoutParams(AppEnvironment.OPTIMAL_VIDEO_SIZE.x, AppEnvironment.OPTIMAL_VIDEO_SIZE.y, Gravity.CENTER);
         mVideoView.setLayoutParams(params);
+        mVideoView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                return mGestureDetector.onTouchEvent(event);
+            }
+        });
+
         return v;
     }
 
