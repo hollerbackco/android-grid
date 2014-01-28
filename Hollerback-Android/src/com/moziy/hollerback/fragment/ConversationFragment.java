@@ -29,6 +29,7 @@ import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegate;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.VideoDownloadTask;
