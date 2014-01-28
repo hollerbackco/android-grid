@@ -18,6 +18,11 @@ public class HollerbackAPI {
     public static final String API_CONVERSATION_DETAILS = "/me/conversations/%1$s";
 
     /**
+     * GET Conversation Members
+     */
+    public static final String API_CONVERSATION_MEMBERS = "/me/conversations/%1$s/members";
+
+    /**
      * GET sync details: /me/sync
      */
     public static final String API_SYNC = "/me/sync";

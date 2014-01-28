@@ -300,4 +300,11 @@ public class HBRequestManager {
         HollerbackAsyncClient.getInstance().post(HollerbackAPI.API_FIND_FRIEND, params, handler);
 
     }
+
+    public static void getMembers(long convoId, AsyncHttpResponseHandler handler) {
+        RequestParams params = new RequestParams();
+        params.put(HollerbackAPI.PARAM_ACCESS_TOKEN, HollerbackAppState.getValidToken());
+
+        HollerbackAsyncClient.getInstance().get(String.format(HollerbackAPI.API_CONVERSATION_MEMBERS, convoId), params, handler);
+    }
 }
