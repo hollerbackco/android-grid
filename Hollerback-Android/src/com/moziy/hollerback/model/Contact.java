@@ -110,7 +110,7 @@ public class Contact implements Serializable {
 
     @Override
     public String toString() {
-        return "Contact [mName=" + mName + ", mPhoneLabel=" + mPhoneLabel + "]";
+        return "Contact [mName=" + mName + ", mIsOnHollerback=" + mIsOnHollerback + ", mUsername=" + mUsername + ", mPhones=" + mPhones + "]";
     }
 
     /**

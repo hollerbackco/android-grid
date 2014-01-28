@@ -324,6 +324,12 @@ public class ContactsFragment extends BaseFragment {
         }
 
         @Override
+        public int getCount() {
+
+            return super.getCount();
+        }
+
+        @Override
         public int getItemViewType(int position) {
             return getItem(position).getItemViewType();
         }

@@ -81,39 +81,61 @@ public class GetHBContactsTask extends AbsTask {
 
         }
 
-        // now that we have the hash, lets get the contacts
-        HBRequestManager.getContacts(contacts, new HBSyncHttpResponseHandler<Envelope<ArrayList<UserModel>>>(new TypeReference<Envelope<ArrayList<UserModel>>>() {
-        }) {
+        mHollerbackFriends = Collections.synchronizedList(new ArrayList<Contact>());
 
-            @Override
-            public void onResponseSuccess(int statusCode, Envelope<ArrayList<UserModel>> response) {
-                if (response.data != null) {
-                    mHollerbackFriends = new ArrayList<Contact>();
-                    for (UserModel u : response.data) {
-                        Contact hbFriend = mContactMap.get(u.phone_hashed);
-                        hbFriend.mIsOnHollerback = true; // mark the contact as an hb friend
-                        hbFriend.mUsername = u.username;
-                        mHollerbackFriends.add(hbFriend);
+        int numChunks = (int) Math.ceil((double) contacts.size() / (double) 100);
+        final boolean[] httpDoneFlags = new boolean[numChunks];
+        Log.d(TAG, "num chunks: " + numChunks + " contacts Size: " + contacts.size());
+        for (int i = 0; i < numChunks; i++) {
+
+            final int myId = i;
+            int length;
+
+            if (i * 100 + 100 < contacts.size()) {
+                length = i * 100 + 100;
+            } else {
+                length = (i * 100) + contacts.size() - i * 100;
+            }
+            Log.d(TAG, "index: " + i * 100 + " length: " + length);
+            ArrayList<Map<String, String>> subList = new ArrayList<Map<String, String>>(contacts.subList(i * 100, length));
+
+            // now that we have the hash, lets get the contacts
+            HBRequestManager.getContacts(subList, new HBSyncHttpResponseHandler<Envelope<ArrayList<UserModel>>>(new TypeReference<Envelope<ArrayList<UserModel>>>() {
+            }) {
+
+                @Override
+                public void onResponseSuccess(int statusCode, Envelope<ArrayList<UserModel>> response) {
+                    if (response.data != null) {
+                        for (UserModel u : response.data) {
+                            Contact hbFriend = mContactMap.get(u.phone_hashed);
+                            hbFriend.mIsOnHollerback = true; // mark the contact as an hb friend
+                            hbFriend.mUsername = u.username;
+                            mHollerbackFriends.add(hbFriend);
+                        }
+
+                        // Collections.sort(mHollerbackFriends, Contact.COMPARATOR); // sort the results in alphabetical based on name
+
                     }
 
-                    Collections.sort(mHollerbackFriends, Contact.COMPARATOR); // sort the results in alphabetical based on name
-
+                    mIsSuccess = true;
                 }
 
-                mHttpDone = true;
-                mIsSuccess = true;
-            }
+                @Override
+                public void onApiFailure(Metadata metaData) {
+                    Log.d(TAG, "failure");
+                    mIsSuccess = false;
+                }
 
-            @Override
-            public void onApiFailure(Metadata metaData) {
-                Log.d(TAG, "failure");
-                mHttpDone = true;
-                mIsSuccess = false;
-            }
+                @Override
+                public void onPostResponse() {
+                    httpDoneFlags[myId] = true;
+                }
 
-        });
+            });
 
-        while (!mHttpDone) {
+        }
+
+        while (!isHttpDone(httpDoneFlags)) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
@@ -121,8 +143,19 @@ public class GetHBContactsTask extends AbsTask {
             }
         }
 
+        Collections.sort(mHollerbackFriends, Contact.COMPARATOR);
+
         mIsFinished = true;
 
+    }
+
+    private boolean isHttpDone(boolean[] flags) {
+        for (int i = 0; i < flags.length; i++) {
+            if (flags[i] == false)
+                return false;
+        }
+
+        return true;
     }
 
     public List<Contact> getHBContacts() {

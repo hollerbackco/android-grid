@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.Filter.FilterListener;
 import android.widget.SearchView;
 
 import com.actionbarsherlock.view.Menu;
@@ -63,32 +64,37 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
         //
         // @Override
         // public void onFocusChange(View v, boolean hasFocus) {
-        // if (!hasFocus) {
         // mSearchView.setQuery("", false);
-        // item.collapseActionView();
-        // }
-        //
         // }
         // });
+
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-
+                Log.d(TAG, "submitting query");
                 mSearchView.setQuery("", false);
                 return true;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-
+            public boolean onQueryTextChange(final String newText) {
+                Log.d(TAG, "has focus: " + mSearchView.hasFocus());
                 if (mStickyListView != null) {
-                    if (newText.length() > 0) {
-                        mStickyListView.disableStickyHeader();
-                    } else {
-                        mStickyListView.enableStickyHeader();
-                    }
-                    mAdapter.getFilter().filter(newText);
+
+                    mAdapter.getFilter().filter(newText, new FilterListener() {
+
+                        @Override
+                        public void onFilterComplete(int count) {
+                            if (newText.length() > 0) {
+                                mStickyListView.disableStickyHeader();
+                            } else {
+                                mStickyListView.enableStickyHeader();
+                            }
+
+                        }
+                    });
+
                 }
                 return true;
             }
@@ -98,12 +104,7 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
 
     @Override
     public void onPause() {
-        if (mSearchView != null) {
-            mSearchView.setQuery("", false);
-        }
         super.onPause();
-
-        // lets sync with the server
 
     }
 
@@ -163,9 +164,10 @@ public class ContactsChildFragment extends AbsContactListFragment implements Con
                         Log.d(TAG, "still selected: " + sel.toString());
                     }
 
-                    mTransaction.removeFromFriends(c);
                     if (!c.mIsOnHollerback) {
                         mContactsInterface.getInviteList().remove(c);
+                    } else {
+                        mTransaction.removeFromFriends(c);
                     }
                 }
             }

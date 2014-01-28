@@ -32,8 +32,8 @@ public class HollerbackAsyncClient {
             sInstance = new HollerbackAsyncClient();
             setHeaders();
 
-            client.setTimeout(10000);
-            client.setMaxRetriesAndTimeout(3, 10000);
+            client.setTimeout(15000);
+            client.setMaxRetriesAndTimeout(3, 15000);
             if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_DEVELOPMENT && HollerbackApplication.getInstance().getResources().getBoolean(R.bool.ENABLE_PROXY)) {
                 Application app = HollerbackApplication.getInstance();
                 String url = app.getResources().getString(R.string.PROXY_URL);

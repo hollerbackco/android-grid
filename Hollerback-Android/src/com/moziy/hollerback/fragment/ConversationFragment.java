@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -32,9 +31,11 @@ import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.service.task.VideoDownloadTask;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 
-public class ConversationFragment extends SherlockFragment implements TaskClient, RecordingInfo {
+public class ConversationFragment extends BaseFragment implements TaskClient, RecordingInfo {
 
     private static final String TAG = ConversationFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
@@ -306,6 +307,24 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);
+    }
+
+    /**
+     * A class used to differentiate a video download and a history video download
+     * @author sajjad
+     *
+     */
+    public static class HistoryVideoDownloadTask extends VideoDownloadTask {
+
+        public HistoryVideoDownloadTask(VideoModel model) {
+            super(model);
+        }
+
+    }
+
+    @Override
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.CONVO;
     }
 
 }

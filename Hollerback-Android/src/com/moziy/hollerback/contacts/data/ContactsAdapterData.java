@@ -14,7 +14,7 @@ import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
 
 public class ContactsAdapterData extends ArrayAdapter<Item> implements HeaderIndexer {
-
+    private static final String TAG = ContactsAdapterData.class.getSimpleName();
     private AbsItemManager mItemManager;
 
     public ContactsAdapterData(Context context) {
@@ -42,6 +42,11 @@ public class ContactsAdapterData extends ArrayAdapter<Item> implements HeaderInd
     @Override
     public int getViewTypeCount() {
         return mItemManager.getItemTypeCount();
+    }
+
+    @Override
+    public int getCount() {
+        return super.getCount();
     }
 
     @Override
