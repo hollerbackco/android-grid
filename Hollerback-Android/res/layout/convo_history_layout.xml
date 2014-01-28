@@ -22,10 +22,21 @@
         android:id="@+id/lv_convo_history"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/bt_reply"
         android:layout_below="@+id/tv_members"
-        android:fastScrollEnabled="true"
         android:stackFromBottom="true"
         android:transcriptMode="normal" >
     </ListView>
+
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_reply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/bg_blue"
+        android:minHeight="@dimen/dim_60dp"
+        android:text="@string/action_reply"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
 
 </RelativeLayout>

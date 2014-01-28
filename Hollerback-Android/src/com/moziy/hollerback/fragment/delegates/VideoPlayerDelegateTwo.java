@@ -474,7 +474,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     private void checkPlayerStatus() {
         if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
-            mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
+            if (mHasNewVideo)
+                mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
             Log.d(TAG, "all local and remote history has been loaded");
             if (mPlaybackQueue.isEmpty()) {
                 Log.w(TAG, "there's nothing in the playback queue");
@@ -646,7 +647,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     }
 
-    private void beginRecording() {
+    public void beginRecording() {
         if (mConvoFragment.isResumed()) {
 
             // remove the playback fragment

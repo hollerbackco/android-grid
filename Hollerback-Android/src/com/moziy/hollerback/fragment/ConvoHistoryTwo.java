@@ -243,6 +243,14 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
         mMembersTv = (TextView) v.findViewById(R.id.tv_members);
 
+        v.findViewById(R.id.bt_reply).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mVideoPlayerDelegateTwo.beginRecording();
+            }
+        });
+
         return v;
     }
 
@@ -498,12 +506,19 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
                 holder.mDateTextView = (TextView) convertView.findViewById(R.id.tv_date);
                 holder.mName = (TextView) convertView.findViewById(R.id.tv_name);
                 holder.mNewIndicator = (FrameLayout) convertView.findViewById(R.id.fl_new_indicator);
+                // holder.mFilmStrip = (ImageView) convertView.findViewById(R.id.iv_film_strip);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
             VideoModel v = getItem(position);
+
+            // if (position % 2 == 0) {
+            // holder.mFilmStrip.setRotation(0.0f);
+            // } else {
+            // holder.mFilmStrip.setRotation(180f);
+            // }
 
             if (!v.isRead()) {
                 holder.mNewIndicator.setVisibility(View.VISIBLE);

@@ -26,6 +26,7 @@
     <string name="action_verify">Verify</string>
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
+    <string name="action_reply">Reply</string>
     <string name="action_uploading">Uploading</string>
     <string name="action_about">About</string>
     <string name="action_submit">Submit</string>

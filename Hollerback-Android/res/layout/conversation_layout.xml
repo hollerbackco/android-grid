@@ -4,6 +4,7 @@
     android:layout_height="fill_parent"
     android:layout_gravity="center"
     android:layout_weight="1"
+    android:animateLayoutChanges="true"
     android:background="@color/background_header"
     android:clipChildren="false"
     android:orientation="vertical" >
