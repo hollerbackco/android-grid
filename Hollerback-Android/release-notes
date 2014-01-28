@@ -1,0 +1,5 @@
+Version 0.1.2c
+- Fixed crash when searching for contacts
+- Chunk contacts to batches of 100
+- Made the conversation fragment a child of basefragment
+- added missing screen tracking to conversation fragment
