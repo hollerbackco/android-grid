@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -165,7 +166,6 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().getActionBar().show();
         setHasOptionsMenu(true);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
@@ -235,6 +235,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "oncreateView");
         View v = inflater.inflate(R.layout.convo_history_layout, container, false);
         mConvoListView = (ListView) v.findViewById(R.id.lv_convo_history);
         mConvoListView.setOnItemClickListener(mClickListener);
@@ -247,7 +248,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-
+        Log.d(TAG, "onactivitycreated");
         mVideoPlayerDelegateTwo.onPreSuperActivityCreated(savedInstanceState);
         mConvoDelegate.onPreSuperActivityCreated(savedInstanceState);
 
@@ -260,7 +261,6 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     @Override
     public void onResume() {
-
         mVideoPlayerDelegateTwo.onPreSuperResume(this);
         mConvoDelegate.onPreSuperResume(this);
 
@@ -297,7 +297,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putLong(CONVO_ID_INSTANCE_STATE, mConvoId);
-
+        Log.d(TAG, "onsave");
         if (mTaskQueue != null) {
             outState.putSerializable(TASK_QUEUE_INSTANCE_STATE, new ArrayList<Task>(mTaskQueue));
         }
@@ -363,6 +363,10 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     public VideoPlayerDelegateTwo getVideoDelegate() {
         return mVideoPlayerDelegateTwo;
+    }
+
+    public ListView getConvoListView() {
+        return mConvoListView;
     }
 
     // public void addHistoryVideo(VideoModel video) {
@@ -464,7 +468,6 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             });
 
             while (!isDone) {
-                Log.d(TAG, "not done");
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -494,12 +497,19 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
                 holder.mSquareImageView = (ImageView) convertView.findViewById(R.id.iv_square);
                 holder.mDateTextView = (TextView) convertView.findViewById(R.id.tv_date);
                 holder.mName = (TextView) convertView.findViewById(R.id.tv_name);
+                holder.mNewIndicator = (FrameLayout) convertView.findViewById(R.id.fl_new_indicator);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
             VideoModel v = getItem(position);
+
+            if (!v.isRead()) {
+                holder.mNewIndicator.setVisibility(View.VISIBLE);
+            } else {
+                holder.mNewIndicator.setVisibility(View.GONE);
+            }
 
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
             try {
@@ -524,6 +534,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             public ImageView mSquareImageView;
             public TextView mDateTextView;
             public TextView mName;
+            public FrameLayout mNewIndicator;
         }
 
     }

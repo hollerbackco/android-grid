@@ -12,6 +12,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 
@@ -28,7 +29,7 @@ public class VideoPlaybackFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         mGestureDetector = new GestureDetector(getActivity(), mGestureListener);
-        getActivity().getActionBar().hide();
+        getSherlockActivity().getSupportActionBar().hide();
     }
 
     private SimpleOnGestureListener mGestureListener = new SimpleOnGestureListener() {
@@ -66,16 +67,21 @@ public class VideoPlaybackFragment extends BaseFragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         ((ConvoHistoryTwo) getTargetFragment()).getVideoDelegate().onVideoViewReady(getView());
 
+    }
+
+    @Override
+    public void onPause() {
+
+        if (isRemoving()) {
+            mActivity.getSupportActionBar().show();
+            ((HollerbackMainActivity) mActivity).getCustomActionBarTitle().setText(((BaseFragment) getTargetFragment()).getActionBarTitle());
+        }
+
+        super.onPause();
     }
 
     @Override

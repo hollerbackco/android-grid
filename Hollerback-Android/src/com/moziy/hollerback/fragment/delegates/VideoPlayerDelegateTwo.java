@@ -68,6 +68,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private ImageButton mSkipBackwardBtn;
     private boolean mHasHistoryVideo = false;
     private boolean mHasNewVideo = false;
+    private int mNewVideoIndex = 0;
 
     private ConvoHistoryTwo mConvoFragment;
     private ConversationModel mConversation;
@@ -159,13 +160,16 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         }
     }
 
+    /**
+     * Called when the videoview is created and ready
+     * @param parentView
+     */
     public void onViewCreated(final View parentView) {
         mVideoView = (VideoView) parentView.findViewById(R.id.vv_preview);
         mVideoView.setLayoutParams(getVideoViewLayoutParams());
 
         mProgress = (ProgressBar) parentView.findViewById(R.id.progress);
         mProgress.setVisibility(View.VISIBLE);
-        Log.d(TAG, "onCreateView");
 
         mSkipBackwardBtn = (ImageButton) parentView.findViewById(R.id.ib_skip_backward);
         // mSkipBackwardBt.setVisibility(View.GONE);
@@ -289,8 +293,13 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             checkPlayerStatus();
             return;
         }
+
+        int index = mPlaybackQueue.size();
+
         mPlaybackQueue.addAll(videos);
         mAdapter.addAll(videos);
+
+        mNewVideoIndex = index;
 
         // don't auto play
 
@@ -439,6 +448,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mAdapter.sort(mVideoSorter);
         mHistoryFlag.add(VIDEO_MODEL_ENUM.LOCAL_HISTORY_LOADED);
         checkPlayerStatus();
+        mNewVideoIndex += videos.size();
     }
 
     @Override
@@ -447,6 +457,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mAdapter.sort(mVideoSorter);
         mHistoryFlag.add(VIDEO_MODEL_ENUM.REMOTE_HISTORY_LOADED);
         checkPlayerStatus();
+        mNewVideoIndex += videos.size();
     }
 
     @Override
@@ -463,6 +474,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     private void checkPlayerStatus() {
         if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
+            mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
             Log.d(TAG, "all local and remote history has been loaded");
             if (mPlaybackQueue.isEmpty()) {
                 Log.w(TAG, "there's nothing in the playback queue");
@@ -589,6 +601,10 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         }
 
         if (mPlaybackIndex < mPlaybackQueue.size()) {
+
+            // scroll to the next position
+            mConvoFragment.getConvoListView().setSelection(mPlaybackIndex);
+            Log.d(TAG, "smooth scroll: " + mPlaybackIndex);
 
             Log.d(TAG, "playback after completion and queue is not empty");
             video = mPlaybackQueue.get(mPlaybackIndex);
