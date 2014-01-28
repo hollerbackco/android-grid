@@ -256,7 +256,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
         VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
         mInPlayback = true;
-        if (v.getState().equals(VideoModel.ResourceState.ON_DISK)) {
+        Log.d(TAG, v.toString());
+        if (v.getState().equals(VideoModel.ResourceState.ON_DISK) || v.isSegmented()) {
             playVideo(v);
         } else {
             download(mPlaybackIndex, 3);
@@ -631,6 +632,10 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     private void beginRecording() {
         if (mConvoFragment.isResumed()) {
+
+            // remove the playback fragment
+            mConvoFragment.getFragmentManager().beginTransaction().remove(mPlaybackFrament).commit();
+
             mStartedRecording = true;
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");

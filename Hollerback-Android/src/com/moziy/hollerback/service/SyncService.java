@@ -273,6 +273,7 @@ public class SyncService extends IntentService implements RecoveryClient {
                     // update the file and thumb
                     existingVideo.setFileUrl(newVideo.getFileUrl());
                     existingVideo.setThumbUrl(newVideo.getThumbUrl());
+                    existingVideo.setSenderName(newVideo.getSenderName());
                     existingVideo.save();
 
                     newVideoMap.remove(existingVideo.getGuid());
@@ -342,7 +343,7 @@ public class SyncService extends IntentService implements RecoveryClient {
                             String recentThumbUri = existingConversation.getMostRecentThumbUrl();
                             deleteLocalThumb(recentThumbUri);
 
-                            //delete the convo
+                            // delete the convo
                             existingConversation.delete(); // delete it so that it gets updated
 
                         }

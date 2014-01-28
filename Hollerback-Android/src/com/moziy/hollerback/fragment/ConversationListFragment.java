@@ -239,7 +239,8 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             // if (conversation.getUnreadCount() > 0) {
             if (true) {
 
-                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, ConvoHistoryTwo.newInstance(conversation.getConversationId())).addToBackStack(FRAGMENT_TAG).commit();
+                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, ConvoHistoryTwo.newInstance(conversation.getConversationId(), conversation.getConversationName()))
+                        .addToBackStack(FRAGMENT_TAG).commit();
 
                 return;
                 // Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());

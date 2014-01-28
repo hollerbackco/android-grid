@@ -43,6 +43,7 @@ public class VideoPlaybackFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         ((ConvoHistoryTwo) getTargetFragment()).getVideoDelegate().onVideoViewReady(getView());
+
     }
 
     @Override

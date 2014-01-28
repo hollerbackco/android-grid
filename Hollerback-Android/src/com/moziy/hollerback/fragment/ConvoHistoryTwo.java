@@ -1,14 +1,19 @@
 package com.moziy.hollerback.fragment;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +26,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Update;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
@@ -38,22 +45,27 @@ import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
+import com.moziy.hollerback.util.AnalyticsUtil;
+import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.squareup.picasso.Picasso;
 
-public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, RecordingInfo {
+public class ConvoHistoryTwo extends BaseFragment implements TaskClient, RecordingInfo {
 
     private static final String TAG = ConversationFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
     public static final String CONVO_ID_BUNDLE_ARG_KEY = "CONVO_ID";
+    public static final String CONVO_TITLE_BUNDLE_ARG_KEY = "CONVO_TITLE";
+    public static final String CONVO_MODEL_BUNDLE_ARG_KEY = "CONVO_MODEL";
     public static final String CONVO_ID_INSTANCE_STATE = "CONVO_ID_INSTANCE_STATE";
     public static final String TASK_QUEUE_INSTANCE_STATE = "TASK_QUEUE_INSTANCE_STATE";
     public static final String RECORDING_INFO_INSTANCE_STATE = "RECORDING_INFO_INSTANCE_STATE";
 
-    public static ConvoHistoryTwo newInstance(long conversationId) {
+    public static ConvoHistoryTwo newInstance(long conversationId, String title) {
         ConvoHistoryTwo c = new ConvoHistoryTwo();
         Bundle args = new Bundle();
         args.putLong(CONVO_ID_BUNDLE_ARG_KEY, conversationId);
+        args.putString(CONVO_TITLE_BUNDLE_ARG_KEY, title);
         c.setArguments(args);
         return c;
     }
@@ -61,6 +73,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
     public static final int HISTORY_LIMIT = -1; // fetch all the history
 
     private long mConvoId;
+    private String mConvoTitle;
     private LinkedList<Task> mTaskQueue; // queue of tasks such as fetching the model and fetching the videos
     private Bundle mRecordingInfo;
     private boolean mHasNew;
@@ -116,10 +129,29 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.convo_history_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.mi_about) {
+            Toast.makeText(HollerbackApplication.getInstance(), "members..", Toast.LENGTH_LONG).show();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
+        mConvoTitle = getArguments().getString(CONVO_TITLE_BUNDLE_ARG_KEY);
 
         // mPlaybackIndex = -1;
 
@@ -337,8 +369,18 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
         // new TaskExecuter().executeTask(t);
     }
 
-    public static class ConvoHistoryAdapter extends ArrayAdapter<VideoModel> {
+    @Override
+    protected String getScreenName() {
+        return AnalyticsUtil.ScreenNames.CONVO_HISTORY;
+    }
 
+    @Override
+    protected String getActionBarTitle() {
+        return mConvoTitle;
+    }
+
+    public static class ConvoHistoryAdapter extends ArrayAdapter<VideoModel> {
+        private LruCache<String, Bitmap> mFileCache = new LruCache<String, Bitmap>(10); // up to 10 new videos
         private LayoutInflater mInflater;
 
         public ConvoHistoryAdapter(Context context, int resource, int textViewResourceId) {
@@ -354,14 +396,29 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
                 holder = new ViewHolder();
                 holder.mSquareImageView = (ImageView) convertView.findViewById(R.id.iv_square);
                 holder.mDateTextView = (TextView) convertView.findViewById(R.id.tv_date);
+                holder.mName = (TextView) convertView.findViewById(R.id.tv_name);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
             VideoModel v = getItem(position);
-            holder.mDateTextView.setText(v.getCreateDate());
-            Picasso.with(getContext()).load(v.getThumbUrl()).into(holder.mSquareImageView);
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZ", Locale.US);
+            try {
+                Date date = df.parse(v.getCreateDate());
+                holder.mDateTextView.setText(ConversionUtil.timeAgo(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            holder.mName.setText(v.getSenderName());
+
+            if (v.getThumbUrl() == null) {
+                Log.d(TAG, "fill in");
+            } else {
+                Picasso.with(getContext()).load(v.getThumbUrl()).into(holder.mSquareImageView);
+            }
 
             return convertView;
         }
@@ -369,6 +426,7 @@ public class ConvoHistoryTwo extends SherlockFragment implements TaskClient, Rec
         private class ViewHolder {
             public ImageView mSquareImageView;
             public TextView mDateTextView;
+            public TextView mName;
         }
 
     }
