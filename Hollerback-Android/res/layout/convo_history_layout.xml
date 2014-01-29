@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:orientation="vertical" >
+    android:background="@color/background_header"
+    android:orientation="vertical"
+    android:paddingTop="?android:attr/actionBarSize" >
 
     <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/tv_members"

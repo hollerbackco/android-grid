@@ -73,7 +73,6 @@ public class VideoUploadIntentService extends IntentService {
             } else { // a conversation exists
 
                 // get all the previously pending videos for this conversation, and ensure that we send them off
-
                 if (!model.isTransacting()) {
                     throw new IllegalStateException("Video must be transacting!");
                 }

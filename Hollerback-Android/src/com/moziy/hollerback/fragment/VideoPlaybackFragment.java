@@ -52,8 +52,8 @@ public class VideoPlaybackFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.conversation_layout, container, false);
         mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
-        LayoutParams params = new LayoutParams(AppEnvironment.OPTIMAL_VIDEO_SIZE.x, AppEnvironment.OPTIMAL_VIDEO_SIZE.y, Gravity.CENTER);
-        mVideoView.setLayoutParams(params);
+        LayoutParams videoViewParams = new LayoutParams(AppEnvironment.OPTIMAL_VIDEO_SIZE.x, AppEnvironment.OPTIMAL_VIDEO_SIZE.y, Gravity.CENTER);
+        mVideoView.setLayoutParams(videoViewParams);
         mVideoView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override

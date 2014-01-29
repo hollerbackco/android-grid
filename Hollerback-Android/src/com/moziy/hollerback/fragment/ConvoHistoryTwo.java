@@ -166,6 +166,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startLoading();
         setHasOptionsMenu(true);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mConvoId = getArguments().getLong(CONVO_ID_BUNDLE_ARG_KEY);
@@ -242,6 +243,9 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         mConvoListView.setAdapter(mAdapter);
 
         mMembersTv = (TextView) v.findViewById(R.id.tv_members);
+        if (mMembersMessage != null) {
+            mMembersTv.setText(mMembersMessage);
+        }
 
         v.findViewById(R.id.bt_reply).setOnClickListener(new View.OnClickListener() {
 
@@ -275,7 +279,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         super.onResume();
 
         if (mRecordingInfo != null) { // so we got our result from the recording fragment, time to go back
-            getFragmentManager().popBackStack();
+            // getFragmentManager().popBackStack();
             return;
         }
 
@@ -287,6 +291,9 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     public void onPause() {
         if (isRemoving()) {
             Log.d(TAG, "isRemoving = true");
+            Fragment worker = getFragmentManager().findFragmentByTag(MEMBERS_WORKER);
+            if (worker != null)
+                getFragmentManager().beginTransaction().remove(worker).commit();
 
         }
 
@@ -338,13 +345,8 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             }
 
             sb.delete(sb.length() - 2, sb.length());
+            mMembersMessage = sb.toString();
             mMembersTv.setText(sb.toString());
-
-            if (isResumed()) {
-                Fragment worker = getFragmentManager().findFragmentByTag(MEMBERS_WORKER);
-                if (worker != null)
-                    getFragmentManager().beginTransaction().remove(worker).commit();
-            }
 
         }
 
@@ -421,6 +423,34 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         Context c = HollerbackApplication.getInstance();
         Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
+        // String guid = info.getString(RecordingInfo.RESOURCE_GUID);
+        // if (guid != null) {
+        // t = new ActiveAndroidTask<VideoModel>(new Select().from(VideoModel.class).where(ActiveRecordFields.C_VID_GUID + "=?", guid));
+        // t.setTaskListener(new Task.Listener() {
+        //
+        // @Override
+        // public void onTaskError(Task t) {
+        // // TODO Auto-generated method stub
+        //
+        // }
+        //
+        // @Override
+        // public void onTaskComplete(Task t) {
+        // List<VideoModel> videos = ((ActiveAndroidTask<VideoModel>) t).getResults();
+        // if (!videos.isEmpty()) {
+        // Log.d(TAG, "added");
+        // mAdapter.add(videos.get(0));
+        // }
+        // }
+        // });
+        // new TaskExecuter().executeTask(t);
+        // }
+
+        if (info.containsKey(RecordingInfo.VIDEO_MODEL)) {
+            VideoModel newlyRecorded = (VideoModel) info.getSerializable(RecordingInfo.VIDEO_MODEL);
+            mAdapter.add(newlyRecorded);
+        }
+
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);
     }
@@ -433,6 +463,10 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     @Override
     protected String getActionBarTitle() {
         return mConvoTitle;
+    }
+
+    public void stopLoadingProgress() {
+        stopLoading();
     }
 
     public static class GetMembersTask extends AbsTask {

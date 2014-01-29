@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:background="@color/background_header"
     android:paddingLeft="@dimen/dim_20dp"
-    android:paddingRight="@dimen/dim_20dp" >
+    android:paddingRight="@dimen/dim_20dp"
+    android:paddingTop="?android:attr/actionBarSize" >
 
     <include
         android:id="@+id/username_password_box"

@@ -37,6 +37,7 @@ public class AnalyticsUtil {
         public static final String Registration = "Registration";
         public static final String UI = "UserInterface";
         public static final String Camera = "Camera";
+        public static final String UserBehavior = "User Behavior";
     }
 
     public interface Action {
@@ -44,6 +45,8 @@ public class AnalyticsUtil {
         public static final String SubmitRegInfo = "SubmitRegInfo";
         public static final String SubmitVerification = "SubmitVerfication";
         public static final String RegistrationComplete = "RegistrationComplete";
+        public static final String LeftRecording = "Cancelled Recording";
+        public static final String SentVideo = "Sent Video";
     }
 
     public interface UiAction extends Action {

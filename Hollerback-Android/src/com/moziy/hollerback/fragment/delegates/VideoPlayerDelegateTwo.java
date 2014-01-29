@@ -474,8 +474,18 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     private void checkPlayerStatus() {
         if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
+
             if (mHasNewVideo)
                 mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
+
+            if (mConvoFragment != null) {
+                if (mAdapter.getCount() > 20) {
+                    mConvoFragment.getConvoListView().setFastScrollEnabled(true);
+                }
+
+                mConvoFragment.stopLoadingProgress();
+            }
+
             Log.d(TAG, "all local and remote history has been loaded");
             if (mPlaybackQueue.isEmpty()) {
                 Log.w(TAG, "there's nothing in the playback queue");

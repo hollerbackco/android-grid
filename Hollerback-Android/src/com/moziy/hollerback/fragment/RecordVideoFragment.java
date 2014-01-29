@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -87,6 +86,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         public static final String RESOURCE_ROW_ID = "resource_row_id";
         public static final String STATUS_BUNDLE_ARG_KEY = "record_status";
         public static final String RESOURCE_GUID = "resource_guid";
+        public static final String VIDEO_MODEL = "video_model";
 
         public void onRecordingFinished(Bundle info);
     }
@@ -351,7 +351,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
                 break;
             case R.id.action_cancel:
                 this.onPause();
-                this.getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
+                // this.getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
+                getFragmentManager().popBackStack();
                 break;
 
         }
@@ -402,6 +403,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
      */
     private void sendVideo(long conversationId, ArrayList<String> recipients) {
 
+        AnalyticsUtil.log(AnalyticsUtil.Category.UserBehavior, AnalyticsUtil.Action.SentVideo, null, null);
+
         prepareVideoModel(conversationId, recipients);
 
         long resourceRowId = mVideoModel.getId();
@@ -412,7 +415,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         // we're going back to the start conversation fragment
         if (conversationId > 0) {
-            mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            // mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            getFragmentManager().popBackStack();
         } else {
             getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
         }
@@ -472,6 +476,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         info.putInt(RecordingInfo.RECORDED_PARTS, mTotalParts);
         info.putBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true);
         info.putString(RecordingInfo.RESOURCE_GUID, guid);
+        info.putSerializable(RecordingInfo.VIDEO_MODEL, mVideoModel);
         if (getTargetFragment() != null) {
             ((RecordingInfo) getTargetFragment()).onRecordingFinished(info);
         } else { // XXX: Create a unified place for launching toasts, like in a toast receiver
@@ -575,6 +580,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         if (isRecording()) {
 
+            AnalyticsUtil.log(AnalyticsUtil.Category.UserBehavior, AnalyticsUtil.Action.LeftRecording, null, null);
+
             // push these off to the background thread
             releaseMediaRecorder(); // release the MediaRecorder object
             mCamera.lock(); // take camera access back from MediaRecorder
@@ -619,7 +626,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
             if (!isRemoving()) {
                 if (mConversationId > 0) {
-                    mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    // mActivity.getSupportFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    getFragmentManager().popBackStack();
                 } else {
                     getFragmentManager().popBackStack(); // pop the backstack - this is a new conversation
                 }
@@ -914,7 +922,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private void onRecordingFailed() {
         Log.d(TAG, "recording failed");
         deleteRecording();
-        getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
+        // getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, 0);
+        getFragmentManager().popBackStack();
         broadcastFailure();
     }
 

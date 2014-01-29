@@ -296,7 +296,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
 
             // now see if we have the remote videos in our database
             if (mRemoveLocalVideos) {
-                if (mIsSuccess && mRemoteVideos != null) {
+                if (mIsSuccess && mRemoteVideos != null && !mRemoteVideos.isEmpty()) {
                     Iterator<VideoModel> itr = mRemoteVideos.iterator();
                     VideoModel remote = itr.next();
                     sb.append(ActiveRecordFields.C_VID_GUID).append("='").append(remote.getVideoId()).append("'");

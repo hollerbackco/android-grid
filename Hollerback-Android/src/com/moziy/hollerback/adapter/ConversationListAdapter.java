@@ -147,8 +147,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.thumb.setHaloBorderColor(colors[0]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
-            viewHolder.btnRecord.setEmphasized(true);
-            viewHolder.btnRecord.setVisibility(View.GONE);
+            // viewHolder.btnRecord.setEmphasized(true);
+            // viewHolder.btnRecord.setVisibility(View.GONE);
 
             if (conversationModel.getSubTitle() != null)
                 viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
@@ -159,8 +159,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
             viewHolder.localThumb.setHaloBorderColor(-1);
-            viewHolder.btnRecord.setEmphasized(false);
-            viewHolder.btnRecord.setVisibility(View.VISIBLE);
+            // viewHolder.btnRecord.setEmphasized(false);
+            // viewHolder.btnRecord.setVisibility(View.VISIBLE);
 
             if (conversationModel.getSubTitle() != null)
                 viewHolder.conversationSubTitle.setText(conversationModel.getSubTitle());
