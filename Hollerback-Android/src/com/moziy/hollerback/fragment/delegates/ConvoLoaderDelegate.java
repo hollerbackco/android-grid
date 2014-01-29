@@ -53,7 +53,7 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     }
 
     @Override
-    public void onPreSuperDetach(Fragment fragment) {
+    public void onPostSuperDetach(Fragment fragment) {
         mConvoFragment = null;
     }
 

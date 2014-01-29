@@ -346,7 +346,8 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
             sb.delete(sb.length() - 2, sb.length());
             mMembersMessage = sb.toString();
-            mMembersTv.setText(sb.toString());
+            if (mMembersTv != null)
+                mMembersTv.setText(sb.toString());
 
         }
 

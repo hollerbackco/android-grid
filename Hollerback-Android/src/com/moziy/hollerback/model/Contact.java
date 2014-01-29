@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import android.util.Log;
-
 import com.moziy.hollerback.util.security.HashUtil;
 
 public class Contact implements Serializable {
@@ -83,7 +81,7 @@ public class Contact implements Serializable {
             mFriend.save();
         }
 
-        Log.d(TAG, "saved: " + toString());
+        // Log.d(TAG, "saved: " + toString());
     }
 
     public static List<Contact> getContactsFor(List<Friend> friends) {

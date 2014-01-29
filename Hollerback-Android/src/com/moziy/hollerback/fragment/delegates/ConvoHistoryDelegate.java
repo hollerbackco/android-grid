@@ -59,7 +59,7 @@ public class ConvoHistoryDelegate extends AbsFragmentLifecylce implements Task.L
     }
 
     @Override
-    public void onPreSuperDetach(Fragment fragment) {
+    public void onPostSuperDetach(Fragment fragment) {
         mConvoFragment = null;
     }
 

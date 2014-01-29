@@ -50,6 +50,7 @@ import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
+import com.squareup.picasso.Picasso;
 
 public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
         OnVideoViewReadyListener {
@@ -102,7 +103,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     }
 
     @Override
-    public void onPreSuperDetach(Fragment fragment) {
+    public void onPostSuperDetach(Fragment fragment) {
         mConvoFragment = null;
     }
 
@@ -111,6 +112,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         if (savedInstance != null) {
             if (savedInstance.containsKey(PLAYBACK_QUEUE_INSTANCE_STATE)) {
                 mPlaybackQueue = new LinkedList<VideoModel>((ArrayList<VideoModel>) savedInstance.getSerializable(PLAYBACK_QUEUE_INSTANCE_STATE));
+                mAdapter.addAll(mPlaybackQueue);
             }
 
             if (savedInstance.containsKey(PLAYBACK_INDEX_INSTANCE_STATE)) {
@@ -166,6 +168,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
      */
     public void onViewCreated(final View parentView) {
         mVideoView = (VideoView) parentView.findViewById(R.id.vv_preview);
+        mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
         mVideoView.setLayoutParams(getVideoViewLayoutParams());
 
         mProgress = (ProgressBar) parentView.findViewById(R.id.progress);
@@ -259,6 +262,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         onViewCreated(layout);
 
         VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
+        Picasso.with(mConvoFragment.getActivity()).load(v.getThumbUrl());
         mInPlayback = true;
         Log.d(TAG, v.toString());
         if (v.getState().equals(VideoModel.ResourceState.ON_DISK) || v.isSegmented()) {
@@ -475,10 +479,11 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private void checkPlayerStatus() {
         if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
 
-            if (mHasNewVideo)
-                mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
-
             if (mConvoFragment != null) {
+
+                if (mHasNewVideo && mConvoFragment.getConvoListView() != null)
+                    mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
+
                 if (mAdapter.getCount() > 20) {
                     mConvoFragment.getConvoListView().setFastScrollEnabled(true);
                 }

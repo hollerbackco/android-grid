@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -125,6 +126,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
             viewHolder.localThumb = (RoundImageView) convertView.findViewById(R.id.iv_local_thumb);
             viewHolder.btnRecord = (CustomButton) convertView.findViewById(R.id.btnRecord);
+            viewHolder.playBtn = (ImageView) convertView.findViewById(R.id.bt_play);
             convertView.setTag(viewHolder);
 
         } else {
@@ -147,6 +149,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.thumb.setHaloBorderColor(colors[0]);
             viewHolder.conversationName.setTextColor(Color.WHITE);
             viewHolder.conversationTime.setTextColor(Color.WHITE);
+            // viewHolder.playBtn.setVisibility(View.VISIBLE);
             // viewHolder.btnRecord.setEmphasized(true);
             // viewHolder.btnRecord.setVisibility(View.GONE);
 
@@ -159,6 +162,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             viewHolder.conversationTime.setTextColor(mHBTextColor);
             viewHolder.thumb.setHaloBorderColor(-1); // clear any border
             viewHolder.localThumb.setHaloBorderColor(-1);
+            // viewHolder.playBtn.setVisibility(View.GONE);
             // viewHolder.btnRecord.setEmphasized(false);
             // viewHolder.btnRecord.setVisibility(View.VISIBLE);
 
@@ -299,6 +303,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         TextView conversationSubTitle;
         RoundImageView thumb;
         RoundImageView localThumb;
+        ImageView playBtn;
         CustomButton btnRecord;
         int foregroundColor = -1;
         int backgroundColor = -1;
