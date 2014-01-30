@@ -14,9 +14,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore.Video.Thumbnails;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.LruCache;
 import android.util.Log;
@@ -61,6 +60,7 @@ import com.moziy.hollerback.service.task.ActiveAndroidUpdateTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.ConversionUtil;
+import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.squareup.picasso.Picasso;
 
@@ -584,7 +584,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
                         File f = new File(URI.create(v.getThumbUrl()));
                         if (!f.exists()) {
-                            Bitmap b = BitmapFactory.decodeFile(Uri.parse(v.getThumbUrl()).getPath());
+                            Bitmap b = ImageUtil.generatePngThumbnailFromVideo(0, v.getGuid(), Thumbnails.MINI_KIND);
                             mFileCache.put(v.getThumbUrl(), b);
                             holder.mSquareImageView.setImageBitmap(b);
                         } else {
