@@ -101,6 +101,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     private ListView mConvoListView;
     private TextView mMembersTv;
     private String mMembersMessage;
+    private String mSubTitle;
 
     private List<Contact> mMembers;
     private static final String MEMBERS_WORKER = "MEMBERS_WORKER";
@@ -397,16 +398,18 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
         if (mActivity != null) {
             if (mMembers.size() > 1) {
-                ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle((String.format(getString(R.string.member_count), mMembers.size())));
+                mSubTitle = (String.format(getString(R.string.member_count), mMembers.size() + 1));
             } else if (!nameInTitle && !mMembers.isEmpty()) { // 1 user and the name isn't in the title
-                ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle(mMembers.get(0).mName);
+                mSubTitle = mMembers.get(0).mName;
             }
+
+            ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle(mSubTitle);
         }
     }
 
     @Override
     protected String getActionBarSubTitle() {
-        return mMembersMessage;
+        return mSubTitle;
     }
 
     // public void addHistoryVideo(VideoModel video) {
