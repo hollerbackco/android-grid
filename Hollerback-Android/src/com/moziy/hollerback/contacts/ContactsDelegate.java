@@ -66,6 +66,8 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
+        mTaskQueue.add(new ContactsTaskGroup(mActivity));
+        mTaskQueue.add(new GetFriendsTask());
 
     }
 
@@ -73,12 +75,9 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
         Fragment f = mActivity.getSupportFragmentManager().findFragmentByTag(Workers.CONTACTS);
         if (f == null) {
 
-            mTaskQueue.add(new ContactsTaskGroup(mActivity));
-
             ActivityTaskWorker worker = ActivityTaskWorker.newInstance(false);
             FragmentTransaction transaction = mActivity.getSupportFragmentManager().beginTransaction().add(worker, Workers.CONTACTS);
 
-            mTaskQueue.add(new GetFriendsTask());
             worker = ActivityTaskWorker.newInstance(false);
             transaction.add(worker, Workers.FRIENDS).commit();
 
