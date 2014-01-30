@@ -3,7 +3,8 @@
     android:id="@+id/abs_friends_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_header" >
+    android:background="@color/background_header"
+    android:paddingTop="?android:attr/actionBarSize" >
 
     <include
         android:id="@+id/search_bar"
@@ -32,6 +33,5 @@
     <!-- android:id="@+id/stub" -->
     <!-- android:layout_width="match_parent" -->
     <!-- android:layout_height="match_parent" /> -->
-
 
 </RelativeLayout>

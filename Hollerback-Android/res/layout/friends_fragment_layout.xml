@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        layout="@layout/abs_friends_layout" />
+        layout="@layout/abs_friends_layout"
+        android:paddingTop="0dp" />
 
     <include
         android:id="@+id/bottom"
