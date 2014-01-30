@@ -10,8 +10,11 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -39,6 +42,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
     private InternalReceiver mReceiver;
     private ContactsDelegate mContactsDelegate; // handles all operations for retrieving and storing contacts
     private TextView mActionBarTitle;
+    private TextView mActionBarSubTitle;
 
     private boolean mLaunchWelcome = false;
     private boolean mLaunchInviteFriends = false;
@@ -145,9 +149,12 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
         // set custom view for the title
         LayoutInflater inflater = LayoutInflater.from(this);
-        View customView = inflater.inflate(R.layout.header_title, null);
+        LinearLayout customView = (LinearLayout) inflater.inflate(R.layout.header_title, null);
+        ActionBar.LayoutParams params = new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.START);
+
         mActionBarTitle = (TextView) customView.findViewById(R.id.title);
-        supportActionBar.setCustomView(customView);
+        mActionBarSubTitle = (TextView) customView.findViewById(R.id.sub_title);
+        supportActionBar.setCustomView(customView, params);
         supportActionBar.setDisplayShowCustomEnabled(true);
         supportActionBar.show();
 
@@ -155,6 +162,20 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
     public TextView getCustomActionBarTitle() {
         return mActionBarTitle;
+    }
+
+    public void setCustomActionBarSubTitle(String subtitle) {
+        if (subtitle == null || "".equals(subtitle)) {
+            mActionBarSubTitle.setVisibility(View.GONE);
+            mActionBarSubTitle.setText("");
+        } else {
+            mActionBarSubTitle.setVisibility(View.VISIBLE);
+            mActionBarSubTitle.setText(subtitle);
+        }
+    }
+
+    public TextView getCustomActionBarSubTitle() {
+        return mActionBarSubTitle;
     }
 
     public void initFragment() {

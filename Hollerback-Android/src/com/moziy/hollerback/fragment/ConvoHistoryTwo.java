@@ -38,6 +38,7 @@ import com.activeandroid.query.Update;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.connection.HBRequestManager;
@@ -353,6 +354,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             if (mMembersTv != null)
                 mMembersTv.setText(sb.toString());
 
+            setSubTitle();
         }
 
     }
@@ -382,6 +384,29 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     public ListView getConvoListView() {
         return mConvoListView;
+    }
+
+    private void setSubTitle() {
+        boolean nameInTitle = false;
+        for (Contact member : mMembers) {
+            if (mConvoTitle.contains(member.mName)) {
+                nameInTitle = true;
+                break;
+            }
+        }
+
+        if (mActivity != null) {
+            if (mMembers.size() > 1) {
+                ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle((String.format(getString(R.string.member_count), mMembers.size())));
+            } else if (!nameInTitle && !mMembers.isEmpty()) { // 1 user and the name isn't in the title
+                ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle(mMembers.get(0).mName);
+            }
+        }
+    }
+
+    @Override
+    protected String getActionBarSubTitle() {
+        return mMembersMessage;
     }
 
     // public void addHistoryVideo(VideoModel video) {

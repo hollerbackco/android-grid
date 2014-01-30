@@ -94,6 +94,7 @@ public abstract class BaseFragment extends SherlockFragment {
         super.onResume();
         if (!mIsChildFragment) {
             ((HollerbackMainActivity) getActivity()).getCustomActionBarTitle().setText(getActionBarTitle());
+            ((HollerbackMainActivity) getActivity()).setCustomActionBarSubTitle(getActionBarSubTitle());
         }
     }
 
@@ -120,6 +121,10 @@ public abstract class BaseFragment extends SherlockFragment {
     }
 
     protected String getActionBarTitle() {
+        return "";
+    }
+
+    protected String getActionBarSubTitle() {
         return "";
     }
 
