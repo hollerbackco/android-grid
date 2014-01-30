@@ -3,7 +3,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical|start"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:paddingEnd="8dp" >
 
     <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/title"
@@ -12,15 +13,17 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="@android:color/white"
-        android:textSize="18sp" />
+        android:textSize="@dimen/action_bar_title_text_size" />
 
     <com.moziy.hollerback.widget.CustomTextView
         android:id="@+id/sub_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/action_bar_subtitle_bottom_margin"
+        android:layout_marginTop="@dimen/action_bar_subtitle_top_margin"
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:textSize="@dimen/action_bar_subtitle_text_size" />
 
 </LinearLayout>

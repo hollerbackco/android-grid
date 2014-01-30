@@ -72,7 +72,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private ImageButton mSkipBackwardBtn;
     private boolean mHasHistoryVideo = false;
     private boolean mHasNewVideo = false;
-    private int mNewVideoIndex = 0;
+    private volatile int mNewVideoIndex = 0;
 
     private ConvoHistoryTwo mConvoFragment;
     private ConversationModel mConversation;
@@ -88,7 +88,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private boolean mInPlayback;
     private ConvoHistoryAdapter mAdapter;
 
-    private VideoPlaybackFragment mPlaybackFrament;
+    private VideoPlaybackFragment mPlaybackFragment;
 
     public enum VIDEO_MODEL_ENUM {
         LOCAL_HISTORY_LOADED, REMOTE_HISTORY_LOADED, NEW_VIDEO_MODEL_LOADED
@@ -124,13 +124,13 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
             Fragment f = mConvoFragment.getFragmentManager().findFragmentByTag(VideoPlaybackFragment.FRAGMENT_TAG);
             if (f == null) {
-                mPlaybackFrament = new VideoPlaybackFragment();
+                mPlaybackFragment = new VideoPlaybackFragment();
             } else {
-                mPlaybackFrament = (VideoPlaybackFragment) f;
+                mPlaybackFragment = (VideoPlaybackFragment) f;
             }
 
         } else {
-            mPlaybackFrament = new VideoPlaybackFragment();
+            mPlaybackFragment = new VideoPlaybackFragment();
         }
 
         mIsPlayingSegmented = false;
@@ -264,8 +264,11 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         // download(mPlaybackIndex, 3);
         // }
         if (mConvoFragment.getFragmentManager().findFragmentByTag(VideoPlaybackFragment.FRAGMENT_TAG) == null) {
-            mPlaybackFrament.setTargetFragment(mConvoFragment, 0);
-            mConvoFragment.getFragmentManager().beginTransaction().add(R.id.fragment_holder, mPlaybackFrament, VideoPlaybackFragment.FRAGMENT_TAG).addToBackStack(null).commit();
+            mPlaybackFragment.setTargetFragment(mConvoFragment, 0);
+            mConvoFragment.getFragmentManager().beginTransaction().add(R.id.fragment_holder, mPlaybackFragment, VideoPlaybackFragment.FRAGMENT_TAG).addToBackStack(null).commit();
+        } else {
+            Log.d(TAG, "video view still attached");
+            // just start playing ?
         }
     }
 
@@ -312,7 +315,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             mHasNewVideo = true;
         } else { // there's nothing
 
-            checkPlayerStatus();
+            onModelLoaded();
             return;
         }
 
@@ -321,7 +324,9 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mPlaybackQueue.addAll(videos);
         mAdapter.addAll(videos);
 
-        mNewVideoIndex = index;
+        mNewVideoIndex += index;
+
+        onModelLoaded();
 
         // don't auto play
 
@@ -379,7 +384,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         }
 
         if (mPlaybackQueue.isEmpty()) {
-            checkPlayerStatus();
+            onModelLoaded();
             Log.w(TAG, "can't play history, no network connection");
         }
     }
@@ -485,8 +490,9 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         Collections.sort(mPlaybackQueue, mVideoSorter);
         mAdapter.sort(mVideoSorter);
         mHistoryFlag.add(VIDEO_MODEL_ENUM.LOCAL_HISTORY_LOADED);
-        checkPlayerStatus();
         mNewVideoIndex += videos.size();
+        onModelLoaded();
+
     }
 
     @Override
@@ -494,29 +500,35 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         Collections.sort(mPlaybackQueue, mVideoSorter);
         mAdapter.sort(mVideoSorter);
         mHistoryFlag.add(VIDEO_MODEL_ENUM.REMOTE_HISTORY_LOADED);
-        checkPlayerStatus();
         mNewVideoIndex += videos.size();
+        onModelLoaded();
+
     }
 
     @Override
     public void onLocalHistoryFailed() {
         mHistoryFlag.add(VIDEO_MODEL_ENUM.LOCAL_HISTORY_LOADED);
-        checkPlayerStatus();
+        onModelLoaded();
     }
 
     @Override
     public void onRemoteHistoryFailed() {
         mHistoryFlag.add(VIDEO_MODEL_ENUM.REMOTE_HISTORY_LOADED);
-        checkPlayerStatus();
+        onModelLoaded();
     }
 
-    private void checkPlayerStatus() {
-        if (mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class))) {
+    private boolean isAllModelLoaded() {
+        return mHistoryFlag.containsAll(EnumSet.allOf(VIDEO_MODEL_ENUM.class));
+    }
+
+    private void onModelLoaded() {
+        if (isAllModelLoaded()) {
 
             if (mConvoFragment != null) {
 
-                if (mHasNewVideo && mConvoFragment.getConvoListView() != null)
+                if (mHasNewVideo && mConvoFragment.getConvoListView() != null) {
                     mConvoFragment.getConvoListView().smoothScrollToPosition(mNewVideoIndex);
+                }
 
                 if (mAdapter.getCount() > 20) {
                     mConvoFragment.getConvoListView().setFastScrollEnabled(true);
@@ -619,7 +631,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mProgress.setVisibility(View.INVISIBLE);
         // if (mConvoFragment.isResumed()) { // was mConvoFragment
 
-        if (mPlaybackFrament.isResumed()) {
+        if (mPlaybackFragment.isResumed()) {
             mVideoView.start();
         } else {
             Log.d(TAG, "not playing because not in resumed state");
@@ -705,8 +717,11 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public void beginRecording() {
         if (mConvoFragment.isResumed()) {
 
-            // remove the playback fragment
-            mConvoFragment.getFragmentManager().beginTransaction().remove(mPlaybackFrament).commit();
+            Fragment playbackFragment = mConvoFragment.getFragmentManager().findFragmentByTag(VideoPlaybackFragment.FRAGMENT_TAG);
+            if (playbackFragment != null) {
+                // remove the playback fragment
+                mConvoFragment.getFragmentManager().popBackStack();
+            }
 
             mStartedRecording = true;
             // we're ready to move to the recording fragment
