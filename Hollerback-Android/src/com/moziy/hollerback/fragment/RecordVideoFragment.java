@@ -409,6 +409,8 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
         long resourceRowId = mVideoModel.getId();
 
+        mVideoModel.setThumbUrl("file:///" + HBFileUtil.getLocalThumbFile(mVideoModel.getGuid()));
+
         notifyTargetFragment(resourceRowId, mVideoModel.getGuid());
 
         launchVideoService(resourceRowId);
@@ -447,7 +449,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mVideoModel.setSegmentFileExtension(mFileExt); // the file extenstion or container
             mVideoModel.setState(VideoModel.ResourceState.PENDING_UPLOAD);
             mVideoModel.setCreateDate(TimeUtil.FORMAT_ISO8601(new Date()));
-            mVideoModel.setSenderName("me");
+            mVideoModel.setSenderName("You");
             mVideoModel.setNumParts(mTotalParts);
             mVideoModel.setRead(true); // since we recorded this, we've actually seen it too
             mVideoModel.setGuid(mGuid);

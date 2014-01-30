@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -46,11 +47,11 @@ import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
 import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
 import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
-import com.squareup.picasso.Picasso;
 
 public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
         OnVideoViewReadyListener {
@@ -64,6 +65,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     // views
     private VideoView mVideoView;
+    private TextView mSenderName;
+    private TextView mDateSent;
     private ProgressBar mProgress;
     private ImageButton mSkipForwardBtn;
     private ImageButton mSkipBackwardBtn;
@@ -156,7 +159,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         if (savedInstanceState != null) {
             // if we were in the middle of playing, then adjust the playback elements such as seek position
             mPlayingDuringConfigChange = savedInstanceState.getBoolean(PLAYING_INSTANCE_STATE);
-            if (mPlayingDuringConfigChange) {
+            if (mPlayingDuringConfigChange && mVideoView != null) {
                 playVideo(mPlaybackQueue.get(mPlaybackIndex));
             }
         }
@@ -170,6 +173,9 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mVideoView = (VideoView) parentView.findViewById(R.id.vv_preview);
         mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
         mVideoView.setLayoutParams(getVideoViewLayoutParams());
+
+        mSenderName = (TextView) parentView.findViewById(R.id.tv_name);
+        mDateSent = (TextView) parentView.findViewById(R.id.tv_date);
 
         mProgress = (ProgressBar) parentView.findViewById(R.id.progress);
         mProgress.setVisibility(View.VISIBLE);
@@ -210,7 +216,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
         if (mPausedDuringPlayback) { // reset the flag
             mProgress.setVisibility(View.INVISIBLE);
-            playVideo(mPlaybackQueue.get(mPlaybackIndex));
+            // playVideo(mPlaybackQueue.get(mPlaybackIndex));
         }
     }
 
@@ -218,7 +224,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public void onPreSuperPause(Fragment fragment) {
         // allow for config changes while we were paused{
 
-        // mPausedDuringPlayback = mVideoView.isPlaying();
+        if (mVideoView != null)
+            mPausedDuringPlayback = mVideoView.isPlaying();
         if (mPausedDuringPlayback)
             mVideoView.stopPlayback();
 
@@ -260,9 +267,14 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public void onVideoViewReady(View layout) {
 
         onViewCreated(layout);
-
+        // MediaController controller = new MediaController(mConvoFragment.getActivity());
+        // controller.setAnchorView(mVideoView);
+        // mVideoView.setMediaController(controller);
         VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
-        Picasso.with(mConvoFragment.getActivity()).load(v.getThumbUrl());
+        mSenderName.setText(v.getSenderName());
+        mDateSent.setText(ConversionUtil.timeAgo(TimeUtil.PARSE(v.getCreateDate())));
+
+        // Picasso.with(mConvoFragment.getActivity()).load(v.getThumbUrl()).;
         mInPlayback = true;
         Log.d(TAG, v.toString());
         if (v.getState().equals(VideoModel.ResourceState.ON_DISK) || v.isSegmented()) {
@@ -367,6 +379,22 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     }
 
     private Comparator<VideoModel> mVideoSorter = new Comparator<VideoModel>() {
+
+        @Override
+        public int compare(VideoModel lhs, VideoModel rhs) {
+
+            if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() < TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                return -1;
+            } else if (TimeUtil.PARSE(lhs.getCreateDate()).getTime() > TimeUtil.PARSE(rhs.getCreateDate()).getTime()) {
+                return 1;
+            }
+
+            return 0;
+
+        }
+    };
+
+    private Comparator<VideoModel> mVideoSorter1 = new Comparator<VideoModel>() {
 
         @Override
         public int compare(VideoModel lhs, VideoModel rhs) {
@@ -510,6 +538,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private void playVideo(VideoModel v) {
         Log.d(TAG, "starting playback of: " + v.getGuid());
 
+        mConvoFragment.getConvoListView().setSelection(mPlaybackIndex);
+
         Uri videoUri;
         if (v.isSegmented()) {
             if (mIsPlayingSegmented == false) { // first time processing this videomodel
@@ -624,6 +654,10 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
             Log.d(TAG, "playback after completion and queue is not empty");
             video = mPlaybackQueue.get(mPlaybackIndex);
+
+            // set the view
+            mSenderName.setText(video.getSenderName());
+            mDateSent.setText(ConversionUtil.timeAgo(TimeUtil.PARSE(video.getCreateDate())));
 
             if (VideoModel.ResourceState.ON_DISK.equals(video.getState())) {
                 Log.d(TAG, "starting to play video after completion");

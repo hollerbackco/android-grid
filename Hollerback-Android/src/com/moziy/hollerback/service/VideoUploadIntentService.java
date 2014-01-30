@@ -12,7 +12,9 @@ import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.service.helper.UploadUtility;
 import com.moziy.hollerback.service.helper.VideoHelper;
+import com.moziy.hollerback.service.task.GenerateVideoThumbTask;
 import com.moziy.hollerback.util.AppSynchronization;
+import com.moziy.hollerback.util.HBFileUtil;
 import com.moziy.hollerback.util.recovery.ResourceRecoveryUtil;
 
 /**
@@ -96,6 +98,12 @@ public class VideoUploadIntentService extends IntentService {
                 boolean requestRecovery = false;
 
                 for (VideoModel v : mVideos) {
+
+                    if (v.getThumbUrl() == null) { // generate the thumb
+                        GenerateVideoThumbTask t = new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, v.getGuid(), "mp4"), HBFileUtil.getLocalThumbFile(v.getGuid()));
+                        t.run();
+                        v.setThumbUrl("file:///" + t.getDstPath());
+                    }
 
                     // if it's pending upload and not transacting
                     if (VideoModel.ResourceState.PENDING_UPLOAD.equals(v.getState())) {

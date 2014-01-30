@@ -40,7 +40,11 @@ public class ImageUtil {
     }
 
     public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
+        return generatePngThumbnailFromVideo(partNum, videoGuid, Thumbnails.MICRO_KIND);
+    }
+
+    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid, int kind) {
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "mp4"), kind);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
         writeBitmapToExternal(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "png"), bitmap);
 

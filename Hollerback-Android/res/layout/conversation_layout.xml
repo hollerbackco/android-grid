@@ -24,6 +24,36 @@
         android:visibility="visible" />
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/gradient_label"
+        android:minHeight="@dimen/dim_48dp"
+        android:padding="@dimen/dim_5dp" >
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:paddingLeft="@dimen/dim_10dp"
+            android:text="Sajjad"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_date"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right|bottom"
+            android:text="Yesterday"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"

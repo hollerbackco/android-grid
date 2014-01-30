@@ -1,5 +1,7 @@
 package com.moziy.hollerback.fragment;
 
+import java.io.File;
+import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.LruCache;
@@ -339,7 +343,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             mMembers = ((GetMembersTask) t).getMembers();
 
             StringBuilder sb = new StringBuilder();
-            sb.append("Members: ");
+            sb.append("Members: You, ");
             for (Contact c : mMembers) {
                 sb.append(c.mName).append(", ");
             }
@@ -574,7 +578,23 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
             if (v.getThumbUrl() == null) {
                 Log.d(TAG, "fill in");
             } else {
-                Picasso.with(getContext()).load(v.getThumbUrl()).into(holder.mSquareImageView);
+
+                if (v.getThumbUrl().contains("file:///")) {
+                    if (mFileCache.get(v.getThumbUrl()) == null) {
+
+                        File f = new File(URI.create(v.getThumbUrl()));
+                        if (!f.exists()) {
+                            Bitmap b = BitmapFactory.decodeFile(Uri.parse(v.getThumbUrl()).getPath());
+                            mFileCache.put(v.getThumbUrl(), b);
+                            holder.mSquareImageView.setImageBitmap(b);
+                        } else {
+                            Picasso.with(getContext()).load(v.getThumbUrl()).into(holder.mSquareImageView);
+                        }
+                    } else {
+                        holder.mSquareImageView.setImageBitmap(mFileCache.get(v.getThumbUrl()));
+                    }
+                } else
+                    Picasso.with(getContext()).load(v.getThumbUrl()).into(holder.mSquareImageView);
             }
 
             return convertView;
