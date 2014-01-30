@@ -727,8 +727,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
             f.setTargetFragment(mConvoFragment, 0);
-            mConvoFragment.getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, f)
-                    .addToBackStack(ConversationFragment.FRAGMENT_TAG).commit();
+            mConvoFragment.getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                    .replace(R.id.fragment_holder, f).addToBackStack(ConversationFragment.FRAGMENT_TAG).commit();
         }
     }
 
