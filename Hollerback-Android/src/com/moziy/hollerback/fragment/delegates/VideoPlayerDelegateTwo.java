@@ -121,9 +121,15 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             if (savedInstance.containsKey(PLAYBACK_INDEX_INSTANCE_STATE)) {
                 mPlaybackIndex = savedInstance.getInt(PLAYBACK_INDEX_INSTANCE_STATE);
             }
-        }
 
-        if (mPlaybackFrament == null) {
+            Fragment f = mConvoFragment.getFragmentManager().findFragmentByTag(VideoPlaybackFragment.FRAGMENT_TAG);
+            if (f == null) {
+                mPlaybackFrament = new VideoPlaybackFragment();
+            } else {
+                mPlaybackFrament = (VideoPlaybackFragment) f;
+            }
+
+        } else {
             mPlaybackFrament = new VideoPlaybackFragment();
         }
 
@@ -214,9 +220,9 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     @Override
     public void onPostSuperResume(Fragment fragment) {
 
-        if (mPausedDuringPlayback) { // reset the flag
+        if (mPausedDuringPlayback /* || mPlayingDuringConfigChange) && mVideoView != null && mPlaybackFrament.isResumed() */) { // reset the flag
             mProgress.setVisibility(View.INVISIBLE);
-            // playVideo(mPlaybackQueue.get(mPlaybackIndex));
+            playVideo(mPlaybackQueue.get(mPlaybackIndex));
         }
     }
 
@@ -265,7 +271,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
     @Override
     public void onVideoViewReady(View layout) {
-
+        Log.d(TAG, "onVideoViewReady");
         onViewCreated(layout);
         // MediaController controller = new MediaController(mConvoFragment.getActivity());
         // controller.setAnchorView(mVideoView);
