@@ -29,6 +29,12 @@ public class VideoPlaybackFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         mGestureDetector = new GestureDetector(getActivity(), mGestureListener);
+
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         getSherlockActivity().getSupportActionBar().hide();
     }
 
