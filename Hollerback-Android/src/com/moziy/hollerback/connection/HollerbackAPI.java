@@ -95,6 +95,8 @@ public class HollerbackAPI {
 
     public static final String API_FIND_FRIEND = "/me/users/search";
 
+    public static final String API_UNADDED_FRIENDS = API_FRIENDS + "/unadded";
+
     // /////////////
 
     public static final String PARAM_EMAIL = "email";
