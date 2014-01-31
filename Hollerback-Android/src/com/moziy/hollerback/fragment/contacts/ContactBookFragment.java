@@ -41,7 +41,7 @@ public class ContactBookFragment extends BaseFragment {
     private int mCurrentTab = -1;
 
     private ContactsChildFragment mContactsFragment;
-    private AddedMeChildFragment mAddedMeFragment;
+    private UnaddedFriendsChildFragment mAddedMeFragment;
     private SearchForUserFragment mSearchFragment;
 
     @Override
@@ -142,9 +142,10 @@ public class ContactBookFragment extends BaseFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPagerAdapter = new TabPagerAdapter(getChildFragmentManager(), getSherlockActivity().getSupportActionBar());
-        mPager.setAdapter(mPagerAdapter);
 
         LayoutInflater inflater = LayoutInflater.from(mActivity);
+
+        mTabCount = 0;
 
         // create three tabs
         Tab tab = mActionbar.newTab();
@@ -155,20 +156,19 @@ public class ContactBookFragment extends BaseFragment {
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.contacts_lc);
+        mActionbar.addTab(tab, mTabCount++, true);
 
-        // TODO: Enable when feature complete
-        mActionbar.addTab(tab, 0, true);
-
-        // tab = mActionbar.newTab();
-        // tab.setText(R.string.hollerback_users_lc);
-        // v = inflater.inflate(R.layout.contact_tab_view, null);
-        // ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
-        // v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        // tab.setCustomView(v);
-        // tab.setTabListener(mTabListener);
-        // tab.setContentDescription(R.string.hollerback_users_lc);
-        // mActionbar.addTab(tab, 1); // tab, position, selected
-        //
+        // if (((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends() != null && !((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends().isEmpty()) {
+        tab = mActionbar.newTab();
+        tab.setText(R.string.hollerback_users_lc);
+        v = inflater.inflate(R.layout.contact_tab_view, null);
+        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
+        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+        tab.setCustomView(v);
+        tab.setTabListener(mTabListener);
+        tab.setContentDescription(R.string.hollerback_users_lc);
+        mActionbar.addTab(tab, mTabCount++); // tab, position, selected
+        // }
 
         tab = mActionbar.newTab();
         tab.setText(R.string.find_by_username);
@@ -178,7 +178,9 @@ public class ContactBookFragment extends BaseFragment {
         tab.setCustomView(v);
         tab.setTabListener(mTabListener);
         tab.setContentDescription(R.string.find_by_username);
-        mActionbar.addTab(tab, 1);
+        mActionbar.addTab(tab, mTabCount++);
+
+        mPager.setAdapter(mPagerAdapter);
 
     }
 
@@ -244,6 +246,7 @@ public class ContactBookFragment extends BaseFragment {
 
         }
     };
+    private int mTabCount;
 
     public void onDestroy() {
         super.onDestroy();
@@ -262,7 +265,7 @@ public class ContactBookFragment extends BaseFragment {
             mContactsFragment = ContactsChildFragment.newInstance();
             mContactsFragment.setChildFragment();
 
-            mAddedMeFragment = AddedMeChildFragment.newInstance();
+            mAddedMeFragment = UnaddedFriendsChildFragment.newInstance();
             mAddedMeFragment.setChildFragment();
 
             mSearchFragment = SearchForUserFragment.newInstance();
@@ -276,7 +279,7 @@ public class ContactBookFragment extends BaseFragment {
                     getSherlockActivity().invalidateOptionsMenu();
                     return mContactsFragment;
                 case 1:
-                    return mSearchFragment;
+                    return (mTabCount > 2) ? mAddedMeFragment : mSearchFragment;
                 case 2:
                     return mSearchFragment;
             }
@@ -286,7 +289,7 @@ public class ContactBookFragment extends BaseFragment {
 
         @Override
         public int getCount() {
-            return NUM_TABS;
+            return mTabCount;
         }
 
     }

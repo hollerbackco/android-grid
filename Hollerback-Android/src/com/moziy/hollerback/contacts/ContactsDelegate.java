@@ -27,6 +27,7 @@ import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.contacts.task.ContactsTaskGroup;
 import com.moziy.hollerback.contacts.task.GetFriendsTask;
 import com.moziy.hollerback.contacts.task.GetHBContactsTask;
+import com.moziy.hollerback.contacts.task.GetUnaddedFriendsTask;
 import com.moziy.hollerback.contacts.task.GetUserContactsTask;
 import com.moziy.hollerback.fragment.workers.ActivityTaskWorker;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
@@ -46,6 +47,7 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private interface Workers {
         public static final String CONTACTS = "contacts-worker";
         public static final String FRIENDS = "friends-worker";
+        public static final String UNADDED_FRIENDS = "unadded-friends-worker";
     }
 
     private HollerbackMainActivity mActivity;
@@ -58,16 +60,19 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     private List<Contact> mHBContacts; // hollerback contacts
     private List<Contact> mRecents; // recents
     private List<Contact> mFriends; // friends
+    private List<Contact> mUnaddedFriends;
     private Set<Contact> mInviteList; // users that we plan on inviting
 
     private LOADING_STATE mContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mHBContactsLoadState = LOADING_STATE.IDLE;
     private LOADING_STATE mFriendsLoadState = LOADING_STATE.IDLE;
+    private LOADING_STATE mUnaddedFriendsLoadState = LOADING_STATE.IDLE;
 
     public ContactsDelegate(HollerbackMainActivity activity) {
         mActivity = activity;
         mTaskQueue.add(new ContactsTaskGroup(mActivity));
         mTaskQueue.add(new GetFriendsTask());
+        mTaskQueue.add(new GetUnaddedFriendsTask());
 
     }
 
@@ -79,11 +84,15 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
             FragmentTransaction transaction = mActivity.getSupportFragmentManager().beginTransaction().add(worker, Workers.CONTACTS);
 
             worker = ActivityTaskWorker.newInstance(false);
-            transaction.add(worker, Workers.FRIENDS).commit();
+            transaction.add(worker, Workers.FRIENDS);
+
+            worker = ActivityTaskWorker.newInstance(false);
+            transaction.add(worker, Workers.UNADDED_FRIENDS).commit();
 
             mContactsLoadState = LOADING_STATE.LOADING;
             mHBContactsLoadState = LOADING_STATE.LOADING;
             mFriendsLoadState = LOADING_STATE.LOADING;
+            mUnaddedFriendsLoadState = LOADING_STATE.LOADING;
         }
     }
 
@@ -114,6 +123,12 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
 
             mFriendsLoadState = LOADING_STATE.DONE;
 
+        } else if (t instanceof GetUnaddedFriendsTask) {
+            if (t.isSuccess()) {
+                mUnaddedFriends = ((GetUnaddedFriendsTask) t).getUnaddedFriends();
+            }
+
+            mUnaddedFriendsLoadState = LOADING_STATE.DONE;
         }
 
         setupContactsAfterLoad();
@@ -197,6 +212,16 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
+    public LOADING_STATE getFriendsLoadState() {
+        return mFriendsLoadState;
+    }
+
+    @Override
+    public LOADING_STATE getUnaddedFriendsLoadState() {
+        return mUnaddedFriendsLoadState;
+    }
+
+    @Override
     public List<Contact> getDeviceContacts() {
         return mContacts;
     }
@@ -222,13 +247,13 @@ public class ContactsDelegate implements TaskClient, ContactsInterface {
     }
 
     @Override
-    public LOADING_STATE getFriendsLoadState() {
-        return mFriendsLoadState;
+    public List<Contact> getHBContactsExcludingFriends() {
+        return mHBContactsExludingFriends;
     }
 
     @Override
-    public List<Contact> getHBContactsExcludingFriends() {
-        return mHBContactsExludingFriends;
+    public List<Contact> getUnaddedFriends() {
+        return mUnaddedFriends;
     }
 
     @Override

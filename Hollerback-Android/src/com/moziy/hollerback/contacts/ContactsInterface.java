@@ -25,11 +25,15 @@ public interface ContactsInterface {
 
     public LOADING_STATE getFriendsLoadState();
 
+    public LOADING_STATE getUnaddedFriendsLoadState();
+
     public List<Contact> getHBContactsExcludingFriends();
 
     public List<Contact> getRecentContacts();
 
     public List<Contact> getFriends();
+
+    public List<Contact> getUnaddedFriends();
 
     public Set<Contact> getInviteList();
 
