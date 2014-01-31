@@ -3,6 +3,9 @@ package com.moziy.hollerback.fragment.contacts;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
 import android.text.InputType;
 import android.widget.SearchView;
 
@@ -18,15 +21,61 @@ import com.moziy.hollerback.fragment.AbsContactListFragment;
 import com.moziy.hollerback.model.Contact;
 import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.SmsUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class InviteFragment extends AbsContactListFragment {
     private static final String TAG = InviteFragment.class.getSimpleName();
+    public static final String FRAGMENT_TAG = TAG;
+    public static final String SHOW_DIALOG_BUNDLE_ARG_KEY = "SHOW_DIALOG";
 
     public static InviteFragment newInstance() {
-        return new InviteFragment();
+        return newInstance(false);
+    }
+
+    public static InviteFragment newInstance(boolean showDialog) {
+        InviteFragment f = new InviteFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(SHOW_DIALOG_BUNDLE_ARG_KEY, showDialog);
+        f.setArguments(args);
+
+        return f;
     }
 
     private SearchView mSearchView;
+    private boolean mShowDialog;
+    private AlertDialog mDialog;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mShowDialog = getArguments().getBoolean(SHOW_DIALOG_BUNDLE_ARG_KEY);
+
+        if (mShowDialog) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            mDialog = builder.setTitle(getString(R.string.invite_dialog_title)).setMessage(getString(R.string.invite_dialog_message))
+                    .setPositiveButton(R.string.alright, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (isResumed() && mDialog.isShowing()) {
+                                mDialog.dismiss();
+                            }
+
+                        }
+                    }).show();
+        }
+    }
+
+    @Override
+    public void onPause() {
+
+        if (isRemoving() && mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
+
+        super.onPause();
+    }
 
     @Override
     protected List<ContactListSegmentData> buildSegmentData(ContactsInterface ci) {
@@ -100,6 +149,10 @@ public class InviteFragment extends AbsContactListFragment {
 
             String metricValue = String.valueOf(mSelected.size());
             AnalyticsUtil.getGaTracker().set(Fields.customMetric(1), metricValue);
+
+            if (mDialog != null) {
+                PreferenceManagerUtil.setPreferenceValue(HBPreferences.VideoInviteInfo.SEEN_INVITE_SCREEN, true);
+            }
 
             getFragmentManager().popBackStack();
 

@@ -36,8 +36,9 @@ import com.moziy.hollerback.fragment.ConversationFragment;
 import com.moziy.hollerback.fragment.ConvoHistoryTwo;
 import com.moziy.hollerback.fragment.ConvoHistoryTwo.ConvoHistoryAdapter;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
+import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
 import com.moziy.hollerback.fragment.VideoPlaybackFragment;
-import com.moziy.hollerback.fragment.VideoPlaybackFragment.OnVideoViewReadyListener;
+import com.moziy.hollerback.fragment.VideoPlaybackFragment.VideoViewStatusListener;
 import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate.OnHistoryUpdateListener;
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate.OnVideoModelLoaded;
 import com.moziy.hollerback.model.ConversationModel;
@@ -54,7 +55,7 @@ import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
-        OnVideoViewReadyListener {
+        VideoViewStatusListener, RecordingInfo {
     private static final String TAG = VideoPlayerDelegateTwo.class.getSimpleName();
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
@@ -62,7 +63,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public static final String MODEL_LOADED_INSTANCE_STATE = "MODEL_LOADED";
     private LinkedList<VideoModel> mPlaybackQueue;
     private int mPlaybackIndex = 0;
-    private boolean mStartedRecording;
+    private boolean mIsEnteringRecording;
 
     // views
     private VideoView mVideoView;
@@ -140,17 +141,13 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mSegmentPart = 0;
         mHasNewVideo = false;
         mHasHistoryVideo = false;
-        mStartedRecording = false;
+        mIsEnteringRecording = false;
         mInPlayback = false;
 
     }
 
-    public void setPlaybackMode() {
-        mInPlayback = true;
-    }
-
-    public void clearPlaybackMode() {
-        mInPlayback = false;
+    public boolean inPlaybackMode() {
+        return mInPlayback;
     }
 
     public VideoPlayerDelegateTwo(long convoId) {
@@ -300,6 +297,11 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         } else {
             download(mPlaybackIndex, 3);
         }
+    }
+
+    @Override
+    public void onVideoViewFinish() {
+
     }
 
     private void download(int index, int numToDownload) {
@@ -549,7 +551,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             Log.d(TAG, "all local and remote history has been loaded");
             if (mPlaybackQueue.isEmpty()) {
                 Log.w(TAG, "there's nothing in the playback queue");
-                mProgress.setVisibility(View.INVISIBLE);
+                // mProgress.setVisibility(View.INVISIBLE);
                 Toast t = Toast.makeText(HollerbackApplication.getInstance(), "No videos to play at this time", Toast.LENGTH_LONG);
                 t.setGravity(Gravity.CENTER, 0, 0);
                 t.show();
@@ -597,7 +599,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
         if (mPlaybackIndex >= mPlaybackQueue.size() - 1) {
 
-            if (!mStartedRecording)
+            if (!mIsEnteringRecording)
                 beginRecording();
 
             return;
@@ -726,19 +728,25 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public void beginRecording() {
         if (mConvoFragment.isResumed()) {
 
+            mInPlayback = false;
+            mIsEnteringRecording = true;
+
             Fragment playbackFragment = mConvoFragment.getFragmentManager().findFragmentByTag(VideoPlaybackFragment.FRAGMENT_TAG);
             if (playbackFragment != null) {
                 // remove the playback fragment
                 mConvoFragment.getFragmentManager().popBackStack();
             }
 
-            mStartedRecording = true;
             // we're ready to move to the recording fragment
             RecordVideoFragment f = RecordVideoFragment.newInstance(mConvoId, "Muhahahaha");
             f.setTargetFragment(mConvoFragment, 0);
             mConvoFragment.getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
                     .replace(R.id.fragment_holder, f).addToBackStack(ConversationFragment.FRAGMENT_TAG).commit();
         }
+    }
+
+    public boolean isEnteringRecording() {
+        return mIsEnteringRecording;
     }
 
     private void setVideoSeen(VideoModel video) {
@@ -789,6 +797,12 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
 
         TaskExecuter executer = new TaskExecuter(true); // allow only 1 update at a time
         executer.executeTask(updateVideoTask);
+    }
+
+    @Override
+    public void onRecordingFinished(Bundle info) {
+        mIsEnteringRecording = false;
+
     }
 
 }

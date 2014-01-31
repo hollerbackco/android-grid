@@ -45,6 +45,8 @@ import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.connection.HBSyncHttpResponseHandler;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
+import com.moziy.hollerback.fragment.VideoPlaybackFragment.VideoViewStatusListener;
+import com.moziy.hollerback.fragment.contacts.InviteFragment;
 import com.moziy.hollerback.fragment.delegates.ConvoHistoryDelegate;
 import com.moziy.hollerback.fragment.delegates.ConvoLoaderDelegate;
 import com.moziy.hollerback.fragment.delegates.VideoPlayerDelegateTwo;
@@ -63,9 +65,11 @@ import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.ImageUtil;
 import com.moziy.hollerback.util.date.TimeUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.squareup.picasso.Picasso;
 
-public class ConvoHistoryTwo extends BaseFragment implements TaskClient, RecordingInfo {
+public class ConvoHistoryTwo extends BaseFragment implements TaskClient, RecordingInfo, VideoViewStatusListener {
 
     private static final String TAG = ConvoHistoryTwo.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
@@ -102,6 +106,8 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
     private TextView mMembersTv;
     private String mMembersMessage;
     private String mSubTitle;
+    private boolean mWatchedVideo;
+    private boolean mLaunchInviteFragment;
 
     private List<Contact> mMembers;
     private static final String MEMBERS_WORKER = "MEMBERS_WORKER";
@@ -291,6 +297,10 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
         mVideoPlayerDelegateTwo.onPostSuperResume(this);
         mConvoDelegate.onPostSuperResume(this);
+
+        if (!mVideoPlayerDelegateTwo.inPlaybackMode()) {
+
+        }
     }
 
     @Override
@@ -429,6 +439,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     @Override
     public void onRecordingFinished(Bundle info) {
+        mVideoPlayerDelegateTwo.onRecordingFinished(info);
         mRecordingInfo = info;
 
         if (!info.getBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true)) {
@@ -637,4 +648,38 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
     }
 
+    @Override
+    public void onVideoViewReady(View layout) {
+        mVideoPlayerDelegateTwo.onVideoViewReady(layout);
+
+        if (mWatchedVideo == false) { // launch the invite stuff
+            mWatchedVideo = true;
+            int numWatched = PreferenceManagerUtil.getPreferenceValue(HBPreferences.VideoInviteInfo.VIDEOS_WATCHED_COUNT, 0);
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.VideoInviteInfo.VIDEOS_WATCHED_COUNT, ++numWatched);
+            Log.d(TAG, "numWatched: " + numWatched);
+            boolean seenInvite = PreferenceManagerUtil.getPreferenceValue(HBPreferences.VideoInviteInfo.SEEN_INVITE_SCREEN, false);
+            if (numWatched > 5 && !seenInvite) {
+                // set flag to launch the invite stuff
+                mLaunchInviteFragment = true;
+            }
+        }
+
+    }
+
+    @Override
+    public void onVideoViewFinish() {
+        mVideoPlayerDelegateTwo.onVideoViewFinish();
+        // user just watched a video
+
+        if (isResumed() && !mVideoPlayerDelegateTwo.isEnteringRecording() && mLaunchInviteFragment) {
+
+            // lets reset the watched count
+            PreferenceManagerUtil.setPreferenceValue(HBPreferences.VideoInviteInfo.VIDEOS_WATCHED_COUNT, 0);
+            InviteFragment invite = InviteFragment.newInstance(true);
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom).replace(R.id.fragment_holder, invite, InviteFragment.FRAGMENT_TAG)
+                    .addToBackStack(FRAGMENT_TAG).commit();
+
+        }
+
+    }
 }

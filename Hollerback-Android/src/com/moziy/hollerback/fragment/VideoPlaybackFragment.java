@@ -75,16 +75,17 @@ public class VideoPlaybackFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        ((ConvoHistoryTwo) getTargetFragment()).getVideoDelegate().onVideoViewReady(getView());
+        ((VideoViewStatusListener) getTargetFragment()).onVideoViewReady(getView());
 
     }
 
     @Override
     public void onPause() {
 
-        if (isRemoving()) {
+        if (isRemoving() && getTargetFragment() != null) {
             mActivity.getSupportActionBar().show();
             ((HollerbackMainActivity) mActivity).getCustomActionBarTitle().setText(((BaseFragment) getTargetFragment()).getActionBarTitle());
+            ((VideoViewStatusListener) getTargetFragment()).onVideoViewFinish();
         }
 
         super.onPause();
@@ -96,8 +97,10 @@ public class VideoPlaybackFragment extends BaseFragment {
         return AnalyticsUtil.ScreenNames.VIDEO_VIEW;
     }
 
-    public interface OnVideoViewReadyListener {
+    public interface VideoViewStatusListener {
         public void onVideoViewReady(View layout);
+
+        public void onVideoViewFinish();
     }
 
 }

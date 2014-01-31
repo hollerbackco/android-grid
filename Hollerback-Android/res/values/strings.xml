@@ -178,6 +178,9 @@
     <!-- Invite fragment -->
     <string name="contacts_book_empty">Your contacts book may be empty.</string>
     <string name="invite">Invite</string>
+    <string name="invite_dialog_title">Invite Friends &amp; Family</string>
+    <string name="invite_dialog_message">It\'s more fun with more people. Invite friends and family to Hollerback!</string>
+    <string name="alright">Alright!</string>
 
     <!-- Convo History II -->
     <string name="no_member_info">Members: ...?</string>

@@ -43,4 +43,16 @@ public class HBPreferences {
     // type: boolean - whether user has seen the start conversation dialog
     public static final String SEEN_START_CONVO_DIALOG = "seen_start_convo_dialog";
 
+    public interface VideoInviteInfo {
+
+        // type: int - number of videos sent
+        public static final String VIDEOS_SENT_COUNT = "num_videos_sent";
+
+        // type: int - number of videos watched
+        public static final String VIDEOS_WATCHED_COUNT = "num_videos_watched";
+
+        // type: boolean - whether user has seen the invite screen
+        public static final String SEEN_INVITE_SCREEN = "seen_invite_screen";
+    }
+
 }
