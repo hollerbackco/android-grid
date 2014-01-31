@@ -52,6 +52,22 @@ public class InviteFragment extends AbsContactListFragment {
         mShowDialog = getArguments().getBoolean(SHOW_DIALOG_BUNDLE_ARG_KEY);
 
         if (mShowDialog) {
+
+            // TODO: move out to analytics
+            if (savedInstanceState == null) { // log the analytics portion of this
+
+                String shownString = AnalyticsUtil.getGaTracker().get(Fields.customMetric(2));
+                int shownValue;
+                if (shownString == null || "".equals(shownString)) {
+                    shownValue = 1;
+                } else {
+                    shownValue = Integer.parseInt(shownString);
+                    ++shownValue;
+                }
+
+                AnalyticsUtil.getGaTracker().set(Fields.customMetric(2), String.valueOf(shownValue));
+            }
+
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             mDialog = builder.setTitle(getString(R.string.invite_dialog_title)).setMessage(getString(R.string.invite_dialog_message))
                     .setPositiveButton(R.string.alright, new DialogInterface.OnClickListener() {
@@ -152,6 +168,8 @@ public class InviteFragment extends AbsContactListFragment {
 
             if (mDialog != null) {
                 PreferenceManagerUtil.setPreferenceValue(HBPreferences.VideoInviteInfo.SEEN_INVITE_SCREEN, true);
+                dimensionValue = "Yes";
+                AnalyticsUtil.getGaTracker().set(Fields.customDimension(5), dimensionValue);
             }
 
             getFragmentManager().popBackStack();

@@ -96,7 +96,7 @@ public class AnalyticsUtil {
         public static final String SEARCH_FOR_USERNAME = "Search Username";
         public static final String CONVO_HISTORY = "Conversation History";
         public static final String VIDEO_VIEW = "Video View";
-	public static final String UNADDED_FRIENDS = "Unadded Friends";
+        public static final String UNADDED_FRIENDS = "Unadded Friends";
     }
 
     public interface Fields {
