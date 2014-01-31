@@ -9,6 +9,7 @@ import android.widget.SearchView;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.analytics.tracking.android.Fields;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.contacts.ContactsInterface;
@@ -88,9 +89,20 @@ public class InviteFragment extends AbsContactListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.mi_invite) {
+            if (mSelected.isEmpty()) {
+                return true;
+            }
             // send an sms and then pop the backstack
             SmsUtil.invite(mActivity, new ArrayList<Contact>(mSelected), HollerbackApplication.getInstance().getString(R.string.sms_invite_friends), null, null);
+
+            String dimensionValue = "Yes";
+            AnalyticsUtil.getGaTracker().set(Fields.customDimension(3), dimensionValue);
+
+            String metricValue = String.valueOf(mSelected.size());
+            AnalyticsUtil.getGaTracker().set(Fields.customMetric(1), metricValue);
+
             getFragmentManager().popBackStack();
+
             return true;
         }
         return super.onOptionsItemSelected(item);
