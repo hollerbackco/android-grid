@@ -59,6 +59,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
     public static final String PLAYING_INSTANCE_STATE = "PLAYING_INSTANCE_STATE";
+    public static final String MODEL_LOADED_INSTANCE_STATE = "MODEL_LOADED";
     private LinkedList<VideoModel> mPlaybackQueue;
     private int mPlaybackIndex = 0;
     private boolean mStartedRecording;
@@ -128,6 +129,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             } else {
                 mPlaybackFragment = (VideoPlaybackFragment) f;
             }
+
+            mHistoryFlag = (EnumSet<VideoPlayerDelegateTwo.VIDEO_MODEL_ENUM>) savedInstance.getSerializable(MODEL_LOADED_INSTANCE_STATE);
 
         } else {
             mPlaybackFragment = new VideoPlaybackFragment();
@@ -248,12 +251,18 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             mPlayingDuringConfigChange = true;
         }
 
+        outState.putSerializable(MODEL_LOADED_INSTANCE_STATE, mHistoryFlag);
+
         outState.putInt(PLAYBACK_INDEX_INSTANCE_STATE, mPlaybackIndex);
 
         outState.putBoolean(PLAYING_INSTANCE_STATE, mPlayingDuringConfigChange);
     }
 
     public void play(int index) {
+
+        if (!isAllModelLoaded())
+            return;
+
         mPlaybackIndex = index;
 
         // VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
