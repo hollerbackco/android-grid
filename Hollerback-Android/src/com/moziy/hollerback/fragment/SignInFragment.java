@@ -183,6 +183,9 @@ public class SignInFragment extends BaseFragment {
             Crashlytics.setUserName(userName);
         }
 
+        String dimensionValue = String.valueOf(id);
+        AnalyticsUtil.getGaTracker().set(com.google.analytics.tracking.android.Fields.customDimension(4), dimensionValue);
+
         /**
          * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
          */

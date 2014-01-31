@@ -256,6 +256,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                         Crashlytics.setUserName(response.user.username);
                     }
 
+                    String dimensionValue = String.valueOf(response.user.id);
+                    AnalyticsUtil.getGaTracker().set(com.google.analytics.tracking.android.Fields.customDimension(4), dimensionValue);
+
                     if (isResumed()) { // go to the confirmation only if in the resumed state
                         SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
                         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)

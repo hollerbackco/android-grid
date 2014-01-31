@@ -8,6 +8,8 @@ import android.os.Build;
 import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class AnalyticsUtil {
 
@@ -23,6 +25,7 @@ public class AnalyticsUtil {
         sGa.setDryRun(AppEnvironment.getInstance().GA_IS_DRY_RUN);
         sTracker = sGa.getTracker(GA_TRACKER_ID);
 
+        initCustomVariables();
     }
 
     public static GoogleAnalytics getGa() {
@@ -31,6 +34,19 @@ public class AnalyticsUtil {
 
     public static Tracker getGaTracker() {
         return sTracker;
+    }
+
+    private static void initCustomVariables() {
+        String dimensionValue = sTracker.get(com.google.analytics.tracking.android.Fields.customDimension(3));
+        if (dimensionValue == null || "".equals(dimensionValue)) {
+            sTracker.set(com.google.analytics.tracking.android.Fields.customDimension(3), "No");
+        }
+
+        long userId;
+        if ((userId = PreferenceManagerUtil.getPreferenceValue(HBPreferences.ID, -1L)) != -1L) {
+            dimensionValue = String.valueOf(userId);
+            sTracker.set(com.google.analytics.tracking.android.Fields.customDimension(4), dimensionValue);
+        }
     }
 
     public interface Category {

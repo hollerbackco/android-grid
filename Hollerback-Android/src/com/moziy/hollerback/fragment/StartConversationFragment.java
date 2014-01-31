@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
+import com.google.analytics.tracking.android.Fields;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
@@ -371,6 +372,10 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
             ImageUtil.generatePngThumbnailFromVideo(0, guid);
             Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
+
+            // number of invites sent
+            String metricValue = String.valueOf(mNonHBContacts.size());
+            AnalyticsUtil.getGaTracker().set(Fields.customMetric(1), metricValue);
 
             SmsUtil.invite(getActivity(), mNonHBContacts, HollerbackApplication.getInstance().getString(R.string.start_convo_sms_body), uri, "image/png");
         }
