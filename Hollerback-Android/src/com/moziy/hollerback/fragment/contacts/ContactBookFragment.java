@@ -25,6 +25,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.contacts.ContactsDelegate.Transaction;
 import com.moziy.hollerback.fragment.BaseFragment;
 import com.moziy.hollerback.model.Contact;
@@ -158,17 +159,17 @@ public class ContactBookFragment extends BaseFragment {
         tab.setContentDescription(R.string.contacts_lc);
         mActionbar.addTab(tab, mTabCount++, true);
 
-        // if (((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends() != null && !((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends().isEmpty()) {
-        tab = mActionbar.newTab();
-        tab.setText(R.string.hollerback_users_lc);
-        v = inflater.inflate(R.layout.contact_tab_view, null);
-        ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
-        v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-        tab.setCustomView(v);
-        tab.setTabListener(mTabListener);
-        tab.setContentDescription(R.string.hollerback_users_lc);
-        mActionbar.addTab(tab, mTabCount++); // tab, position, selected
-        // }
+        if (((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends() != null && !((HollerbackMainActivity) mActivity).getContactsInterface().getUnaddedFriends().isEmpty()) {
+            tab = mActionbar.newTab();
+            tab.setText(R.string.hollerback_users_lc);
+            v = inflater.inflate(R.layout.contact_tab_view, null);
+            ((TextView) v.findViewById(R.id.tv_tab_text)).setText(getString(R.string.hollerback_users_lc));
+            v.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+            tab.setCustomView(v);
+            tab.setTabListener(mTabListener);
+            tab.setContentDescription(R.string.hollerback_users_lc);
+            mActionbar.addTab(tab, mTabCount++); // tab, position, selected
+        }
 
         tab = mActionbar.newTab();
         tab.setText(R.string.find_by_username);
