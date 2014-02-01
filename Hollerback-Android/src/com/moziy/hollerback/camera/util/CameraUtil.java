@@ -174,14 +174,18 @@ public class CameraUtil {
     }
 
     public static void setRecordingParams(MediaRecorder recorder, int width, int height) {
+        // video
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
-        recorder.setVideoEncoder(VIDEO_OUTPUT_ENCODER);
-        recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
-        recorder.setAudioEncodingBitRate(AUDIO_ENCODING_BIT_RATE);
-        recorder.setVideoEncodingBitRate(VIDEO_ENCODING_RATE);
-        recorder.setAudioEncoder(AUDIO_ENCODER);
         // recorder.setVideoFrameRate(VIDEO_FRAME_RATE);
         recorder.setVideoSize(width, height);
+        recorder.setVideoEncodingBitRate(VIDEO_ENCODING_RATE);
+        recorder.setVideoEncoder(VIDEO_OUTPUT_ENCODER);
+
+        // audio
+        recorder.setAudioEncodingBitRate(AUDIO_ENCODING_BIT_RATE);
+        recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
+        recorder.setAudioEncoder(AUDIO_ENCODER);
+
     }
 
     public static void printAllCamcorderProfiles(int cameraId) {
