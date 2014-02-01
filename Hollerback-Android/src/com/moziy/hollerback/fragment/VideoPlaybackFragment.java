@@ -85,6 +85,7 @@ public class VideoPlaybackFragment extends BaseFragment {
         if (isRemoving() && getTargetFragment() != null) {
             mActivity.getSupportActionBar().show();
             ((HollerbackMainActivity) mActivity).getCustomActionBarTitle().setText(((BaseFragment) getTargetFragment()).getActionBarTitle());
+            ((HollerbackMainActivity) mActivity).setCustomActionBarSubTitle(((BaseFragment) getTargetFragment()).getActionBarSubTitle());
             ((VideoViewStatusListener) getTargetFragment()).onVideoViewFinish();
         }
 

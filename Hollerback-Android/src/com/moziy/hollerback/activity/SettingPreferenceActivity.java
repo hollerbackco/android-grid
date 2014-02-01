@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.moziy.hollerback.HollerbackAppState;
@@ -63,9 +66,9 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
         View customView = inflater.inflate(R.layout.header_title, null);
         TextView txtTitle = (TextView) customView.findViewById(R.id.title);
         txtTitle.setText(this.getString(R.string.action_settings));
-
+        ActionBar.LayoutParams params = new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.START);
         this.getSupportActionBar().setDisplayShowCustomEnabled(true);
-        this.getSupportActionBar().setCustomView(customView);
+        this.getSupportActionBar().setCustomView(customView, params);
         this.getSupportActionBar().setIcon(R.drawable.banana_medium);
 
         HBEasterEggUtil.init();

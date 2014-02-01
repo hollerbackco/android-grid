@@ -24,6 +24,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/action_bar_subtitle_text_size" />
+        android:textSize="@dimen/action_bar_subtitle_text_size"
+        android:visibility="gone" />
 
 </LinearLayout>
