@@ -672,7 +672,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         // user just watched a video
 
         if (isResumed() && !mVideoPlayerDelegateTwo.isEnteringRecording() && mLaunchInviteFragment) {
-
+            mLaunchInviteFragment = false;
             // lets reset the watched count
             PreferenceManagerUtil.setPreferenceValue(HBPreferences.VideoInviteInfo.VIDEOS_WATCHED_COUNT, 0);
             InviteFragment invite = InviteFragment.newInstance(true);
