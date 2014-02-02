@@ -490,11 +490,6 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
         // new TaskExecuter().executeTask(t);
         // }
 
-        if (info.containsKey(RecordingInfo.VIDEO_MODEL)) {
-            VideoModel newlyRecorded = (VideoModel) info.getSerializable(RecordingInfo.VIDEO_MODEL);
-            mAdapter.add(newlyRecorded);
-        }
-
         // UPDATE: this is being done in RecordVideoFragment.updateConversationTime
         // new TaskExecuter().executeTask(t);
     }

@@ -802,7 +802,16 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     @Override
     public void onRecordingFinished(Bundle info) {
         mIsEnteringRecording = false;
+        if (!info.getBoolean(RecordingInfo.STATUS_BUNDLE_ARG_KEY, true)) {
+            return;
+        }
+
+        if (info.containsKey(RecordingInfo.VIDEO_MODEL)) {
+            VideoModel newlyRecorded = (VideoModel) info.getSerializable(RecordingInfo.VIDEO_MODEL);
+            mPlaybackQueue.add(newlyRecorded);
+            mAdapter.add(newlyRecorded);
+
+        }
 
     }
-
 }
