@@ -177,14 +177,15 @@ public class CameraUtil {
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-    public static void setRecordingParams(MediaRecorder recorder, int width, int height) {
+    public static int setRecordingParams(MediaRecorder recorder, int width, int height) {
 
         if (Build.VERSION.SDK_INT >= 15) { // if the device has this profile, then use it
 
             if (CamcorderProfile.hasProfile(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA)) {
                 CamcorderProfile qvga = CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA);
+                recorder.setProfile(qvga);
                 Log.d(TAG, "setting qvga profile");
-                return;
+                return qvga.fileFormat;
             }
         }
 
@@ -200,6 +201,7 @@ public class CameraUtil {
         recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
         recorder.setAudioEncoder(AUDIO_ENCODER);
 
+        return VIDEO_OUTPUT_FORMAT;
     }
 
     public static void printAllCamcorderProfiles(int cameraId) {

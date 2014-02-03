@@ -39,12 +39,12 @@ public class ImageUtil {
         }
     }
 
-    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid) {
-        return generatePngThumbnailFromVideo(partNum, videoGuid, Thumbnails.MICRO_KIND);
+    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid, String videoFileExt) {
+        return generatePngThumbnailFromVideo(partNum, videoGuid, videoFileExt, Thumbnails.MICRO_KIND);
     }
 
-    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid, int kind) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "mp4"), kind);
+    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid, String videoFileExt, int kind) {
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, videoFileExt), kind);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
         writeBitmapToExternal(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "png"), bitmap);
 

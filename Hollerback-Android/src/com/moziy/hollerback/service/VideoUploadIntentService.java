@@ -100,7 +100,7 @@ public class VideoUploadIntentService extends IntentService {
                 for (VideoModel v : mVideos) {
 
                     if (v.getThumbUrl() == null) { // generate the thumb
-                        GenerateVideoThumbTask t = new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, v.getGuid(), "mp4"), HBFileUtil.getLocalThumbFile(v.getGuid()));
+                        GenerateVideoThumbTask t = new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, v.getGuid(), v.getSegmentFileExtension()), HBFileUtil.getLocalThumbFile(v.getGuid()));
                         t.run();
                         v.setThumbUrl("file:///" + t.getDstPath());
                     }

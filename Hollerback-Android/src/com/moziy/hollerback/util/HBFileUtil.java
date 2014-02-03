@@ -56,8 +56,10 @@ public class HBFileUtil {
             }
         }
 
+        String ext = (video.getSegmentFileExtension() != null) ? ("." + video.getSegmentFileExtension()) : ".mp4";
+
         // XXX: parse the filename rather than assuming it's mp4
-        File media = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/" + filename + ".mp4");
+        File media = new File(AppEnvironment.HB_SDCARD_PATH + "/" + subDir + "/" + filename + ext);
         return media;
     }
 
