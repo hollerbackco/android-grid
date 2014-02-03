@@ -848,11 +848,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
         // Step 3: Configure Camera
-        CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
+        mOutputFormat = CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
         // recorder.setProfile(CamcorderProfile.get(mCurrentCameraId, CamcorderProfile.QUALITY_LOW));
 
         // recorder.setvideoextension
-        targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
+        targetExtension = HBFileUtil.getFileFormat(mOutputFormat);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT) {

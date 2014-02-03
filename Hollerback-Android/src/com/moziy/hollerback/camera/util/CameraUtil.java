@@ -25,7 +25,7 @@ public class CameraUtil {
     public static final int AUDIO_SAMPLE_RATE = 32 * KBPS;
     public static final int AUDIO_ENCODING_BIT_RATE = 96 * KBPS;
     public static final int AUDIO_ENCODER = MediaRecorder.AudioEncoder.AAC;
-    public static final int VIDEO_ENCODING_RATE = 512 * KBPS;
+    public static final int VIDEO_ENCODING_RATE = 256 * KBPS;
     public static final int VIDEO_FRAME_RATE = 24;
     public static final int VIDEO_OUTPUT_FORMAT = MediaRecorder.OutputFormat.MPEG_4;
     public static final int VIDEO_OUTPUT_ENCODER = MediaRecorder.VideoEncoder.H264;
