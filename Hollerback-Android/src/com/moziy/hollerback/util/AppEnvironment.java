@@ -20,7 +20,7 @@ public class AppEnvironment {
     public static final int ENV_PRODUCTION = 0x9999;
     public static final int ENV_DEVELOPMENT = 0x1234;
 
-    public final int ENV = ENV_PRODUCTION; // ENV FLAG
+    public final int ENV = ENV_DEVELOPMENT; // ENV FLAG
 
     // NEED NOT RESET //
 
@@ -76,7 +76,7 @@ public class AppEnvironment {
         if (isHeightLongSide) {
 
             if (((double) SCREEN_SIZE.y / (double) SCREEN_SIZE.x) > VIDEO_ASPECT_RATIO) {
-                OPTIMAL_VIDEO_SIZE.x = (int) ((double) SCREEN_SIZE.y / VIDEO_ASPECT_RATIO); // make the width wider
+                OPTIMAL_VIDEO_SIZE.x = (int) (Math.ceil((double) SCREEN_SIZE.y / VIDEO_ASPECT_RATIO)); // make the width wider
             } else { //
                 OPTIMAL_VIDEO_SIZE.y = (int) ((double) SCREEN_SIZE.x * VIDEO_ASPECT_RATIO);
             }
@@ -86,7 +86,7 @@ public class AppEnvironment {
             if ((double) SCREEN_SIZE.y / (double) SCREEN_SIZE.x > VIDEO_ASPECT_RATIO) {
                 OPTIMAL_VIDEO_SIZE.y = (int) (SCREEN_SIZE.y * VIDEO_ASPECT_RATIO);
             } else {
-                OPTIMAL_VIDEO_SIZE.x = (int) (SCREEN_SIZE.x * VIDEO_ASPECT_RATIO);
+                OPTIMAL_VIDEO_SIZE.x = (int) (Math.ceil(SCREEN_SIZE.x * VIDEO_ASPECT_RATIO));
             }
 
         }

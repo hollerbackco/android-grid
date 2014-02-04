@@ -3,18 +3,15 @@ package com.moziy.hollerback.fragment;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.util.AnalyticsUtil;
-import com.moziy.hollerback.util.AppEnvironment;
 
 public class VideoPlaybackFragment extends BaseFragment {
     private static final String TAG = VideoPlaybackFragment.class.getSimpleName();
@@ -58,8 +55,7 @@ public class VideoPlaybackFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.conversation_layout, container, false);
         mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
-        LayoutParams videoViewParams = new LayoutParams(AppEnvironment.OPTIMAL_VIDEO_SIZE.x, AppEnvironment.OPTIMAL_VIDEO_SIZE.y, Gravity.CENTER);
-        mVideoView.setLayoutParams(videoViewParams);
+
         mVideoView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override

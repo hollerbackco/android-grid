@@ -21,7 +21,6 @@ import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
-import android.media.MediaRecorder.OutputFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -144,6 +143,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
 
     private String[] mPhones = null;
     ViewPager mFilterPagers;
+    private int mOutputFormat = -1;
 
     private TextureView mTexturePreview;
 
@@ -820,7 +820,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
             mFileDataName = HBFileUtil.generateFileNameFromGUID(mGuid);
         }
 
-        mFileExt = "mp4"; // although get this info from the output format type
+        mFileExt = targetExtension; // although get this info from the output format type
 
         ++mTotalParts; // part info will change as video segments get recorded
 
@@ -848,11 +848,11 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         CameraUtil.printAllCamcorderProfiles(CameraInfo.CAMERA_FACING_FRONT);
 
         // Step 3: Configure Camera
-        CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
+        mOutputFormat = CameraUtil.setRecordingParams(recorder, mBestVideoSize.width, mBestVideoSize.height);
         // recorder.setProfile(CamcorderProfile.get(mCurrentCameraId, CamcorderProfile.QUALITY_LOW));
 
         // recorder.setvideoextension
-        targetExtension = HBFileUtil.getFileFormat(OutputFormat.MPEG_4);
+        targetExtension = HBFileUtil.getFileFormat(mOutputFormat);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (mCurrentCameraId == CameraInfo.CAMERA_FACING_FRONT) {
@@ -932,7 +932,7 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
     private void deleteRecording() {
         if (mFileDataName != null) {
             for (int i = 0; i < mTotalParts; i++) {
-                File f = new File(HBFileUtil.getLocalFile(mFileDataName + "." + i + ".mp4"));
+                File f = new File(HBFileUtil.getLocalFile(mFileDataName + "." + i + "." + mFileExt));
                 if (f.exists()) {
                     Log.d(TAG, "deleting: " + f.getPath());
                     f.delete();

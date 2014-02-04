@@ -576,7 +576,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
                 mSegmentPart = 0; // start from 0
             }
 
-            videoUri = Uri.fromFile(HBFileUtil.getSegmentedFile(mSegmentPart, v.getGuid(), "mp4"));
+            videoUri = Uri.fromFile(HBFileUtil.getSegmentedFile(mSegmentPart, v.getGuid(), v.getSegmentFileExtension()));
 
         } else {
             videoUri = Uri.fromFile(HBFileUtil.getOutputVideoFile(v));

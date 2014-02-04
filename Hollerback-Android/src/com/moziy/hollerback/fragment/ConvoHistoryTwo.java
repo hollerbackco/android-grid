@@ -618,7 +618,7 @@ public class ConvoHistoryTwo extends BaseFragment implements TaskClient, Recordi
 
                         File f = new File(URI.create(v.getThumbUrl()));
                         if (!f.exists()) {
-                            Bitmap b = ImageUtil.generatePngThumbnailFromVideo(0, v.getGuid(), Thumbnails.MINI_KIND);
+                            Bitmap b = ImageUtil.generatePngThumbnailFromVideo(0, v.getGuid(), v.getSegmentFileExtension(), Thumbnails.MINI_KIND);
                             mFileCache.put(v.getThumbUrl(), b);
                             holder.mSquareImageView.setImageBitmap(b);
                         } else {

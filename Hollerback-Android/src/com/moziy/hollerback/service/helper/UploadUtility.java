@@ -152,8 +152,8 @@ public class UploadUtility implements RecoveryClient {
                 conversationResp.save();
 
                 // generate the thumb
-                ConvoThumbTask t = new ConvoThumbTask(conversationResp.getConversationId(), new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, videoModel.getGuid(), "mp4"), HBFileUtil
-                        .getLocalThumbFile(videoModel.getGuid())));
+                ConvoThumbTask t = new ConvoThumbTask(conversationResp.getConversationId(), new GenerateVideoThumbTask(HBFileUtil.getLocalVideoFile(0, videoModel.getGuid(),
+                        videoModel.getSegmentFileExtension()), HBFileUtil.getLocalThumbFile(videoModel.getGuid())));
                 t.run();
 
                 // fire off conversation intent

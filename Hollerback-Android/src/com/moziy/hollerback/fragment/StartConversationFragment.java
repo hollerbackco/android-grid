@@ -275,6 +275,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
                 long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
                 int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
                 String guid = mRecordingInfo.getString(RecordingInfo.RESOURCE_GUID);
+                VideoModel videoModel = (VideoModel) mRecordingInfo.getSerializable(RecordingInfo.VIDEO_MODEL);
 
                 uploadVideo(resourceId, totalParts, guid); // upload the resource whether the fragment is added or not because we got the creation intent
 
@@ -286,7 +287,7 @@ public class StartConversationFragment extends BaseFragment implements Recording
                     Toast.makeText(c, c.getString(R.string.message_sent_simple), Toast.LENGTH_LONG).show();
 
                     if (!mNonHBContacts.isEmpty())
-                        sendSMSInvite(guid);
+                        sendSMSInvite(guid, videoModel.getSegmentFileExtension());
                 } else {
                     Log.w(TAG, "skipping sms invite since fragment not added");
                 }
@@ -368,9 +369,9 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
         }
 
-        private void sendSMSInvite(String guid) {
+        private void sendSMSInvite(String guid, String videoFileExt) {
 
-            ImageUtil.generatePngThumbnailFromVideo(0, guid);
+            ImageUtil.generatePngThumbnailFromVideo(0, guid, videoFileExt);
             Uri uri = Uri.fromFile(new File(HBFileUtil.getLocalVideoFile(0, guid, "png")));
 
             // number of invites sent

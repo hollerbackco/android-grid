@@ -6,11 +6,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
@@ -22,7 +24,7 @@ public class CameraUtil {
     public static final int AUDIO_SAMPLE_RATE = 32 * KBPS;
     public static final int AUDIO_ENCODING_BIT_RATE = 96 * KBPS;
     public static final int AUDIO_ENCODER = MediaRecorder.AudioEncoder.AAC;
-    public static final int VIDEO_ENCODING_RATE = 280 * KBPS;
+    public static final int VIDEO_ENCODING_RATE = 256 * KBPS;
     public static final int VIDEO_FRAME_RATE = 24;
     public static final int VIDEO_OUTPUT_FORMAT = MediaRecorder.OutputFormat.MPEG_4;
     public static final int VIDEO_OUTPUT_ENCODER = MediaRecorder.VideoEncoder.H264;
@@ -173,7 +175,19 @@ public class CameraUtil {
         return false;
     }
 
-    public static void setRecordingParams(MediaRecorder recorder, int width, int height) {
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+    public static int setRecordingParams(MediaRecorder recorder, int width, int height) {
+
+        // if (Build.VERSION.SDK_INT >= 15) { // if the device has this profile, then use it
+        //
+        // if (CamcorderProfile.hasProfile(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA)) {
+        // CamcorderProfile qvga = CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA);
+        // recorder.setProfile(qvga);
+        // Log.d(TAG, "setting qvga profile");
+        // return qvga.fileFormat;
+        // }
+        // }
+
         // video
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
         // recorder.setVideoFrameRate(VIDEO_FRAME_RATE);
@@ -186,6 +200,7 @@ public class CameraUtil {
         recorder.setAudioSamplingRate(AUDIO_SAMPLE_RATE);
         recorder.setAudioEncoder(AUDIO_ENCODER);
 
+        return VIDEO_OUTPUT_FORMAT;
     }
 
     public static void printAllCamcorderProfiles(int cameraId) {
