@@ -9,7 +9,6 @@ import java.util.List;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -179,15 +178,15 @@ public class CameraUtil {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     public static int setRecordingParams(MediaRecorder recorder, int width, int height) {
 
-        if (Build.VERSION.SDK_INT >= 15) { // if the device has this profile, then use it
-
-            if (CamcorderProfile.hasProfile(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA)) {
-                CamcorderProfile qvga = CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA);
-                recorder.setProfile(qvga);
-                Log.d(TAG, "setting qvga profile");
-                return qvga.fileFormat;
-            }
-        }
+        // if (Build.VERSION.SDK_INT >= 15) { // if the device has this profile, then use it
+        //
+        // if (CamcorderProfile.hasProfile(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA)) {
+        // CamcorderProfile qvga = CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_QVGA);
+        // recorder.setProfile(qvga);
+        // Log.d(TAG, "setting qvga profile");
+        // return qvga.fileFormat;
+        // }
+        // }
 
         // video
         recorder.setOutputFormat(VIDEO_OUTPUT_FORMAT);
