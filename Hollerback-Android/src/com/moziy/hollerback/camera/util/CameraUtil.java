@@ -210,7 +210,7 @@ public class CameraUtil {
             try {
 
                 if (Modifier.isStatic(f.getModifiers()) && CamcorderProfile.hasProfile(cameraId, f.getInt(f))) {
-                    Log.d(TAG, f.getName() + " found");
+                    // Log.d(TAG, f.getName() + " found");
                     CamcorderProfile profile = CamcorderProfile.get(cameraId, f.getInt(f));
 
                     Field[] objectFields = profile.getClass().getFields();
@@ -221,10 +221,10 @@ public class CameraUtil {
                             sb.append(pfield.getName()).append(": ").append(pfield.get(profile)).append("\n");
                         }
                     }
-                    Log.d(TAG, "profile: " + (sb != null ? sb.toString() : ""));
+                    // Log.d(TAG, "profile: " + (sb != null ? sb.toString() : ""));
 
                 } else if (Modifier.isStatic(f.getModifiers())) {
-                    Log.d(TAG, f.getName() + " not found");
+                    // Log.d(TAG, f.getName() + " not found");
                 }
             } catch (IllegalArgumentException e) {
                 // TODO Auto-generated catch block
