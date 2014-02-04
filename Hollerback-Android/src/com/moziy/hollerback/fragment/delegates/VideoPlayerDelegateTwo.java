@@ -47,6 +47,7 @@ import com.moziy.hollerback.model.VideoModel.ResourceState;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
+import com.moziy.hollerback.service.task.VideoDownloadTask.ProgressListener;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.ConversionUtil;
 import com.moziy.hollerback.util.HBFileUtil;
@@ -55,7 +56,7 @@ import com.moziy.hollerback.util.sharedpreference.HBPreferences;
 import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVideoModelLoaded, OnHistoryUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
-        VideoViewStatusListener, RecordingInfo {
+        VideoViewStatusListener, RecordingInfo, ProgressListener {
     private static final String TAG = VideoPlayerDelegateTwo.class.getSimpleName();
     public static final String PLAYBACK_QUEUE_INSTANCE_STATE = "PLAYBACK_QUEUE_INSTANCE_STATE";
     public static final String PLAYBACK_INDEX_INSTANCE_STATE = "PLAYBACK_INDEX_INSTANCE_STATE";
@@ -91,6 +92,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     private ConvoHistoryAdapter mAdapter;
 
     private VideoPlaybackFragment mPlaybackFragment;
+    private String mPlaybackHeadId;
 
     public enum VIDEO_MODEL_ENUM {
         LOCAL_HISTORY_LOADED, REMOTE_HISTORY_LOADED, NEW_VIDEO_MODEL_LOADED
@@ -286,6 +288,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         // controller.setAnchorView(mVideoView);
         // mVideoView.setMediaController(controller);
         VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
+        mPlaybackHeadId = v.getVideoId();
+        mProgress.setProgress(0);
         mSenderName.setText(v.getSenderName());
         mDateSent.setText(ConversionUtil.timeAgo(TimeUtil.PARSE(v.getCreateDate())));
 
@@ -310,7 +314,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             if (i < mPlaybackQueue.size()) {
                 VideoModel v = mPlaybackQueue.get(i);
                 if (v.getState().equals(ResourceState.PENDING_DOWNLOAD)) {
-                    mLoaderDelegate.requestDownload(v);
+                    mLoaderDelegate.requestDownload(v, this);
                 }
             }
         }
@@ -811,6 +815,15 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
             mPlaybackQueue.add(newlyRecorded);
             mAdapter.add(newlyRecorded);
 
+        }
+
+    }
+
+    // get updates to the progress of video downloads
+    @Override
+    public synchronized void onProgress(int progress, String videoId) {
+        if (videoId.equals(mPlaybackHeadId) && mProgress != null && mConvoFragment.isResumed()) {
+            mProgress.setProgress(progress);
         }
 
     }

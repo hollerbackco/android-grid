@@ -227,8 +227,14 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
     }
 
     private boolean addDownloadWorkerFor(VideoModel video) {
+        return addDownloadWorkerFor(video, null);
+    }
+
+    private boolean addDownloadWorkerFor(VideoModel video, VideoDownloadTask.ProgressListener listener) {
 
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
+        downloadTask.setProgressListener(listener);
+
         boolean added = mConvoFragment.addTaskToQueue(downloadTask, video.getGuid());
         if (!added) { // couldn't create the download worker, so lets clear the state
             Log.d(TAG, "not adding download worker for: " + video.toString());
@@ -239,11 +245,11 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
 
     }
 
-    public boolean requestDownload(VideoModel video) {
+    public boolean requestDownload(VideoModel video, VideoDownloadTask.ProgressListener listener) {
         if (isAdded()) {
             // add the video to the list of videos
             mConvoVideoMap.put(video.getGuid(), video);
-            boolean added = addDownloadWorkerFor(video);
+            boolean added = addDownloadWorkerFor(video, listener);
             if (added) {
                 mWaitingDownloadList.add(video.getVideoId());
             }
@@ -252,6 +258,10 @@ public class ConvoLoaderDelegate extends AbsFragmentLifecylce implements Task.Li
         }
 
         return false;
+    }
+
+    public boolean requestDownload(VideoModel video) {
+        return requestDownload(video, null);
     }
 
     private void handleVideoDownload(VideoDownloadTask t) {

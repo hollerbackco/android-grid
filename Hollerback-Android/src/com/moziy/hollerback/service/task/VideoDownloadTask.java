@@ -15,6 +15,7 @@ public class VideoDownloadTask extends HttpDownloadTask {
 
     private String mVideoId;
     private POST_TXN_OPS mPostTransactionOp = POST_TXN_OPS.CLEAR; // default operation is to clear the transacting flag
+    private ProgressListener mProgressListener;
 
     public VideoDownloadTask(VideoModel model) { // default clears the transacting model after complete
         super(model.getFileUrl(), HBFileUtil.getOutputVideoFile(model));
@@ -72,4 +73,20 @@ public class VideoDownloadTask extends HttpDownloadTask {
     public String getVideoId() {
         return mVideoId;
     }
+
+    @Override
+    public void onProgress(int progress) {
+        if (mProgressListener != null) {
+            mProgressListener.onProgress(progress, mVideoId);
+        }
+    }
+
+    public void setProgressListener(ProgressListener listener) {
+        mProgressListener = listener;
+    }
+
+    public interface ProgressListener {
+        public void onProgress(int progress, String videoId);
+    }
+
 }
