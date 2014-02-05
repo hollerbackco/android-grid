@@ -19,6 +19,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -282,9 +283,19 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
     public void onVideoViewReady(View layout) {
         Log.d(TAG, "onVideoViewReady");
         onViewCreated(layout);
-        // MediaController controller = new MediaController(mConvoFragment.getActivity());
-        // controller.setAnchorView(mVideoView);
-        // mVideoView.setMediaController(controller);
+        mMediaController = new MediaController(mConvoFragment.getActivity(), false);
+        mMediaController.setPrevNextListeners(mOnNextClick, mOnPreviousClick);
+        mMediaController.setAnchorView(mVideoView);
+        mVideoView.setMediaController(mMediaController);
+
+        // mVideoView.setOnTouchListener(new OnTouchListener() {
+        //
+        // @Override
+        // public boolean onTouch(View v, MotionEvent event) {
+        // mVideoView.setMediaController(mMediaController);
+        // return false;
+        // }
+        // });
         VideoModel v = mPlaybackQueue.get(mPlaybackIndex);
         mSenderName.setText(v.getSenderName());
         mDateSent.setText(ConversionUtil.timeAgo(TimeUtil.PARSE(v.getCreateDate())));
@@ -588,6 +599,15 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         mVideoView.setOnCompletionListener(this);
     }
 
+    private View.OnClickListener mOnNextClick = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            playNextVideo();
+
+        }
+    };
+
     private void playNextVideo() {
 
         if (mPlaybackIndex < mPlaybackQueue.size()) {
@@ -618,9 +638,22 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         // making the assumption that video is on the device when it's segmented since it's a video the user has sent
         if (ResourceState.ON_DISK.equals(videoToPlay.getState()) || videoToPlay.isSegmented()) {
             playVideo(videoToPlay);
+        } else {
+            download(mPlaybackIndex, 3);
         }
 
     }
+
+    private View.OnClickListener mOnPreviousClick = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            if (mPlaybackIndex > 0)
+                playLastVideo();
+
+        }
+    };
+    private MediaController mMediaController;
 
     private void playLastVideo() {
         mProgress.setVisibility(View.VISIBLE);
@@ -632,6 +665,8 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         VideoModel videoToPlay = mPlaybackQueue.get(mPlaybackIndex);
         if (ResourceState.ON_DISK.equals(videoToPlay.getState()) || videoToPlay.isSegmented()) {
             playVideo(videoToPlay);
+        } else {
+            download(mPlaybackIndex, 3);
         }
     }
 
@@ -643,6 +678,7 @@ public class VideoPlayerDelegateTwo extends AbsFragmentLifecylce implements OnVi
         // if (mConvoFragment.isResumed()) { // was mConvoFragment
 
         if (mPlaybackFragment.isResumed()) {
+            // mVideoView.setMediaController(null);
             mVideoView.start();
         } else {
             Log.d(TAG, "not playing because not in resumed state");

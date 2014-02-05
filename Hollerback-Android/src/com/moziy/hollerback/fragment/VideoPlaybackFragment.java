@@ -56,14 +56,14 @@ public class VideoPlaybackFragment extends BaseFragment {
         View v = inflater.inflate(R.layout.conversation_layout, container, false);
         mVideoView = (VideoView) v.findViewById(R.id.vv_preview);
 
-        mVideoView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-                return mGestureDetector.onTouchEvent(event);
-            }
-        });
+        // mVideoView.setOnTouchListener(new View.OnTouchListener() {
+        //
+        // @Override
+        // public boolean onTouch(View v, MotionEvent event) {
+        //
+        // return mGestureDetector.onTouchEvent(event);
+        // }
+        // });
 
         return v;
     }

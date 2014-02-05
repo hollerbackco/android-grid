@@ -23,6 +23,7 @@
         android:visibility="visible" />
 
     <LinearLayout
+        android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -56,6 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="@dimen/dim_48dp"
         android:background="@android:color/transparent"
         android:visibility="gone" >
 
