@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
@@ -1138,6 +1139,20 @@ public class RecordVideoFragment extends BaseFragment implements TextureView.Sur
         CameraUtil.setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
         Camera.Parameters params = mCamera.getParameters();
         params.setPreviewSize(mBestPreviewSize.width, mBestPreviewSize.height);
+
+        List<String> supportedFocusModes = params.getSupportedFocusModes();
+        // check to see if the focus mode supports continuous video
+        if (supportedFocusModes != null) {
+            for (String focusMode : supportedFocusModes) {
+                if (Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO.equals(focusMode)) {
+                    params.setFocusMode(focusMode);
+                    Log.d(TAG, "setting continuous video focus");
+                    break;
+                }
+                Log.d(TAG, "supported focus mode: " + focusMode);
+            }
+        }
+
         mCamera.setParameters(params);
 
     }
