@@ -21,7 +21,7 @@ public class AppEnvironment {
     public static final int ENV_DEVELOPMENT = 0x1234;
     public static final int ENV_LOCAL = 0x4444;
 
-    public final int ENV = ENV_DEVELOPMENT; // ENV FLAG
+    public final int ENV = ENV_PRODUCTION; // ENV FLAG
 
     // NEED NOT RESET //
 
@@ -159,7 +159,7 @@ public class AppEnvironment {
             case ENV_LOCAL:
                 DBUtil.copyDbToSdcard();
                 LogUtil.d("Setting Development Environment");
-                BASE_URL = "http://10.0.1.142:9292";
+                BASE_URL = "http://10.0.1.49:9292";
                 FORCE_PHONE_NUMBER_CHECK = true;
                 LOG_CRASHES = true;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";

@@ -1,0 +1,1 @@
+ALTER TABLE Videos ADD COLUMN gif_url TEXT;
