@@ -52,8 +52,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     private static final String TAG = ConversationListFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = ConversationListFragment.class.getSimpleName();
 
-    private int PREFERENCE_PAGE;
-    private ViewGroup mHeader;
     private ViewGroup mFooter;
     private EditText mTxtSearch;
 
@@ -79,15 +77,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         mActivity.getSupportActionBar().setHomeButtonEnabled(false);
         mActivity.getSupportActionBar().setIcon(R.drawable.logo);
         mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
-        View fragmentView = inflater.inflate(R.layout.message_list_fragment, null);
+        View fragmentView = inflater.inflate(R.layout.conversation_list_fragment, container, false);
 
         this.startLoading();
 
         mConversationList = (ListView) fragmentView.findViewById(R.id.message_listview);
-        mFooter = (ViewGroup) inflater.inflate(R.layout.message_list_footer, null);
-        mHeader = (ViewGroup) inflater.inflate(R.layout.message_list_item_header, null);
+        mFooter = (ViewGroup) inflater.inflate(R.layout.conversation_list_footer, null);
+        mTxtSearch = (EditText) fragmentView.findViewById(R.id.txtSearch);
 
-        initializeView(fragmentView);
+        initListViewAnimation();
+
+        mTxtSearch.addTextChangedListener(filterTextWatcher);
+
+        mConversationList.addFooterView(mFooter, null, true); // respond to touch events
 
         getLoaderManager().initLoader(0, null, this); // the loader will be autostarted
 
@@ -124,20 +126,13 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         super.onDestroyView();
         mTxtSearch.removeTextChangedListener(filterTextWatcher);
         // IABroadcastManager.unregisterLocalReceiver(receiver);
-        Log.d(FRAGMENT_TAG, "onDestroyView");
+        Log.d(TAG, "onDestroyView");
 
     }
 
     @Override
     protected void initializeView(View view) {
 
-        initListViewAnimation();
-
-        mTxtSearch = (EditText) mHeader.findViewById(R.id.txtSearch);
-        mTxtSearch.addTextChangedListener(filterTextWatcher);
-
-        mConversationList.addHeaderView(mHeader, null, false); // add a header
-        mConversationList.addFooterView(mFooter, null, true); // respond to touch events
         // lsvBaseListView = mConversationList.getRefreshableView();
         // lsvBaseListView.addHeaderView(mHeader);
         // mConversationList.setShowIndicator(false);
@@ -172,6 +167,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                         .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
                 break;
             case R.id.action_add:
+                // OldContactsFragment fragment = OldContactsFragment.newInstance();
                 ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
                         .commitAllowingStateLoss();
@@ -204,7 +200,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             if (conversation.getUnreadCount() > 0) {
 
-                Log.d(FRAGMENT_TAG, "watching conversation with id: " + conversation.getConversationId());
+                Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
 
                 startConversationFragment(conversation);
             } else {
@@ -236,9 +232,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     private void startSettingsFragment() {
         Intent intent = new Intent(mActivity, SettingPreferenceActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        startActivityForResult(intent, PREFERENCE_PAGE);
+        // if startactivity for result is launched from a fragment, the request code gets altered to indicate that this is for a fragment
+        // and not an activity. If you want to launch an activity and have the activity handle it, then you should go getActivity().start..
+        // startActivityForResult(intent, SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE);
+        getActivity().startActivityForResult(intent, SettingPreferenceActivity.PREFERENCE_PAGE_REQUEST_CODE);
     }
 
     private void initListViewAnimation() {
@@ -261,13 +259,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
      * Create a new instance of CountingFragment, providing "num" as an
      * argument.
      */
-    public static ConversationListFragment newInstance(int num) {
+    public static ConversationListFragment newInstance() {
 
         ConversationListFragment f = new ConversationListFragment();
-
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putInt("num", num);
         f.setArguments(args);
         return f;
     }
@@ -302,21 +298,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         }
 
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            mConversationListAdapter.getFilter().filter(s);
+            if (mConversationListAdapter != null)
+                mConversationListAdapter.getFilter().filter(s);
         }
 
     };
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        LogUtil.i("Receiving onActivityResult: " + requestCode);
-        if (requestCode == PREFERENCE_PAGE && resultCode == mActivity.RESULT_OK) {
-            // It wants contact list
-            ContactsInviteFragment fragment = ContactsInviteFragment.newInstance();
-            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                    .commitAllowingStateLoss();
-        }
-    }
 
     @Override
     public void onUpdate(List<ConversationModel> conversations) {
@@ -345,7 +331,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
             // initialization block
             {
-                Log.d(FRAGMENT_TAG, "launch sync");
+                Log.d(TAG, "launch sync");
                 mReceiver = new SyncReceiver(this);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
                 IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
@@ -361,28 +347,27 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
             @Override
             public void onContentChanged() {
                 mConvos = null; // delete the contents
-                Log.d(FRAGMENT_TAG, "removing convos");
+                Log.d(TAG, "removing convos");
                 super.onContentChanged();
             }
 
             @Override
             protected void onStartLoading() {
                 if (mConvos != null) {
-                    Log.d(FRAGMENT_TAG, "delivering results");
+                    Log.d(TAG, "delivering results");
                     deliverResult(mConvos);
                     return;
                 }
 
-                Log.d(FRAGMENT_TAG, "onstartloading");
+                Log.d(TAG, "onstartloading");
                 forceLoad();
 
             }
 
             @Override
             public List<ConversationModel> loadInBackground() {
-                Log.d(FRAGMENT_TAG, "thread id: " + Thread.currentThread().getId());
                 mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
-                Log.d(FRAGMENT_TAG, "retrieved " + mConvos.size() + " convos from the database");
+                Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
                 return mConvos;
             }
 
@@ -396,7 +381,7 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
-        Log.d(FRAGMENT_TAG, "loader finished");
+        Log.d(TAG, "loader finished");
         mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
         mConversationListAdapter.setConversations(data);
         mConversationList.setAdapter(mConversationListAdapter);

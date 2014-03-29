@@ -30,6 +30,7 @@ public class SignupUserFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.signup));
+
     }
 
     @Override

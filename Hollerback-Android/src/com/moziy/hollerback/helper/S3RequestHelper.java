@@ -12,6 +12,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -36,7 +38,7 @@ import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 // TODO: Abstract the upload methods, verification and buckets
 
 public class S3RequestHelper {
-
+    private static final String TAG = S3RequestHelper.class.getSimpleName();
     public static AmazonS3Client s3Client;
 
     static {
@@ -88,8 +90,6 @@ public class S3RequestHelper {
      */
     public static synchronized PutObjectResult uploadFileToS3(String fileName, String filePath) {
 
-        S3TaskResult result = new S3TaskResult();
-
         PutObjectResult putObjectResult = null;
         // Put the image data into S3.
         try {
@@ -102,10 +102,22 @@ public class S3RequestHelper {
 
             putObjectResult = s3Client.putObject(fileUploadRequest);
 
-        } catch (Exception exception) {
+        } catch (AmazonServiceException ase) {
 
-            result.setErrorMessage(exception.getMessage());
+            putObjectResult = null; // set to null if anything goes wrong
+
+            Log.d(TAG, "Amazon Error Message: " + ase.getMessage());
+
+        } catch (AmazonClientException ace) {
+
+            putObjectResult = null; // set to null if anything goes wrong
+
+            Log.d(TAG, "Amazon Error Message: " + ace.getMessage());
+
+        } catch (Exception exception) {
             exception.printStackTrace();
+            putObjectResult = null; // set to null if anything goes wrong
+            Log.d(TAG, "Amazon Error Message - General Exception");
         }
 
         return putObjectResult;

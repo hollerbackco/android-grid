@@ -30,8 +30,8 @@ import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.database.ActiveRecordFields;
 import com.moziy.hollerback.fragment.RecordVideoFragment.RecordingInfo;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker;
-import com.moziy.hollerback.fragment.workers.AbsTaskWorker.TaskClient;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker;
+import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.service.task.ActiveAndroidTask;
@@ -126,7 +126,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
                             .where(ActiveRecordFields.C_VID_CONV_ID + "=? AND " + ActiveRecordFields.C_VID_ISREAD + "=?", mConvoId, 0))); //
 
             // figure out how many tasks we need to create
-            worker = new AbsTaskWorker() {
+            worker = new FragmentTaskWorker() {
             };
             worker.setTargetFragment(this, 0);
             getFragmentManager().beginTransaction().add(worker, TAG + "model_worker").commit();
@@ -313,7 +313,7 @@ public class ConversationFragment extends SherlockFragment implements TaskClient
 
     private void addDownloadWorkerFor(VideoModel video) {
         // for the number of videos, lets create two workers, to download video alternately
-        AbsTaskWorker worker = AbsTaskWorker.newInstance(true); // all videos will be downloaded sequentially
+        FragmentTaskWorker worker = FragmentTaskWorker.newInstance(true); // all videos will be downloaded sequentially
 
         VideoDownloadTask downloadTask = new VideoDownloadTask(video); // download the video
         mTaskQueue.add(downloadTask); // the worker fragment will automatically call the task listener of the fragment

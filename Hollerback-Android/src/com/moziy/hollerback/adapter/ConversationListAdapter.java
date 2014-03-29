@@ -103,7 +103,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         if (convertView == null) {
 
             viewHolder = new ViewHolder();
-            convertView = inflater.inflate(R.layout.message_list_item, parent, false);
+            convertView = inflater.inflate(R.layout.conversation_list_item, parent, false);
             viewHolder.topLayer = (ViewGroup) convertView.findViewById(R.id.top_layer);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
@@ -157,8 +157,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
                 mActivity.getActionBar().hide();
                 // TODO: no need to pass in watched ids
                 RecordVideoFragment fragment = RecordVideoFragment.newInstance(conversationModel.getConversationId(), true, conversationModel.getConversationName(), new ArrayList<String>());
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).addToBackStack(ConversationListFragment.FRAGMENT_TAG).commitAllowingStateLoss();
             }
         });
 

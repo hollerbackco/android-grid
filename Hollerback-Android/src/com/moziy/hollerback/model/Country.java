@@ -1,7 +1,5 @@
 package com.moziy.hollerback.model;
 
-import com.moziy.hollerback.debug.LogUtil;
-
 public class Country {
     @Override
     public boolean equals(Object o) {

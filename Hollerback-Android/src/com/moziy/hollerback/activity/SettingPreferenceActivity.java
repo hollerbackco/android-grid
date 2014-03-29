@@ -21,8 +21,15 @@ import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity {
+
+    public interface Action {
+        public static final String LOGOUT = "logout";
+        public static final String FIND_FRIENDS = "find_friends";
+    }
+
     private final String TWITTERURL = "https://twitter.com/hollerback";
     private final String FACEBOOKURL = "https://www.facebook.com/HollerbackApp";
+    public static final int PREFERENCE_PAGE_REQUEST_CODE = 200;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -90,9 +97,16 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
                 VolleySingleton.getInstance(SettingPreferenceActivity.this).getRequestQueue().getCache().clear(); // clear everything
                 ActiveAndroid.setTransactionSuccessful();
                 ActiveAndroid.endTransaction();
+
+                Bundle args = new Bundle();
+                args.putBoolean(Action.LOGOUT, true);
+
+                Intent intent = new Intent();
+                intent.putExtras(args);
+                setResult(RESULT_OK, intent);
                 SettingPreferenceActivity.this.finish();
 
-                return false;
+                return true;
             }
         });
 

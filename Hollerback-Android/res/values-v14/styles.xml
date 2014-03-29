@@ -30,4 +30,6 @@
         <item name="android:editTextStyle">@style/DefaultEditText</item>
     </style>
 
+    <style name="Hollerback.Settings"></style>
+
 </resources>

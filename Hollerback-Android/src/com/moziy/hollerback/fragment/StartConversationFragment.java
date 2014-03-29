@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -123,11 +124,6 @@ public class StartConversationFragment extends BaseFragment implements Recording
     }
 
     @Override
-    protected void initializeView(View view) {
-
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -165,17 +161,20 @@ public class StartConversationFragment extends BaseFragment implements Recording
 
                     long resourceId = mRecordingInfo.getLong(RecordingInfo.RESOURCE_ROW_ID);
                     int totalParts = mRecordingInfo.getInt(RecordingInfo.RECORDED_PARTS);
-                    for (int i = 0; i < totalParts; i++) {
-                        Intent uploadIntent = new Intent();
-                        uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
-                        uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, i);
-                        getActivity().startService(uploadIntent);
-                    }
 
+                    Intent uploadIntent = new Intent();
+                    uploadIntent.setClass(getActivity(), VideoUploadIntentService.class);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_RESOURCE_ID, resourceId);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_TOTAL_PARTS, totalParts);
+                    uploadIntent.putExtra(VideoUploadIntentService.INTENT_ARG_PART, totalParts); // not used anymore
+                    getActivity().startService(uploadIntent);
+
+                    Fragment f = getFragmentManager().findFragmentByTag(ConversationListFragment.FRAGMENT_TAG);
                     // TODO - Sajjad: Delay the popping until after we've shown the sent icon
-                    getFragmentManager().popBackStack(ContactsFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // go back to the conversation fragment, popping everything
+                    if (f == null)
+                        f = ConversationListFragment.newInstance();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).commit();
 
                 } else {
                     // TODO: if it's a conversation creation failure, display a dialog
@@ -211,7 +210,6 @@ public class StartConversationFragment extends BaseFragment implements Recording
     @Override
     public void onRecordingFinished(Bundle info) {
         mRecordingInfo = info;
-
     }
 
 }
