@@ -23,6 +23,8 @@
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
     <string name="action_uploading">Uploading</string>
+    <string name="action_submit">Submit</string>
+    <string name="ok">OK</string>
 
     <!-- Welcome Text -->
     <string name="talk_to_friends">talk to your friends</string>
@@ -43,8 +45,9 @@
     <string name="record_review">Review</string>
 
     <!-- Sign In/Sign Up -->
-    <string name="name">UserName</string>
+    <string name="name">Username</string>
     <string name="email">Email</string>
+    <string name="username_or_email">Username or Email</string>
     <string name="password">Password</string>
     <string name="number">555&#8211;555&#8211;5555</string>
     <string name="header_country_code_phone">Country Code and Phone Number</string>
@@ -54,17 +57,26 @@
     <string name="error_name_null">Name is not valid</string>
     <string name="error_email">Email not valid</string>
     <string name="error_phone">Phone number is not valid</string>
-    <string name="error_password">Password not valid</string>
-    <string name="error_verification">There was a problem verifying your phone number, please enter the correct code</string>
+    <string name="error_password">Please enter a password</string>
+    <string name="error_login">Login Failed</string>
+    <string name="error_oops">Oops</string>
+    <string name="error_registration">There was a problem processing your registration info.</string>
+    <string name="error_verification"></string>
+    <string name="error_general">Oops, you may be disconnected from the internet.</string>
+    <string name="toast_reverify_sent">We texted you a new pin</string>
     <string name="welcome_contacts_friends">If your friends don\'t have the app, they\'ll get your video in a text.</string>
     <string name="contacts_minimum_required">Don\'t start a conversation with yourself, add at least one contact.</string>
     <string name="message_sent">Nice! Message Sent!</string>
     <string name="message_sent_simple">Message Sent!</string>
     <string name="send_another">Send Another</string>
     <string name="conversation_list">Your Conversations</string>
-    <string name="signup_agreement">By clicking Submit you are indicating that you have read and agree to the Privacy Policy and Terms of Service</string>
+    <string name="signup_agreement">By clicking Next you are indicating that you have read and agree to the <a href="http://www.hollerback.co/privacy">Privacy Policy</a> and <a href="http://www.hollerback.co/terms">Terms of Service</a></string>
+    <string name="signup_phone_info">We use your phone number to find the Hollerback usernames of your friends.\n We will not spam or auto-add your friends.</string>
+    <string name="signup_phone_hash_info">The phone numbers from your address book:\n- will only be used to find your friends\n-will be stored as non-unique encrypted representations (or "hashes") which will be used to match users but which contain no personal identifying information</string>
     <string name="empty_conversation_list">Start using Hollerback by sending a video message to your friends!</string>
-    <string name="verify_text">We\'ll send you an SMS with a PIN code.  Enter it in the field above and click "Done"</string>
+    <string name="verify_text">If you don\'t receive it in 60 seconds,</string>
+    <!-- <string name="click_to_resend">&lt;a href=""&gt;tap here to resend.&lt;/a&gt;</string> -->
+    <string name="click_to_resend"><u>tap here to resend.</u></string>
     <string name="preference_category_friends">Friends</string>
     <string name="preference_category_account">Account</string>
     <string name="preference_category_library">Save to Library</string>
@@ -84,8 +96,8 @@
     <string name="tap_start">Tap screen to start recording</string>
     <string name="tap_stop">Tap screen to stop</string>
     <string name="timer_default">20s</string>
-    <string name="verify_pin">Pin #</string>
-    <string name="verify_phone_display">Your Phone Number</string>
+    <string name="verify_pin">Enter Pin # from SMS</string>
+    <string name="verify_phone_display">We texted your pin to</string>
     <string name="contact_hollerback">Hollerback Friends</string>
     <string name="contact_phone">Phone Contact</string>
     <string name="contact_members_leave">Leave Group</string>

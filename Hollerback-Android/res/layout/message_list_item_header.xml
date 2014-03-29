@@ -5,12 +5,13 @@
     android:background="@color/background_header"
     android:orientation="vertical" >
 
-    <EditText
+    <com.moziy.hollerback.widget.CustomEditText
         android:id="@+id/txtSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/icon_search"
         android:hint="@string/action_search"
-        android:inputType="text" />
+        android:inputType="text"
+        android:paddingLeft="@dimen/dim_20dp" />
 
 </RelativeLayout>

@@ -68,68 +68,6 @@ public class JSONUtil {
 
     }
 
-    public static void processLogin(VerifyResponse response) {
-
-        String userName = response.user.username;
-        String phone = response.user.phone;
-        long id = response.user.id;
-
-        /**
-         * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
-         */
-        PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
-
-        PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
-
-        PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
-
-        Intent intent = new Intent(IABIntent.SESSION_REQUEST);
-        intent.putExtra(IABIntent.PARAM_AUTHENTICATED, IABIntent.VALUE_TRUE);
-        IABroadcastManager.sendLocalBroadcast(intent);
-    }
-
-    public static void processSignUp(JSONObject object) {
-        try {
-            LogUtil.i(object.toString());
-
-            JSONObject user = object.getJSONObject("user");
-
-            String userName = "";
-            if (object.has("username")) {
-                userName = user.getString("username");
-            }
-
-            String phone = "";
-            if (user.has("phone")) {
-                phone = user.getString("phone");
-            }
-
-            int id = 0;
-            if (user.has("id")) {
-                id = user.getInt("id");
-            }
-
-            /**
-             * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
-             */
-            PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, userName);
-
-            PreferenceManagerUtil.setPreferenceValue(HBPreferences.PHONE, phone);
-
-            PreferenceManagerUtil.setPreferenceValue(HBPreferences.ID, id);
-
-            // Intent intent = new Intent(IABIntent.INTENT_REGISTER_REQUEST);
-            // //if (user != null) {
-            // intent.putExtra(IABIntent.PARAM_AUTHENTICATE_REQUIRED,
-            // IABIntent.VALUE_TRUE);
-            // //}
-            // IABroadcastManager.sendLocalBroadcast(intent);
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-    }
-
     public static void processVerify(VerifyResponse response) {
 
         Log.d("sajjad", response.user.username);

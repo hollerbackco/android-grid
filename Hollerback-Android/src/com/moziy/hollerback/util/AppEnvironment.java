@@ -8,6 +8,8 @@ public class AppEnvironment {
 
     public static final String APP_PREF = "HollerbackAppPrefs";
 
+    public static final String DB_NAME = "hollerback.db";
+
     // DEV
     // http://lit-sea-1934.herokuapp.com/
 
@@ -59,7 +61,7 @@ public class AppEnvironment {
             case ENV_DEVELOPMENT:
                 LogUtil.d("Setting Development Environment");
                 BASE_URL = "http://lit-sea-1934.herokuapp.com";
-                FORCE_PHONE_NUMBER_CHECK = false;
+                FORCE_PHONE_NUMBER_CHECK = true;
                 LOG_CRASHES = false;
                 FLURRY_ID = "FWC2TWGDJDYV7YR5SC8P";
                 UPLOAD_BUCKET = UPLOAD_BUCKET_DEV;

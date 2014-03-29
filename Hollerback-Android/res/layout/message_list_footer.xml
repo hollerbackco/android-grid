@@ -36,6 +36,6 @@
         android:layout_marginLeft="@dimen/dim_18dp"
         android:text="@string/new_conversation"
         android:textColor="#FFFFFF"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
 </LinearLayout>
