@@ -33,7 +33,7 @@ public class HollerbackMainActivity extends BaseActivity implements OnConversati
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.Theme_Example);
+        setTheme(R.style.Hollerback);
         super.onCreate(savedInstanceState);
 
         registerBroadcasts();

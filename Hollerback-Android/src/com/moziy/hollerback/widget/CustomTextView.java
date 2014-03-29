@@ -11,28 +11,22 @@ import com.moziy.hollerback.view.FontManager;
 public class CustomTextView extends TextView {
 
     public CustomTextView(Context context) {
-        super(context);
-        // TODO Auto-generated constructor stub
+        this(context, null);
     }
 
     public CustomTextView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
-        if (!isInEditMode()) {
-            // retrieve the attributes pertaining to the custom textview
-            TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
-            setTypefaceFromAttrs(array);
-            array.recycle(); // recycle the array
-        }
+        this(context, attrs, android.R.attr.textViewStyle);
     }
 
     public CustomTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        // // retrieve the attributes pertaining to the custom textview
-        // TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont);
-        // setTypefaceFromAttrs(array);
-        // array.recycle(); // recycle the array
+        if (!isInEditMode()) {
+            // retrieve the attributes pertaining to the custom textview
+            TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CustomFont, defStyle, R.style.DefaultTextView);
+            setTypefaceFromAttrs(array);
+            array.recycle(); // recycle the array
+        }
     }
 
     private void setTypefaceFromAttrs(TypedArray array) {

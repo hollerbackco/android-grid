@@ -1,5 +1,13 @@
 package com.moziy.hollerback.activity;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.Preference;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.ActiveAndroid;
@@ -8,15 +16,6 @@ import com.moziy.hollerback.R;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.util.HBPreferences;
 import com.moziy.hollerback.util.PreferenceManagerUtil;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.SwitchPreference;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
 public class SettingPreferenceActivity extends SherlockPreferenceActivity {
     private final String TWITTERURL = "https://twitter.com/hollerback";
@@ -47,7 +46,6 @@ public class SettingPreferenceActivity extends SherlockPreferenceActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.Theme_Example);
         super.onCreate(savedInstanceState);
         this.setTitle(R.string.action_settings);
         this.setResult(RESULT_CANCELED);

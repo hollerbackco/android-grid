@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#AAAAAA"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="30"
+        android:gravity="bottom"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:layout_width="@dimen/dim_80dp"
+            android:layout_height="@dimen/dim_80dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:src="@drawable/big_banana" />
+    </LinearLayout>
+
+    <com.moziy.hollerback.widget.CustomTextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20"
+        android:gravity="center"
+        android:text="@string/app_name_lc"
+        android:textColor="#FFFFFF"
+        android:textSize="40sp" />
+
+    <com.moziy.hollerback.widget.CustomTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/talk_to_friends"
+        android:textSize="24sp" />
+
+    <com.moziy.hollerback.widget.CustomTextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20"
+        android:gravity="top|center_horizontal"
+        android:text="@string/anytime_anywhere"
+        android:textSize="24sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dim_1dp"
+        android:background="#FFFFFF" />
+
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_signup"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="16.6"
+        android:background="@color/slightly_desaturated_yellow"
+        android:text="@string/signup"
+        android:textSize="32sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dim_1dp"
+        android:background="#FFFFFF" />
+
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_signin"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="16.6"
+        android:background="@color/slightly_desaturated_blue"
+        android:text="@string/signin"
+        android:textSize="32sp" />
+
+</LinearLayout>

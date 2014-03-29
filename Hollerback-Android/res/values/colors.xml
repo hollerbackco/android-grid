@@ -20,5 +20,7 @@
     <color name="convo_purple">#4814a0</color>
     <color name="convo_orange">#ff7900</color>
     <color name="convo_blue_2">#008cd2</color>
+    <color name="slightly_desaturated_yellow">#c3bf76</color>
+    <color name="slightly_desaturated_blue">#76a9c3</color>
 
 </resources>

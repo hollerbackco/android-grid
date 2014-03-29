@@ -17,9 +17,8 @@ public class WelcomeFragmentActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle bundle) {
-        setTheme(R.style.Theme_Example);
+        setTheme(R.style.Hollerback);
         super.onCreate(bundle);
-
         setContentView(R.layout.welcome_fragment_activity);
 
         initFragment();
