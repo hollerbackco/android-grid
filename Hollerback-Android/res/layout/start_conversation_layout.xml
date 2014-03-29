@@ -3,58 +3,104 @@
     xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#AAAAAA" >
+    android:background="@color/background_header" >
 
     <View
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@drawable/actionbar_whitebg" />
 
-    <com.moziy.hollerback.widget.CustomTextView
+    <com.moziy.hollerback.widget.CustomEditText
         android:id="@+id/tv_title"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:ellipsize="end"
+        android:focusableInTouchMode="true"
         android:gravity="center"
-        android:text="..."
+        android:inputType="textShortMessage"
+        android:maxLines="1"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:textColor="#555555"
-        android:textSize="20sp"
-        app:typeface="Gotham-Medium" >
-    </com.moziy.hollerback.widget.CustomTextView>
+        android:textSize="20sp" />
 
-    <ImageButton
-        android:id="@+id/ib_start_video"
-        android:layout_width="175dp"
-        android:layout_height="175dp"
-        android:layout_above="@+id/tv_tap_to_start"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/big_banana" />
+    <com.moziy.hollerback.widget.CustomButton
+        android:id="@+id/bt_edit"
+        android:layout_width="@dimen/dim_40dp"
+        android:layout_height="@dimen/dim_40dp"
+        android:layout_marginTop="@dimen/dim_4dp"
+        android:background="@drawable/ic_action_edit"
+        app:tintColor="#80000000" />
 
-    <!-- TODO: just a place holder, replace later -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_title"
+        android:gravity="center"
+        android:orientation="vertical" >
 
-    <ProgressBar
-        android:id="@+id/pb_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/ib_start_video"
-        android:layout_alignLeft="@+id/ib_start_video"
-        android:layout_alignRight="@+id/ib_start_video"
-        android:layout_alignTop="@+id/ib_start_video"
-        android:indeterminate="true"
-        android:padding="40dp" />
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_say_hello"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dim_15dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/say_hello"
+            android:textColor="@color/gray_font"
+            android:textSize="20sp" />
 
-    <com.moziy.hollerback.widget.CustomTextView
-        android:id="@+id/tv_tap_to_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="60dp"
-        android:text="@string/tap_to_start"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        app:typeface="Gotham-Medium" >
-    </com.moziy.hollerback.widget.CustomTextView>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center" >
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <ImageButton
+                    android:id="@+id/ib_start_video"
+                    android:layout_width="@dimen/dim_240dp"
+                    android:layout_height="@dimen/dim_240dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/btn_start_convo" />
+
+                <ProgressBar
+                    android:id="@+id/pb_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:padding="@dimen/dim_40dp" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- TODO: just a place holder, replace later -->
+
+        <com.moziy.hollerback.widget.CustomTextView
+            android:id="@+id/tv_tap_to_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tap_to_start"
+            android:textColor="@color/gray_font"
+            android:textSize="20sp" >
+        </com.moziy.hollerback.widget.CustomTextView>
+    </LinearLayout>
+
+    <!-- <ProgressBar -->
+    <!-- android:id="@+id/pb_spinner" -->
+    <!-- android:layout_width="wrap_content" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:layout_alignBottom="@+id/ib_start_video" -->
+    <!-- android:layout_alignLeft="@+id/ib_start_video" -->
+    <!-- android:layout_alignRight="@+id/ib_start_video" -->
+    <!-- android:layout_alignTop="@+id/ib_start_video" -->
+    <!-- android:indeterminate="true" -->
+    <!-- android:padding="40dp" /> -->
 
 </RelativeLayout>

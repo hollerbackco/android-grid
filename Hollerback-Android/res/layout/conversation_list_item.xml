@@ -1,22 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.moziy.hollerback"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dim_126dp" >
+    android:layout_height="@dimen/dim_126dp"
+    android:descendantFocusability="blocksDescendants" >
 
     <RelativeLayout
         android:id="@+id/top_layer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FFFFFF" >
+        android:layout_height="match_parent" >
 
-        <com.moziy.hollerback.view.RoundImageView
+        <com.moziy.hollerback.view.RoundNetworkImageView
             android:id="@+id/iv_thumb"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="@dimen/dim_70dp"
+            android:layout_height="@dimen/dim_70dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dim_20dp"
-            app:radius="35dp" >
+            android:padding="@dimen/dim_2dp"
+            app:radius="@dimen/dim_35dp" >
+        </com.moziy.hollerback.view.RoundNetworkImageView>
+
+        <com.moziy.hollerback.view.RoundImageView
+            android:id="@+id/iv_local_thumb"
+            android:layout_width="@dimen/dim_70dp"
+            android:layout_height="@dimen/dim_70dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dim_20dp"
+            android:padding="@dimen/dim_2dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:radius="@dimen/dim_35dp" >
         </com.moziy.hollerback.view.RoundImageView>
 
         <LinearLayout
@@ -60,21 +73,20 @@
                 android:text="ttyl"
                 android:textColor="@color/hb_blue"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <ImageView
+        <com.moziy.hollerback.widget.CustomButton
             android:id="@+id/btnRecord"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/dim_50dp"
+            android:layout_height="@dimen/dim_50dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dim_16dp"
             android:layout_marginRight="@dimen/dim_16dp"
-            android:background="@drawable/btn_record"
+            android:background="@drawable/record_btn"
             android:clickable="true"
             android:contentDescription="@string/app_name" />
     </RelativeLayout>
 
-</RelativeLayout>
+</LinearLayout>

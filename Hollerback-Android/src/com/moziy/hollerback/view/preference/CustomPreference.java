@@ -26,11 +26,11 @@ public class CustomPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
         TextView titleView = (TextView) view.findViewById(android.R.id.title);
-        titleView.setTypeface(FontManager.getFont(FontManager.Font.RALEWAY_REGULAR_LINING));
+        titleView.setTypeface(FontManager.getFont(FontManager.Font.GOTHAM_ROUND_MEDIUM));
         titleView.setTextColor(getContext().getResources().getColorStateList(com.moziy.hollerback.R.drawable.grey_font));
 
         TextView summaryView = (TextView) view.findViewById(android.R.id.summary);
-        summaryView.setTypeface(FontManager.getFont(FontManager.Font.RALEWAY_REGULAR_LINING));
+        summaryView.setTypeface(FontManager.getFont(FontManager.Font.GOTHAM_ROUND_MEDIUM));
         summaryView.setTextColor(getContext().getResources().getColorStateList(com.moziy.hollerback.R.drawable.grey_font));
 
     }

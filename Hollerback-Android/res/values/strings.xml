@@ -6,7 +6,7 @@
     <string name="all">All</string>
     <string name="loading_message">Hollerback is loading, please wait.</string>
     <string name="action_settings">My Account</string>
-    <string name="action_find_friends">Find Friends</string>
+    <string name="action_find_friends">Add Friends</string>
     <string name="action_add">Add</string>
     <string name="action_info">Info</string>
     <string name="action_switch">Switch Camera</string>
@@ -19,12 +19,18 @@
     <string name="action_person">Person</string>
     <string name="action_record">Record</string>
     <string name="action_next">Next</string>
+    <string name="action_next_lc">next</string>
     <string name="action_verify">Verify</string>
     <string name="action_clear">Clear</string>
     <string name="action_invite">Invite</string>
     <string name="action_uploading">Uploading</string>
     <string name="action_submit">Submit</string>
     <string name="ok">OK</string>
+
+    <!-- Feedback -->
+    <string name="feedback_email">feeback@hollerback.co</string>
+    <string name="feedback_subject">Feedback</string>
+    <string name="select_email">Send feedback to Hollerback</string>
 
     <!-- Welcome Text -->
     <string name="talk_to_friends">talk to your friends</string>
@@ -43,6 +49,9 @@
     <string name="record_message">Record a Message</string>
     <string name="record_recording">Recording</string>
     <string name="record_review">Review</string>
+    <string name="start_recording_dialog_title">Reply with Recording</string>
+    <string name="start_recording_dialog_message">After watching your messages, we give you a chance to reply.\n\nDon\'t worry if you aren\'t ready, you can always hit the back button during the recording.</string>
+    <string name="start_recording_dialog_button">Reply Now</string>
 
     <!-- Sign In/Sign Up -->
     <string name="name">Username</string>
@@ -77,12 +86,14 @@
     <string name="verify_text">If you don\'t receive it in 60 seconds,</string>
     <!-- <string name="click_to_resend">&lt;a href=""&gt;tap here to resend.&lt;/a&gt;</string> -->
     <string name="click_to_resend"><u>tap here to resend.</u></string>
+
+    <!-- Preference Screen -->
     <string name="preference_category_friends">Friends</string>
     <string name="preference_category_account">Account</string>
     <string name="preference_category_library">Save to Library</string>
     <string name="preference_category_terms">Terms</string>
     <string name="preference_category_team">Hollerback Team</string>
-    <string name="preference_friends">Find Friends</string>
+    <string name="preference_friends">Add Friends</string>
     <string name="preference_logout">Log Out</string>
     <string name="preference_username">Username</string>
     <string name="preference_phone">Phone Number</string>
@@ -110,10 +121,17 @@
     <!-- Contacts -->
     <string name="send_to_hb_friend">Send to Hollerback Friend</string>
     <string name="send_to_contact">Send to Friend from Contacts</string>
+    <string name="sms_invite_friends">hey. download hollerback and send me a video message. www.hollerback.co/download</string>
+    <string name="invite_friends_title">Invite Friends</string>
 
     <!-- Start Conversation -->
-    <string name="tap_to_start">Tap banana to start video</string>
+    <string name="tap_to_start">Tap the Camera to Holler</string>
+    <string name="say_hello">Say \"Hello!\"</string>
     <string name="start_conversation">Start Conversation</string>
+    <string name="start_convo_sms_body">hey i just sent you a video message on the app hollerback. it\'s like video texting. here\'s your invite to download it: www.hollerback.co/invite</string>
+    <string name="invite_activity_chooser">Invite</string>
+    <string name="start_convo_intro_title">How this works</string>
+    <string name="start_convo_intro_body">1. Send a video of yourself saying “Hello!”\n\n2. We\'ll ask you to send them a text (if they\'re not on the app) \n\n3. Once they watch it,\n you get their response!</string>
 
     <!-- Notifications -->
     <plurals name="notif_new_message">

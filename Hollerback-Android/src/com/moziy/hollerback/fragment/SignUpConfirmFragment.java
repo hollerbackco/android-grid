@@ -18,18 +18,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
 import com.moziy.hollerback.model.web.response.VerifyResponse;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.TimeUtil;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
+import com.moziy.hollerback.util.AnalyticsUtil;
+import com.moziy.hollerback.util.date.TimeUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 /**
  * This is a fragment that's going to use the new architecture, loader based rather than braodcast based
@@ -71,6 +77,17 @@ public class SignUpConfirmFragment extends BaseFragment {
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+                return true;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = (SherlockFragmentActivity) this.getSherlockActivity();
         mRootView = (ViewGroup) inflater.inflate(R.layout.verify_fragment, null);
@@ -79,6 +96,22 @@ public class SignUpConfirmFragment extends BaseFragment {
 
         mTxtVerify.requestFocus();
         return mRootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // if there's an access token set and the user is verified, go to the convo list
+        if (!"".equals(PreferenceManagerUtil.getPreferenceValue(HBPreferences.ACCESS_TOKEN, "")) && PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_VERIFIED, false)) {
+
+            // user is officially logged in and registered, pop everything
+            getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
+
+            ConversationListFragment fragment = ConversationListFragment.newInstance();
+            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+        }
+
     }
 
     @Override
@@ -141,6 +174,10 @@ public class SignUpConfirmFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
 
+                // log analytic event
+                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                        MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitVerification, null, null).build());
+
                 InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mTxtVerify.getWindowToken(), 0);
 
@@ -160,15 +197,18 @@ public class SignUpConfirmFragment extends BaseFragment {
                             String access_token = response.access_token;
 
                             PreferenceManagerUtil.setPreferenceValue(HBPreferences.ACCESS_TOKEN, access_token);
+                            PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, true);
 
-                            // user is officially logged in and registered, pop everything
-                            getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
+                            if (isResumed()) {
+                                // user is officially logged in and registered, pop everything
+                                getFragmentManager().popBackStackImmediate(WelcomeFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE); // pop everything
 
-                            // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
-                            // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
-                            ContactsFragment fragment = ContactsFragment.newInstance();
-                            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                                    .commitAllowingStateLoss();
+                                // TODO: Evaluate whether to add this fragment in onCreate and then swap it out later
+                                // OldContactsFragment fragment = OldContactsFragment.newInstance(true, null);
+                                // ContactsFragment fragment = ContactsFragment.newInstance();
+                                ConversationListFragment fragment = ConversationListFragment.newInstance();
+                                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+                            }
                         } else {
                             Log.e(TAG, "no access token sent!");
                             throw new IllegalStateException("No access token sent on successful registration!");
@@ -280,4 +320,10 @@ public class SignUpConfirmFragment extends BaseFragment {
         });
 
     }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
+    }
+
 }

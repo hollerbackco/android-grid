@@ -1,6 +1,7 @@
 package com.moziy.hollerback.fragment;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -10,6 +11,10 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.Tracker;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 
@@ -21,7 +26,8 @@ public abstract class BaseFragment extends SherlockFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                this.getFragmentManager().popBackStack();
+                // ((HollerbackMainActivity) getActivity()).initFragment();
+                getFragmentManager().popBackStack(ConversationListFragment.FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 break;
         }
 
@@ -39,12 +45,25 @@ public abstract class BaseFragment extends SherlockFragment {
             mLoading = new LoadingFragmentUtil(mActivity);
 
             mActivity.getSupportActionBar().show();
-            mActivity.getSupportActionBar().setIcon(R.drawable.icon_banana);
+            mActivity.getSupportActionBar().setIcon(R.drawable.banana_medium);
             mActivity.getSupportActionBar().setHomeButtonEnabled(true);
             mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             mActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
             mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        } else {
+            mActivity.getSupportActionBar().hide();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Tracker tracker = EasyTracker.getInstance(mActivity);
+        if (tracker != null) {
+            tracker.set(Fields.SCREEN_NAME, getFragmentName());
+            tracker.send(MapBuilder.createAppView().build());
+        }
+        // EasyTracker.getInstance(mActivity). .sendView("Home Screen"); // Where myTracker is an instance of Tracker.
     }
 
     @Override
@@ -67,7 +86,7 @@ public abstract class BaseFragment extends SherlockFragment {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
             View customView = inflater.inflate(R.layout.header_title, null);
             TextView txtTitle = (TextView) customView.findViewById(R.id.title);
-            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString().toUpperCase());
+            txtTitle.setText(mActivity.getSupportActionBar().getTitle().toString());
 
             mActivity.getSupportActionBar().setDisplayShowCustomEnabled(true);
             mActivity.getSupportActionBar().setCustomView(customView);
@@ -86,6 +105,8 @@ public abstract class BaseFragment extends SherlockFragment {
     protected void stopLoading() {
         mLoading.stopLoading();
     }
+
+    protected abstract String getFragmentName();
     /*
      * protected abstract void onActionBarIntialized( CustomActionBarHelper viewHelper);
      */

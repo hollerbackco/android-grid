@@ -190,6 +190,9 @@ public class StickyHeaderListView extends FrameLayout implements OnScrollListene
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
+        if (totalItemCount <= 0) // don't do anything if
+            return;
+
         updateStickyHeader(firstVisibleItem);
 
         if (mListener != null) {

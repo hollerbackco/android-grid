@@ -120,7 +120,8 @@
                 android:id="@+id/register_submit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/action_submit" />
+                android:text="@string/action_submit"
+                app:tintColor="#80000000" />
 
             <com.moziy.hollerback.widget.CustomTextView
                 android:id="@+id/tv_signup_agreement"

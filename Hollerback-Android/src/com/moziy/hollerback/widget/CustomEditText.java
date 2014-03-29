@@ -65,7 +65,7 @@ public class CustomEditText extends EditText {
         super.onDraw(canvas);
 
         if (mBorderPaint != null) {
-            canvas.drawRect(0, getScrollY(), getWidth(), getHeight() + getScrollY(), mBorderPaint);
+            canvas.drawRect(getScrollX(), getScrollY(), getWidth() + getScrollX(), getHeight() + getScrollY(), mBorderPaint);
         }
 
     }

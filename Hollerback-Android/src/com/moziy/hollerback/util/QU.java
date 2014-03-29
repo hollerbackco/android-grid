@@ -1,11 +1,7 @@
 package com.moziy.hollerback.util;
 
-import java.util.ArrayList;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moziy.hollerback.HollerbackApplication;
-import com.moziy.hollerback.model.ConversationModel;
-import com.moziy.hollerback.model.VideoModel;
 
 /**
  * Access a lot of things in the app stands for quickutil
@@ -15,30 +11,8 @@ import com.moziy.hollerback.model.VideoModel;
  */
 public class QU {
 
-    /**
-     * Get DataModelManager
-     */
-    public static DataModelManager getDM() {
-        return HollerbackApplication.getInstance().getDM();
-    }
-
     public static ObjectMapper getObjectMapper() {
         return HollerbackApplication.getInstance().getObjectMapper();
-    }
-
-    public static ConversationModel getConv(long id) {
-        ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
-        for (ConversationModel model : models) {
-            if (model.getConversationId() == id) {
-                return model;
-            }
-
-        }
-        return null;
-    }
-
-    public static void updateConversationVideo(VideoModel video) {
-        ArrayList<ConversationModel> models = ((ArrayList<ConversationModel>) getDM().getObjectForToken(HashUtil.getConvHash()));
     }
 
     /**

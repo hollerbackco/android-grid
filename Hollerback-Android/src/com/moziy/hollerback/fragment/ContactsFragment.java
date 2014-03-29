@@ -1,11 +1,16 @@
 package com.moziy.hollerback.fragment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,18 +19,26 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
 import com.moziy.hollerback.model.Contact;
+import com.moziy.hollerback.util.SmsUtil;
 import com.moziy.hollerback.util.contacts.ContactsInterface;
 import com.moziy.hollerback.util.contacts.ContactsInterface.LOADING_STATE;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.view.StickyHeaderListView;
 import com.moziy.hollerback.view.StickyHeaderListView.HeaderIndexer;
 import com.moziy.hollerback.widget.CustomEditText;
@@ -34,6 +47,12 @@ import com.moziy.hollerback.widget.CustomTextView;
 public class ContactsFragment extends BaseFragment {
     private static final String TAG = ContactsFragment.class.getSimpleName();
     public static final String FRAGMENT_TAG = TAG;
+    // type - serializable/enum
+    public static final String NEXT_ACTION_BUNDLE_ARG_KEY = "NEXT_ACTION";
+
+    public enum NextAction {
+        START_CONVERSATION, INVITE_FRIENDS
+    };
 
     private ContactsInterface mContactsInterface;
     private LayoutInflater mInflater;
@@ -42,37 +61,60 @@ public class ContactsFragment extends BaseFragment {
     private ContactsAdapter mAdapter;
     private InternalReceiver mReceiver;
     private CustomEditText mSearchBar;
+    private HashSet<Contact> mSelected;
+    private NextAction mAction;
 
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
     }
 
     public static ContactsFragment newInstance() {
+        return newInstance(NextAction.START_CONVERSATION);
+    }
+
+    public static ContactsFragment newInstance(NextAction action) {
         ContactsFragment f = new ContactsFragment();
+        Bundle arg = new Bundle();
+        arg.putSerializable(NEXT_ACTION_BUNDLE_ARG_KEY, action);
+        f.setArguments(arg);
 
         return f;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+
+        mAction = (NextAction) getArguments().getSerializable(NEXT_ACTION_BUNDLE_ARG_KEY);
+
+        switch (mAction) {
+            case START_CONVERSATION:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.start_conversation));
+                showIntroDialog();
+                break;
+            case INVITE_FRIENDS:
+                getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.invite_friends_title));
+                break;
+        }
+
         mContactsInterface = ((HollerbackMainActivity) getActivity()).getContactsInterface();
         mInflater = LayoutInflater.from(getActivity());
 
         mReceiver = new InternalReceiver();
         IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONTACTS_UPDATED);
 
+        mSelected = new HashSet<Contact>();
+        Log.d(TAG, "oncreate");
+        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.contacts_layout, container, false);
-
+        Log.d(TAG, "onCreateView");
         mContactsList = (ListView) v.findViewById(R.id.lv_contacts_list);
         mContactsList.setOnItemClickListener(mOnContactClick);
-        mAdapter = new ContactsAdapter(mContactsInterface.getHollerbackContacts(), mContactsInterface.getDeviceContacts());
         mContactsList.setAdapter(mAdapter);
 
         mStickyListView = (StickyHeaderListView) v.findViewById(R.id.stick_listview);
@@ -111,9 +153,62 @@ public class ContactsFragment extends BaseFragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if (mSelected != null && !mSelected.isEmpty()) {
+            Log.d(TAG, "inflating menu");
+            inflater.inflate(R.menu.send_to_contacts, menu);
+        }
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.mi_next) {
+
+            if (mAction == NextAction.START_CONVERSATION) {
+                StartConversationFragment f = StartConversationFragment.newInstance(mSelected);
+                getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top)
+                        .replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+            } else {
+                // send an sms and then pop the backstack
+                SmsUtil.invite(mActivity, new ArrayList<Contact>(mSelected), HollerbackApplication.getInstance().getString(R.string.sms_invite_friends), null, null);
+                getFragmentManager().popBackStack();
+            }
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         IABroadcastManager.unregisterLocalReceiver(mReceiver);
+    }
+
+    private void showIntroDialog() {
+        boolean seenIntroDialog = PreferenceManagerUtil.getPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, false);
+        if (!seenIntroDialog) {
+            AlertDialog.Builder builder = new Builder(getActivity());
+            builder.setTitle(getString(R.string.start_convo_intro_title));
+            builder.setMessage(getString(R.string.start_convo_intro_body));
+            builder.setPositiveButton(getString(R.string.ok), new OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    PreferenceManagerUtil.setPreferenceValue(HBPreferences.SEEN_START_CONVO_DIALOG, true);
+                    if (isAdded()) {
+                        dialog.dismiss();
+                    }
+
+                }
+            });
+            builder.setCancelable(false);
+            builder.create().show();
+        }
+
     }
 
     private AdapterView.OnItemClickListener mOnContactClick = new AdapterView.OnItemClickListener() {
@@ -122,12 +217,36 @@ public class ContactsFragment extends BaseFragment {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Item item = (Item) parent.getItemAtPosition(position);
             if (item.getContact() != null) {
-                Contact c = item.getContact();
-                StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
-                    c.mPhone
-                }, getString(R.string.start_conversation));
 
-                getFragmentManager().beginTransaction().replace(R.id.fragment_holder, f).addToBackStack(FRAGMENT_TAG).commit();
+                Contact c = item.getContact();
+
+                if (item instanceof AbsContactItem) {
+                    boolean selected = !((AbsContactItem) item).getSelected();
+                    ((AbsContactItem) item).setSelected(selected);
+                    ContactViewHolder holder = (ContactViewHolder) view.getTag();
+                    holder.checkbox.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
+
+                    if (selected) {
+                        mSelected.add(c);
+                    } else {
+                        mSelected.remove(c);
+                    }
+                }
+
+                if (mSelected.size() == 1 || mSelected.size() == 0) {
+                    getSherlockActivity().invalidateOptionsMenu();
+                }
+
+                // StartConversationFragment f = StartConversationFragment.newInstance(new String[] {
+                // c.mPhone
+                // }, c.mName, new boolean[] {
+                // c.mIsOnHollerback
+                // });
+
+                // if keyboard is showing hide it
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mSearchBar.getWindowToken(), 0);
+
             }
         }
     };
@@ -207,13 +326,13 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public int getHeaderPositionFromItemPosition(int position) {
 
-            return mItemManager.mItems.get(position).getHeaderPosition();
+            return getItem(position).getHeaderPosition();
         }
 
         @Override
         public int getHeaderItemsNumber(int headerPosition) {
 
-            return ((HeaderItem) mItemManager.mItems.get(headerPosition)).getNumberOfItems();
+            return ((HeaderItem) getItem(headerPosition)).getNumberOfItems();
         }
 
     }
@@ -261,9 +380,17 @@ public class ContactsFragment extends BaseFragment {
 
             }
         }
+
     }
 
-    private class HBFriendItem implements Item {
+    private static class ContactViewHolder {
+        public CustomTextView name;
+        public CustomTextView username;
+        public ImageView icon;
+        public ImageView checkbox;
+    }
+
+    private class HBFriendItem extends AbsContactItem {
 
         private Contact mContact;
         private int mHeaderPosition;
@@ -271,25 +398,32 @@ public class ContactsFragment extends BaseFragment {
         public HBFriendItem(Contact c, int headerPosition) {
             mContact = c;
             mHeaderPosition = headerPosition;
+            mIsSelected = false;
 
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
+            ContactViewHolder holder;
             if (convertView == null) {
-                holder = new ViewHolder();
+                holder = new ContactViewHolder();
 
                 convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
                 holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
                 holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
+                holder.checkbox = (ImageView) convertView.findViewById(R.id.iv_contact_selected);
                 convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                holder = (ContactViewHolder) convertView.getTag();
             }
 
             holder.name.setText(mContact.mName);
             holder.username.setText(mContact.mUsername);
+            if (mIsSelected) {
+                holder.checkbox.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkbox.setVisibility(View.INVISIBLE);
+            }
 
             return convertView;
         }
@@ -297,12 +431,6 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public int getItemViewType() {
             return ItemManager.HB_CONTACT;
-        }
-
-        private class ViewHolder {
-            public CustomTextView name;
-            public CustomTextView username;
-
         }
 
         @Override
@@ -322,7 +450,7 @@ public class ContactsFragment extends BaseFragment {
 
     }
 
-    private class ContactItem implements Item {
+    private class ContactItem extends AbsContactItem {
 
         private Contact mContact;
         private int mHeaderPosition;
@@ -334,22 +462,29 @@ public class ContactsFragment extends BaseFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
+            ContactViewHolder holder;
             if (convertView == null) {
-                holder = new ViewHolder();
+                holder = new ContactViewHolder();
 
                 convertView = mInflater.inflate(R.layout.contact_list_item, parent, false);
                 holder.name = (CustomTextView) convertView.findViewById(R.id.tv_contact_name);
                 holder.username = (CustomTextView) convertView.findViewById(R.id.tv_contact_username);
                 holder.icon = (ImageView) convertView.findViewById(R.id.iv_contact_type);
+                holder.checkbox = (ImageView) convertView.findViewById(R.id.iv_contact_selected);
                 convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                holder = (ContactViewHolder) convertView.getTag();
             }
 
             holder.name.setText(mContact.mName);
             holder.username.setVisibility(View.GONE);
             holder.icon.setVisibility(View.INVISIBLE);
+
+            if (mIsSelected) {
+                holder.checkbox.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkbox.setVisibility(View.INVISIBLE);
+            }
 
             return convertView;
         }
@@ -362,13 +497,6 @@ public class ContactsFragment extends BaseFragment {
         @Override
         public String toString() {
             return mContact.mName.toLowerCase();
-        }
-
-        private class ViewHolder {
-            public CustomTextView name;
-            public CustomTextView username;
-            public ImageView icon;
-
         }
 
         @Override
@@ -516,12 +644,30 @@ public class ContactsFragment extends BaseFragment {
         public int getHeaderPosition();
 
         public Contact getContact();
+
+    }
+
+    private abstract class AbsContactItem implements Item {
+        protected boolean mIsSelected = false;
+
+        public void setSelected(boolean selected) {
+            mIsSelected = selected;
+        }
+
+        public boolean getSelected() {
+            return mIsSelected;
+        }
     }
 
     private interface HeaderItem extends Item {
         public int getNumberOfItems();
 
         public void setNumberOfItems(int num);
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 
 }

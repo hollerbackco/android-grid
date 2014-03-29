@@ -28,6 +28,8 @@ public class SignupUserFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
+        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
         getSherlockActivity().getSupportActionBar().setTitle(getString(R.string.signup));
 
@@ -128,6 +130,11 @@ public class SignupUserFragment extends BaseFragment {
 
         return status;// mPasswordEditText.getText() != null && mPasswordEditText.getText().length() > 0;
 
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 
 }

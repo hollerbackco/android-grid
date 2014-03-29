@@ -11,11 +11,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.model.Sender;
 import com.moziy.hollerback.model.VideoModel;
 
 public class NotificationUtil {
@@ -34,7 +37,7 @@ public class NotificationUtil {
         PendingIntent pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx);
-        builder.setDefaults(0);
+        // builder.setDefaults(0);
         builder.setSmallIcon(R.drawable.icon);
         builder.setContentIntent(pendingIntent);
         builder.setContentTitle(title);
@@ -44,6 +47,8 @@ public class NotificationUtil {
         builder.setVibrate(new long[] { // in millis
             300
         });
+
+        builder.setSound(Uri.parse(AppEnvironment.NOTIF_SOUND_URI), AudioManager.STREAM_NOTIFICATION);
         builder.setOnlyAlertOnce(true);
 
         // TODO - sajjad: play around with the style and big content
@@ -76,6 +81,13 @@ public class NotificationUtil {
                 message = format;
                 break;
         }
+
+        return message;
+    }
+
+    public static String generateNewVideoMessage(Context ctx, Sender sender) {
+        String format = ctx.getResources().getQuantityString(R.plurals.notif_new_message, 1);
+        String message = String.format(format, sender.getSenderName());
 
         return message;
     }

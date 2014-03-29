@@ -21,5 +21,11 @@
         <attr name="borderColor" format="color"></attr>
         <attr name="borderWidth" format="dimension"></attr>
     </declare-styleable>
+    <declare-styleable name="CustomButton">
+        <attr name="tintColor" format="color"></attr>
+    </declare-styleable>
+    <declare-styleable name="CustomState">
+        <attr name="emphasized" format="boolean"></attr>
+    </declare-styleable>
 
 </resources>

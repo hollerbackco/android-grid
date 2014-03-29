@@ -1,10 +1,5 @@
 package com.moziy.hollerback.fragment;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.moziy.hollerback.R;
-import com.moziy.hollerback.activity.HollerbackMainActivity;
-import com.moziy.hollerback.util.GifView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -13,7 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.util.GifView;
+
 public class WelcomeFinishFragment extends BaseFragment {
+    private static final String TAG = WelcomeFinishFragment.class.getSimpleName();
     private ViewGroup mRootView;
     private static SherlockFragmentActivity mActivity;
     private GifView mGifWrapper;
@@ -62,6 +63,11 @@ public class WelcomeFinishFragment extends BaseFragment {
                 mActivity.finish();
             }
         });
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 
 }

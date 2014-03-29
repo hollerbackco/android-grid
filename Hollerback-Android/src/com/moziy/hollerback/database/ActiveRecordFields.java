@@ -17,6 +17,7 @@ public class ActiveRecordFields {
     public static final String C_CONV_USER_ID = "user_id";
     public static final String C_CONV_IS_DELETED = "is_deleted";
     public static final String C_CONV_URL = "ConvUrl";
+    public static final String C_CONV_STATE = "state";
 
     // Videos
     public static final String C_VID_CREATED_AT = "created_at";

@@ -1,12 +1,17 @@
 package com.moziy.hollerback.model;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import android.util.Log;
+import com.moziy.hollerback.util.security.HashUtil;
 
-public class Contact {
+public class Contact implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private static final String TAG = Contact.class.getSimpleName();
     public final String mName;
     public final String mPhone;
@@ -26,25 +31,16 @@ public class Contact {
         this.mPhone = mPhone;
         this.mPhoneLabel = mPhoneLabel;
         this.mPhotoID = mPhotoID;
-        Log.d(TAG, "created contact: " + toString());
 
         mPhones.add(mPhone);
+
+        // Log.d(TAG, "creating contact: " + toString());
     }
 
     public void generateHash(MessageDigest md5) {
 
         for (String phone : mPhones) {
-
-            byte[] hash = md5.digest(phone.getBytes());
-            StringBuffer hexString = new StringBuffer();
-
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xFF & hash[i]);
-                if (hex.length() == 1)
-                    hexString.append('0');
-                hexString.append(hex);
-            }
-            mPhoneHashes.add(hexString.toString());
+            mPhoneHashes.add(HashUtil.generateHexStringMD5(phone.getBytes()));
         }
 
     }

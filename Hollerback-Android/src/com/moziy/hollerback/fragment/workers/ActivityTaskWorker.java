@@ -1,8 +1,5 @@
 package com.moziy.hollerback.fragment.workers;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,11 +9,9 @@ import android.util.Log;
 import com.moziy.hollerback.fragment.workers.FragmentTaskWorker.TaskClient;
 import com.moziy.hollerback.service.task.Task;
 import com.moziy.hollerback.service.task.TaskExecuter;
-import com.moziy.hollerback.service.task.TaskGroup;
 
 public class ActivityTaskWorker extends AbsTaskWorker {
     private static final String TAG = ActivityTaskWorker.class.getSimpleName();
-    private TaskClient mTaskClient;
     private Task mTask;
     private TaskExecuter mExecuter;
 
@@ -33,7 +28,7 @@ public class ActivityTaskWorker extends AbsTaskWorker {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mTaskClient = (TaskClient) activity;
-        setTaskListeners(mTask);
+        setTaskListeners(mTask, true);
     }
 
     @Override
@@ -58,7 +53,7 @@ public class ActivityTaskWorker extends AbsTaskWorker {
             return;
         }
 
-        setTaskListeners(mTask);
+        setTaskListeners(mTask, true);
 
         if (Build.VERSION.SDK_INT >= 11 && !mRunSerially) {
             mExecuter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mTask);
@@ -68,57 +63,4 @@ public class ActivityTaskWorker extends AbsTaskWorker {
 
     }
 
-    private void setTaskListeners(Task t) {
-
-        if (t == null) {
-            Log.w(TAG, "null task");
-            return;
-        }
-
-        // set a task listener for all tasks,
-        Queue<Task> queue = new LinkedList<Task>();
-        queue.add(t);
-
-        while (!queue.isEmpty()) { // iterate through all tasks
-            Task queuedTask = queue.poll();
-            queuedTask.setTaskListener(mTaskClient);
-
-            if (queuedTask.isFinished()) { // if the task is finished, then notify the listener
-
-                if (queuedTask.isSuccess())
-                    mTaskClient.onTaskComplete(queuedTask);
-                else
-                    mTaskClient.onTaskError(queuedTask);
-
-            }
-
-            if (queuedTask instanceof TaskGroup) {
-                for (Task child : ((TaskGroup) queuedTask).getTasks()) {
-                    queue.add(child);
-                }
-
-            }
-
-        }
-
-    }
-
-    private void clearTaskListeners(Task t) {
-
-        // clear task listener for all tasks,
-        Queue<Task> queue = new LinkedList<Task>();
-        queue.add(t);
-        while (!queue.isEmpty()) {
-            Task queuedTask = queue.poll();
-            queuedTask.setTaskListener(null);
-
-            if (queuedTask instanceof TaskGroup) {
-                for (Task child : ((TaskGroup) queuedTask).getTasks()) {
-                    queue.add(child);
-                }
-
-            }
-
-        }
-    }
 }

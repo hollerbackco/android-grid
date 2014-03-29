@@ -30,6 +30,7 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         setRetainInstance(true);
 
         mTask = ((TaskClient) getTargetFragment()).getTask(); // start working on the task
+        mIsFinished = false;
 
         if (getArguments() != null) {
             Bundle args = getArguments();
@@ -45,7 +46,12 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "myId: " + getTag());
 
-        mTask.setTaskListener(((TaskClient) getTargetFragment())); // update the task listener during a config change
+        mTaskClient = (TaskClient) getTargetFragment();
+        if (!mIsFinished) {
+            setTaskListeners(mTask, false);
+        } else {
+            setTaskListeners(mTask, true); // notify that we're done with the task
+        }
 
         if (mExecuter == null) {
             // start executing the task
@@ -54,9 +60,15 @@ public class FragmentTaskWorker extends AbsTaskWorker {
                 @Override
                 protected void onPostExecute(Task result) {
                     super.onPostExecute(result);
+                    mIsFinished = true;
+                    Log.d(TAG, "finished " + getTag());
+                    // Log.d(TAG, "removing self from fragment manager");
+                    // if (getFragmentManager() != null) { // if we've been removed completely, no need to remove
+                    // setTargetFragment(null, 0); // clear out the target fragment as to avoid state loss info
+                    // getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
+                    // }
 
-                    Log.d(TAG, "removing self from fragment manager");
-                    getFragmentManager().beginTransaction().remove(FragmentTaskWorker.this).commitAllowingStateLoss();
+                    clearTaskListeners(mTask);
 
                 }
 
@@ -70,5 +82,4 @@ public class FragmentTaskWorker extends AbsTaskWorker {
         }
 
     }
-
 }

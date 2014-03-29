@@ -15,20 +15,22 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.activity.HollerbackMainActivity;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.gcm.GCMUtils;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.LoginResponse;
-import com.moziy.hollerback.util.HBPreferences;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
-import com.moziy.hollerback.util.validators.ValidatorUtil;
+import com.moziy.hollerback.util.AppEnvironment;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.widget.CustomEditText;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignInFragment extends BaseFragment {
 
@@ -63,6 +65,16 @@ public class SignInFragment extends BaseFragment {
         this.getSherlockActivity().getSupportActionBar().show();
         this.getSherlockActivity().getSupportActionBar().setTitle(R.string.signin);
         this.getSherlockActivity().getSupportActionBar().setBackgroundDrawable(this.getResources().getDrawable(R.drawable.ab_solid_example));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -107,7 +119,7 @@ public class SignInFragment extends BaseFragment {
 
     private void processLogin() {
         if ("".equals(GCMUtils.getRegistrationId(HollerbackApplication.getInstance()))) {
-            Toast.makeText(getActivity(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
+            Toast.makeText(HollerbackApplication.getInstance(), "Try again in a few seconds", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -162,6 +174,13 @@ public class SignInFragment extends BaseFragment {
         String phone = response.user.phone;
         long id = response.user.id;
 
+        // save info for crashlytics
+        if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) {
+
+            Crashlytics.setUserIdentifier(String.valueOf(id));
+            Crashlytics.setUserName(userName);
+        }
+
         /**
          * Reason why I am doing this is because gingerbread does not have user.getstring("value", default)
          */
@@ -198,7 +217,7 @@ public class SignInFragment extends BaseFragment {
     private boolean verifyFields() {
 
         boolean status = true;
-        status &= ValidatorUtil.isValidEmail(mEmailEditText.getText());
+        // status &= ValidatorUtil.isValidEmail(mEmailEditText.getText());
 
         if (!status) {
             getErrorDialog(getString(R.string.error_oops), getString(R.string.error_email), getString(R.string.ok)).show();
@@ -212,6 +231,12 @@ public class SignInFragment extends BaseFragment {
 
         return status;// mPasswordEditText.getText() != null && mPasswordEditText.getText().length() > 0;
 
+    }
+
+    @Override
+    protected String getFragmentName() {
+        // TODO Auto-generated method stub
+        return TAG;
     }
 
 }

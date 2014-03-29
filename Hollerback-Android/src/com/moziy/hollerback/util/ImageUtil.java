@@ -3,24 +3,27 @@ package com.moziy.hollerback.util;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import com.moziy.hollerback.debug.LogUtil;
-
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore.Video.Thumbnails;
+import android.util.Log;
+
+import com.moziy.hollerback.debug.LogUtil;
 
 public class ImageUtil {
 
     // Do this in background thread or AsyncTask later
     public static Bitmap generateThumbnail(String videoFileNameSource) {
-        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(videoFileNameSource), Thumbnails.MICRO_KIND);
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalFile(videoFileNameSource), Thumbnails.MINI_KIND);
         LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
         writeBitmapToExternal(HBFileUtil.getImageUploadName(videoFileNameSource), bitmap);
         return bitmap;
     }
 
     public static String writeBitmapToExternal(String name, Bitmap bitmap) {
-        File file = HBFileUtil.getOutputVideoFile(name);
+        // File file = HBFileUtil.getOutputVideoFile(name);
+        Log.d("imageutil", name);
+        File file = new File(name);
         if (file.exists())
             file.delete();
         try {
@@ -34,6 +37,14 @@ public class ImageUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Bitmap generatePngThumbnailFromVideo(int partNum, String videoGuid) {
+        Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "mp4"), Thumbnails.MICRO_KIND);
+        LogUtil.d("Bitmap null:  " + Boolean.toString(bitmap == null));
+        writeBitmapToExternal(HBFileUtil.getLocalVideoFile(partNum, videoGuid, "png"), bitmap);
+
+        return bitmap;
     }
 
 }

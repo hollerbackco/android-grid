@@ -36,7 +36,19 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginRight="@dimen/dim_20dp"
+        android:layout_toLeftOf="@+id/iv_contact_selected"
         android:scaleType="fitXY"
         android:src="@drawable/banana_medium" />
+
+    <ImageView
+        android:id="@+id/iv_contact_selected"
+        android:layout_width="@dimen/dim_26dp"
+        android:layout_height="@dimen/dim_26dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/dim_30dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/checkbox_on"
+        android:visibility="invisible" />
 
 </RelativeLayout>

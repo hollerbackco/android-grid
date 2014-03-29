@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.gcm.GCMUtils;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 
 public class BaseActivity extends SherlockFragmentActivity {
 
@@ -36,16 +39,32 @@ public class BaseActivity extends SherlockFragmentActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         HollerbackApplication.getInstance().getAppLifecycle().setActive();
-        checkPlayServices();
+        if (checkPlayServices()) {
+            if (!PreferenceManagerUtil.getPreferenceValue(HBPreferences.IS_GCM_REGISTERED, true)) { // assume we're registered
+                GCMUtils.notifyServer(GCMUtils.getRegistrationId(this));
+            }
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         HollerbackApplication.getInstance().getAppLifecycle().setInactive();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EasyTracker.getInstance(this).activityStop(this);
     }
 
     private boolean checkPlayServices() {

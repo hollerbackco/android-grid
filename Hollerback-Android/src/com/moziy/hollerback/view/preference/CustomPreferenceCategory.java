@@ -29,7 +29,7 @@ public class CustomPreferenceCategory extends PreferenceCategory {
     protected void onBindView(View view) {
         super.onBindView(view);
         TextView titleView = (TextView) view.findViewById(android.R.id.title);
-        titleView.setTypeface(FontManager.getFont(FontManager.Font.GOTHAM_MEDIUM));
+        titleView.setTypeface(FontManager.getFont(FontManager.Font.GOTHAM_ROUND_MEDIUM));
         titleView.setTextColor(getContext().getResources().getColorStateList(com.moziy.hollerback.R.drawable.grey_font));
 
     }

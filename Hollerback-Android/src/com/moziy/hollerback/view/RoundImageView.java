@@ -5,25 +5,17 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.moziy.hollerback.R;
 
-/**
- * Takes an imageview and puts an alpha mask on it so that that image appears as round.
- * @author sajjad
- * TODO: add support for positioning
- * TODO: Create a version that extends a regular imageview
- */
-public class RoundImageView extends NetworkImageView {
-    private static final String TAG = RoundImageView.class.getSimpleName();
+public class RoundImageView extends ImageView {
+    private static final String TAG = RoundNetworkImageView.class.getSimpleName();
     private Bitmap mMask;
-    private Point mImageViewSize;
     private int mRadius;
     private int mCenterX;
     private int mCenterY;
@@ -31,6 +23,7 @@ public class RoundImageView extends NetworkImageView {
     private int mHaloBorderColor = -1;
     private Paint mBorderPaint;
     private RectF mHaloBounds = new RectF();
+    private int mPadding;
 
     public RoundImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -43,10 +36,10 @@ public class RoundImageView extends NetworkImageView {
         mCenterY = a.getDimensionPixelSize(R.styleable.RoundImageView_yPosCenter, 0);
         a.recycle();
 
-        mImageViewSize = new Point(mRadius * 2, mRadius * 2);
+        mPadding = getPaddingTop();
 
         if (!isInEditMode())
-            mMask = createCircleBitmap(mRadius * 2, mRadius * 2);
+            mMask = createCircleBitmap(mRadius * 2, mRadius * 2, mPadding);
 
         initPaint();
     }
@@ -56,13 +49,13 @@ public class RoundImageView extends NetworkImageView {
     }
 
     // create a bitmap with a circle, used for the "dst" image
-    static Bitmap createCircleBitmap(int w, int h) {
+    static Bitmap createCircleBitmap(int w, int h, int padding) {
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bm);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         p.setColor(0xFF770055);
-        c.drawOval(new RectF(0, 0, w, h), p);
+        c.drawOval(new RectF(padding, padding, w - padding * 2, h - padding * 2), p);
         return bm;
     }
 
@@ -98,8 +91,9 @@ public class RoundImageView extends NetworkImageView {
 
         super.onDraw(canvas);
 
-        if (!isInEditMode())
+        if (!isInEditMode()) {
             canvas.drawBitmap(mMask, 0, 0, mPaint);
+        }
 
         if (mHaloBorderColor != -1 && mBorderPaint != null) {
             int pix = getResources().getDimensionPixelSize(R.dimen.dim_2dp);
@@ -111,7 +105,6 @@ public class RoundImageView extends NetworkImageView {
 
     @Override
     public String toString() {
-        return "RoundImageView [mImageViewSize=" + mImageViewSize + ", mRadius=" + mRadius + "]";
+        return "RoundImageView [ , mRadius=" + mRadius + "]";
     }
-
 }

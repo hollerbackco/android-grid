@@ -23,24 +23,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.connection.HBAsyncHttpResponseHandler;
+import com.moziy.hollerback.connection.HBRequestManager;
 import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.model.Country;
 import com.moziy.hollerback.model.web.Envelope.Metadata;
 import com.moziy.hollerback.model.web.response.RegisterResponse;
-import com.moziy.hollerback.util.HBPreferences;
+import com.moziy.hollerback.util.AnalyticsUtil;
+import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.ISOUtil;
 import com.moziy.hollerback.util.LoadingFragmentUtil;
 import com.moziy.hollerback.util.PhoneTextWatcher;
-import com.moziy.hollerback.util.PreferenceManagerUtil;
+import com.moziy.hollerback.util.sharedpreference.HBPreferences;
+import com.moziy.hollerback.util.sharedpreference.PreferenceManagerUtil;
 import com.moziy.hollerback.util.validators.ValidatorUtil;
-import com.moziy.hollerbacky.connection.HBAsyncHttpResponseHandler;
-import com.moziy.hollerbacky.connection.HBRequestManager;
 
 public class SignUpFragment extends BaseFragment implements OnClickListener {
     private static final String TAG = SignUpFragment.class.getSimpleName();
@@ -100,6 +106,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getSherlockActivity().getActionBar().setHomeButtonEnabled(false);
+        getSherlockActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
         Bundle args = getArguments();
         mEmail = args.getString(EMAIL_BUNDLE_ARG_KEY);
@@ -185,10 +194,11 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
         super.onResume();
 
         if (mIsSubmitted && PreferenceManagerUtil.getPreferenceValue(HBPreferences.USERNAME, null) != null) {
+            mIsSubmitted = false; // clear it
             // go directly to the signup fragment
             SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                    .commitAllowingStateLoss();
+                    .commit();
         }
     }
 
@@ -213,7 +223,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
         InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mPhoneNumberField.getWindowToken(), 0);
-
         if (verifyFields()) {
 
             if (mIsSubmitted) {
@@ -222,6 +231,9 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
             final String regionCode = mSelectedCountry.code;
 
+            // log analytic event
+            EasyTracker.getInstance(HollerbackApplication.getInstance()).send(MapBuilder.createEvent(AnalyticsUtil.Category.Registration, AnalyticsUtil.Action.SubmitRegInfo, null, null).build());
+
             mIsSubmitted = true;
             mLoadingBar.startLoading();
             HBRequestManager.postRegistration(mEmail, mPassword, mRegistrationName, mRegistrationPhone, new HBAsyncHttpResponseHandler<RegisterResponse>(new TypeReference<RegisterResponse>() {
@@ -229,8 +241,6 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
 
                 @Override
                 public void onResponseSuccess(int statusCode, RegisterResponse response) {
-
-                    mIsSubmitted = false;
 
                     mLoadingBar.stopLoading();
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.USERNAME, response.user.username);
@@ -242,9 +252,17 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.IS_VERIFIED, response.user.is_verified);
                     PreferenceManagerUtil.setPreferenceValue(HBPreferences.LAST_REGISTRATION_TIME, System.currentTimeMillis());
 
-                    SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
-                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                            .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                    if (AppEnvironment.getInstance().ENV == AppEnvironment.ENV_PRODUCTION) { // change this later so that we can have it logged for dev too
+                        // crashlytics
+                        Crashlytics.setUserIdentifier(String.valueOf(response.user.id));
+                        Crashlytics.setUserName(response.user.username);
+                    }
+
+                    if (isResumed()) { // go to the confirmation only if in the resumed state
+                        SignUpConfirmFragment fragment = SignUpConfirmFragment.newInstance();
+                        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                                .addToBackStack(FRAGMENT_TAG).commit();
+                    }
 
                 }
 
@@ -367,5 +385,10 @@ public class SignUpFragment extends BaseFragment implements OnClickListener {
             }
 
         }
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 }

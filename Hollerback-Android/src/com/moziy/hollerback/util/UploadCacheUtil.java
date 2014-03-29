@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.moziy.hollerback.util.sharedpreference.JSONSharedPreferences;
+
 import android.content.Context;
 
 public class UploadCacheUtil {

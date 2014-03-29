@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,7 +37,12 @@ import com.actionbarsherlock.view.MenuItem;
 import com.activeandroid.query.Select;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.moziy.hollerback.HollerbackAppState;
+import com.moziy.hollerback.HollerbackApplication;
 import com.moziy.hollerback.R;
+import com.moziy.hollerback.activity.HollerbackMainActivity;
 import com.moziy.hollerback.activity.SettingPreferenceActivity;
 import com.moziy.hollerback.adapter.ConversationListAdapter;
 import com.moziy.hollerback.communication.IABIntent;
@@ -46,6 +52,7 @@ import com.moziy.hollerback.debug.LogUtil;
 import com.moziy.hollerback.fragment.workers.ConversationWorkerFragment.OnConversationsUpdated;
 import com.moziy.hollerback.model.ConversationModel;
 import com.moziy.hollerback.service.SyncService;
+import com.moziy.hollerback.util.AnalyticsUtil;
 import com.moziy.hollerback.util.AppEnvironment;
 
 public class ConversationListFragment extends BaseFragment implements OnConversationsUpdated, LoaderCallbacks<List<ConversationModel>> {
@@ -63,16 +70,25 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(AppEnvironment.getInstance().ACCESS_KEY_ID, AppEnvironment.getInstance().SECRET_KEY));
 
-    private List<ConversationModel> mConversations;
+    // private List<ConversationModel> mConversations;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!HollerbackAppState.isValidSession()) {
+            ((HollerbackMainActivity) getActivity()).initWelcomeFragment();
+        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (!HollerbackAppState.isValidSession()) {
+            return null;
+        }
+
         mActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         mActivity.getSupportActionBar().setHomeButtonEnabled(false);
         mActivity.getSupportActionBar().setIcon(R.drawable.logo);
@@ -98,7 +114,6 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         mActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         mActivity.getSupportActionBar().show();
@@ -162,15 +177,29 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
                 this.startSettingsFragment();
                 break;
             case R.id.action_find_friends:
-                ContactsInviteFragment contactfragment = ContactsInviteFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, contactfragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+
+                if (isResumed()) { // no need to launch if we're not in the resumed state
+                    // log analytic event
+                    AnalyticsUtil.log(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListAddFriends, null);
+
+                    ContactsFragment f = ContactsFragment.newInstance(ContactsFragment.NextAction.INVITE_FRIENDS);
+
+                    mActivity.getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.slide_in_from_top, R.anim.slide_out_to_bottom, R.anim.slide_in_from_bottom, R.anim.slide_out_to_top).replace(R.id.fragment_holder, f)
+                            .addToBackStack(FRAGMENT_TAG).commit();
+                }
+                // Toast.makeText(mActivity, "We are working hard to get this to you ASAP!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.action_add:
-                // OldContactsFragment fragment = OldContactsFragment.newInstance();
-                ContactsFragment fragment = ContactsFragment.newInstance();
-                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                        .commitAllowingStateLoss();
+                if (isResumed()) { // no need to take action if we're not in the resumed state
+                    // log analytic event
+                    EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                            MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListPlus, null).build());
+                    // OldContactsFragment fragment = OldContactsFragment.newInstance();
+                    ContactsFragment fragment = ContactsFragment.newInstance();
+                    mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                            .addToBackStack(FRAGMENT_TAG).commit();
+                }
                 break;
         }
 
@@ -181,10 +210,20 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            // return if we're not in the resumsed state since we can't add fragments
+            if (!isResumed())
+                return;
+
             LogUtil.i("Starting Conversation: " + position + " id: " + id);
             ConversationModel conversation = (ConversationModel) parent.getItemAtPosition(position);
 
             if (conversation == null) {
+
+                // log analytic event
+                EasyTracker.getInstance(HollerbackApplication.getInstance()).send(
+                        MapBuilder.createEvent(AnalyticsUtil.Category.UI, AnalyticsUtil.UiAction.ButtonPress, AnalyticsUtil.Label.ConvoListNewConvo, null).build());
+
                 // this is the footer view
                 Log.d(TAG, "footer view tapped");
                 AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.convo_item_tap_anim);
@@ -193,14 +232,19 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
                 ContactsFragment fragment = ContactsFragment.newInstance();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_holder, fragment).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).addToBackStack(FRAGMENT_TAG)
-                        .commitAllowingStateLoss();
+                        .commit();
 
                 return;
             }
 
-            if (conversation.getUnreadCount() > 0) {
+            // if (conversation.getUnreadCount() > 0) {
+            if (true) {
 
                 Log.d(TAG, "watching conversation with id: " + conversation.getConversationId());
+
+                // dismiss any notifications bound to this convo id
+                NotificationManager nm = (NotificationManager) HollerbackApplication.getInstance().getSystemService(Context.NOTIFICATION_SERVICE);
+                nm.cancel((int) conversation.getConversationId());
 
                 startConversationFragment(conversation);
             } else {
@@ -243,11 +287,11 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         AnimationSet set = new AnimationSet(true);
 
         Animation animation = new AlphaAnimation(0.0f, 1.0f);
-        animation.setDuration(50);
+        animation.setDuration(150);
         set.addAnimation(animation);
 
         animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, -1.0f, Animation.RELATIVE_TO_SELF, 0.0f);
-        animation.setDuration(100);
+        animation.setDuration(200);
         set.addAnimation(animation);
 
         LayoutAnimationController controller = new LayoutAnimationController(set, 0.5f);
@@ -324,65 +368,14 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
 
     @Override
     public Loader<List<ConversationModel>> onCreateLoader(final int id, final Bundle args) {
-        return new AsyncTaskLoader<List<ConversationModel>>(getActivity()) {
-
-            private List<ConversationModel> mConvos;
-            private SyncReceiver mReceiver;
-
-            // initialization block
-            {
-                Log.d(TAG, "launch sync");
-                mReceiver = new SyncReceiver(this);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
-                IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_UPDATED); // if a conversation got updated, lets repopulate
-
-                // start the sync intent service
-                Intent intent = new Intent();
-                intent.setClass(getActivity(), SyncService.class);
-                getActivity().startService(intent);
-            }
-
-            @Override
-            public void onContentChanged() {
-                mConvos = null; // delete the contents
-                Log.d(TAG, "removing convos");
-                super.onContentChanged();
-            }
-
-            @Override
-            protected void onStartLoading() {
-                if (mConvos != null) {
-                    Log.d(TAG, "delivering results");
-                    deliverResult(mConvos);
-                    return;
-                }
-
-                Log.d(TAG, "onstartloading");
-                forceLoad();
-
-            }
-
-            @Override
-            public List<ConversationModel> loadInBackground() {
-                mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
-                Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
-                return mConvos;
-            }
-
-            @Override
-            protected void onReset() {
-                IABroadcastManager.unregisterLocalReceiver(mReceiver);
-                super.onReset();
-            }
-        };
+        return new ConvoLoader(getActivity());
     }
 
     @Override
     public void onLoadFinished(Loader<List<ConversationModel>> loader, List<ConversationModel> data) {
+
         Log.d(TAG, "loader finished");
-        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity(), this);
         mConversationListAdapter.setConversations(data);
         mConversationList.setAdapter(mConversationListAdapter);
         mConversationList.setOnItemClickListener(mOnListItemClickListener);
@@ -396,15 +389,79 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
     @Override
     public void onLoaderReset(Loader<List<ConversationModel>> loader) {
         // TODO: remove all references to the data
-        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity());
+        mConversationListAdapter = new ConversationListAdapter(getSherlockActivity(), this);
         mConversationList.setAdapter(mConversationListAdapter);
         mConversationListAdapter.notifyDataSetChanged();
 
     }
 
-    public static class SyncReceiver extends BroadcastReceiver {
+    public static class ConvoLoader extends AsyncTaskLoader<List<ConversationModel>> {
+
+        private List<ConversationModel> mConvos;
+        private SyncReceiver mReceiver;
+
+        // initialization block
+        {
+            Log.d(TAG, "launch sync");
+            mReceiver = new SyncReceiver(this);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.NOTIFY_SYNC);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.SYNC_FAILED);
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_CREATED); // if a conversation was crreated, then lets update the content
+            IABroadcastManager.registerForLocalBroadcast(mReceiver, IABIntent.CONVERSATION_UPDATED); // if a conversation got updated, lets repopulate
+
+            // start the sync intent service
+            Intent intent = new Intent();
+            intent.setClass(getContext(), SyncService.class);
+            getContext().startService(intent);
+        }
+
+        public ConvoLoader(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onContentChanged() {
+            mConvos = null; // delete the contents
+            Log.d(TAG, "removing convos");
+            super.onContentChanged();
+        }
+
+        @Override
+        protected void onStartLoading() {
+            if (mConvos != null) {
+                Log.d(TAG, "delivering results");
+                deliverResult(mConvos);
+                return;
+            }
+
+            Log.d(TAG, "onstartloading");
+            forceLoad();
+
+        }
+
+        @Override
+        public List<ConversationModel> loadInBackground() {
+            mConvos = new Select().all().from(ConversationModel.class).orderBy(ActiveRecordFields.C_CONV_LAST_MESSAGE_AT + " DESC").execute();
+            Log.d(TAG, "retrieved " + mConvos.size() + " convos from the database");
+            return mConvos;
+        }
+
+        @Override
+        protected void onReset() {
+            IABroadcastManager.unregisterLocalReceiver(mReceiver);
+            super.onReset();
+        }
+
+        public boolean hasSynched() {
+            return mReceiver.mHasReceived;
+        }
+
+    }
+
+    public static class SyncReceiver extends BroadcastReceiver { // receives intents from the syncservice
 
         private Loader<List<ConversationModel>> mLoader;
+        private boolean mHasReceived;
 
         public SyncReceiver(AsyncTaskLoader<List<ConversationModel>> loader) {
             mLoader = loader;
@@ -413,8 +470,14 @@ public class ConversationListFragment extends BaseFragment implements OnConversa
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("SyncReceiver", "onReceive - " + "isStarted: " + mLoader.isStarted());
-
+            mHasReceived = true;
             mLoader.onContentChanged();
         }
+
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return TAG;
     }
 }

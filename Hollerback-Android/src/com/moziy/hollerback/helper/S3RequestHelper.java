@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -18,22 +19,19 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ProgressEvent;
-import com.amazonaws.services.s3.model.ProgressListener;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.moziy.hollerback.communication.IABIntent;
 import com.moziy.hollerback.communication.IABroadcastManager;
+import com.moziy.hollerback.connection.RequestCallbacks.OnProgressListener;
+import com.moziy.hollerback.connection.RequestCallbacks.OnS3UploadListener;
 import com.moziy.hollerback.debug.LogUtil;
+import com.moziy.hollerback.model.VideoModel;
 import com.moziy.hollerback.util.AppEnvironment;
 import com.moziy.hollerback.util.HBFileUtil;
-import com.moziy.hollerback.video.S3UploadParams;
 import com.moziy.hollerback.view.CustomVideoView;
-import com.moziy.hollerbacky.connection.HBRequestManager;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnProgressListener;
-import com.moziy.hollerbacky.connection.RequestCallbacks.OnS3UploadListener;
 
 // TODO: Abstract the upload methods, verification and buckets
 
@@ -57,28 +55,6 @@ public class S3RequestHelper {
 
     public void clearOnProgressListener() {
         mOnProgressListener = null;
-    }
-
-    public void uploadNewVideo(final String conversationId, final String videoName, String imageName, String customMessage, OnS3UploadListener onS3UploadListener) {
-        S3UploadParams video = new S3UploadParams();
-        S3UploadParams thumb = new S3UploadParams();
-
-        video.setFileName(videoName);
-        video.setFilePath(HBFileUtil.getLocalFile(videoName));
-
-        contentLength = HBFileUtil.getFileSize(videoName);
-        video.conversationId = conversationId;
-        thumb.setFileName(imageName);
-        thumb.setFilePath(HBFileUtil.getLocalFile(imageName));
-        video.customMessage = customMessage;
-
-        video.setOnS3UploadListener(onS3UploadListener);
-
-        S3PutObjectTask s3task = new S3PutObjectTask();
-        s3task.execute(new S3UploadParams[] {
-                video, thumb
-        });
-
     }
 
     /**
@@ -121,109 +97,6 @@ public class S3RequestHelper {
         }
 
         return putObjectResult;
-    }
-
-    private class S3PutObjectTask extends AsyncTask<S3UploadParams, Void, S3TaskResult> {
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            // TODO Auto-generated method stub
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onCancelled() {
-            // TODO Auto-generated method stub
-            super.onCancelled();
-        }
-
-        protected void onPreExecute() {
-
-        }
-
-        protected S3TaskResult doInBackground(S3UploadParams... videos) {
-
-            S3UploadParams videoRequestParam = videos[0];
-            S3UploadParams thumbRequestParam = videos[1];
-
-            S3TaskResult result = new S3TaskResult();
-            result.uploadParams = videoRequestParam;
-
-            videoRequestParam.getOnS3UploadListener().onStart();
-
-            // Put the image data into S3.
-            try {
-                // s3Client.createBucket(AppEnvironment.getPictureBucket());
-
-                // Content type is determined by file extension.
-                PutObjectRequest videoUploadRequest = new PutObjectRequest(AppEnvironment.getInstance().UPLOAD_BUCKET, videoRequestParam.getFileName(), new java.io.File(
-                        videoRequestParam.getFilePath()));
-
-                PutObjectRequest thumbUploadRequest = new PutObjectRequest(AppEnvironment.getInstance().UPLOAD_BUCKET, thumbRequestParam.getFileName(), new java.io.File(
-                        thumbRequestParam.getFilePath()));
-
-                videoUploadRequest.setProgressListener(new ProgressListener() {
-
-                    @Override
-                    public void progressChanged(ProgressEvent arg0) {
-                        if (mOnProgressListener != null) {
-                            mOnProgressListener.onProgress(arg0.getBytesTransfered(), contentLength);
-                        }
-                    }
-                });
-
-                s3Client.putObject(thumbUploadRequest);
-                s3Client.putObject(videoUploadRequest);
-
-            } catch (Exception exception) {
-
-                result.setErrorMessage(exception.getMessage());
-                exception.printStackTrace();
-            }
-
-            return result;
-        }
-
-        protected void onPostExecute(S3TaskResult result) {
-
-            if (result.getErrorMessage() != null) {
-
-                // displayErrorAlert("Upload Failure",
-                // result.getErrorMessage());
-
-                LogUtil.e(result.getErrorMessage());
-
-            } else {
-
-                if (result.getS3UploadParams() != null) {
-                    result.getS3UploadParams().getOnS3UploadListener().onComplete();
-                }
-
-                if (AppEnvironment.getInstance().ALLOW_UPLOAD_VIDEOS) {
-                    HBRequestManager.postVideo(result.getS3UploadParams().conversationId, result.getS3UploadParams().getFileName(), result.getS3UploadParams().customMessage);
-                    LogUtil.i("LOL CATWALK");
-                }
-            }
-
-            if (result != null) {
-                //
-                // if(result.getS3UploadParams()!=null){
-                // result.getS3UploadParams().getOnS3UploadListener()
-                // .onS3Upload(true);
-                // }
-
-                // Toast.makeText(getApplicationContext(),
-                // "Uploaded to: " + result.getUri().toString(),
-                // Toast.LENGTH_LONG).show();
-                // Toast.makeText(getApplicationContext(),
-                // "Uploaded to: " + result.getUri().getPath(),
-                // Toast.LENGTH_LONG).show();
-
-            }
-
-            // new S3GeneratePresignedUrlTask()
-            // .execute(new S3UploadParams[] { result.getS3UploadParams() });
-        }
     }
 
     public void getS3URLParams(ArrayList<S3UploadParams> videos) {
@@ -638,4 +511,71 @@ public class S3RequestHelper {
         }
     }
 
+    public static class S3UploadParams {
+
+        private Context mContext;
+        private OnS3UploadListener mOnS3UploadListener;
+        private String mFilePath;
+        private String mFileName;
+        private String mFileType;
+        public VideoModel mVideo;
+        public String conversationId;
+
+        public String customMessage;
+
+        public String getFileType() {
+            return mFileType;
+        }
+
+        public void setFileType(String mFileType) {
+            this.mFileType = mFileType;
+        }
+
+        public static String VID_MP4 = "mp4";
+        public static String IMG_PNG = "-thumb.png";
+
+        public static String CONTENT_TYPE_MP4 = "video/mp4";
+        public static String CONTENT_TYPE_PNG = "image/png";
+
+        public Context getmContext() {
+            return mContext;
+        }
+
+        public void setContext(Context mContext) {
+            this.mContext = mContext;
+        }
+
+        public OnS3UploadListener getOnS3UploadListener() {
+            return mOnS3UploadListener;
+        }
+
+        public void setOnS3UploadListener(OnS3UploadListener mOnS3UploadListener) {
+            this.mOnS3UploadListener = mOnS3UploadListener;
+        }
+
+        public String getFilePath() {
+            return mFilePath;
+        }
+
+        public void setFilePath(String mFilePath) {
+            this.mFilePath = mFilePath;
+        }
+
+        public String getFileName() {
+            return mFileName;
+        }
+
+        public void setFileName(String mFileName) {
+            this.mFileName = mFileName;
+        }
+
+        public String getVideoName() {
+            return mFileName;
+
+        }
+
+        public String getThumbnailName() {
+            return HBFileUtil.getImageUploadName(mFileName);
+        }
+    }
 }
