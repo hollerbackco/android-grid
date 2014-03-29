@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -30,6 +30,7 @@
 
     <style name="HollerbackTheme" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="actionBarItemBackground">@drawable/topbar</item>
+        <item name="android:buttonStyle">@style/DefaultButton</item>
     </style>
 
     <style name="Theme.Example" parent="@style/Theme.Sherlock.Light.DarkActionBar">
@@ -106,6 +107,10 @@
 
     <style name="DefaultTextView" parent="@android:style/Widget.TextView">
         <item name="typeface">Gotham-Medium</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1.0</item>
+        <item name="android:shadowDy">1.0</item>
+        <item name="android:shadowRadius">0.5</item>
     </style>
 
     <style name="DefaultButton" parent="@android:style/Widget.Button">

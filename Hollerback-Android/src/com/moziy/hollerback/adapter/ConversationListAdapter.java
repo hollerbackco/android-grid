@@ -4,11 +4,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.R.color;
+import android.graphics.Color;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -18,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.activeandroid.util.Log;
 import com.moziy.hollerback.R;
 import com.moziy.hollerback.fragment.ConversationListFragment;
 import com.moziy.hollerback.fragment.RecordVideoFragment;
@@ -34,6 +41,8 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
     LayoutInflater inflater;
     ConversationFilter mFilter;
     private ColorPicker mColorPicker = new ColorPicker();
+    private int mHBTextColor;
+    private Map<ConversationModel, int[]> mConvoColorMap;
 
     private SherlockFragmentActivity mActivity;
 
@@ -45,6 +54,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         mConversations = new ArrayList<ConversationModel>();
         mFilteredConversations = new ArrayList<ConversationModel>();
 
+        mHBTextColor = mActivity.getResources().getColor(R.color.hb_blue);
         // options = new DisplayImageOptions.Builder().showStubImage(R.drawable.background_opaque).showImageForEmptyUri(R.drawable.background_opaque).showImageOnFail(R.drawable.background_opaque)
         // .cacheInMemory(true).cacheOnDisc(true).bitmapConfig(Bitmap.Config.RGB_565).imageScaleType(ImageScaleType.EXACTLY).build();
     }
@@ -53,6 +63,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
         mConversations = conversations;
         mFilteredConversations = new ArrayList<ConversationModel>();
         mFilteredConversations.addAll(mConversations);
+        mConvoColorMap = new HashMap<ConversationModel, int[]>();
         this.notifyDataSetChanged();
     }
 
@@ -93,6 +104,7 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
             viewHolder = new ViewHolder();
             convertView = inflater.inflate(R.layout.message_list_item, parent, false);
+            viewHolder.topLayer = (ViewGroup) convertView.findViewById(R.id.top_layer);
             viewHolder.conversationName = (TextView) convertView.findViewById(R.id.tv_convoname);
             viewHolder.conversationTime = (TextView) convertView.findViewById(R.id.tv_time);
             viewHolder.thumb = (RoundImageView) convertView.findViewById(R.id.iv_thumb);
@@ -105,11 +117,23 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         final ConversationModel conversationModel = mFilteredConversations.get(position);
         if (conversationModel.getUnreadCount() > 0) {
-            int[] colors = mColorPicker.getConvoColors();
+            int[] colors;
+            if (mConvoColorMap.containsKey(conversationModel)) {
+                colors = mConvoColorMap.get(conversationModel);
+            } else {
+                colors = mColorPicker.getConvoColors();
+                mConvoColorMap.put(conversationModel, colors);
+            }
             viewHolder.thumb.setHaloBorderColor(colors[0]);
-            convertView.setBackgroundColor(colors[1]);
+            viewHolder.topLayer.setBackgroundColor(colors[1]);
+            viewHolder.conversationName.setTextColor(Color.WHITE);
+            viewHolder.conversationTime.setTextColor(Color.WHITE);
         } else {
             convertView.setBackgroundColor(color.white);
+            viewHolder.topLayer.setBackgroundColor(Color.WHITE);
+            viewHolder.conversationName.setTextColor(mHBTextColor);
+            viewHolder.conversationTime.setTextColor(mHBTextColor);
+            viewHolder.thumb.setHaloBorderColor(-1); // clear any border
         }
 
         viewHolder.conversationName.setText(conversationModel.getConversationName().toUpperCase());
@@ -138,14 +162,85 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
             }
         });
 
+        final GestureDetector detector = new GestureDetector(mActivity, new SimpleOnGestureListener() {
+
+            private static final int SWIPE_THRESHOLD = 100;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+
+                return true;
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                boolean result = false;
+                try {
+                    float diffY = e2.getY() - e1.getY();
+                    float diffX = e2.getX() - e1.getX();
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffX > 0) {
+                                onSwipeRight();
+                            } else {
+                                onSwipeLeft();
+                            }
+                        }
+                    } else {
+                        if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffY > 0) {
+                                onSwipeBottom();
+                            } else {
+                                onSwipeTop();
+                            }
+                        }
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+                return result;
+            }
+
+        });
+
+        convertView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(final View v, MotionEvent event) {
+
+                if (event.getAction() != MotionEvent.ACTION_DOWN)
+                    return detector.onTouchEvent(event);
+
+                return false;
+
+            }
+        });
+
         return convertView;
     }
 
-    static class ViewHolder {
+    public void onSwipeRight() {
+    }
+
+    public void onSwipeLeft() {
+        Log.d("sw", "swipe left");
+    }
+
+    public void onSwipeTop() {
+    }
+
+    public void onSwipeBottom() {
+    }
+
+    public static class ViewHolder {
+        public ViewGroup topLayer;
         TextView conversationName;
         TextView conversationTime;
         RoundImageView thumb;
         ImageView btnRecord;
+        int foregroundColor = -1;
+        int backgroundColor = -1;
     }
 
     /**
@@ -223,4 +318,21 @@ public class ConversationListAdapter extends BaseAdapter implements Filterable {
 
         return mFilter;
     }
+
+    class ConversationItem {
+        public ConversationModel conversation;
+        public int foregroundColor = -1;
+        public int backgroundColor = -1;
+    }
+
+    List<ConversationItem> getConversationItemListFor(List<ConversationModel> model) {
+        List<ConversationItem> items = new ArrayList<ConversationListAdapter.ConversationItem>();
+        for (ConversationModel m : model) {
+            ConversationItem item = new ConversationItem();
+            item.conversation = m;
+            items.add(item);
+        }
+        return items;
+    }
+
 }
